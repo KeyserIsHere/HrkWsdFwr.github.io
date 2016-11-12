@@ -125,9 +125,69 @@ Instructions
 | 1      | 111111  | jmp      | rel       |           |           | Jump                                                                                     |
 
 
-Operand types:
+### Operand Types:
 
-* i - Immediate value
-* r - Register
-* m - Memory reference
-* rel - Relative address
+| Operand |   Description    |                                                                                            Encoding                                                                                            |
+|:-------:|:----------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| i       | Immediate Value  | `iiiiiiii` - The 8-bit value                                                                                                                                                                   |
+| r       | Register         | `rrr` - The register encoding                                                                                                                                                                  |
+| m       | Memory Reference | `0000 iiiiiiii` - Immediate address, `0001 rr` - Register address (r0 - r3), `0010 iiiiiiii rr` - Immediate + Register address (r0 - r3), `0011 rr rr` - Register + Register address (r0 - r3) |
+| rel     | Relative Address | `iiiiiiii` - The 8-bit value to use relative to the current address                                                                                                                            |
+
+The register referencing uses only 2 bits to reference the registers r0, r1, r2, r3. It does this by using an implicit set bit `srr`, where 's' is the implicitly set bit. This does mean that the flags and pc registers are not available for addressing.
+
+Encoding
+--------
+
+Instruction encoding takes the form of `[instruction opcode][operand 1][operand 2][operand 3]` in high-low bit order and big-endian byte order. The encoding is padded with 0 bits to fit byte boundaries.
+
+Some example encoding arrangements:
+
+```
+[instruction][padding]
+   xxxxxx       00    = 1 byte
+
+[instruction][   i    ][padding]
+   xxxxxx     iiiiiiii    00    = 2 bytes
+
+[instruction][  rel   ][padding]
+   xxxxxx     iiiiiiii    00    = 2 bytes
+
+[instruction][ r ][padding]
+   xxxxxx     rrr  0000000 = 2 bytes
+
+[instruction][    m(i)     ][padding]
+   xxxxxx     0000 iiiiiiii  000000  = 3 bytes
+
+[instruction][  m(r) ][padding]
+   xxxxxx     0001 rr   0000   = 2 bytes
+
+[instruction][     m(i+r)     ][padding]
+   xxxxxx     0010 iiiiiiii rr   0000   = 3 bytes
+
+[instruction][  m(r+r)  ][padding]
+   xxxxxx     0010 rr rr    00    = 2 bytes
+
+[instruction][ r ][ r ][padding]
+   xxxxxx     rrr  rrr   0000   = 2 bytes
+
+[instruction][ r ][  m(r) ][padding]
+   xxxxxx     rrr  0001 rr     0    = 2 bytes
+```
+
+Some example instruction encodings:
+
+```
+add r1, r0      # 00000010 11000000
+add flags, r0   # 00000001 01000000
+add r1, 5       # 00001010 10000010 10000000
+add r1, [5]     # 00000110 10000000 00101000
+add r1, [5+r2]  # 00000110 10010000 00101100
+
+jmp 8 # 11111100 00100000
+
+nop # 11111000
+
+send r0, r2, [r3+5]  # 01101110 01100010 00000101 11000000
+send 0, 0xff, [r3+5] # 01101100 00000011 11111100 10000001 01110000
+```
