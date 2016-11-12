@@ -124,13 +124,13 @@ Instructions
 | 2      | 011101  | cmp      | r         | r/m       |           | Compare the register or memory value (operand 2) with the register (operand 1)           |
 | 2      | 011110  | cmp      | r/m       | i         |           | Compare the immediate value (operand 2) with the register or memory (operand 1)          |
 | 4 - 12 | 011111  | send     | r         |           |           | Send empty message to device interfacing with port (operand 1)                           |
-| 1      | 100000  | shl      | r/m       | r         |           | Shift left by register value (operand 2) into register or memory (operand 1)             |
-| 1      | 100001  | shl      | r         | r/m       |           | Shift left by register or memory value (operand 2) into register (operand 1)             |
-| 1      | 100010  | shl      | r/m       | i         |           | Shift left by immediate value (operand 2) into register or memory (operand 1)            |
+| 1      | 100000  | shl      | r/m       | r         |           | Logical shift left by register value (operand 2) into register or memory (operand 1)     |
+| 1      | 100001  | shl      | r         | r/m       |           | Logical shift left by register or memory value (operand 2) into register (operand 1)     |
+| 1      | 100010  | shl      | r/m       | i         |           | Logical shift left by immediate value (operand 2) into register or memory (operand 1)    |
 | 4 - 12 | 100011  | send     | i         | r         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
-| 1      | 100100  | shr      | r/m       | r         |           | Shift right by register value (operand 2) into register or memory (operand 1)            |
-| 1      | 100101  | shr      | r         | r/m       |           | Shift right by register or memory value (operand 2) into register (operand 1)            |
-| 1      | 100110  | shr      | r/m       | i         |           | Shift right by immediate value (operand 2) into register or memory (operand 1)           |
+| 1      | 100100  | shr      | r/m       | r         |           | Logical shift right by register value (operand 2) into register or memory (operand 1)    |
+| 1      | 100101  | shr      | r         | r/m       |           | Logical shift right by register or memory value (operand 2) into register (operand 1)    |
+| 1      | 100110  | shr      | r/m       | i         |           | Logical shift right by immediate value (operand 2) into register or memory (operand 1)   |
 | 4 - 12 | 100111  | recv     | i         | m         |           | Store message (operand 2) received from port (operand 1)                                 |
 | 1      | 101000  | xor      | r/m       | r         |           | Logical exclusive OR the register value (operand 2) into register or memory (operand 1)  |
 | 1      | 101001  | xor      | r         | r/m       |           | Logical exclusive OR the register or memory value (operand 2) into register (operand 1)  |
