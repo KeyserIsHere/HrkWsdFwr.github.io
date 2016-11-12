@@ -36,14 +36,14 @@ Registers
 
 Hubs have 4 general purpose registers available to them, and 2 specialty registers.
 
-| Registers |      Type       |                                               Description                                               |
-|:---------:|:---------------:|:-------------------------------------------------------------------------------------------------------:|
-| r0        | General Purpose | Used to store both data and addresses                                                                   |
-| r1        | General Purpose | Used to store both data and addresses                                                                   |
-| r2        | General Purpose | Used to store both data and addresses                                                                   |
-| r3        | General Purpose | Used to store both data and addresses                                                                   |
-| pc        | Program Counter | Points to the instruction currently being executed                                                      |
-| flags     | Status          | Contains the current state of the hub (`z` zero flag, `c` carry flag, `s` sign flag, `o` overflow flag) |
+| Registers |      Type       | Encoding |                                               Description                                               |
+|:---------:|:---------------:|:--------:|:-------------------------------------------------------------------------------------------------------:|
+| r0        | General Purpose | 100      | Used to store both data and addresses                                                                   |
+| r1        | General Purpose | 101      | Used to store both data and addresses                                                                   |
+| r2        | General Purpose | 110      | Used to store both data and addresses                                                                   |
+| r3        | General Purpose | 111      | Used to store both data and addresses                                                                   |
+| pc        | Program Counter | 011      | Points to the instruction currently being executed                                                      |
+| flags     | Status          | 010      | Contains the current state of the hub (`z` zero flag, `c` carry flag, `s` sign flag, `o` overflow flag) |
 
 Accessing (both r/w) a register is done at a rate of _0 cycles_. __To be tested.__
 
@@ -123,3 +123,11 @@ Instructions
 | 4      | 111101  | recv     | i         | m         |           | Store message (operand 2) received from port (operand 1)                                 |
 | 0      | 111110  | nop      |           |           |           | No operation                                                                             |
 | 1      | 111111  | jmp      | rel       |           |           | Jump                                                                                     |
+
+
+Operand types:
+
+* i - Immediate value
+* r - Register
+* m - Memory reference
+* rel - Relative address
