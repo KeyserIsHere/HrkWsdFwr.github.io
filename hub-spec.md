@@ -86,6 +86,17 @@ Memory
 
 Each hub has 255 bytes of r/w memory (mapped from 0 to 255) available to it to use for data and instructions. Accessing (both r/w) this memory is at a rate of _1 cycle per byte_. __To be tested. Writes could potentially be faster as there's no cache?__
 
+When executing or accessing memory that reaches beyond the bounds (255), it will wrap around.
+
+```
+send 0, 5, [0xfe] # sends 5 bytes of data from 0xfe, 0xff, 0x00, 0x01, 0x02
+
+
+#or execution
+#at address 0xff
+nop #pc = 0xff
+#after pc = 0x00
+```
 
 Instructions
 ------------
