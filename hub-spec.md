@@ -7,7 +7,7 @@ __All cycle values currently listed are for example purposes. Must test to see w
 Overview
 --------
 
-Hub's are 8-bit computing devices that can talk with other hub's and modules through interface-able ports.
+Hubs are 8-bit computing devices that can talk with other hubs and modules through interface-able ports.
 
 They consist of two operating pipelines:
 
