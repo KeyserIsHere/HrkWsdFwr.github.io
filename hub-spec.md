@@ -48,6 +48,39 @@ Hubs have 4 general purpose registers available to them, and 2 specialty registe
 Accessing (both r/w) a register is done at a rate of _0 cycles_. __To be tested.__
 
 
+### Flags:
+
+The flags register has the bit layout `0000oscz`.
+
+The zero flag indicates a zero result and is set by the following operations:
+
+* Arithmetic operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
+* Logical operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
+* Compare operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
+* Port operations - if the port operation fails the flag is set to 1, if the port operation succeeds the flag is set to 0 (or unset).
+
+
+The carry flag indicates the result has carried a bit beyond the 8-bit width and is set by the following operations:
+
+* Arithmetic operations - if the result of the operation carries the highest bit beyond 8-bits the flag is set to 1, if it does not the flag is set to 0 (or unset).
+* Logical operations - if the result of the operation carries the highest bit beyond 8-bits the flag is set to 1, if it does not the flag is set to 0 (or unset).
+* Compare operations - if the result of the operation carries the highest bit beyond 8-bits the flag is set to 1, if it does not the flag is set to 0 (or unset).
+
+
+The sign flag indicates the signedness of the result and is set by the following operations:
+
+* Arithmetic operations - if the result of the operation has the most significant bit set the sign flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+* Logical operations - if the result of the operation has the most significant bit set the sign flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+* Compare operations - if the result of the operation has the most significant bit set the sign flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+
+
+The overflow flag indicates the result has overflowed beyond the 8-bit width and is set by the following operations:
+
+* Arithmetic operations - if the result of the operation overflows the overflow flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+* Logical operations - if the result of the operation overflows the overflow flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+* Compare operations - if the result of the operation overflows the overflow flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+
+
 Memory
 ------
 
