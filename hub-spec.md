@@ -86,27 +86,27 @@ Instructions
 | 3      | 011000  | umod     | r/m       | r         |           | Unsigned modulo by register value (operand 2) into register or memory (operand 1)        |
 | 3      | 011001  | umod     | r         | r/m       |           | Unsigned modulo by register or memory value (operand 2) into register (operand 1)        |
 | 3      | 011010  | umod     | r/m       | i         |           | Unsigned modulo by immediate value (operand 2) into register or memory (operand 1)       |
-| 4      | 011011  | send     | r         | r         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
+| 4 - 12 | 011011  | send     | r         | r         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
 | 2      | 011100  | cmp      | r/m       | r         |           | Compare the register value (operand 2) with the register or memory (operand 1)           |
 | 2      | 011101  | cmp      | r         | r/m       |           | Compare the register or memory value (operand 2) with the register (operand 1)           |
 | 2      | 011110  | cmp      | r/m       | i         |           | Compare the immediate value (operand 2) with the register or memory (operand 1)          |
-| 4      | 011111  | send     | r         |           |           | Send empty message to device interfacing with port (operand 1)                           |
+| 4 - 12 | 011111  | send     | r         |           |           | Send empty message to device interfacing with port (operand 1)                           |
 | 1      | 100000  | shl      | r/m       | r         |           | Shift left by register value (operand 2) into register or memory (operand 1)             |
 | 1      | 100001  | shl      | r         | r/m       |           | Shift left by register or memory value (operand 2) into register (operand 1)             |
 | 1      | 100010  | shl      | r/m       | i         |           | Shift left by immediate value (operand 2) into register or memory (operand 1)            |
-| 4      | 100011  | send     | i         | r         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
+| 4 - 12 | 100011  | send     | i         | r         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
 | 1      | 100100  | shr      | r/m       | r         |           | Shift right by register value (operand 2) into register or memory (operand 1)            |
 | 1      | 100101  | shr      | r         | r/m       |           | Shift right by register or memory value (operand 2) into register (operand 1)            |
 | 1      | 100110  | shr      | r/m       | i         |           | Shift right by immediate value (operand 2) into register or memory (operand 1)           |
-| 4      | 100111  | recv     | i         | m         |           | Store message (operand 2) received from port (operand 1)                                 |
+| 4 - 12 | 100111  | recv     | i         | m         |           | Store message (operand 2) received from port (operand 1)                                 |
 | 1      | 101000  | xor      | r/m       | r         |           | Logical exclusive OR the register value (operand 2) into register or memory (operand 1)  |
 | 1      | 101001  | xor      | r         | r/m       |           | Logical exclusive OR the register or memory value (operand 2) into register (operand 1)  |
 | 1      | 101010  | xor      | r/m       | i         |           | Logical exclusive OR the immediate value (operand 2) into register or memory (operand 1) |
-| 4      | 101011  | send     | r         | i         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
+| 4 - 12 | 101011  | send     | r         | i         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
 | 1      | 101100  | or       | r/m       | r         |           | Logical inclusive OR the register value (operand 2) into register or memory (operand 1)  |
 | 1      | 101101  | or       | r         | r/m       |           | Logical inclusive OR the register or memory value (operand 2) into register (operand 1)  |
 | 1      | 101110  | or       | r/m       | i         |           | Logical inclusive OR the immediate value (operand 2) into register or memory (operand 1) |
-| 4      | 101111  | send     | i         |           |           | Send empty message to device interfacing with port (operand 1)                           |
+| 4 - 12 | 101111  | send     | i         |           |           | Send empty message to device interfacing with port (operand 1)                           |
 | 1      | 110000  | and      | r/m       | r         |           | Logical AND the register value (operand 2) into register or memory (operand 1)           |
 | 1      | 110001  | and      | r         | r/m       |           | Logical AND the register or memory value (operand 2) into register (operand 1)           |
 | 1      | 110010  | and      | r/m       | i         |           | Logical AND the immediate value (operand 2) into register or memory (operand 1)          |
@@ -119,10 +119,14 @@ Instructions
 | 1      | 111001  | juge     | rel       |           |           | Jump if (unsigned) greater or equal/not carry (CF=0)                                     |
 | 1      | 111010  | jule     | rel       |           |           | Jump if (unsigned) less or equal (CF=1 AND ZF=1)                                         |
 | 1      | 111011  | jug      | rel       |           |           | Jump if (unsigned) greater (CF=0 AND ZF=0)                                               |
-| 4      | 111100  | send     | i         | i         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
-| 4      | 111101  | recv     | i         | m         |           | Store message (operand 2) received from port (operand 1)                                 |
+| 4 - 12 | 111100  | send     | i         | i         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)    |
+| 4 - 12 | 111101  | recv     | i         | m         |           | Store message (operand 2) received from port (operand 1)                                 |
 | 0      | 111110  | nop      |           |           |           | No operation                                                                             |
 | 1      | 111111  | jmp      | rel       |           |           | Jump                                                                                     |
+
+The send/recv instructions can take 4 - 12 cycles because of timeout threshold. This means that if the send/recv does not pair up with another within 12 cycles then it will have reached it's max threshold and continue. If the send/recv do pair up they will take a minimum of 4 cycles (if they were executed at the same time) but could take anywhere from 4 to 12. This does not include the time for the data transfer to complete.
+
+A failed send/recv will set the z flag to zero in the flags register. If they succeed they will set the z flag to one.
 
 
 ### Operand Types:
