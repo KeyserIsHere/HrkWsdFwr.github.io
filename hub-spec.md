@@ -57,7 +57,7 @@ The zero flag indicates a zero result and is set by the following operations:
 * Arithmetic operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
 * Logical operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
 * Compare operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
-* Port operations - if the port operation fails the flag is set to 1, if the port operation succeeds the flag is set to 0 (or unset).
+* Port operations - if the port operation succeeds the flag is set to 1, if the port operation fails the flag is set to 0 (or unset).
 
 
 The carry flag indicates the result has carried a bit beyond the 8-bit width and is set by the following operations:
