@@ -13,6 +13,11 @@
 		F348774A1DDC53150068844D /* CommonC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877491DDC53150068844D /* CommonC.framework */; };
 		F348774C1DDC53190068844D /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
 		F34877551DDC54DD0068844D /* Blob2D.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = F34877411DDC52CE0068844D /* Blob2D.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F34877EC1DDC6BCD0068844D /* HubArchAssembly.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877EA1DDC6BCD0068844D /* HubArchAssembly.c */; };
+		F34877F41DDC73A50068844D /* HubArchAssemblyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F34877F31DDC73A40068844D /* HubArchAssemblyTests.m */; };
+		F34877F91DDC757E0068844D /* Blob2D.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877411DDC52CE0068844D /* Blob2D.framework */; };
+		F34877FA1DDC75820068844D /* CommonC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877491DDC53150068844D /* CommonC.framework */; };
+		F34877FB1DDC75850068844D /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +84,9 @@
 		F34877361DDC52CD0068844D /* Blob2D.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Blob2D.xcodeproj; path = deps/Blob2D/Blob2D.xcodeproj; sourceTree = "<group>"; };
 		F34877491DDC53150068844D /* CommonC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CommonC.framework; path = "../../../../../Library/Developer/Xcode/DerivedData/HackingGame-dapjzjsstgpfqweodgiviveajvxd/Build/Products/Debug/CommonC.framework"; sourceTree = "<group>"; };
 		F348774B1DDC53190068844D /* CommonGameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CommonGameKit.framework; path = "../../../../../Library/Developer/Xcode/DerivedData/HackingGame-dapjzjsstgpfqweodgiviveajvxd/Build/Products/Debug/CommonGameKit.framework"; sourceTree = "<group>"; };
+		F34877EA1DDC6BCD0068844D /* HubArchAssembly.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchAssembly.c; sourceTree = "<group>"; };
+		F34877EB1DDC6BCD0068844D /* HubArchAssembly.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchAssembly.h; sourceTree = "<group>"; };
+		F34877F31DDC73A40068844D /* HubArchAssemblyTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchAssemblyTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +104,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F34877FB1DDC75850068844D /* CommonGameKit.framework in Frameworks */,
+				F34877FA1DDC75820068844D /* CommonC.framework in Frameworks */,
+				F34877F91DDC757E0068844D /* Blob2D.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -134,6 +145,7 @@
 			isa = PBXGroup;
 			children = (
 				F34877011DDC2E500068844D /* main.c */,
+				F34877E91DDC6B0E0068844D /* Hub */,
 				F348772A1DDC31230068844D /* Supporting Files */,
 			);
 			name = HackingGame;
@@ -143,7 +155,8 @@
 		F34877101DDC2E500068844D /* HackingGameTests */ = {
 			isa = PBXGroup;
 			children = (
-				F34877131DDC2E500068844D /* Info.plist */,
+				F34877F71DDC73BA0068844D /* Hub */,
+				F34877F61DDC73B20068844D /* Supporting Files */,
 			);
 			path = HackingGameTests;
 			sourceTree = "<group>";
@@ -151,7 +164,7 @@
 		F348771B1DDC2E500068844D /* HackingGameUITests */ = {
 			isa = PBXGroup;
 			children = (
-				F348771E1DDC2E500068844D /* Info.plist */,
+				F34877F81DDC73C20068844D /* Supporting Files */,
 			);
 			path = HackingGameUITests;
 			sourceTree = "<group>";
@@ -182,6 +195,40 @@
 				F34877431DDC52CE0068844D /* Blob2D.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		F34877E91DDC6B0E0068844D /* Hub */ = {
+			isa = PBXGroup;
+			children = (
+				F34877EA1DDC6BCD0068844D /* HubArchAssembly.c */,
+				F34877EB1DDC6BCD0068844D /* HubArchAssembly.h */,
+			);
+			name = Hub;
+			path = hub;
+			sourceTree = "<group>";
+		};
+		F34877F61DDC73B20068844D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				F34877131DDC2E500068844D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F34877F71DDC73BA0068844D /* Hub */ = {
+			isa = PBXGroup;
+			children = (
+				F34877F31DDC73A40068844D /* HubArchAssemblyTests.m */,
+			);
+			name = Hub;
+			sourceTree = "<group>";
+		};
+		F34877F81DDC73C20068844D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				F348771E1DDC2E500068844D /* Info.plist */,
+			);
+			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -337,6 +384,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F34877EC1DDC6BCD0068844D /* HubArchAssembly.c in Sources */,
 				F34877021DDC2E500068844D /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -345,6 +393,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F34877F41DDC73A50068844D /* HubArchAssemblyTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -508,6 +557,11 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/threads,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/stdatomic,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/tinycthread/source,
+				);
 				INFOPLIST_FILE = HackingGameTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGameTests;
@@ -521,6 +575,11 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/threads,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/stdatomic,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/tinycthread/source,
+				);
 				INFOPLIST_FILE = HackingGameTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGameTests;
