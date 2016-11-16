@@ -231,6 +231,26 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
             if (ParentType != HKHubArchAssemblyASTTypeSource) return;
         }
     }
+    
+    if ((Symbol) && (*Symbol) && (!**Source))
+    {
+        const size_t Length = *Source - Symbol;
+        if (ParentType != HKHubArchAssemblyASTTypeSource) Type = HKHubArchAssemblyASTTypeOperand;
+        
+        HKHubArchAssemblyASTNode Node = {
+            .type = Type,
+            .string = CCStringCreateWithSize(CC_STD_ALLOCATOR, CCStringHintCopy | CCStringEncodingASCII, Symbol, Length),
+            .line = *Line,
+            .childNodes = NULL
+        };
+        
+        if (Type == HKHubArchAssemblyASTTypeOperand)
+        {
+            HKHubArchAssemblyParseOperand(&Node);
+        }
+        
+        CCOrderedCollectionAppendElement(AST, &Node);
+    }
 }
 
 CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
