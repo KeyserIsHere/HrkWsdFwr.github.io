@@ -1,0 +1,3 @@
+[submodule "deps/Blob2D"]
+	path = deps/Blob2D
+	url = https://github.com/ScrimpyCat/Blob2D

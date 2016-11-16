@@ -1,0 +1,600 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F34877021DDC2E500068844D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877011DDC2E500068844D /* main.c */; };
+		F34877041DDC2E500068844D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F34877031DDC2E500068844D /* Assets.xcassets */; };
+		F34877441DDC52E50068844D /* Blob2D.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877411DDC52CE0068844D /* Blob2D.framework */; };
+		F348774A1DDC53150068844D /* CommonC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877491DDC53150068844D /* CommonC.framework */; };
+		F348774C1DDC53190068844D /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
+		F34877551DDC54DD0068844D /* Blob2D.framework in Copy Frameworks */ = {isa = PBXBuildFile; fileRef = F34877411DDC52CE0068844D /* Blob2D.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F348770E1DDC2E500068844D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F34876F21DDC2E500068844D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F34876F91DDC2E500068844D;
+			remoteInfo = HackingGame;
+		};
+		F34877191DDC2E500068844D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F34876F21DDC2E500068844D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = F34876F91DDC2E500068844D;
+			remoteInfo = HackingGame;
+		};
+		F34877401DDC52CE0068844D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F34877361DDC52CD0068844D /* Blob2D.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F33F1FF21DDAE16200264034;
+			remoteInfo = Blob2D;
+		};
+		F34877421DDC52CE0068844D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F34877361DDC52CD0068844D /* Blob2D.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F33F1FFC1DDAE16200264034;
+			remoteInfo = Blob2DTests;
+		};
+		F348774D1DDC53220068844D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F34877361DDC52CD0068844D /* Blob2D.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = F33F1FF11DDAE16200264034;
+			remoteInfo = Blob2D;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F34877541DDC54CF0068844D /* Copy Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F34877551DDC54DD0068844D /* Blob2D.framework in Copy Frameworks */,
+			);
+			name = "Copy Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		F34876FA1DDC2E500068844D /* HackingGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HackingGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F34877011DDC2E500068844D /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		F34877031DDC2E500068844D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = mac/Assets.xcassets; sourceTree = "<group>"; };
+		F34877081DDC2E500068844D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = mac/Info.plist; sourceTree = "<group>"; };
+		F348770D1DDC2E500068844D /* HackingGameTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HackingGameTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F34877131DDC2E500068844D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F34877181DDC2E500068844D /* HackingGameUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HackingGameUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F348771E1DDC2E500068844D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F34877361DDC52CD0068844D /* Blob2D.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Blob2D.xcodeproj; path = deps/Blob2D/Blob2D.xcodeproj; sourceTree = "<group>"; };
+		F34877491DDC53150068844D /* CommonC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CommonC.framework; path = "../../../../../Library/Developer/Xcode/DerivedData/HackingGame-dapjzjsstgpfqweodgiviveajvxd/Build/Products/Debug/CommonC.framework"; sourceTree = "<group>"; };
+		F348774B1DDC53190068844D /* CommonGameKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CommonGameKit.framework; path = "../../../../../Library/Developer/Xcode/DerivedData/HackingGame-dapjzjsstgpfqweodgiviveajvxd/Build/Products/Debug/CommonGameKit.framework"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F34876F71DDC2E500068844D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F348774C1DDC53190068844D /* CommonGameKit.framework in Frameworks */,
+				F348774A1DDC53150068844D /* CommonC.framework in Frameworks */,
+				F34877441DDC52E50068844D /* Blob2D.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F348770A1DDC2E500068844D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F34877151DDC2E500068844D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F34876F11DDC2E500068844D = {
+			isa = PBXGroup;
+			children = (
+				F34877351DDC51440068844D /* Dependencies */,
+				F34876FC1DDC2E500068844D /* HackingGame */,
+				F34877101DDC2E500068844D /* HackingGameTests */,
+				F348771B1DDC2E500068844D /* HackingGameUITests */,
+				F34876FB1DDC2E500068844D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F34876FB1DDC2E500068844D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F34876FA1DDC2E500068844D /* HackingGame.app */,
+				F348770D1DDC2E500068844D /* HackingGameTests.xctest */,
+				F34877181DDC2E500068844D /* HackingGameUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F34876FC1DDC2E500068844D /* HackingGame */ = {
+			isa = PBXGroup;
+			children = (
+				F34877011DDC2E500068844D /* main.c */,
+				F348772A1DDC31230068844D /* Supporting Files */,
+			);
+			name = HackingGame;
+			path = src;
+			sourceTree = "<group>";
+		};
+		F34877101DDC2E500068844D /* HackingGameTests */ = {
+			isa = PBXGroup;
+			children = (
+				F34877131DDC2E500068844D /* Info.plist */,
+			);
+			path = HackingGameTests;
+			sourceTree = "<group>";
+		};
+		F348771B1DDC2E500068844D /* HackingGameUITests */ = {
+			isa = PBXGroup;
+			children = (
+				F348771E1DDC2E500068844D /* Info.plist */,
+			);
+			path = HackingGameUITests;
+			sourceTree = "<group>";
+		};
+		F348772A1DDC31230068844D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				F34877031DDC2E500068844D /* Assets.xcassets */,
+				F34877081DDC2E500068844D /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F34877351DDC51440068844D /* Dependencies */ = {
+			isa = PBXGroup;
+			children = (
+				F348774B1DDC53190068844D /* CommonGameKit.framework */,
+				F34877491DDC53150068844D /* CommonC.framework */,
+				F34877361DDC52CD0068844D /* Blob2D.xcodeproj */,
+			);
+			name = Dependencies;
+			sourceTree = "<group>";
+		};
+		F34877371DDC52CD0068844D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F34877411DDC52CE0068844D /* Blob2D.framework */,
+				F34877431DDC52CE0068844D /* Blob2D.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F34876F91DDC2E500068844D /* HackingGame */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F34877211DDC2E500068844D /* Build configuration list for PBXNativeTarget "HackingGame" */;
+			buildPhases = (
+				F34876F61DDC2E500068844D /* Sources */,
+				F34876F71DDC2E500068844D /* Frameworks */,
+				F34876F81DDC2E500068844D /* Resources */,
+				F34877541DDC54CF0068844D /* Copy Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F348774E1DDC53220068844D /* PBXTargetDependency */,
+			);
+			name = HackingGame;
+			productName = HackingGame;
+			productReference = F34876FA1DDC2E500068844D /* HackingGame.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F348770C1DDC2E500068844D /* HackingGameTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F34877241DDC2E500068844D /* Build configuration list for PBXNativeTarget "HackingGameTests" */;
+			buildPhases = (
+				F34877091DDC2E500068844D /* Sources */,
+				F348770A1DDC2E500068844D /* Frameworks */,
+				F348770B1DDC2E500068844D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F348770F1DDC2E500068844D /* PBXTargetDependency */,
+			);
+			name = HackingGameTests;
+			productName = HackingGameTests;
+			productReference = F348770D1DDC2E500068844D /* HackingGameTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		F34877171DDC2E500068844D /* HackingGameUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F34877271DDC2E500068844D /* Build configuration list for PBXNativeTarget "HackingGameUITests" */;
+			buildPhases = (
+				F34877141DDC2E500068844D /* Sources */,
+				F34877151DDC2E500068844D /* Frameworks */,
+				F34877161DDC2E500068844D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F348771A1DDC2E500068844D /* PBXTargetDependency */,
+			);
+			name = HackingGameUITests;
+			productName = HackingGameUITests;
+			productReference = F34877181DDC2E500068844D /* HackingGameUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F34876F21DDC2E500068844D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0720;
+				ORGANIZATIONNAME = "Stefan Johnson";
+				TargetAttributes = {
+					F34876F91DDC2E500068844D = {
+						CreatedOnToolsVersion = 7.2;
+					};
+					F348770C1DDC2E500068844D = {
+						CreatedOnToolsVersion = 7.2;
+						TestTargetID = F34876F91DDC2E500068844D;
+					};
+					F34877171DDC2E500068844D = {
+						CreatedOnToolsVersion = 7.2;
+						TestTargetID = F34876F91DDC2E500068844D;
+					};
+				};
+			};
+			buildConfigurationList = F34876F51DDC2E500068844D /* Build configuration list for PBXProject "HackingGame" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F34876F11DDC2E500068844D;
+			productRefGroup = F34876FB1DDC2E500068844D /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = F34877371DDC52CD0068844D /* Products */;
+					ProjectRef = F34877361DDC52CD0068844D /* Blob2D.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				F34876F91DDC2E500068844D /* HackingGame */,
+				F348770C1DDC2E500068844D /* HackingGameTests */,
+				F34877171DDC2E500068844D /* HackingGameUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		F34877411DDC52CE0068844D /* Blob2D.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Blob2D.framework;
+			remoteRef = F34877401DDC52CE0068844D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F34877431DDC52CE0068844D /* Blob2D.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = Blob2D.xctest;
+			remoteRef = F34877421DDC52CE0068844D /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F34876F81DDC2E500068844D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F34877041DDC2E500068844D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F348770B1DDC2E500068844D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F34877161DDC2E500068844D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F34876F61DDC2E500068844D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F34877021DDC2E500068844D /* main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F34877091DDC2E500068844D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F34877141DDC2E500068844D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F348770F1DDC2E500068844D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F34876F91DDC2E500068844D /* HackingGame */;
+			targetProxy = F348770E1DDC2E500068844D /* PBXContainerItemProxy */;
+		};
+		F348771A1DDC2E500068844D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = F34876F91DDC2E500068844D /* HackingGame */;
+			targetProxy = F34877191DDC2E500068844D /* PBXContainerItemProxy */;
+		};
+		F348774E1DDC53220068844D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Blob2D;
+			targetProxy = F348774D1DDC53220068844D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		F348771F1DDC2E500068844D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F34877201DDC2E500068844D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F34877221DDC2E500068844D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/deps/Blob2D/deps/CommonGameKit/deps/CommonC/build/Debug",
+					"$(PROJECT_DIR)/deps/Blob2D/deps/CommonGameKit/build/Debug",
+				);
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/threads,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/stdatomic,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/tinycthread/source,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/src/mac/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGame;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "-Wno-ambiguous-macro";
+			};
+			name = Debug;
+		};
+		F34877231DDC2E500068844D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/deps/Blob2D/deps/CommonGameKit/deps/CommonC/build/Debug",
+					"$(PROJECT_DIR)/deps/Blob2D/deps/CommonGameKit/build/Debug",
+				);
+				HEADER_SEARCH_PATHS = (
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/threads,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/stdatomic,
+					$PROJECT_DIR/deps/Blob2D/deps/CommonGameKit/deps/tinycthread/source,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/src/mac/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGame;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WARNING_CFLAGS = "-Wno-ambiguous-macro";
+			};
+			name = Release;
+		};
+		F34877251DDC2E500068844D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = HackingGameTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGameTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HackingGame.app/Contents/MacOS/HackingGame";
+			};
+			name = Debug;
+		};
+		F34877261DDC2E500068844D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = HackingGameTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGameTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HackingGame.app/Contents/MacOS/HackingGame";
+			};
+			name = Release;
+		};
+		F34877281DDC2E500068844D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = HackingGameUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGameUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = HackingGame;
+				USES_XCTRUNNER = YES;
+			};
+			name = Debug;
+		};
+		F34877291DDC2E500068844D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = HackingGameUITests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGameUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = HackingGame;
+				USES_XCTRUNNER = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F34876F51DDC2E500068844D /* Build configuration list for PBXProject "HackingGame" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F348771F1DDC2E500068844D /* Debug */,
+				F34877201DDC2E500068844D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F34877211DDC2E500068844D /* Build configuration list for PBXNativeTarget "HackingGame" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F34877221DDC2E500068844D /* Debug */,
+				F34877231DDC2E500068844D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F34877241DDC2E500068844D /* Build configuration list for PBXNativeTarget "HackingGameTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F34877251DDC2E500068844D /* Debug */,
+				F34877261DDC2E500068844D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F34877271DDC2E500068844D /* Build configuration list for PBXNativeTarget "HackingGameUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F34877281DDC2E500068844D /* Debug */,
+				F34877291DDC2E500068844D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F34876F21DDC2E500068844D /* Project object */;
+}
