@@ -258,6 +258,8 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
 
 CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
 {
+    CCAssertLog(Source, "Source must not be null");
+    
     CCOrderedCollection AST = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
     
     HKHubArchAssemblyParseCommand(&Source, &(size_t){ 0 }, HKHubArchAssemblyASTTypeSource, AST);

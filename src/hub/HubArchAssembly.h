@@ -57,7 +57,17 @@ typedef struct {
 } HKHubArchAssemblyASTNode;
 
 
-CCOrderedCollection HKHubArchAssemblyParse(const char *Source);
+/*!
+ * @brief Parse the source and produce the AST for the given assembly.
+ * @param Source The assembly source code.
+ * @return The AST, must be destroyed to free up memory.
+ */
+CC_NEW CCOrderedCollection HKHubArchAssemblyParse(const char *Source);
+
+/*!
+ * @brief Print the AST for debugging purposes.
+ * @param AST The AST to be printed.
+ */
 void HKHubArchPrintAST(CCOrderedCollection AST);
 
 #endif
