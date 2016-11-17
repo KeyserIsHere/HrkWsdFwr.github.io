@@ -35,6 +35,7 @@ static void HKHubArchAssemblyResolveLiteralValue(HKHubArchAssemblyASTNode *Paren
 {
     HKHubArchAssemblyASTNode Node = {
         .type = HKHubArchAssemblyASTTypeUnknown,
+        .line = Parent->line,
         .string = CCStringCreateWithSize(CC_STD_ALLOCATOR, CCStringHintCopy | CCStringEncodingASCII, String, Length),
         .childNodes = NULL
     };
