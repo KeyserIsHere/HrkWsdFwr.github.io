@@ -166,6 +166,8 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
             
             Symbol = NULL;
             Type = HKHubArchAssemblyASTTypeInstruction;
+            
+            if (**Source == '\n') return;
         }
         
         else if ((!IsComment) && (!IsStr) && (((IsCommand) && (isspace(c))) || (c == '\n') || (c == ',') || ((c == '#') && (IsComment = TRUE)) || (c == ']')))
