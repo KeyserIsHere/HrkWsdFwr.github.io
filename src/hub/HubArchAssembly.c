@@ -174,7 +174,7 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
         {
             if (*Source != Symbol)
             {
-                const size_t Length = *Source - Symbol;
+                const size_t Length = (*Source - Symbol) - (Type != HKHubArchAssemblyASTTypeLabel ? 0 : 1);
                 if (ParentType != HKHubArchAssemblyASTTypeSource) Type = HKHubArchAssemblyASTTypeOperand;
                 
                 HKHubArchAssemblyASTNode Node = {
