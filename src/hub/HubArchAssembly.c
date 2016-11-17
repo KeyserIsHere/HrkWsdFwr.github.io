@@ -267,7 +267,7 @@ CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
     return AST;
 }
 
-static void HKHubArchPrintASTNodes(CCOrderedCollection AST)
+static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)
 {
     if (!AST) return;
     
@@ -313,7 +313,7 @@ static void HKHubArchPrintASTNodes(CCOrderedCollection AST)
         
         printf("(");
         
-        HKHubArchPrintASTNodes(Node->childNodes);
+        HKHubArchAssemblyPrintASTNodes(Node->childNodes);
         
         printf(")");
         
@@ -321,8 +321,8 @@ static void HKHubArchPrintASTNodes(CCOrderedCollection AST)
     }
 }
 
-void HKHubArchPrintAST(CCOrderedCollection AST)
+void HKHubArchAssemblyPrintAST(CCOrderedCollection AST)
 {
-    HKHubArchPrintASTNodes(AST);
+    HKHubArchAssemblyPrintASTNodes(AST);
     printf("\n");
 }
