@@ -185,7 +185,7 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
                     .childNodes = NULL
                 };
                 
-                if ((!IsComment) && ((Type == HKHubArchAssemblyASTTypeInstruction) || (Type == HKHubArchAssemblyASTTypeDirective)))
+                if ((!IsComment) && (c != '\n') && ((Type == HKHubArchAssemblyASTTypeInstruction) || (Type == HKHubArchAssemblyASTTypeDirective)))
                 {
                     Node.childNodes = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
                     HKHubArchAssemblyParseCommand(Source, Line, Type, Node.childNodes);
