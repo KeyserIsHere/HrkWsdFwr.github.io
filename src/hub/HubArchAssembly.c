@@ -272,23 +272,53 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
     {
-        HKHubArchAssemblyASTNode *Name = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+        HKHubArchAssemblyASTNode *NameOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
         
-        if (Name->type == HKHubArchAssemblyASTTypeSymbol)
+        if ((NameOp->type == HKHubArchAssemblyASTTypeOperand) && (NameOp->childNodes) && (CCCollectionGetCount(NameOp->childNodes) == 1))
         {
-            HKHubArchAssemblyASTNode *Alias = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
+            HKHubArchAssemblyASTNode *AliasOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
             
-            if (Alias->type == HKHubArchAssemblyASTTypeSymbol)
+            if ((AliasOp->type == HKHubArchAssemblyASTTypeOperand) && (AliasOp->childNodes) && (CCCollectionGetCount(AliasOp->childNodes) == 1))
             {
-                CCDictionarySetValue(Defines, &Name->string, &Alias->string);
+                HKHubArchAssemblyASTNode *Name = CCOrderedCollectionGetElementAtIndex(NameOp->childNodes, 0);
+                
+                if (Name->type == HKHubArchAssemblyASTTypeSymbol)
+                {
+                    HKHubArchAssemblyASTNode *Alias = CCOrderedCollectionGetElementAtIndex(AliasOp->childNodes, 0);
+                    
+                    if ((Alias->type == HKHubArchAssemblyASTTypeSymbol) && (Alias->type == HKHubArchAssemblyASTTypeInteger))
+                    {
+                        CCDictionarySetValue(Defines, &Name->string, &Alias);
+                    }
+                    
+                    else
+                    {
+                        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+                            .message = CC_STRING("operand 2 should be a symbol or integer"),
+                            .command = Command,
+                            .operand = AliasOp,
+                            .value = Alias
+                        });
+                    }
+                }
+                
+                else
+                {
+                    CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+                        .message = CC_STRING("operand 1 should be a symbol"),
+                        .command = Command,
+                        .operand = NameOp,
+                        .value = Name
+                    });
+                }
             }
             
             else
             {
                 CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                    .message = CC_STRING("operand 2 should be a symbol"),
+                    .message = CC_STRING("operand 2 should be a symbol or integer"),
                     .command = Command,
-                    .operand = Alias,
+                    .operand = AliasOp,
                     .value = NULL
                 });
             }
@@ -299,7 +329,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
             CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
                 .message = CC_STRING("operand 1 should be a symbol"),
                 .command = Command,
-                .operand = Name,
+                .operand = NameOp,
                 .value = NULL
             });
         }
