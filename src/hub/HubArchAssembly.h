@@ -91,4 +91,10 @@ CC_NEW HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, 
  */
 void HKHubArchAssemblyPrintAST(CCOrderedCollection AST);
 
+/*!
+ * @brief Print the errors for debugging purposes.
+ * @param Errors The errors to be printed.
+ */
+void HKHubArchAssemblyPrintError(CCOrderedCollection Errors);
+
 #endif

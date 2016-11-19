@@ -267,6 +267,47 @@ CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
     return AST;
 }
 
+static _Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines)
+{
+    HKHubArchAssemblyASTNode **Node = CCDictionaryGetValue(Defines, &Value->string);
+    if (Node)
+    {
+        switch ((*Node)->type)
+        {
+            case HKHubArchAssemblyASTTypeInteger:
+                *Result = (*Node)->integer.value;
+                return TRUE;
+                
+            case HKHubArchAssemblyASTTypeSymbol:
+                Value = *Node;
+                break;
+                
+            default:
+                return FALSE;
+        }
+    }
+    
+    uint8_t *Address = CCDictionaryGetValue(Labels, &Value->string);
+    if (Address)
+    {
+        *Result = *Address;
+        return TRUE;
+    }
+    
+    return FALSE;
+}
+
+#pragma mark - Error Messages
+
+static const CCString HKHubArchAssemblyErrorMessageOperand1Symbol = CC_STRING("operand 1 should be a symbol");
+static const CCString HKHubArchAssemblyErrorMessageOperand2Symbol = CC_STRING("operand 2 should be a symbol");
+static const CCString HKHubArchAssemblyErrorMessageOperand1SymbolOrInteger = CC_STRING("operand 1 should be a symbol or integer");
+static const CCString HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger = CC_STRING("operand 2 should be a symbol or integer");
+static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("operand should be an integer");
+static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
+static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
+static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
+
 #pragma mark - Directives
 static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
@@ -286,7 +327,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
                 {
                     HKHubArchAssemblyASTNode *Alias = CCOrderedCollectionGetElementAtIndex(AliasOp->childNodes, 0);
                     
-                    if ((Alias->type == HKHubArchAssemblyASTTypeSymbol) && (Alias->type == HKHubArchAssemblyASTTypeInteger))
+                    if ((Alias->type == HKHubArchAssemblyASTTypeSymbol) || (Alias->type == HKHubArchAssemblyASTTypeInteger))
                     {
                         CCDictionarySetValue(Defines, &Name->string, &Alias);
                     }
@@ -294,7 +335,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
                     else
                     {
                         CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                            .message = CC_STRING("operand 2 should be a symbol or integer"),
+                            .message = HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger,
                             .command = Command,
                             .operand = AliasOp,
                             .value = Alias
@@ -305,7 +346,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
                 else
                 {
                     CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                        .message = CC_STRING("operand 1 should be a symbol"),
+                        .message = HKHubArchAssemblyErrorMessageOperand1Symbol,
                         .command = Command,
                         .operand = NameOp,
                         .value = Name
@@ -316,7 +357,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
             else
             {
                 CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                    .message = CC_STRING("operand 2 should be a symbol or integer"),
+                    .message = HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger,
                     .command = Command,
                     .operand = AliasOp,
                     .value = NULL
@@ -327,7 +368,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
         else
         {
             CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                .message = CC_STRING("operand 1 should be a symbol"),
+                .message = HKHubArchAssemblyErrorMessageOperand1Symbol,
                 .command = Command,
                 .operand = NameOp,
                 .value = NULL
@@ -338,7 +379,92 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
     else
     {
         CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-            .message = CC_STRING("expects 2 operands, the name of the macro and the symbol it evaluates to"),
+            .message = HKHubArchAssemblyErrorMessageMin2Max2Operands,
+            .command = Command,
+            .operand = NULL,
+            .value = NULL
+        });
+    }
+    
+    return Offset;
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+{
+    if (Command->childNodes)
+    {
+        CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
+        {
+            if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes))
+            {
+                uint8_t Byte = 0;
+                _Bool Minus = FALSE;
+                
+                CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Operand->childNodes)
+                {
+                    switch (Value->type)
+                    {
+                        case HKHubArchAssemblyASTTypeInteger:
+                            Byte += (Minus ? -1 : 1) * Value->integer.value;
+                            break;
+                            
+                        case HKHubArchAssemblyASTTypeOffset:
+                            Byte += (Minus ? -1 : 1) * Offset;
+                            break;
+                            
+                        case HKHubArchAssemblyASTTypePlus:
+                            Minus = FALSE;
+                            break;
+                            
+                        case HKHubArchAssemblyASTTypeMinus:
+                            Minus = TRUE;
+                            break;
+                            
+                        case HKHubArchAssemblyASTTypeSymbol:
+                        {
+                            uint8_t ResolvedValue;
+                            if (HKHubArchAssemblyResolveSymbol(Value, &ResolvedValue, Labels, Defines))
+                            {
+                                Byte += (Minus ? -1 : 1) * ResolvedValue;
+                            }
+                            
+                            //TODO: else add to deferred resolver
+                            
+                            break;
+                        }
+                            
+                        default:
+                            CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+                                .message = HKHubArchAssemblyErrorMessageOperandResolveInteger,
+                                .command = Command,
+                                .operand = Operand,
+                                .value = Value
+                            });
+                            break;
+                    }
+                }
+                
+                Binary->data[Offset] = Byte;
+            }
+            
+            else
+            {
+                CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+                    .message = HKHubArchAssemblyErrorMessageOperandInteger,
+                    .command = Command,
+                    .operand = Operand,
+                    .value = NULL
+                });
+            }
+            
+            Offset++;
+        }
+    }
+    
+    else
+    {
+        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+            .message = HKHubArchAssemblyErrorMessageMin1MaxNOperands,
             .command = Command,
             .operand = NULL,
             .value = NULL
@@ -350,11 +476,12 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
 
 #pragma mark -
 
-static struct {
+static const struct {
     CCString mnemonic;
     size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection, CCDictionary, CCDictionary);
 } Directives[] = {
-    { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine }
+    { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine },
+    { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte }
 };
 
 static void HKHubArchAssemblyASTErrorDestructor(void *Container, HKHubArchAssemblyASTError *Error)
@@ -373,10 +500,9 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
         .compareKeys = CCStringComparatorForDictionary
     });
     
-    CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode), &(CCDictionaryCallbacks){
+    CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
         .getHash = CCStringHasherForDictionary,
-        .compareKeys = CCStringComparatorForDictionary,
-        .valueDestructor = (CCDictionaryElementDestructor)HKHubArchAssemblyASTNodeDestructor
+        .compareKeys = CCStringComparatorForDictionary
     });
     
     CCOrderedCollection Err = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor);
@@ -485,4 +611,15 @@ void HKHubArchAssemblyPrintAST(CCOrderedCollection AST)
 {
     HKHubArchAssemblyPrintASTNodes(AST);
     printf("\n");
+}
+
+void HKHubArchAssemblyPrintError(CCOrderedCollection Errors)
+{
+    if (!Errors) return;
+    
+    CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTError, Error, Errors)
+    {
+        CCString Focus = (Error->value ? Error->value->string : (Error->operand ? Error->operand->string : Error->command->string));
+        CC_LOG_DEBUG_CUSTOM("Line %zu:%S: %S", Error->command->line, Error->message, Focus);
+    }
 }
