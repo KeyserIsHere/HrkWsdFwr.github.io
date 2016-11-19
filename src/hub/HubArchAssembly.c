@@ -25,7 +25,7 @@
 
 #include "HubArchAssembly.h"
 
-static void HKHubArchAssemblyASTNodeDestructor(CCCollection Collection, HKHubArchAssemblyASTNode *Node)
+static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssemblyASTNode *Node)
 {
     if (Node->string) CCStringDestroy(Node->string);
     if (Node->childNodes) CCCollectionDestroy(Node->childNodes);
@@ -265,6 +265,136 @@ CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
     HKHubArchAssemblyParseCommand(&Source, &(size_t){ 0 }, HKHubArchAssemblyASTTypeSource, AST);
     
     return AST;
+}
+
+#pragma mark - Directives
+static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+{
+    if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
+    {
+        HKHubArchAssemblyASTNode *Name = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+        
+        if (Name->type == HKHubArchAssemblyASTTypeSymbol)
+        {
+            HKHubArchAssemblyASTNode *Alias = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
+            
+            if (Alias->type == HKHubArchAssemblyASTTypeSymbol)
+            {
+                CCDictionarySetValue(Defines, &Name->string, &Alias->string);
+            }
+            
+            else
+            {
+                CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+                    .message = CC_STRING("operand 2 should be a symbol"),
+                    .command = Command,
+                    .operand = Alias,
+                    .value = NULL
+                });
+            }
+        }
+        
+        else
+        {
+            CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+                .message = CC_STRING("operand 1 should be a symbol"),
+                .command = Command,
+                .operand = Name,
+                .value = NULL
+            });
+        }
+    }
+    
+    else
+    {
+        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+            .message = CC_STRING("expects 2 operands, the name of the macro and the symbol it evaluates to"),
+            .command = Command,
+            .operand = NULL,
+            .value = NULL
+        });
+    }
+    
+    return Offset;
+}
+
+#pragma mark -
+
+static struct {
+    CCString mnemonic;
+    size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection, CCDictionary, CCDictionary);
+} Directives[] = {
+    { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine }
+};
+
+static void HKHubArchAssemblyASTErrorDestructor(void *Container, HKHubArchAssemblyASTError *Error)
+{
+    if (Error->message) CCStringDestroy(Error->message);
+}
+
+HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrderedCollection AST, CCOrderedCollection *Errors)
+{
+    CCAssertLog(AST, "AST must not be null");
+    
+    HKHubArchBinary Binary = HKHubArchBinaryCreate(Allocator);
+    
+    CCDictionary Labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+        .getHash = CCStringHasherForDictionary,
+        .compareKeys = CCStringComparatorForDictionary
+    });
+    
+    CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode), &(CCDictionaryCallbacks){
+        .getHash = CCStringHasherForDictionary,
+        .compareKeys = CCStringComparatorForDictionary,
+        .valueDestructor = (CCDictionaryElementDestructor)HKHubArchAssemblyASTNodeDestructor
+    });
+    
+    CCOrderedCollection Err = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor);
+    
+    size_t Offset = 0;
+    CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
+    {
+        switch (Command->type)
+        {
+            case HKHubArchAssemblyASTTypeLabel:
+                CCDictionarySetValue(Labels, &Command->string, &Offset);
+                break;
+                
+            case HKHubArchAssemblyASTTypeInstruction:
+                break;
+                
+            case HKHubArchAssemblyASTTypeDirective:
+                for (size_t Loop = 0; Loop < sizeof(Directives) / sizeof(typeof(*Directives)); Loop++) //TODO: make dictionary
+                {
+                    if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
+                    {
+                        Offset = Directives[Loop].compile(Offset, Binary, Command, Err, Labels, Defines);
+                        break;
+                    }
+                }
+                break;
+                
+            default:
+                //error
+                break;
+        }
+    }
+    
+    CCDictionaryDestroy(Defines);
+    CCDictionaryDestroy(Labels);
+    
+    if (CCCollectionGetCount(Err))
+    {
+        HKHubArchBinaryDestroy(Binary);
+        Binary = NULL;
+        
+        if (Errors) *Errors = Err;
+        else CCCollectionDestroy(Err);
+    }
+    
+    else CCCollectionDestroy(Err);
+    
+    return Binary;
 }
 
 static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)

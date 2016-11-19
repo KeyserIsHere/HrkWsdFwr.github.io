@@ -27,6 +27,7 @@
 #define HackingGame_HubArchAssembly_h
 
 #include <Blob2D/Blob2D.h>
+#include "HubArchBinary.h"
 
 typedef enum {
     HKHubArchAssemblyASTTypeSource,
@@ -56,6 +57,13 @@ typedef struct {
     size_t line;
 } HKHubArchAssemblyASTNode;
 
+typedef struct {
+    CCString message;
+    HKHubArchAssemblyASTNode *command;
+    HKHubArchAssemblyASTNode *operand;
+    HKHubArchAssemblyASTNode *value;
+} HKHubArchAssemblyASTError;
+
 
 /*!
  * @brief Parse the source and produce the AST for the given assembly.
@@ -64,6 +72,18 @@ typedef struct {
  *         to free up memory.
  */
 CC_NEW CCOrderedCollection HKHubArchAssemblyParse(const char *Source);
+
+/*!
+ * @brief Create a binary for the given AST.
+ * @param Allocator The allocator to be used for the binary.
+ * @param AST The AST to validate for any errors.
+ * @param Errors Where to store the errors (collection of @b HKHubArchAssemblyASTError).
+ *        May be null if no errors should be returned to caller. If errors are returned,
+ *        they are owned by the caller and must be destroyed.
+ *
+ * @return The executable binary or null on failure. Must be destroyed to free memory.
+ */
+CC_NEW HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrderedCollection AST, CC_NEW CCOrderedCollection *Errors);
 
 /*!
  * @brief Print the AST for debugging purposes.
