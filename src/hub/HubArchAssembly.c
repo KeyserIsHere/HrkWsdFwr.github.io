@@ -381,6 +381,8 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
 {
     if (Command->childNodes)
     {
+        if (SizeOnly) return Offset + CCCollectionGetCount(Command->childNodes);
+        
         CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
         {
             if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes))
@@ -477,7 +479,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
     
     CCOrderedCollection Err = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor);
     
-    for (int Loop = 1; Loop >= 0; Loop--)
+    for (int Pass = 1; Pass >= 0; Pass--)
     {
         CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
             .getHash = CCStringHasherForDictionary,
@@ -501,7 +503,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
                     {
                         if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
                         {
-                            Offset = Directives[Loop].compile(Offset, Binary, Command, (Loop ? NULL : Err), Labels, Defines, (_Bool)Loop);
+                            Offset = Directives[Loop].compile(Offset, Binary, Command, (Pass ? NULL : Err), Labels, Defines, (_Bool)Pass);
                             break;
                         }
                     }
