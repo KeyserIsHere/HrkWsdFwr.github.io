@@ -307,13 +307,14 @@ static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("o
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
+static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
 
 static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value)
 {
     if (Errors)
     {
         CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-            .message = HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger,
+            .message = Message,
             .command = Command,
             .operand = Operand,
             .value = Value
@@ -512,6 +513,13 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
                 default:
                     //error
                     break;
+            }
+            
+            if (Offset > sizeof(Binary->data))
+            {
+                HKHubArchAssemblyErrorAddMessage(Err, HKHubArchAssemblyErrorMessageSizeLimit, Command, NULL, NULL);
+                Pass = 0;
+                break;
             }
         }
         
