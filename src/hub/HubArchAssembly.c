@@ -325,7 +325,7 @@ static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, 
 }
 
 #pragma mark - Directives
-static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, _Bool SizeOnly)
+static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
     {
@@ -380,11 +380,11 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, _Bool SizeOnly)
+static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     if (Command->childNodes)
     {
-        if (SizeOnly) return Offset + CCCollectionGetCount(Command->childNodes);
+        if (!Binary) return Offset + CCCollectionGetCount(Command->childNodes);
         
         CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
         {
@@ -454,14 +454,14 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, _Bool SizeOnly)
+static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes)))
     {
         HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin0Max0Operands, Command, NULL, NULL);
     }
     
-    else Binary->entrypoint = Offset;
+    else if (Binary) Binary->entrypoint = Offset;
     
     return Offset;
 }
@@ -470,7 +470,7 @@ static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubAr
 
 static const struct {
     CCString mnemonic;
-    size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection, CCDictionary, CCDictionary, _Bool);
+    size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection, CCDictionary, CCDictionary);
 } Directives[] = {
     { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine },
     { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte },
@@ -519,7 +519,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
                     {
                         if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
                         {
-                            Offset = Directives[Loop].compile(Offset, Binary, Command, (Pass ? NULL : Err), Labels, Defines, (_Bool)Pass);
+                            Offset = Directives[Loop].compile(Offset, (Pass ? NULL : Binary), Command, (Pass ? NULL : Err), Labels, Defines);
                             break;
                         }
                     }
