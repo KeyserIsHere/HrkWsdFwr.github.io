@@ -305,6 +305,7 @@ static const CCString HKHubArchAssemblyErrorMessageOperand1SymbolOrInteger = CC_
 static const CCString HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger = CC_STRING("operand 2 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("operand should be an integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
+static const CCString HKHubArchAssemblyErrorMessageMin0Max0Operands = CC_STRING("expects no operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
@@ -452,6 +453,18 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
     return Offset;
 }
 
+static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, _Bool SizeOnly)
+{
+    if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes)))
+    {
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin0Max0Operands, Command, NULL, NULL);
+    }
+    
+    else Binary->entrypoint = Offset;
+    
+    return Offset;
+}
+
 #pragma mark -
 
 static const struct {
@@ -459,7 +472,8 @@ static const struct {
     size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection, CCDictionary, CCDictionary, _Bool);
 } Directives[] = {
     { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine },
-    { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte }
+    { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte },
+    { CC_STRING(".entrypoint"), HKHubArchAssemblyCompileDirectiveEntrypoint }
 };
 
 static void HKHubArchAssemblyASTErrorDestructor(void *Container, HKHubArchAssemblyASTError *Error)

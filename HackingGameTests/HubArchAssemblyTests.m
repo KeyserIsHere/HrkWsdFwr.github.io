@@ -645,7 +645,42 @@
     
     XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
     
-    CCCollectionDestroy(Errors);
+    CCCollectionDestroy(Errors); Errors = NULL;
+    
+    
+    
+    Source =
+        ".byte 1, 2\n"
+        ".byte 3, 4\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->entrypoint, 0, @"Should use default entrypoint");
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source =
+        ".byte 1, 2\n"
+        ".entrypoint\n"
+        ".byte 3, 4\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->entrypoint, 2, @"Should use custom entrypoint");
+    
+    HKHubArchBinaryDestroy(Binary);
 }
 
 @end
