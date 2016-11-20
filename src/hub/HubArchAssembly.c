@@ -309,6 +309,7 @@ static const CCString HKHubArchAssemblyErrorMessageMin0Max0Operands = CC_STRING(
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
+static const CCString HKHubArchAssemblyErrorMessageUnknownCommand = CC_STRING("unknown command");
 
 static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value)
 {
@@ -525,7 +526,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
                     break;
                     
                 default:
-                    //error
+                    HKHubArchAssemblyErrorAddMessage(Err, HKHubArchAssemblyErrorMessageUnknownCommand, Command, NULL, NULL);
                     break;
             }
             
