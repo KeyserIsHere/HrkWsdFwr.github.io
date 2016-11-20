@@ -268,7 +268,7 @@ CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
     return AST;
 }
 
-static _Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines)
+_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines)
 {
     HKHubArchAssemblyASTNode **Node = CCDictionaryGetValue(Defines, &Value->string);
     if (Node)

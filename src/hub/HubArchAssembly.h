@@ -98,6 +98,16 @@ void HKHubArchAssemblyPrintAST(CCOrderedCollection AST);
 void HKHubArchAssemblyPrintError(CCOrderedCollection Errors);
 
 /*!
+ * @brief Convenience function for resolving symbols to literal values.
+ * @param Value The value to resolve.
+ * @param Result The pointer to store the literal result.
+ * @param Labels The labels.
+ * @param Defines The defines.
+ * @return TRUE if it was resolved to a literal value otherwise FALSE.
+ */
+_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines);
+
+/*!
  * @brief Convenience function for adding error messages.
  * @param Errors The collection of errors.
  * @param Message The error message.
