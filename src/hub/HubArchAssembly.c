@@ -308,6 +308,19 @@ static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_ST
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 
+static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value)
+{
+    if (Errors)
+    {
+        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+            .message = HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger,
+            .command = Command,
+            .operand = Operand,
+            .value = Value
+        });
+    }
+}
+
 #pragma mark - Directives
 static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, _Bool SizeOnly)
 {
@@ -334,56 +347,31 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
                     
                     else
                     {
-                        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                            .message = HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger,
-                            .command = Command,
-                            .operand = AliasOp,
-                            .value = Alias
-                        });
+                        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, AliasOp, Alias);
                     }
                 }
                 
                 else
                 {
-                    CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                        .message = HKHubArchAssemblyErrorMessageOperand1Symbol,
-                        .command = Command,
-                        .operand = NameOp,
-                        .value = Name
-                    });
+                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, NameOp, Name);
                 }
             }
             
             else
             {
-                CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                    .message = HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger,
-                    .command = Command,
-                    .operand = AliasOp,
-                    .value = NULL
-                });
+                HKHubArchAssemblyErrorAddMessage(Errors,HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, AliasOp, NULL);
             }
         }
         
         else
         {
-            CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                .message = HKHubArchAssemblyErrorMessageOperand1Symbol,
-                .command = Command,
-                .operand = NameOp,
-                .value = NULL
-            });
+            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, NameOp, NULL);
         }
     }
     
     else
     {
-        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-            .message = HKHubArchAssemblyErrorMessageMin2Max2Operands,
-            .command = Command,
-            .operand = NULL,
-            .value = NULL
-        });
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin2Max2Operands, Command, NULL, NULL);
     }
     
     return Offset;
@@ -428,25 +416,15 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
                                 Byte += (Minus ? -1 : 1) * ResolvedValue;
                             }
                             
-                            else if (!SizeOnly)
+                            else
                             {
-                                CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                                    .message = HKHubArchAssemblyErrorMessageOperandResolveInteger,
-                                    .command = Command,
-                                    .operand = Operand,
-                                    .value = Value
-                                });
+                                HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
                             }
                             break;
                         }
                             
                         default:
-                            CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                                .message = HKHubArchAssemblyErrorMessageOperandResolveInteger,
-                                .command = Command,
-                                .operand = Operand,
-                                .value = Value
-                            });
+                            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
                             break;
                     }
                 }
@@ -456,12 +434,7 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
             
             else
             {
-                CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-                    .message = HKHubArchAssemblyErrorMessageOperandInteger,
-                    .command = Command,
-                    .operand = Operand,
-                    .value = NULL
-                });
+                HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandInteger, Command, Operand, NULL);
             }
             
             Offset++;
@@ -470,12 +443,7 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
     
     else
     {
-        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-            .message = HKHubArchAssemblyErrorMessageMin1MaxNOperands,
-            .command = Command,
-            .operand = NULL,
-            .value = NULL
-        });
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin1MaxNOperands, Command, NULL, NULL);
     }
     
     return Offset;
@@ -533,7 +501,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
                     {
                         if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
                         {
-                            Offset = Directives[Loop].compile(Offset, Binary, Command, Err, Labels, Defines, (_Bool)Loop);
+                            Offset = Directives[Loop].compile(Offset, Binary, Command, (Loop ? NULL : Err), Labels, Defines, (_Bool)Loop);
                             break;
                         }
                     }
