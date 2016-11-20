@@ -309,7 +309,7 @@ static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING(
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 
 #pragma mark - Directives
-static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, _Bool SizeOnly)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
     {
@@ -389,7 +389,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, _Bool SizeOnly)
 {
     if (Command->childNodes)
     {
@@ -428,8 +428,15 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
                                 Byte += (Minus ? -1 : 1) * ResolvedValue;
                             }
                             
-                            //TODO: else add to deferred resolver
-                            
+                            else if (!SizeOnly)
+                            {
+                                CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+                                    .message = HKHubArchAssemblyErrorMessageOperandResolveInteger,
+                                    .command = Command,
+                                    .operand = Operand,
+                                    .value = Value
+                                });
+                            }
                             break;
                         }
                             
@@ -478,7 +485,7 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
 
 static const struct {
     CCString mnemonic;
-    size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection, CCDictionary, CCDictionary);
+    size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection, CCDictionary, CCDictionary, _Bool);
 } Directives[] = {
     { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine },
     { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte }
@@ -500,43 +507,47 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
         .compareKeys = CCStringComparatorForDictionary
     });
     
-    CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
-        .getHash = CCStringHasherForDictionary,
-        .compareKeys = CCStringComparatorForDictionary
-    });
-    
     CCOrderedCollection Err = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor);
     
-    size_t Offset = 0;
-    CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
+    for (int Loop = 1; Loop >= 0; Loop--)
     {
-        switch (Command->type)
+        CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
+            .getHash = CCStringHasherForDictionary,
+            .compareKeys = CCStringComparatorForDictionary
+        });
+        
+        size_t Offset = 0;
+        CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
         {
-            case HKHubArchAssemblyASTTypeLabel:
-                CCDictionarySetValue(Labels, &Command->string, &Offset);
-                break;
-                
-            case HKHubArchAssemblyASTTypeInstruction:
-                break;
-                
-            case HKHubArchAssemblyASTTypeDirective:
-                for (size_t Loop = 0; Loop < sizeof(Directives) / sizeof(typeof(*Directives)); Loop++) //TODO: make dictionary
-                {
-                    if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
+            switch (Command->type)
+            {
+                case HKHubArchAssemblyASTTypeLabel:
+                    CCDictionarySetValue(Labels, &Command->string, &Offset);
+                    break;
+                    
+                case HKHubArchAssemblyASTTypeInstruction:
+                    break;
+                    
+                case HKHubArchAssemblyASTTypeDirective:
+                    for (size_t Loop = 0; Loop < sizeof(Directives) / sizeof(typeof(*Directives)); Loop++) //TODO: make dictionary
                     {
-                        Offset = Directives[Loop].compile(Offset, Binary, Command, Err, Labels, Defines);
-                        break;
+                        if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
+                        {
+                            Offset = Directives[Loop].compile(Offset, Binary, Command, Err, Labels, Defines, (_Bool)Loop);
+                            break;
+                        }
                     }
-                }
-                break;
-                
-            default:
-                //error
-                break;
+                    break;
+                    
+                default:
+                    //error
+                    break;
+            }
         }
+        
+        CCDictionaryDestroy(Defines);
     }
     
-    CCDictionaryDestroy(Defines);
     CCDictionaryDestroy(Labels);
     
     if (CCCollectionGetCount(Err))

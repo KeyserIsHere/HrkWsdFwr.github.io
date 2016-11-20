@@ -565,6 +565,25 @@
     for (size_t Loop = 4; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
     
     HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".byte .-2,.-3,0-.,here\nhere:\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual((int8_t)Binary->data[0], (int8_t)-2);
+    XCTAssertEqual((int8_t)Binary->data[1], (int8_t)-2);
+    XCTAssertEqual((int8_t)Binary->data[2], (int8_t)-2);
+    XCTAssertEqual(Binary->data[3], 4);
+    
+    for (size_t Loop = 4; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
+    
+    HKHubArchBinaryDestroy(Binary);
 }
 
 @end
