@@ -84,7 +84,7 @@ The overflow flag indicates the result has overflowed beyond the 8-bit width and
 Memory
 ------
 
-Each hub has 255 bytes of r/w memory (mapped from 0 to 255) available to it to use for data and instructions. Accessing (both r/w) this memory is at a rate of _1 cycle per byte_. __To be tested. Writes could potentially be faster as there's no cache?__
+Each hub has 256 bytes of r/w memory (mapped from 0 to 255) available to it to use for data and instructions. Accessing (both r/w) this memory is at a rate of _1 cycle per byte_. __To be tested. Writes could potentially be faster as there's no cache?__
 
 When executing or accessing memory that reaches beyond the bounds (255), it will wrap around.
 
