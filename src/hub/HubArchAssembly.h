@@ -97,4 +97,29 @@ void HKHubArchAssemblyPrintAST(CCOrderedCollection AST);
  */
 void HKHubArchAssemblyPrintError(CCOrderedCollection Errors);
 
+/*!
+ * @brief Convenience function for adding error messages.
+ * @param Errors The collection of errors.
+ * @param Message The error message.
+ * @param Command The command the error is referencing.
+ * @param Operand The operand the error is referencing.
+ * @param Value The value the error is referencing.
+ */
+static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value);
+
+#pragma mark -
+
+static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value)
+{
+    if (Errors)
+    {
+        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
+            .message = Message,
+            .command = Command,
+            .operand = Operand,
+            .value = Value
+        });
+    }
+}
+
 #endif

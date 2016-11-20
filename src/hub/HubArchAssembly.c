@@ -24,6 +24,7 @@
  */
 
 #include "HubArchAssembly.h"
+#include "HubArchInstruction.h"
 
 static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssemblyASTNode *Node)
 {
@@ -311,19 +312,6 @@ static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING(
 static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
 static const CCString HKHubArchAssemblyErrorMessageUnknownCommand = CC_STRING("unknown command");
 
-static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value)
-{
-    if (Errors)
-    {
-        CCOrderedCollectionAppendElement(Errors, &(HKHubArchAssemblyASTError){
-            .message = Message,
-            .command = Command,
-            .operand = Operand,
-            .value = Value
-        });
-    }
-}
-
 #pragma mark - Directives
 static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
@@ -512,6 +500,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
                     break;
                     
                 case HKHubArchAssemblyASTTypeInstruction:
+                    Offset = HKHubArchInstructionEncode(Offset, (Pass ? NULL : Binary), Command, (Pass ? NULL : Err), Labels, Defines);
                     break;
                     
                 case HKHubArchAssemblyASTTypeDirective:
