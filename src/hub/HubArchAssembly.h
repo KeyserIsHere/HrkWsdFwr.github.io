@@ -108,6 +108,18 @@ void HKHubArchAssemblyPrintError(CCOrderedCollection Errors);
 _Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines);
 
 /*!
+ * @brief Convenience function for resolving integers from arithmetic operations.
+ * @param Offset The current offsetto be used for offset references.
+ * @param Result The pointer to store the literal result.
+ * @param Command The command the operand belongs to.
+ * @param Operand The operand to resolve as an integer.
+ * @param Labels The labels.
+ * @param Defines The defines.
+ * @return TRUE if it was resolved to a literal value otherwise FALSE.
+ */
+_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines);
+
+/*!
  * @brief Convenience function for adding error messages.
  * @param Errors The collection of errors.
  * @param Message The error message.

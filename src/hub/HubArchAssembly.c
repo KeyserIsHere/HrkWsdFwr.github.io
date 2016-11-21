@@ -378,51 +378,7 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
         {
             if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes))
             {
-                uint8_t Byte = 0;
-                _Bool Minus = FALSE;
-                
-                CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Operand->childNodes)
-                {
-                    switch (Value->type)
-                    {
-                        case HKHubArchAssemblyASTTypeInteger:
-                            Byte += (Minus ? -1 : 1) * Value->integer.value;
-                            break;
-                            
-                        case HKHubArchAssemblyASTTypeOffset:
-                            Byte += (Minus ? -1 : 1) * Offset;
-                            break;
-                            
-                        case HKHubArchAssemblyASTTypePlus:
-                            Minus = FALSE;
-                            break;
-                            
-                        case HKHubArchAssemblyASTTypeMinus:
-                            Minus = TRUE;
-                            break;
-                            
-                        case HKHubArchAssemblyASTTypeSymbol:
-                        {
-                            uint8_t ResolvedValue;
-                            if (HKHubArchAssemblyResolveSymbol(Value, &ResolvedValue, Labels, Defines))
-                            {
-                                Byte += (Minus ? -1 : 1) * ResolvedValue;
-                            }
-                            
-                            else
-                            {
-                                HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
-                            }
-                            break;
-                        }
-                            
-                        default:
-                            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
-                            break;
-                    }
-                }
-                
-                Binary->data[Offset] = Byte;
+                HKHubArchAssemblyResolveInteger(Offset, &Binary->data[Offset], Command, Operand, Errors, Labels, Defines);
             }
             
             else
@@ -464,6 +420,59 @@ static const struct {
     { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte },
     { CC_STRING(".entrypoint"), HKHubArchAssemblyCompileDirectiveEntrypoint }
 };
+
+_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+{
+    uint8_t Byte = 0;
+    _Bool Minus = FALSE, Success = TRUE;
+    
+    CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Operand->childNodes)
+    {
+        switch (Value->type)
+        {
+            case HKHubArchAssemblyASTTypeInteger:
+                Byte += (Minus ? -1 : 1) * Value->integer.value;
+                break;
+                
+            case HKHubArchAssemblyASTTypeOffset:
+                Byte += (Minus ? -1 : 1) * Offset;
+                break;
+                
+            case HKHubArchAssemblyASTTypePlus:
+                Minus = FALSE;
+                break;
+                
+            case HKHubArchAssemblyASTTypeMinus:
+                Minus = TRUE;
+                break;
+                
+            case HKHubArchAssemblyASTTypeSymbol:
+            {
+                uint8_t ResolvedValue;
+                if (HKHubArchAssemblyResolveSymbol(Value, &ResolvedValue, Labels, Defines))
+                {
+                    Byte += (Minus ? -1 : 1) * ResolvedValue;
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
+                    Success = FALSE;
+                }
+                break;
+            }
+                
+            default:
+                HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
+                Success = FALSE;
+                break;
+        }
+    }
+    
+    if (Result) *Result = Byte;
+    
+    return Success;
+}
 
 static void HKHubArchAssemblyASTErrorDestructor(void *Container, HKHubArchAssemblyASTError *Error)
 {
