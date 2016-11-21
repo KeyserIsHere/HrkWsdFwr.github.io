@@ -100,13 +100,14 @@ static const struct {
 
 static const struct {
     CCString mnemonic;
+    uint8_t encoding;
 } Registers[6] = {
-    { CC_STRING("r0") },
-    { CC_STRING("r1") },
-    { CC_STRING("r2") },
-    { CC_STRING("r3") },
-    { CC_STRING("pc") },
-    { CC_STRING("flags") }
+    { CC_STRING("r0"),      4 },
+    { CC_STRING("r1"),      5 },
+    { CC_STRING("r2"),      6 },
+    { CC_STRING("r3"),      7 },
+    { CC_STRING("pc"),      3 },
+    { CC_STRING("flags"),   2 }
 };
 
 #pragma mark - Error Messages
@@ -114,6 +115,7 @@ static const struct {
 static const CCString HKHubArchInstructionErrorMessageUnknownMnemonic = CC_STRING("no instruction with name available");
 static const CCString HKHubArchInstructionErrorMessageUnknownOperands = CC_STRING("incorrect operands");
 static const CCString HKHubArchInstructionErrorMessageMin0Max3Operands = CC_STRING("expects 0 to 3 operands");
+static const CCString HKHubArchInstructionErrorMessageResolveOperand = CC_STRING("unknown operand");
 
 #pragma mark -
 
@@ -182,9 +184,68 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
             
             if ((Instructions[Loop].operands[0] & Operands[0]) && (Instructions[Loop].operands[1] & Operands[1]) && (Instructions[Loop].operands[2] & Operands[2]))
             {
+                size_t Count = 0, BitCount = 6;
+                uint8_t Bytes[5] = { Loop << 2, 0, 0, 0, 0 };
                 
+                for (size_t Index = 0; Index < 3; Index++)
+                {
+                    const size_t FreeBits = 8 - (BitCount % 8);
+                    if (Operands[Index] & HKHubArchInstructionOperandI)
+                    {
+                        HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
+                        if ((Op->childNodes) && (CCCollectionGetCount(Op->childNodes) == 1))
+                        {
+                            uint8_t Result;
+                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines))
+                            {
+                                Bytes[Count++] |= Result >> (8 - FreeBits);
+                                Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
+                            }
+                            
+                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                        }
+                        
+                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                        
+                        BitCount += 8;
+                    }
+                    
+                    else if (Operands[Index] & HKHubArchInstructionOperandR)
+                    {
+                        HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
+                        if ((Op->childNodes) && (CCCollectionGetCount(Op->childNodes) == 1))
+                        {
+                            HKHubArchAssemblyASTNode *Value = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 0);
+                            for (size_t Loop = 0; Loop < sizeof(Registers) / sizeof(typeof(*Registers)); Loop++) //TODO: make dictionary
+                            {
+                                if (CCStringEqual(Registers[Loop].mnemonic, Value->string))
+                                {
+                                    if (FreeBits <= 3)
+                                    {
+                                        Bytes[Count++] |= Registers[Loop].encoding >> (3 - FreeBits);
+                                        Bytes[Count] = (Registers[Loop].encoding & CCBitSet(3 - FreeBits)) << (8 - (3 - FreeBits));
+                                    }
+                                    
+                                    else Bytes[Count] |= (Registers[Loop].encoding & CCBitSet(FreeBits)) << (FreeBits - 3);
+                                }
+                            }
+                        }
+                        
+                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                        
+                        BitCount += 3;
+                    }
+                    
+                    else if (Operands[Index] & HKHubArchInstructionOperandM)
+                    {
+                        
+                    }
+                }
                 
-                return Offset;
+                const size_t ByteCount = (BitCount / 8) + 1;
+                if (Binary) memcpy(&Binary->data[Offset], Bytes, ByteCount);
+                
+                return Offset + ByteCount;
             }
         }
     }
