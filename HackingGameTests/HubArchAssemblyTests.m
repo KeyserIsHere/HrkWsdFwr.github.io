@@ -726,7 +726,7 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
-    XCTAssertEqual(Binary->data[0], 0x0a);
+    XCTAssertEqual(Binary->data[0], 0x06);
     XCTAssertEqual(Binary->data[1], 0x82);
     XCTAssertEqual(Binary->data[2], 0x80);
     
@@ -777,7 +777,7 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
-    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[0], 0x02);
     XCTAssertEqual(Binary->data[1], 0x80);
     XCTAssertEqual(Binary->data[2], 0x28);
     
@@ -795,7 +795,7 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
-    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[0], 0x02);
     XCTAssertEqual(Binary->data[1], 0x9b);
     XCTAssertEqual(Binary->data[2], 0x00);
     
@@ -813,7 +813,7 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
-    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[0], 0x02);
     XCTAssertEqual(Binary->data[1], 0x8c);
     
     for (size_t Loop = 2; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
@@ -830,7 +830,7 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
-    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[0], 0x02);
     XCTAssertEqual(Binary->data[1], 0x90);
     XCTAssertEqual(Binary->data[2], 0x2c);
     
@@ -887,7 +887,7 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
-    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[0], 0x02);
     XCTAssertEqual(Binary->data[1], 0x87);
     XCTAssertEqual(Binary->data[2], 0xf8);
     
@@ -905,7 +905,7 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
-    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[0], 0x02);
     XCTAssertEqual(Binary->data[1], 0x97);
     XCTAssertEqual(Binary->data[2], 0xfc);
     
