@@ -105,11 +105,11 @@ Instructions
 |:------:|:-------:|:--------:|:---------:|:---------:|:---------:|:-------------------------------------------------------------------------------------------------:|
 | 2      | 000000  | add      | r/m       | r/m       |           | Add the register or memory value (operand 2) into the register or memory (operand 1)              |
 | 2      | 000001  | add      | r/m       | i         |           | Add the immediate value (operand 2) into the register or memory (operand 1)                       |
-|        | 000010  |          |           |           |           |                                                                                                   |
+| 1      | 000010  | mov      | r/m       | r/m       |           | Move the register or memory value (operand 2) into the register of memory (operand 1)             |
 | 1      | 000011  | jz       | rel       |           |           | Jump if zero/equal (ZF=0)                                                                         |
 | 2      | 000100  | sub      | r/m       | r/m       |           | Subtract the register or memory value (operand 2) into the register or memory (operand 1)         |
 | 2      | 000101  | sub      | r/m       | i         |           | Subtract the immediate value (operand 2) into the register or memory (operand 1)                  |
-|        | 000110  |          |           |           |           |                                                                                                   |
+| 1      | 000110  | mov      | r/m       | i         |           | Move the immediate value (operand 2) into the register of memory (operand 1)                      |
 | 1      | 000111  | jnz      | rel       |           |           | Jump if not zero/not equal (ZF=1)                                                                 |
 | 2      | 001000  | mul      | r/m       | r/m       |           | Multiply the register or memory value (operand 2) into the register or memory (operand 1)         |
 | 2      | 001001  | mul      | r/m       | i         |           | Multiply the immediate value (operand 2) into the register or memory (operand 1)                  |
@@ -153,7 +153,7 @@ Instructions
 | 4 - 12 | 101111  | send     | i         |           |           | Send empty message to device interfacing with port (operand 1)                                    |
 | 1      | 110000  | and      | r/m       | r/m       |           | Logical AND the register or memory value (operand 2) into register or memory (operand 1)          |
 | 1      | 110001  | and      | r/m       | i         |           | Logical AND the immediate value (operand 2) into register or memory (operand 1)                   |
-|        | 110010  |          |           |           |           |                                                                                                   |
+|        | 110010  | not      | r/m       |           |           | One's complement negation of the register or memory value (operand 1)                             |
 | 0      | 110011  | hlt      |           |           |           | Halt the program                                                                                  |
 | 1      | 110100  | jsl      | rel       |           |           | Jump if (signed) less (SF!=OF)                                                                    |
 | 1      | 110101  | jsge     | rel       |           |           | Jump if (signed) greater or equal (SF=OF)                                                         |
