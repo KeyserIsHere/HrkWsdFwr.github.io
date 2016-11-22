@@ -306,7 +306,73 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                         }
                                             
                                         case 1: //reg or reg+integer/reg-integer
+                                        {
+                                            const size_t OpCount = CCCollectionGetCount(Op->childNodes);
+                                            if (OpCount == 1) //reg
+                                            {
+                                                uint8_t Memory = (1 << 2) | (Regs[0] & 3);
+                                                if (FreeBits <= 6)
+                                                {
+                                                    Bytes[Count++] |= Memory >> (6 - FreeBits);
+                                                    Bytes[Count] = (Memory & CCBitSet(6 - FreeBits)) << (8 - (6 - FreeBits));
+                                                }
+                                                
+                                                else Bytes[Count] |= (Memory & CCBitSet(FreeBits)) << (FreeBits - 6);
+                                                
+                                                BitCount += 6;
+                                            }
+                                            
+                                            else if (OpCount >= 3) //reg+integer/reg-integer
+                                            {
+                                                uint8_t MemoryType = 2;
+                                                if (FreeBits <= 4)
+                                                {
+                                                    Bytes[Count++] |= MemoryType >> (4 - FreeBits);
+                                                    Bytes[Count] = (MemoryType & CCBitSet(4 - FreeBits)) << (8 - (4 - FreeBits));
+                                                }
+                                                
+                                                else Bytes[Count] |= (MemoryType & CCBitSet(FreeBits)) << (FreeBits - 4);
+                                                
+                                                BitCount += 4;
+                                                FreeBits = 8 - (BitCount % 8);
+                                                
+                                                CCDictionarySetValue(Labels, (void*)&Registers[0].mnemonic, &(uint8_t){ 0 });
+                                                CCDictionarySetValue(Labels, (void*)&Registers[1].mnemonic, &(uint8_t){ 0 });
+                                                CCDictionarySetValue(Labels, (void*)&Registers[2].mnemonic, &(uint8_t){ 0 });
+                                                CCDictionarySetValue(Labels, (void*)&Registers[3].mnemonic, &(uint8_t){ 0 });
+                                                
+                                                uint8_t Result;
+                                                if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines))
+                                                {
+                                                    Bytes[Count++] |= Result >> (8 - FreeBits);
+                                                    Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
+                                                }
+                                                
+                                                else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                                                
+                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[0].mnemonic);
+                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[1].mnemonic);
+                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[2].mnemonic);
+                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[3].mnemonic);
+                                                
+                                                BitCount += 8;
+                                                
+                                                uint8_t Memory = Regs[0] & 3;
+                                                if (FreeBits <= 2)
+                                                {
+                                                    Bytes[Count++] |= Memory >> (2 - FreeBits);
+                                                    Bytes[Count] = (Memory & CCBitSet(2 - FreeBits)) << (8 - (2 - FreeBits));
+                                                }
+                                                
+                                                else Bytes[Count] |= (Memory & CCBitSet(FreeBits)) << (FreeBits - 2);
+                                                
+                                                BitCount += 2;
+                                            }
+                                            
+                                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
+                                            
                                             break;
+                                        }
                                             
                                         case 2: //reg+reg
                                         {
