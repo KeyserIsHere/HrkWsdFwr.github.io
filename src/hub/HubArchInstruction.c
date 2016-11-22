@@ -135,8 +135,8 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
             if (Value->type == HKHubArchAssemblyASTTypeInteger) return HKHubArchInstructionOperandI;
             else if (Value->type == HKHubArchAssemblyASTTypeSymbol)
             {
-                HKHubArchAssemblyASTNode *Symbol = CCDictionaryGetValue(Defines, &Value->string);
-                if (Symbol) Value = Symbol;
+                HKHubArchAssemblyASTNode **Symbol = CCDictionaryGetValue(Defines, &Value->string);
+                if (Symbol) Value = *Symbol;
                 
                 for (size_t Loop = 0; Loop < sizeof(Registers) / sizeof(typeof(*Registers)); Loop++) //TODO: make dictionary
                 {
