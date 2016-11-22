@@ -214,7 +214,7 @@ Some example encoding arrangements:
    xxxxxx     0010 iiiiiiii rr   0000   = 3 bytes
 
 [instruction][  m(r+r)  ][padding]
-   xxxxxx     0010 rr rr    00    = 2 bytes
+   xxxxxx     0011 rr rr    00    = 2 bytes
 
 [instruction][ r ][ r ][padding]
    xxxxxx     rrr  rrr   0000   = 2 bytes
@@ -231,6 +231,7 @@ add flags, r0   # 00000001 01000000 : 0x01 0x40
 add r1, 5       # 00001010 10000010 10000000 : 0x0a 0x82 0x80
 add r1, [5]     # 00000110 10000000 00101000 : 0x06 0x80 0x28
 add r1, [5+r2]  # 00000110 10010000 00101100 : 0x06 0x90 0x2c
+add r1, [r1+r2] # 00000110 01101100 : 0x06 0x6c
 
 jmp 8 # 11111100 00100000 : 0xfc 0x20
 
