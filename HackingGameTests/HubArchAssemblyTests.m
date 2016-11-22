@@ -876,6 +876,42 @@
     for (size_t Loop = 5; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
     
     HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = "add r1,[-1]\n"; //00000110 10000111 11111000 : 0x06 0x87 0xf8
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[1], 0x87);
+    XCTAssertEqual(Binary->data[2], 0xf8);
+    
+    for (size_t Loop = 3; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = "add r1,[1+r2-2]\n"; //00000110 10010111 11111100 : 0x06 0x90 0xfc
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 0x06);
+    XCTAssertEqual(Binary->data[1], 0x97);
+    XCTAssertEqual(Binary->data[2], 0xfc);
+    
+    for (size_t Loop = 3; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
+    
+    HKHubArchBinaryDestroy(Binary);
 }
 
 @end
