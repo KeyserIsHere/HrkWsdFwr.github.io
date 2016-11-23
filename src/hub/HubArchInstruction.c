@@ -102,12 +102,12 @@ static const struct {
     CCString mnemonic;
     uint8_t encoding;
 } Registers[6] = {
-    { CC_STRING("r0"),      4 },
-    { CC_STRING("r1"),      5 },
-    { CC_STRING("r2"),      6 },
-    { CC_STRING("r3"),      7 },
-    { CC_STRING("pc"),      3 },
-    { CC_STRING("flags"),   2 }
+    { CC_STRING("r0"),      HKHubArchInstructionRegisterR0 },
+    { CC_STRING("r1"),      HKHubArchInstructionRegisterR1 },
+    { CC_STRING("r2"),      HKHubArchInstructionRegisterR2 },
+    { CC_STRING("r3"),      HKHubArchInstructionRegisterR3 },
+    { CC_STRING("pc"),      HKHubArchInstructionRegisterPC },
+    { CC_STRING("flags"),   HKHubArchInstructionRegisterFlags }
 };
 
 #pragma mark - Error Messages
@@ -249,7 +249,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                             if (Op->childNodes)
                             {
                                 size_t RegIndex = 0;
-                                uint8_t Regs[2] = { 4, 4 };
+                                uint8_t Regs[2] = { HKHubArchInstructionRegisterGeneralPurpose, HKHubArchInstructionRegisterGeneralPurpose };
                                 
                                 CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Op->childNodes)
                                 {
@@ -268,7 +268,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                     }
                                 }
                                 
-                                if ((Regs[0] & 4) && (Regs[1] & 4))
+                                if ((Regs[0] & HKHubArchInstructionRegisterGeneralPurpose) && (Regs[1] & HKHubArchInstructionRegisterGeneralPurpose))
                                 {
                                     /*
                                      0000 iiiiiiii - Immediate address
@@ -310,7 +310,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                             const size_t OpCount = CCCollectionGetCount(Op->childNodes);
                                             if (OpCount == 1) //reg
                                             {
-                                                uint8_t Memory = (1 << 2) | (Regs[0] & 3);
+                                                uint8_t Memory = (1 << 2) | (Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask);
                                                 if (FreeBits <= 6)
                                                 {
                                                     Bytes[Count++] |= Memory >> (6 - FreeBits);
@@ -357,7 +357,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                                 
                                                 BitCount += 8;
                                                 
-                                                uint8_t Memory = Regs[0] & 3;
+                                                uint8_t Memory = Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask;
                                                 if (FreeBits <= 2)
                                                 {
                                                     Bytes[Count++] |= Memory >> (2 - FreeBits);
@@ -381,7 +381,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                                 HKHubArchAssemblyASTNode *Operation = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 1);
                                                 if (Operation->type == HKHubArchAssemblyASTTypePlus)
                                                 {
-                                                    uint8_t Memory = (3 << 4) | ((Regs[0] & 3) << 2) | (Regs[1] & 3); //type|reg1|reg2
+                                                    uint8_t Memory = (3 << 4) | ((Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask) << 2) | (Regs[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask); //type|reg1|reg2
                                                     Bytes[Count++] |= Memory >> (8 - FreeBits);
                                                     Bytes[Count] = (Memory & CCBitSet(8 - FreeBits)) << FreeBits;
                                                     

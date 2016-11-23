@@ -38,6 +38,20 @@ typedef enum {
     HKHubArchInstructionOperandRel = (1 << 4) | HKHubArchInstructionOperandI
 } HKHubArchInstructionOperand;
 
+typedef enum {
+    HKHubArchInstructionRegisterSpecialPurpose = (1 << 1),
+    HKHubArchInstructionRegisterGeneralPurpose = (1 << 2),
+    HKHubArchInstructionRegisterGeneralPurposeIndexMask = 3,
+    
+    HKHubArchInstructionRegisterR0 = 0 | HKHubArchInstructionRegisterGeneralPurpose,
+    HKHubArchInstructionRegisterR1 = 1 | HKHubArchInstructionRegisterGeneralPurpose,
+    HKHubArchInstructionRegisterR2 = 2 | HKHubArchInstructionRegisterGeneralPurpose,
+    HKHubArchInstructionRegisterR3 = 3 | HKHubArchInstructionRegisterGeneralPurpose,
+    
+    HKHubArchInstructionRegisterFlags = 0 | HKHubArchInstructionRegisterSpecialPurpose,
+    HKHubArchInstructionRegisterPC = 1 | HKHubArchInstructionRegisterSpecialPurpose
+} HKHubArchInstructionRegister;
+
 
 /*!
  * @brief Encode an instruction AST.
