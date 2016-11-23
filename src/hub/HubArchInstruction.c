@@ -448,7 +448,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
             
             if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandI)
             {
-                uint8_t Value = (Byte & FreeBits) << (8 - FreeBits);
+                uint8_t Value = (Byte & CCBitSet(FreeBits)) << (8 - FreeBits);
                 if (FreeBits != 8)
                 {
                     Byte = Binary->data[Offset++];
@@ -458,6 +458,27 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                 else FreeBits = 0;
                 
                 State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandI, .value = Value };
+                continue;
+            }
+            
+            if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandR)
+            {
+                uint8_t Reg = Byte & CCBitSet(FreeBits);
+                if (FreeBits < 3)
+                {
+                    Byte = Binary->data[Offset++];
+                    Reg = (Reg << (3 - FreeBits)) | (Byte >> (8 - (3 - FreeBits)));
+                    FreeBits = 8 - (3 - FreeBits);
+                }
+                
+                else
+                {
+                    if (FreeBits > 3) Reg >>= (FreeBits - 3);
+                    FreeBits -= 3;
+                }
+                
+                State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandR, .reg = Reg };
+                continue;
             }
         }
     }
