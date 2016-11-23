@@ -512,7 +512,59 @@ CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State)
                     break;
                     
                 case HKHubArchInstructionOperandM:
+                {
+                    CCString Memory = 0;
+                    switch (State->operand[Loop].memory.type)
+                    {
+                        case HKHubArchInstructionMemoryOffset:
+                        {
+                            char Hex[5];
+                            snprintf(Hex, sizeof(Hex), "%#.2x", State->operand[Loop].memory.offset);
+                            
+                            CCString Value = CCStringCreate(CC_STD_ALLOCATOR, (CCStringHint)CCStringEncodingASCII, Hex);
+                            Memory = CCStringCreateByJoiningStrings((CCString[3]){ CC_STRING("["), Value, CC_STRING("]") }, 3, 0);
+                            CCStringDestroy(Value);
+                            break;
+                        }
+                            
+                        case HKHubArchInstructionMemoryRegister:
+                            Memory = CCStringCreateByJoiningStrings((CCString[3]){ CC_STRING("["), Registers[State->operand[Loop].memory.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask].mnemonic, CC_STRING("]") }, 3, 0);
+                            break;
+                            
+                        case HKHubArchInstructionMemoryRelativeOffset:
+                        {
+                            char Hex[5];
+                            snprintf(Hex, sizeof(Hex), "%#.2x", State->operand[Loop].memory.relativeOffset.offset);
+                            
+                            CCString Value = CCStringCreate(CC_STD_ALLOCATOR, (CCStringHint)CCStringEncodingASCII, Hex);
+                            Memory = CCStringCreateByJoiningStrings((CCString[5]){
+                                CC_STRING("["),
+                                Value,
+                                CC_STRING("+"),
+                                Registers[State->operand[Loop].memory.relativeOffset.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask].mnemonic,
+                                CC_STRING("]")
+                            }, 5, 0);
+                            CCStringDestroy(Value);
+                            break;
+                        }
+                            
+                        case HKHubArchInstructionMemoryRelativeRegister:
+                            Memory = CCStringCreateByJoiningStrings((CCString[5]){
+                                CC_STRING("["),
+                                Registers[State->operand[Loop].memory.relativeReg[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask].mnemonic,
+                                CC_STRING("+"),
+                                Registers[State->operand[Loop].memory.relativeReg[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask].mnemonic,
+                                CC_STRING("]")
+                            }, 5, 0);
+                            break;
+                    }
+                    
+                    CCString Temp = CCStringCreateByJoiningStrings((CCString[2]){ Disassembly, Memory }, 2, Loop == 0 ? CC_STRING(" ") : CC_STRING(","));
+                    CCStringDestroy(Disassembly);
+                    Disassembly = Temp;
+                    CCStringDestroy(Memory);
                     break;
+                }
                     
                 default:
                     break;
