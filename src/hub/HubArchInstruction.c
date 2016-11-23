@@ -608,7 +608,7 @@ CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State)
                 case HKHubArchInstructionOperandI:
                 {
                     char Hex[5];
-                    snprintf(Hex, sizeof(Hex), "%#.2x", State->operand[Loop].value);
+                    snprintf(Hex, sizeof(Hex), State->operand[Loop].value ? "%#.2x" : "0x%#.2x", State->operand[Loop].value);
                     
                     CCString Value = CCStringCreate(CC_STD_ALLOCATOR, (CCStringHint)CCStringEncodingASCII, Hex);
                     CCString Temp = CCStringCreateByJoiningStrings((CCString[2]){ Disassembly, Value }, 2, Loop == 0 ? CC_STRING(" ") : CC_STRING(","));
@@ -643,7 +643,7 @@ CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State)
                         case HKHubArchInstructionMemoryOffset:
                         {
                             char Hex[5];
-                            snprintf(Hex, sizeof(Hex), "%#.2x", State->operand[Loop].memory.offset);
+                            snprintf(Hex, sizeof(Hex), State->operand[Loop].memory.offset ? "%#.2x" : "0x%#.2x", State->operand[Loop].memory.offset);
                             
                             CCString Value = CCStringCreate(CC_STD_ALLOCATOR, (CCStringHint)CCStringEncodingASCII, Hex);
                             Memory = CCStringCreateByJoiningStrings((CCString[3]){ CC_STRING("["), Value, CC_STRING("]") }, 3, 0);
@@ -658,7 +658,7 @@ CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State)
                         case HKHubArchInstructionMemoryRelativeOffset:
                         {
                             char Hex[5];
-                            snprintf(Hex, sizeof(Hex), "%#.2x", State->operand[Loop].memory.relativeOffset.offset);
+                            snprintf(Hex, sizeof(Hex), State->operand[Loop].memory.relativeOffset.offset ? "%#.2x" : "0x%#.2x", State->operand[Loop].memory.relativeOffset.offset);
                             
                             CCString Value = CCStringCreate(CC_STD_ALLOCATOR, (CCStringHint)CCStringEncodingASCII, Hex);
                             Memory = CCStringCreateByJoiningStrings((CCString[5]){
