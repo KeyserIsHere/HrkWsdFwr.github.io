@@ -25,6 +25,7 @@
 
 #import <XCTest/XCTest.h>
 #import "HubArchAssembly.h"
+#import "HubArchInstruction.h"
 
 @interface HubArchAssemblyTests : XCTestCase
 
@@ -946,6 +947,35 @@
     XCTAssertEqual(Binary->data[11], 0x03);
     
     for (size_t Loop = 12; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
+    
+    HKHubArchBinaryDestroy(Binary);
+}
+
+-(void) testDisassembling
+{
+    HKHubArchInstructionState State;
+    HKHubArchBinary Binary = HKHubArchBinaryCreate(CC_STD_ALLOCATOR);
+    
+    //nop
+    Binary->data[0] = 0xf8;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 1);
+    
+    CCString Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("nop")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //jmp 8
+    Binary->data[0] = 0xfc;
+    Binary->data[1] = 0x20;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 2);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("jmp 0x08")));
+    CCStringDestroy(Disassembly);
     
     HKHubArchBinaryDestroy(Binary);
 }
