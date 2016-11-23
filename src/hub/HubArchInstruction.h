@@ -52,6 +52,13 @@ typedef enum {
     HKHubArchInstructionRegisterPC = 1 | HKHubArchInstructionRegisterSpecialPurpose
 } HKHubArchInstructionRegister;
 
+typedef enum {
+    HKHubArchInstructionMemoryOffset,           //[0]
+    HKHubArchInstructionMemoryRegister,         //[r0]
+    HKHubArchInstructionMemoryRelativeOffset,   //[r0+0]
+    HKHubArchInstructionMemoryRelativeRegister  //[r0+r0]
+} HKHubArchInstructionMemory;
+
 
 /*!
  * @brief Encode an instruction AST.

@@ -280,7 +280,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                     {
                                         case 0: //integer
                                         {
-                                            uint8_t MemoryType = 0;
+                                            uint8_t MemoryType = HKHubArchInstructionMemoryOffset;
                                             if (FreeBits <= 4)
                                             {
                                                 Bytes[Count++] |= MemoryType >> (4 - FreeBits);
@@ -310,7 +310,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                             const size_t OpCount = CCCollectionGetCount(Op->childNodes);
                                             if (OpCount == 1) //reg
                                             {
-                                                uint8_t Memory = (1 << 2) | (Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask);
+                                                uint8_t Memory = (HKHubArchInstructionMemoryRegister << 2) | (Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask);
                                                 if (FreeBits <= 6)
                                                 {
                                                     Bytes[Count++] |= Memory >> (6 - FreeBits);
@@ -324,7 +324,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                             
                                             else if (OpCount >= 3) //reg+integer/reg-integer
                                             {
-                                                uint8_t MemoryType = 2;
+                                                uint8_t MemoryType = HKHubArchInstructionMemoryRelativeOffset;
                                                 if (FreeBits <= 4)
                                                 {
                                                     Bytes[Count++] |= MemoryType >> (4 - FreeBits);
@@ -381,7 +381,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                                                 HKHubArchAssemblyASTNode *Operation = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 1);
                                                 if (Operation->type == HKHubArchAssemblyASTTypePlus)
                                                 {
-                                                    uint8_t Memory = (3 << 4) | ((Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask) << 2) | (Regs[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask); //type|reg1|reg2
+                                                    uint8_t Memory = (HKHubArchInstructionMemoryRelativeRegister << 4) | ((Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask) << 2) | (Regs[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask); //type|reg1|reg2
                                                     Bytes[Count++] |= Memory >> (8 - FreeBits);
                                                     Bytes[Count] = (Memory & CCBitSet(8 - FreeBits)) << FreeBits;
                                                     
