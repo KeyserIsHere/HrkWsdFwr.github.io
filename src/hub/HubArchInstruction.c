@@ -424,3 +424,45 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
     
     return Offset;
 }
+
+uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHubArchInstructionState *Decoded)
+{
+    CCAssertLog(Binary, "Binary must not be null");
+    
+    HKHubArchInstructionState State = { .opcode = -1, .operand = { { .type = HKHubArchInstructionOperandNA }, { .type = HKHubArchInstructionOperandNA }, { .type = HKHubArchInstructionOperandNA } } };
+    uint8_t Byte = Binary->data[Offset++];
+    
+    uint8_t FreeBits = 2;
+    const uint8_t Opcode = Byte >> 2;
+    if (Instructions[Opcode].mnemonic)
+    {
+        State.opcode = Opcode;
+        
+        for (int Loop = 0; (Loop < 3) && (Instructions[Opcode].operands[Loop] != HKHubArchInstructionOperandNA); Loop++)
+        {
+            if (FreeBits == 0)
+            {
+                FreeBits = 8;
+                Byte = Binary->data[Offset++];
+            }
+            
+            if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandI)
+            {
+                uint8_t Value = (Byte & FreeBits) << (8 - FreeBits);
+                if (FreeBits != 8)
+                {
+                    Byte = Binary->data[Offset++];
+                    Value |= Byte >> FreeBits;
+                }
+                
+                else FreeBits = 0;
+                
+                State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandI, .value = Value };
+            }
+        }
+    }
+    
+    if (Decoded) *Decoded = State;
+    
+    return Offset;
+}

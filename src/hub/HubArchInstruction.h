@@ -59,6 +59,31 @@ typedef enum {
     HKHubArchInstructionMemoryRelativeRegister  //[r0+r0]
 } HKHubArchInstructionMemory;
 
+typedef struct {
+    HKHubArchInstructionOperand type; //HKHubArchInstructionOperandNA or HKHubArchInstructionOperandI or HKHubArchInstructionOperandR or HKHubArchInstructionOperandM
+    union {
+        uint8_t value; //type = HKHubArchInstructionOperandI
+        HKHubArchInstructionRegister reg; //type = HKHubArchInstructionOperandR
+        struct {
+            HKHubArchInstructionMemory type;
+            union {
+                uint8_t offset; //memory.type = HKHubArchInstructionMemoryOffset
+                HKHubArchInstructionRegister reg; //memory.type = HKHubArchInstructionMemoryRegister
+                struct {
+                    uint8_t offset;
+                    HKHubArchInstructionRegister reg;
+                } relativeOffset; //memory.type = HKHubArchInstructionMemoryRelativeOffset
+                HKHubArchInstructionRegister relativeReg[2]; //memory.type = HKHubArchInstructionMemoryRelativeRegister
+            };
+        } memory; //type = HKHubArchInstructionOperandM
+    };
+} HKHubArchInstructionOperandValue;
+
+typedef struct {
+    int8_t opcode; //-1 = invalid
+    HKHubArchInstructionOperandValue operand[3];
+} HKHubArchInstructionState;
+
 
 /*!
  * @brief Encode an instruction AST.
@@ -71,5 +96,14 @@ typedef enum {
  * @return The offset after the instruction.
  */
 size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines);
+
+/*!
+ * @brief Decode an instruction from binary.
+ * @param Offset The offset the instruction is located at.
+ * @param Binary The binary that contains the instruction.
+ * @param Decoded The pointer to store the decoded state. May be null.
+ * @return The offset after the instruction.
+ */
+uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHubArchInstructionState *Decoded);
 
 #endif
