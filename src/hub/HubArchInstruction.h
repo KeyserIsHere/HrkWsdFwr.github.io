@@ -42,6 +42,7 @@ typedef enum {
     HKHubArchInstructionRegisterSpecialPurpose = (1 << 1),
     HKHubArchInstructionRegisterGeneralPurpose = (1 << 2),
     HKHubArchInstructionRegisterGeneralPurposeIndexMask = 3,
+    HKHubArchInstructionRegisterSpecialPurposeIndexMask = 1,
     
     HKHubArchInstructionRegisterR0 = 0 | HKHubArchInstructionRegisterGeneralPurpose,
     HKHubArchInstructionRegisterR1 = 1 | HKHubArchInstructionRegisterGeneralPurpose,
@@ -105,5 +106,12 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
  * @return The offset after the instruction.
  */
 uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHubArchInstructionState *Decoded);
+
+/*!
+ * @brief Disassemble an instruction from state.
+ * @param State The pointer to decoded instruction state.
+ * @return The disassembly or 0 on failure. Must be destroyed to free memory.
+ */
+CC_NEW CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State);
 
 #endif

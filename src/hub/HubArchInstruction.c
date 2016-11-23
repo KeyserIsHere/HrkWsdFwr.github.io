@@ -106,8 +106,8 @@ static const struct {
     { CC_STRING("r1"),      HKHubArchInstructionRegisterR1 },
     { CC_STRING("r2"),      HKHubArchInstructionRegisterR2 },
     { CC_STRING("r3"),      HKHubArchInstructionRegisterR3 },
+    { CC_STRING("flags"),   HKHubArchInstructionRegisterFlags },
     { CC_STRING("pc"),      HKHubArchInstructionRegisterPC },
-    { CC_STRING("flags"),   HKHubArchInstructionRegisterFlags }
 };
 
 #pragma mark - Error Messages
@@ -465,4 +465,60 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
     if (Decoded) *Decoded = State;
     
     return Offset;
+}
+
+CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State)
+{
+    CCAssertLog(State, "State must not be null");
+    
+    //TODO: Pass in formatting options?
+    CCString Disassembly = 0;
+    if ((State->opcode != -1) && (Instructions[State->opcode].mnemonic))
+    {
+        Disassembly = CCStringCopy(Instructions[State->opcode].mnemonic);
+        
+        for (int Loop = 0; (Loop < 3) && (State->operand[Loop].type != HKHubArchInstructionOperandNA); Loop++)
+        {
+            switch (State->operand[Loop].type)
+            {
+                case HKHubArchInstructionOperandI:
+                {
+                    char Hex[5];
+                    snprintf(Hex, sizeof(Hex), "%#.2x", State->operand[Loop].value);
+                    
+                    CCString Value = CCStringCreate(CC_STD_ALLOCATOR, (CCStringHint)CCStringEncodingASCII, Hex);
+                    CCString Temp = CCStringCreateByJoiningStrings((CCString[2]){ Disassembly, Value }, 2, Loop == 0 ? CC_STRING(" ") : CC_STRING(","));
+                    CCStringDestroy(Disassembly);
+                    Disassembly = Temp;
+                    CCStringDestroy(Value);
+                    
+                    break;
+                }
+                    
+                case HKHubArchInstructionOperandR:
+                    if (State->operand[Loop].reg & HKHubArchInstructionRegisterGeneralPurpose)
+                    {
+                        CCString Temp = CCStringCreateByJoiningStrings((CCString[2]){ Disassembly, Registers[State->operand[Loop].reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask].mnemonic }, 2, Loop == 0 ? CC_STRING(" ") : CC_STRING(","));
+                        CCStringDestroy(Disassembly);
+                        Disassembly = Temp;
+                    }
+                    
+                    else if (State->operand[Loop].reg & HKHubArchInstructionRegisterSpecialPurpose)
+                    {
+                        CCString Temp = CCStringCreateByJoiningStrings((CCString[2]){ Disassembly, Registers[(State->operand[Loop].reg & HKHubArchInstructionRegisterSpecialPurposeIndexMask) + 4].mnemonic }, 2, Loop == 0 ? CC_STRING(" ") : CC_STRING(","));
+                        CCStringDestroy(Disassembly);
+                        Disassembly = Temp;
+                    }
+                    break;
+                    
+                case HKHubArchInstructionOperandM:
+                    break;
+                    
+                default:
+                    break;
+            }
+        }
+    }
+    
+    return Disassembly;
 }
