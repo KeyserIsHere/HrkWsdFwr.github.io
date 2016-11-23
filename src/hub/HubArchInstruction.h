@@ -39,6 +39,16 @@ typedef enum {
 } HKHubArchInstructionOperand;
 
 
+/*!
+ * @brief Encode an instruction AST.
+ * @param Offset The offset the instruction should be located at.
+ * @param Binary The binary to output the encoding to.
+ * @param Command The instruction command.
+ * @param Errors The collection of errors.
+ * @param Labels The labels.
+ * @param Defines The defined symbols.
+ * @return The offset after the instruction.
+ */
 size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines);
 
 #endif
