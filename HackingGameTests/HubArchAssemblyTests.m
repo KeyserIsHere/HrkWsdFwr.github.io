@@ -719,7 +719,7 @@
     
     
     
-    Source = "add r1,5\n"; //00001010 10000010 10000000 : 0x06 0x82 0x80
+    Source = "add r1,5\n"; //00000110 10000010 10000000 : 0x06 0x82 0x80
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -770,7 +770,7 @@
     
     
     
-    Source = "add r1,[5]\n"; //00000110 10000000 00101000 : 0x06 0x80 0x28
+    Source = "add r1,[5]\n"; //00000010 10000000 00101000 : 0x02 0x80 0x28
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -788,7 +788,7 @@
     
     
     
-    Source = "add r1,[r1+r2]\n"; //00000110 10011011 00000000 : 0x06 0x9b 0x00
+    Source = "add r1,[r1+r2]\n"; //00000010 10011011 00000000 : 0x02 0x9b 0x00
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -806,7 +806,7 @@
     
     
     
-    Source = "add r1,[r2]\n"; //00000110 10001100 : 0x06 0x8c
+    Source = "add r1,[r2]\n"; //00000010 10001100 : 0x02 0x8c
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -823,7 +823,7 @@
     
     
     
-    Source = "add r1,[5+r2]\n"; //00000110 10010000 00101100 : 0x06 0x90 0x2c
+    Source = "add r1,[5+r2]\n"; //00000010 10010000 00101100 : 0x02 0x90 0x2c
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -880,7 +880,7 @@
     
     
     
-    Source = "add r1,[-1]\n"; //00000110 10000111 11111000 : 0x06 0x87 0xf8
+    Source = "add r1,[-1]\n"; //00000010 10000111 11111000 : 0x02 0x87 0xf8
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -898,7 +898,7 @@
     
     
     
-    Source = "add r1,[1+r2-2]\n"; //00000110 10010111 11111100 : 0x06 0x90 0xfc
+    Source = "add r1,[1+r2-2]\n"; //00000010 10010111 11111100 : 0x02 0x97 0xfc
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -1012,6 +1012,112 @@
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("jmp 0x08")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //add r1,[5]
+    Binary->data[0] = 0x02;
+    Binary->data[1] = 0x80;
+    Binary->data[2] = 0x28;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0x05]")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //add r1,[r1+r2]
+    Binary->data[0] = 0x02;
+    Binary->data[1] = 0x9b;
+    Binary->data[2] = 0x00;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[r1+r2]")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //add r1,[r2]
+    Binary->data[0] = 0x02;
+    Binary->data[1] = 0x8c;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 2);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[r2]")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //add r1,[5+r2]
+    Binary->data[0] = 0x02;
+    Binary->data[1] = 0x90;
+    Binary->data[2] = 0x2c;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0x05+r2]")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //send r0, r2, [r3+5]
+    Binary->data[0] = 0x6e;
+    Binary->data[1] = 0x62;
+    Binary->data[2] = 0x05;
+    Binary->data[3] = 0xc0;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 4);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("send r0,r2,[0x05+r3]")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //send 0, 0xff, [r3+5]
+    Binary->data[0] = 0xf0;
+    Binary->data[1] = 0x03;
+    Binary->data[2] = 0xfc;
+    Binary->data[3] = 0x81;
+    Binary->data[4] = 0x70;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 5);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("send 0x00,0xff,[0x05+r3]")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //add r1,[-1]
+    Binary->data[0] = 0x02;
+    Binary->data[1] = 0x87;
+    Binary->data[2] = 0xf8;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0xff]")));
+    CCStringDestroy(Disassembly);
+    
+    
+    
+    //add r1,[1+r2-2]
+    Binary->data[0] = 0x02;
+    Binary->data[1] = 0x97;
+    Binary->data[2] = 0xfc;
+    
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    
+    Disassembly = HKHubArchInstructionDisassemble(&State);
+    XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0xff+r2]")));
     CCStringDestroy(Disassembly);
     
     HKHubArchBinaryDestroy(Binary);
