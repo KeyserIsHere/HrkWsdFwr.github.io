@@ -153,7 +153,7 @@ Instructions
 | 4 - 12 | 101111  | send     | i         |           |           | Send empty message to device interfacing with port (operand 1)                                    |
 | 1      | 110000  | and      | r/m       | r/m       |           | Logical AND the register or memory value (operand 2) into register or memory (operand 1)          |
 | 1      | 110001  | and      | r/m       | i         |           | Logical AND the immediate value (operand 2) into register or memory (operand 1)                   |
-|        | 110010  | not      | r/m       |           |           | One's complement negation of the register or memory value (operand 1)                             |
+| 1      | 110010  | not      | r/m       |           |           | One's complement negation of the register or memory value (operand 1)                             |
 | 0      | 110011  | hlt      |           |           |           | Halt the program                                                                                  |
 | 1      | 110100  | jsl      | rel       |           |           | Jump if (signed) less (SF!=OF)                                                                    |
 | 1      | 110101  | jsge     | rel       |           |           | Jump if (signed) greater or equal (SF=OF)                                                         |
