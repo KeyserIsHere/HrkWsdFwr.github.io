@@ -458,10 +458,9 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                 else FreeBits = 0;
                 
                 State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandI, .value = Value };
-                continue;
             }
             
-            if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandR)
+            else if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandRM)
             {
                 uint8_t Reg = Byte & CCBitSet(FreeBits);
                 if (FreeBits < 3)
@@ -477,8 +476,112 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                     FreeBits -= 3;
                 }
                 
-                State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandR, .reg = Reg };
-                continue;
+                if (Reg & (HKHubArchInstructionRegisterGeneralPurpose | HKHubArchInstructionRegisterSpecialPurpose))
+                {
+                    if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandR) State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandR, .reg = Reg };
+                }
+                
+                else if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandM)
+                {
+                    uint8_t Memory = Byte & CCBitSet(FreeBits);
+                    if (FreeBits < 1)
+                    {
+                        Byte = Binary->data[Offset++];
+                        Memory = (Memory << (1 - FreeBits)) | (Byte >> (8 - (1 - FreeBits)));
+                        FreeBits = 8 - (1 - FreeBits);
+                    }
+                    
+                    else
+                    {
+                        if (FreeBits > 1) Memory >>= (FreeBits - 1);
+                        FreeBits -= 1;
+                    }
+                    
+                    Memory |= Reg << 1;
+                    
+                    switch (Memory)
+                    {
+                        case HKHubArchInstructionMemoryOffset:
+                        {
+                            uint8_t Value = (Byte & CCBitSet(FreeBits)) << (8 - FreeBits);
+                            if (FreeBits != 8)
+                            {
+                                Byte = Binary->data[Offset++];
+                                Value |= Byte >> FreeBits;
+                            }
+                            
+                            else FreeBits = 0;
+                            
+                            State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandM, .memory = { .type = Memory, .offset = Value } };
+                            break;
+                        }
+                            
+                        case HKHubArchInstructionMemoryRegister:
+                            Reg = Byte & CCBitSet(FreeBits);
+                            if (FreeBits < 2)
+                            {
+                                Byte = Binary->data[Offset++];
+                                Reg = (Reg << (2 - FreeBits)) | (Byte >> (8 - (2 - FreeBits)));
+                                FreeBits = 8 - (2 - FreeBits);
+                            }
+                            
+                            else
+                            {
+                                if (FreeBits > 2) Reg >>= (FreeBits - 2);
+                                FreeBits -= 2;
+                            }
+                            
+                            State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandM, .memory = { .type = Memory, .reg = Reg | HKHubArchInstructionRegisterGeneralPurpose } };
+                            break;
+                            
+                        case HKHubArchInstructionMemoryRelativeOffset:
+                        {
+                            uint8_t Value = (Byte & CCBitSet(FreeBits)) << (8 - FreeBits);
+                            if (FreeBits != 8)
+                            {
+                                Byte = Binary->data[Offset++];
+                                Value |= Byte >> FreeBits;
+                            }
+                            
+                            else FreeBits = 0;
+                            
+                            Reg = Byte & CCBitSet(FreeBits);
+                            if (FreeBits < 2)
+                            {
+                                Byte = Binary->data[Offset++];
+                                Reg = (Reg << (2 - FreeBits)) | (Byte >> (8 - (2 - FreeBits)));
+                                FreeBits = 8 - (2 - FreeBits);
+                            }
+                            
+                            else
+                            {
+                                if (FreeBits > 2) Reg >>= (FreeBits - 2);
+                                FreeBits -= 2;
+                            }
+                            
+                            State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandM, .memory = { .type = Memory, .relativeOffset = { .offset = Value, .reg = Reg | HKHubArchInstructionRegisterGeneralPurpose } } };
+                            break;
+                        }
+                            
+                        case HKHubArchInstructionMemoryRelativeRegister:
+                            Reg = Byte & CCBitSet(FreeBits);
+                            if (FreeBits < 4)
+                            {
+                                Byte = Binary->data[Offset++];
+                                Reg = (Reg << (4 - FreeBits)) | (Byte >> (8 - (4 - FreeBits)));
+                                FreeBits = 8 - (4 - FreeBits);
+                            }
+                            
+                            else
+                            {
+                                if (FreeBits > 4) Reg >>= (FreeBits - 4);
+                                FreeBits -= 4;
+                            }
+                            
+                            State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandM, .memory = { .type = Memory, .relativeReg = { (Reg >> 2) | HKHubArchInstructionRegisterGeneralPurpose, (Reg & 3) | HKHubArchInstructionRegisterGeneralPurpose } } };
+                            break;
+                    }
+                }
             }
         }
     }
