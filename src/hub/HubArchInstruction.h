@@ -28,6 +28,7 @@
 
 #include <Blob2D/Blob2D.h>
 #include "HubArchAssembly.h"
+#include "HubArchProcessor.h"
 
 typedef enum {
     HKHubArchInstructionOperandNA = (1 << 0),
@@ -85,6 +86,17 @@ typedef struct {
     HKHubArchInstructionOperandValue operand[3];
 } HKHubArchInstructionState;
 
+/*!
+ * @brief An instruction operation executed on a given processor with the given state.
+ * @description Updates the processor's cycle count and any other state. Cycles are calculated for the operation
+ *              alone.
+ *
+ * @param Processor The processor to execute the operation in.
+ * @param State The operand state for the instruction.
+ * @return TRUE the operation was able to be executed or FALSE if not.
+ */
+typedef _Bool (*HKHubArchInstructionOperation)(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+
 
 /*!
  * @brief Encode an instruction AST.
@@ -113,5 +125,16 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchI
  * @return The disassembly or 0 on failure. Must be destroyed to free memory.
  */
 CC_NEW CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State);
+
+/*!
+ * @brief Execute an instruction on a given processor with the given state.
+ * @description Updates the processor's cycle count and any other state. Cycles are calculated for the operation
+ *              alone.
+ *
+ * @param Processor The processor to execute the operation in.
+ * @param State The state for the instruction to be executed.
+ * @return TRUE the operation was able to be executed or FALSE if not.
+ */
+_Bool HKHubArchInstructionExecute(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
 
 #endif

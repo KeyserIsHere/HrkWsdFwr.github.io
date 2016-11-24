@@ -20,6 +20,7 @@
 		F34877FB1DDC75850068844D /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
 		F34877FE1DDDFBF80068844D /* HubArchBinary.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877FC1DDDFBF80068844D /* HubArchBinary.c */; };
 		F34878011DE201FE0068844D /* HubArchInstruction.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877FF1DE201FE0068844D /* HubArchInstruction.c */; };
+		F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -93,6 +94,8 @@
 		F34877FD1DDDFBF80068844D /* HubArchBinary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchBinary.h; sourceTree = "<group>"; };
 		F34877FF1DE201FE0068844D /* HubArchInstruction.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchInstruction.c; sourceTree = "<group>"; };
 		F34878001DE201FE0068844D /* HubArchInstruction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchInstruction.h; sourceTree = "<group>"; };
+		F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchProcessor.c; sourceTree = "<group>"; };
+		F3F4922E1DE6E5B30046A391 /* HubArchProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchProcessor.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -212,6 +215,8 @@
 				F34877EB1DDC6BCD0068844D /* HubArchAssembly.h */,
 				F34877FC1DDDFBF80068844D /* HubArchBinary.c */,
 				F34877FD1DDDFBF80068844D /* HubArchBinary.h */,
+				F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */,
+				F3F4922E1DE6E5B30046A391 /* HubArchProcessor.h */,
 			);
 			name = Hub;
 			path = hub;
@@ -397,6 +402,7 @@
 				F34878011DE201FE0068844D /* HubArchInstruction.c in Sources */,
 				F34877FE1DDDFBF80068844D /* HubArchBinary.c in Sources */,
 				F34877EC1DDC6BCD0068844D /* HubArchAssembly.c in Sources */,
+				F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */,
 				F34877021DDC2E500068844D /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
