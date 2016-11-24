@@ -479,6 +479,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchI
                 if (Reg & (HKHubArchInstructionRegisterGeneralPurpose | HKHubArchInstructionRegisterSpecialPurpose))
                 {
                     if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandR) State.operand[Loop] = (HKHubArchInstructionOperandValue){ .type = HKHubArchInstructionOperandR, .reg = Reg };
+                    else State.opcode = -1;
                 }
                 
                 else if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandM)
@@ -582,6 +583,8 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchI
                             break;
                     }
                 }
+                
+                else State.opcode = -1;
             }
         }
     }
