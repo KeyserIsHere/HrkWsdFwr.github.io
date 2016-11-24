@@ -41,6 +41,13 @@ typedef struct {
     uint8_t memory[256];
 } HKHubArchProcessorInfo;
 
+typedef enum {
+    HKHubArchProcessorFlagsZero = (1 << 0),
+    HKHubArchProcessorFlagsCarry = (1 << 1),
+    HKHubArchProcessorFlagsSign = (1 << 2),
+    HKHubArchProcessorFlagsOverflow = (1 << 3)
+} HKHubArchProcessorFlags;
+
 /*!
  * @brief The processor.
  * @description Allows @b CCRetain.
