@@ -87,7 +87,8 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
             {
                 const char *Start = Buffer;
                 _Bool Hex = FALSE, Sym = FALSE, Dec = FALSE, CreateNode = FALSE;
-                for (char c; (c = *(Buffer++)); )
+                size_t Index = 0;
+                for (char c; (c = *(Buffer++)); Index++)
                 {
                     if (isalnum(c))
                     {
@@ -100,7 +101,10 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                         
                         CreateNode = TRUE;
                         
-                        if ((!isxdigit(c)) && (c != 'x'))
+                        if ((Index == 0) && (c != '0')) Hex = FALSE;
+                        else if ((Index == 1) && ((c != 'x') && (c != 'X'))) Hex = FALSE;
+                        
+                        if ((!isxdigit(c)) && ((Index != 1) || ((c != 'x') && (c != 'X'))))
                         {
                             Hex = FALSE;
                             Dec = FALSE;
@@ -121,6 +125,7 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                         Sym = FALSE;
                         Dec = FALSE;
                         CreateNode = FALSE;
+                        Index = 0;
                         
                         HKHubArchAssemblyResolveLiteralValue(Node, Buffer - 1, 1, Hex, Sym, Dec, c);
                     }
