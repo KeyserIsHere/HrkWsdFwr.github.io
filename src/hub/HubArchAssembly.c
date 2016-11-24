@@ -509,7 +509,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
                     break;
                     
                 case HKHubArchAssemblyASTTypeInstruction:
-                    Offset = HKHubArchInstructionEncode(Offset, (Pass ? NULL : Binary), Command, (Pass ? NULL : Err), Labels, Defines);
+                    Offset = HKHubArchInstructionEncode(Offset, (Pass ? NULL : Binary->data), Command, (Pass ? NULL : Err), Labels, Defines);
                     break;
                     
                 case HKHubArchAssemblyASTTypeDirective:

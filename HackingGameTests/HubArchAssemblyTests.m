@@ -960,7 +960,7 @@
     Binary->data[0] = 0x02;
     Binary->data[1] = 0xc0;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 2);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 2);
     
     CCString Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,r0")));
@@ -972,7 +972,7 @@
     Binary->data[0] = 0x01;
     Binary->data[1] = 0x40;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 2);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 2);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add flags,r0")));
@@ -985,7 +985,7 @@
     Binary->data[1] = 0x82;
     Binary->data[2] = 0x80;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 3);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,0x05")));
@@ -996,7 +996,7 @@
     //nop
     Binary->data[0] = 0xf8;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 1);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 1);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("nop")));
@@ -1008,7 +1008,7 @@
     Binary->data[0] = 0xfc;
     Binary->data[1] = 0x20;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 2);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 2);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("jmp 0x08")));
@@ -1021,7 +1021,7 @@
     Binary->data[1] = 0x80;
     Binary->data[2] = 0x28;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 3);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0x05]")));
@@ -1034,7 +1034,7 @@
     Binary->data[1] = 0x9b;
     Binary->data[2] = 0x00;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 3);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[r1+r2]")));
@@ -1046,7 +1046,7 @@
     Binary->data[0] = 0x02;
     Binary->data[1] = 0x8c;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 2);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 2);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[r2]")));
@@ -1059,7 +1059,7 @@
     Binary->data[1] = 0x90;
     Binary->data[2] = 0x2c;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 3);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0x05+r2]")));
@@ -1073,7 +1073,7 @@
     Binary->data[2] = 0x05;
     Binary->data[3] = 0xc0;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 4);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 4);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("send r0,r2,[0x05+r3]")));
@@ -1088,7 +1088,7 @@
     Binary->data[3] = 0x81;
     Binary->data[4] = 0x70;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 5);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 5);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("send 0x00,0xff,[0x05+r3]")));
@@ -1101,7 +1101,7 @@
     Binary->data[1] = 0x87;
     Binary->data[2] = 0xf8;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 3);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0xff]")));
@@ -1114,7 +1114,7 @@
     Binary->data[1] = 0x97;
     Binary->data[2] = 0xfc;
     
-    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary, &State), 3);
+    XCTAssertEqual(HKHubArchInstructionDecode(0, Binary->data, &State), 3);
     
     Disassembly = HKHubArchInstructionDisassemble(&State);
     XCTAssertTrue(CCStringEqual(Disassembly, CC_STRING("add r1,[0xff+r2]")));

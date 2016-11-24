@@ -153,7 +153,7 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
     return HKHubArchInstructionOperandNA;
 }
 
-size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     CCAssertLog(Command, "Command must not be null");
     
@@ -413,7 +413,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
                 }
                 
                 const size_t ByteCount = (BitCount / 8) + 1;
-                if (Binary) memcpy(&Binary->data[Offset], Bytes, ByteCount);
+                if (Data) memcpy(&Data[Offset], Bytes, ByteCount);
                 
                 return Offset + ByteCount;
             }
@@ -425,12 +425,12 @@ size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubAr
     return Offset;
 }
 
-uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHubArchInstructionState *Decoded)
+uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchInstructionState *Decoded)
 {
-    CCAssertLog(Binary, "Binary must not be null");
+    CCAssertLog(Data, "Data must not be null");
     
     HKHubArchInstructionState State = { .opcode = -1, .operand = { { .type = HKHubArchInstructionOperandNA }, { .type = HKHubArchInstructionOperandNA }, { .type = HKHubArchInstructionOperandNA } } };
-    uint8_t Byte = Binary->data[Offset++];
+    uint8_t Byte = Data[Offset++];
     
     uint8_t FreeBits = 2;
     const uint8_t Opcode = Byte >> 2;
@@ -443,7 +443,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
             if (FreeBits == 0)
             {
                 FreeBits = 8;
-                Byte = Binary->data[Offset++];
+                Byte = Data[Offset++];
             }
             
             if (Instructions[Opcode].operands[Loop] & HKHubArchInstructionOperandI)
@@ -451,7 +451,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                 uint8_t Value = (Byte & CCBitSet(FreeBits)) << (8 - FreeBits);
                 if (FreeBits != 8)
                 {
-                    Byte = Binary->data[Offset++];
+                    Byte = Data[Offset++];
                     Value |= Byte >> FreeBits;
                 }
                 
@@ -465,7 +465,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                 uint8_t Reg = Byte & CCBitSet(FreeBits);
                 if (FreeBits < 3)
                 {
-                    Byte = Binary->data[Offset++];
+                    Byte = Data[Offset++];
                     Reg = (Reg << (3 - FreeBits)) | (Byte >> (8 - (3 - FreeBits)));
                     FreeBits = 8 - (3 - FreeBits);
                 }
@@ -486,7 +486,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                     uint8_t Memory = Byte & CCBitSet(FreeBits);
                     if (FreeBits < 1)
                     {
-                        Byte = Binary->data[Offset++];
+                        Byte = Data[Offset++];
                         Memory = (Memory << (1 - FreeBits)) | (Byte >> (8 - (1 - FreeBits)));
                         FreeBits = 8 - (1 - FreeBits);
                     }
@@ -506,7 +506,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                             uint8_t Value = (Byte & CCBitSet(FreeBits)) << (8 - FreeBits);
                             if (FreeBits != 8)
                             {
-                                Byte = Binary->data[Offset++];
+                                Byte = Data[Offset++];
                                 Value |= Byte >> FreeBits;
                             }
                             
@@ -520,7 +520,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                             Reg = Byte & CCBitSet(FreeBits);
                             if (FreeBits < 2)
                             {
-                                Byte = Binary->data[Offset++];
+                                Byte = Data[Offset++];
                                 Reg = (Reg << (2 - FreeBits)) | (Byte >> (8 - (2 - FreeBits)));
                                 FreeBits = 8 - (2 - FreeBits);
                             }
@@ -539,7 +539,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                             uint8_t Value = (Byte & CCBitSet(FreeBits)) << (8 - FreeBits);
                             if (FreeBits != 8)
                             {
-                                Byte = Binary->data[Offset++];
+                                Byte = Data[Offset++];
                                 Value |= Byte >> FreeBits;
                             }
                             
@@ -548,7 +548,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                             Reg = Byte & CCBitSet(FreeBits);
                             if (FreeBits < 2)
                             {
-                                Byte = Binary->data[Offset++];
+                                Byte = Data[Offset++];
                                 Reg = (Reg << (2 - FreeBits)) | (Byte >> (8 - (2 - FreeBits)));
                                 FreeBits = 8 - (2 - FreeBits);
                             }
@@ -567,7 +567,7 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHub
                             Reg = Byte & CCBitSet(FreeBits);
                             if (FreeBits < 4)
                             {
-                                Byte = Binary->data[Offset++];
+                                Byte = Data[Offset++];
                                 Reg = (Reg << (4 - FreeBits)) | (Byte >> (8 - (4 - FreeBits)));
                                 FreeBits = 8 - (4 - FreeBits);
                             }

@@ -89,23 +89,23 @@ typedef struct {
 /*!
  * @brief Encode an instruction AST.
  * @param Offset The offset the instruction should be located at.
- * @param Binary The binary to output the encoding to.
+ * @param Data The data to output the encoding to.
  * @param Command The instruction command.
  * @param Errors The collection of errors.
  * @param Labels The labels.
  * @param Defines The defined symbols.
  * @return The offset after the instruction.
  */
-size_t HKHubArchInstructionEncode(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines);
+size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines);
 
 /*!
  * @brief Decode an instruction from binary.
  * @param Offset The offset the instruction is located at.
- * @param Binary The binary that contains the instruction.
+ * @param Data The data that contains the instruction.
  * @param Decoded The pointer to store the decoded state. May be null.
  * @return The offset after the instruction.
  */
-uint8_t HKHubArchInstructionDecode(uint8_t Offset, HKHubArchBinary Binary, HKHubArchInstructionState *Decoded);
+uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchInstructionState *Decoded);
 
 /*!
  * @brief Disassemble an instruction from state.
