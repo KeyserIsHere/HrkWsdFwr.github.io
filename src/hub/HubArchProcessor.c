@@ -102,13 +102,15 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
             if (Cycles < Processor->cycles)
             {
                 Processor->cycles -= Cycles;
-                if (!HKHubArchInstructionExecute(Processor, &Instruction))
+                
+                HKHubArchInstructionOperationResult Result;
+                if ((Result = HKHubArchInstructionExecute(Processor, &Instruction)) == HKHubArchInstructionOperationResultFailure)
                 {
                     Processor->cycles += Cycles;
                     Processor->complete = TRUE;
                 }
                 
-                else Processor->state.pc = NextPC;
+                else if (!(Result & HKHubArchInstructionOperationResultFlagSkipPC)) Processor->state.pc = NextPC;
             }
             
             else Processor->complete = TRUE;

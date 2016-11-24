@@ -86,6 +86,13 @@ typedef struct {
     HKHubArchInstructionOperandValue operand[3];
 } HKHubArchInstructionState;
 
+typedef enum {
+    HKHubArchInstructionOperationResultFailure,
+    HKHubArchInstructionOperationResultSuccess,
+    
+    HKHubArchInstructionOperationResultFlagSkipPC = (1 << 1)
+} HKHubArchInstructionOperationResult;
+
 /*!
  * @brief An instruction operation executed on a given processor with the given state.
  * @description Updates the processor's cycle count and any other state. Cycles are calculated for the operation
@@ -93,9 +100,9 @@ typedef struct {
  *
  * @param Processor The processor to execute the operation in.
  * @param State The operand state for the instruction.
- * @return TRUE the operation was able to be executed or FALSE if not.
+ * @return The result of the operation.
  */
-typedef _Bool (*HKHubArchInstructionOperation)(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+typedef HKHubArchInstructionOperationResult (*HKHubArchInstructionOperation)(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
 
 
 /*!
@@ -133,8 +140,8 @@ CC_NEW CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState 
  *
  * @param Processor The processor to execute the operation in.
  * @param State The state for the instruction to be executed.
- * @return TRUE the operation was able to be executed or FALSE if not.
+ * @return The result type of the executed operation.
  */
-_Bool HKHubArchInstructionExecute(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+HKHubArchInstructionOperationResult HKHubArchInstructionExecute(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
 
 #endif

@@ -28,75 +28,113 @@
 
 #pragma mark Instructions
 
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMOV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSUB(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMUL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSDIV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUDIV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSMOD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUMOD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationCMP(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationXOR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationOR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationAND(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNOT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationHLT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJMP(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJZ(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNZ(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJS(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNS(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJO(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNO(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSGE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSLE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUGE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJULE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+
+
 static const struct {
     CCString mnemonic;
     HKHubArchInstructionOperation operation;
     HKHubArchInstructionOperand operands[3];
 } Instructions[64] = {
-    { CC_STRING("add")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("add")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { CC_STRING("mov")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jz")       , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("sub")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("sub")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { CC_STRING("mov")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { CC_STRING("jnz")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("mul")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("mul")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("js")       , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("sdiv")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("sdiv")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jns")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("udiv")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("udiv")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jo")       , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("smod")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("smod")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jno")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("umod")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("umod")     , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")     , NULL,  { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  } },
-    { CC_STRING("cmp")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("cmp")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")     , NULL,  { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("shl")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("shl")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")     , NULL,  { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  } },
-    { CC_STRING("shr")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("shr")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("recv")     , NULL,  { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA } },
-    { CC_STRING("xor")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("xor")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")     , NULL,  { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM  } },
-    { CC_STRING("or")       , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("or")       , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                     , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")     , NULL,  { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("and")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("and")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { CC_STRING("not")      , NULL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("hlt")      , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jsl")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jsge")     , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jsle")     , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jsg")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jul")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("juge")     , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jule")     , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jug")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")     , NULL,  { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM  } },
-    { CC_STRING("recv")     , NULL,  { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA } },
-    { CC_STRING("nop")      , NULL,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("jmp")      , NULL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } }
+    { CC_STRING("add")     , HKHubArchInstructionOperationADD,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("add")     , HKHubArchInstructionOperationADD,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { CC_STRING("mov")     , HKHubArchInstructionOperationMOV,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jz")      , HKHubArchInstructionOperationJZ,   { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("sub")     , HKHubArchInstructionOperationSUB,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("sub")     , HKHubArchInstructionOperationSUB,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { CC_STRING("mov")     , HKHubArchInstructionOperationMOV,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { CC_STRING("jnz")     , HKHubArchInstructionOperationJNZ,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("mul")     , HKHubArchInstructionOperationMUL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("mul")     , HKHubArchInstructionOperationMUL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("js")      , HKHubArchInstructionOperationJS,   { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("sdiv")    , HKHubArchInstructionOperationSDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("sdiv")    , HKHubArchInstructionOperationSDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jns")     , HKHubArchInstructionOperationJNS,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("udiv")    , HKHubArchInstructionOperationUDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("udiv")    , HKHubArchInstructionOperationUDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jo")      , HKHubArchInstructionOperationJO,   { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("smod")    , HKHubArchInstructionOperationSMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("smod")    , HKHubArchInstructionOperationSMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jno")     , HKHubArchInstructionOperationJNO,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("umod")    , HKHubArchInstructionOperationUMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("umod")    , HKHubArchInstructionOperationUMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  } },
+    { CC_STRING("cmp")     , HKHubArchInstructionOperationCMP,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("cmp")     , HKHubArchInstructionOperationCMP,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("shl")     , HKHubArchInstructionOperationSHL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("shl")     , HKHubArchInstructionOperationSHL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  } },
+    { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("recv")    , HKHubArchInstructionOperationRECV, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA } },
+    { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM  } },
+    { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
+    { CC_STRING("not")     , HKHubArchInstructionOperationNOT,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("hlt")     , HKHubArchInstructionOperationHLT,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jsl")     , HKHubArchInstructionOperationJSL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jsge")    , HKHubArchInstructionOperationJSGE, { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jsle")    , HKHubArchInstructionOperationJSLE, { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jsg")     , HKHubArchInstructionOperationJSG,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jul")     , HKHubArchInstructionOperationJUL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("juge")    , HKHubArchInstructionOperationJUGE, { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jule")    , HKHubArchInstructionOperationJULE, { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jug")     , HKHubArchInstructionOperationJUG,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM  } },
+    { CC_STRING("recv")    , HKHubArchInstructionOperationRECV, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA } },
+    { CC_STRING("nop")     , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("jmp")     , HKHubArchInstructionOperationJMP,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } }
 };
 
 static const struct {
@@ -703,14 +741,193 @@ CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State)
     return Disassembly;
 }
 
-_Bool HKHubArchInstructionExecute(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+HKHubArchInstructionOperationResult HKHubArchInstructionExecute(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
     CCAssertLog(Processor, "Processor must not be null");
     CCAssertLog(State, "State must not be null");
     
-    if (State->opcode == -1) return FALSE;
+    if (State->opcode == -1) return HKHubArchInstructionOperationResultFailure;
     
-    if (!Instructions[State->opcode].operation) return TRUE;
+    if (!Instructions[State->opcode].operation) return HKHubArchInstructionOperationResultSuccess;
     
     return Instructions[State->opcode].operation(Processor, State);
+}
+
+#pragma mark - Instruction Operations
+
+#pragma mark Arithmetic
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMOV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSUB(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMUL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSDIV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUDIV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSMOD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUMOD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationCMP(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationXOR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationOR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationAND(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNOT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+#pragma mark Signals
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationHLT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+#pragma mark I/O
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+#pragma mark Branching
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJMP(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    Processor->state.pc += State->operand[0].value;
+    
+    return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJZ(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNZ(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJS(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNS(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJO(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNO(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSGE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSLE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUGE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJULE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    return HKHubArchInstructionOperationResultFailure;
 }
