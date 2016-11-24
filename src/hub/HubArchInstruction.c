@@ -240,6 +240,8 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                             uint8_t Result;
                             if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines))
                             {
+                                if (Instructions[Loop].operands[Index] & HKHubArchInstructionOperandRel) Result -= Offset;
+                                
                                 Bytes[Count++] |= Result >> (8 - FreeBits);
                                 Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
                             }
