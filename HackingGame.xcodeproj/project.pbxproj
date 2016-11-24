@@ -21,6 +21,7 @@
 		F34877FE1DDDFBF80068844D /* HubArchBinary.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877FC1DDDFBF80068844D /* HubArchBinary.c */; };
 		F34878011DE201FE0068844D /* HubArchInstruction.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877FF1DE201FE0068844D /* HubArchInstruction.c */; };
 		F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */; };
+		F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -96,6 +97,7 @@
 		F34878001DE201FE0068844D /* HubArchInstruction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchInstruction.h; sourceTree = "<group>"; };
 		F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchProcessor.c; sourceTree = "<group>"; };
 		F3F4922E1DE6E5B30046A391 /* HubArchProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchProcessor.h; sourceTree = "<group>"; };
+		F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchInstructionTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -234,6 +236,7 @@
 			isa = PBXGroup;
 			children = (
 				F34877F31DDC73A40068844D /* HubArchAssemblyTests.m */,
+				F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */,
 			);
 			name = Hub;
 			sourceTree = "<group>";
@@ -411,6 +414,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */,
 				F34877F41DDC73A50068844D /* HubArchAssemblyTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
