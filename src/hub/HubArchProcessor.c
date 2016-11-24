@@ -79,6 +79,14 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->complete = FALSE;
 }
 
+void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    Processor->cycles = Cycles;
+    Processor->complete = FALSE;
+}
+
 void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Seconds)
 {
     CCAssertLog(Processor, "Processor must not be null");

@@ -90,11 +90,18 @@ void HKHubArchProcessorDestroy(HKHubArchProcessor CC_DESTROY(Processor));
 void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binary);
 
 /*!
+ * @brief Set the cycles the processor should run.
+ * @param Processor The processor to allocate the time to.
+ * @param Cycles The number of cycles to run.
+ */
+void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles);
+
+/*!
  * @brief Add the amount of time the processor should run for.
  * @param Processor The processor to allocate the time to.
  * @param Seconds The time in seconds the processor should run for.
  */
-void HKHubArchProcessorSetProcessingTime(HKHubArchProcessor Processor, double Seconds);
+void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Seconds);
 
 /*!
  * @brief Run the processor.
