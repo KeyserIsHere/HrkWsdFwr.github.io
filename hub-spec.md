@@ -57,7 +57,7 @@ The zero flag indicates a zero result and is set by the following operations:
 * Arithmetic operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
 * Logical operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
 * Compare operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
-* Port operations - if the port operation succeeds the flag is set to 1, if the port operation fails the flag is set to 0 (or unset).
+* Port operations - if the port operation fails the flag is set to 1, if the port operation succeeds the flag is set to 0 (or unset).
 
 
 The carry flag indicates the result has carried a bit beyond the 8-bit width and is set by the following operations:
@@ -106,11 +106,11 @@ Instructions
 | 2      | 000000  | add      | r/m       | r/m       |           | Add the register or memory value (operand 2) into the register or memory (operand 1)              |
 | 2      | 000001  | add      | r/m       | i         |           | Add the immediate value (operand 2) into the register or memory (operand 1)                       |
 | 1      | 000010  | mov      | r/m       | r/m       |           | Move the register or memory value (operand 2) into the register of memory (operand 1)             |
-| 1      | 000011  | jz       | rel       |           |           | Jump if zero/equal (ZF=0)                                                                         |
+| 1      | 000011  | jz       | rel       |           |           | Jump if zero/equal (ZF=1)                                                                         |
 | 2      | 000100  | sub      | r/m       | r/m       |           | Subtract the register or memory value (operand 2) into the register or memory (operand 1)         |
 | 2      | 000101  | sub      | r/m       | i         |           | Subtract the immediate value (operand 2) into the register or memory (operand 1)                  |
 | 1      | 000110  | mov      | r/m       | i         |           | Move the immediate value (operand 2) into the register of memory (operand 1)                      |
-| 1      | 000111  | jnz      | rel       |           |           | Jump if not zero/not equal (ZF=1)                                                                 |
+| 1      | 000111  | jnz      | rel       |           |           | Jump if not zero/not equal (ZF=0)                                                                 |
 | 2      | 001000  | mul      | r/m       | r/m       |           | Multiply the register or memory value (operand 2) into the register or memory (operand 1)         |
 | 2      | 001001  | mul      | r/m       | i         |           | Multiply the immediate value (operand 2) into the register or memory (operand 1)                  |
 |        | 001010  |          |           |           |           |                                                                                                   |
@@ -170,7 +170,7 @@ Instructions
 
 The send/recv instructions can take 4 - 12 cycles because of timeout threshold. This means that if the send/recv does not pair up with another within 12 cycles then it will have reached it's max threshold and continue. If the send/recv do pair up they will take a minimum of 4 cycles (if they were executed at the same time) but could take anywhere from 4 to 12. This does not include the time for the data transfer to complete.
 
-A failed send/recv will set the z flag to zero in the flags register. If they succeed they will set the z flag to one.
+A failed send/recv will set the z flag to one in the flags register. If they succeed they will set the z flag to zero.
 
 
 ### Operand Types:

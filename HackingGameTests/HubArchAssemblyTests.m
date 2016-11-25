@@ -514,7 +514,7 @@
     
     CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
     
-    CCOrderedCollection Errors;
+    CCOrderedCollection Errors = NULL;
     HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
