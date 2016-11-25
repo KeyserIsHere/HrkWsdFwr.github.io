@@ -866,70 +866,224 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJMP(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJZ(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if (Processor->state.flags & HKHubArchProcessorFlagsZero)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNZ(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((Processor->state.flags & HKHubArchProcessorFlagsZero) == 0)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJS(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if (Processor->state.flags & HKHubArchProcessorFlagsSign)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNS(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((Processor->state.flags & HKHubArchProcessorFlagsSign) == 0)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJO(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if (Processor->state.flags & HKHubArchProcessorFlagsOverflow)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJNO(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((Processor->state.flags & HKHubArchProcessorFlagsOverflow) == 0)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((_Bool)(Processor->state.flags & HKHubArchProcessorFlagsSign) != (_Bool)(Processor->state.flags & HKHubArchProcessorFlagsOverflow))
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSGE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((_Bool)(Processor->state.flags & HKHubArchProcessorFlagsSign) == (_Bool)(Processor->state.flags & HKHubArchProcessorFlagsOverflow))
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSLE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((Processor->state.flags & HKHubArchProcessorFlagsZero) || ((_Bool)(Processor->state.flags & HKHubArchProcessorFlagsSign) != (_Bool)(Processor->state.flags & HKHubArchProcessorFlagsOverflow)))
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJSG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if (((Processor->state.flags & HKHubArchProcessorFlagsZero) == 0) && ((_Bool)(Processor->state.flags & HKHubArchProcessorFlagsSign) == (_Bool)(Processor->state.flags & HKHubArchProcessorFlagsOverflow)))
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if (Processor->state.flags & HKHubArchProcessorFlagsCarry)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUGE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((Processor->state.flags & HKHubArchProcessorFlagsCarry) == 0)
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJULE(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if ((Processor->state.flags & HKHubArchProcessorFlagsCarry) || (Processor->state.flags & HKHubArchProcessorFlagsZero))
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationJUG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    if (Processor->cycles < 1) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= 1;
+    
+    if (((Processor->state.flags & HKHubArchProcessorFlagsCarry) == 0) && ((Processor->state.flags & HKHubArchProcessorFlagsZero) == 0))
+    {
+        Processor->state.pc += State->operand[0].value;
+        
+        return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
+    }
+    
+    return HKHubArchInstructionOperationResultSuccess;
 }

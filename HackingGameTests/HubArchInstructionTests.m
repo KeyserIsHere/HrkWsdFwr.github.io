@@ -92,6 +92,602 @@
     XCTAssertEqual(Processor->state.pc, 4, @"Processes all jumps once and first jump");
     
     HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jz A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jnz A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = 0;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "js A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsSign;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jns A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = 0;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jo A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jno A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = 0;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jsl A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jsge A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jsle A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jsg A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsSign;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jul A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsCarry;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "juge A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = 0;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsCarry;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jule A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsCarry;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    HKHubArchProcessorDestroy(Processor);
+    
+    
+    
+    Source = "jug A\nnop\nA: nop\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Processor->state.flags = HKHubArchProcessorFlagsCarry;
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 2);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process jump");
+    
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags |= HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = HKHubArchProcessorFlagsZero;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    Processor->state.flags = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 3);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    HKHubArchProcessorDestroy(Processor);
 }
 
 @end
