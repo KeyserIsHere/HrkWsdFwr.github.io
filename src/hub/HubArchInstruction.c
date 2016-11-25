@@ -240,7 +240,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                             uint8_t Result;
                             if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines))
                             {
-                                if (Instructions[Loop].operands[Index] & HKHubArchInstructionOperandRel) Result -= Offset;
+                                if (Instructions[Loop].operands[Index] == HKHubArchInstructionOperandRel) Result -= Offset;
                                 
                                 Bytes[Count++] |= Result >> (8 - FreeBits);
                                 Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
@@ -271,6 +271,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                     }
                                     
                                     else Bytes[Count] |= (Registers[Loop].encoding & CCBitSet(FreeBits)) << (FreeBits - 3);
+                                    break;
                                 }
                             }
                         }
@@ -758,6 +759,7 @@ HKHubArchInstructionOperationResult HKHubArchInstructionExecute(HKHubArchProcess
 #pragma mark - Instruction Operations
 
 #pragma mark Arithmetic
+
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMOV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
     return HKHubArchInstructionOperationResultFailure;
