@@ -33,6 +33,50 @@
 
 @implementation HubArchInstructionTests
 
+-(void) testMoving
+{
+    const char *Source =
+        "mov r0,value\n"
+        "mov r1,[value]\n"
+        "mov r2,[value+1]\n"
+        "mov r3,[value+r1]\n"
+        "mov [r0+r1],r2\n"
+        "mov [r0+r2],r1\n"
+        "mov r0,[r0+r2]\n"
+        "mov flags,5\n"
+        "mov pc,value+4\n"
+        "value: .byte 3, 2, 1, 0\n"
+        "mov r0,0\n"
+        "hlt\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process first move");
+    
+    HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->cycles, 54, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->state.pc, 34, @"Should have reached the end");
+    XCTAssertEqual(Processor->state.flags, 5, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[1], 3, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[2], 2, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[3], 0, @"Should have the correct value");
+    
+    HKHubArchProcessorDestroy(Processor);
+}
+
 -(void) testBranching
 {
     const char *Source =

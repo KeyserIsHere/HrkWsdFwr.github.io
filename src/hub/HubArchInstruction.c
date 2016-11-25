@@ -758,11 +758,83 @@ HKHubArchInstructionOperationResult HKHubArchInstructionExecute(HKHubArchProcess
 
 #pragma mark - Instruction Operations
 
+static inline uint8_t *HKHubArchInstructionOperandDestinationValue(HKHubArchProcessor Processor, const HKHubArchInstructionOperandValue *Operand)
+{
+    switch (Operand->type)
+    {
+        case HKHubArchInstructionOperandR:
+            if (Operand->reg & HKHubArchInstructionRegisterGeneralPurpose) return Processor->state.r + (Operand->reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask);
+            else if (Operand->reg == HKHubArchInstructionRegisterFlags) return &Processor->state.flags;
+            else if (Operand->reg == HKHubArchInstructionRegisterPC) return &Processor->state.pc;
+            break;
+            
+        case HKHubArchInstructionOperandM:
+        {
+            uint8_t Offset;
+            switch (Operand->memory.type)
+            {
+                case HKHubArchInstructionMemoryOffset:
+                    Offset = Operand->memory.offset;
+                    break;
+                    
+                case HKHubArchInstructionMemoryRegister:
+                    Offset = Processor->state.r[Operand->memory.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
+                    break;
+                    
+                case HKHubArchInstructionMemoryRelativeOffset:
+                    Offset = Processor->state.r[Operand->memory.relativeOffset.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask] + Operand->memory.relativeOffset.offset;
+                    break;
+                    
+                case HKHubArchInstructionMemoryRelativeRegister:
+                    Offset = Processor->state.r[Operand->memory.relativeReg[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask] + Processor->state.r[Operand->memory.relativeReg[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
+                    break;
+            }
+            
+            return &Processor->memory[Offset];
+        }
+            
+        default:
+            break;
+    }
+    
+    CCAssertLog(0, "Should be a correctly formatted operand");
+    
+    return NULL;
+}
+
+static inline const uint8_t *HKHubArchInstructionOperandSourceValue(HKHubArchProcessor Processor, const HKHubArchInstructionOperandValue *Operand)
+{
+    switch (Operand->type)
+    {
+        case HKHubArchInstructionOperandI:
+            return &Operand->value;
+            
+        case HKHubArchInstructionOperandR:
+        case HKHubArchInstructionOperandM:
+            return HKHubArchInstructionOperandDestinationValue(Processor, Operand);
+            
+        default:
+            break;
+    }
+    
+    CCAssertLog(0, "Should be a correctly formatted operand");
+    
+    return NULL;
+}
+
 #pragma mark Arithmetic
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMOV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryWrite) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    
+    if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= Cycles;
+    uint8_t *Dest = HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[0]);
+    *Dest = *HKHubArchInstructionOperandSourceValue(Processor, &State->operand[1]);
+    
+    return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
