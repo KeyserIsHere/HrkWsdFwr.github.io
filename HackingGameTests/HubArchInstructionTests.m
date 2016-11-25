@@ -46,7 +46,7 @@
     
     CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
     
-    CCOrderedCollection Errors;
+    CCOrderedCollection Errors = NULL;
     HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
@@ -125,6 +125,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
     
+    //ZF = 1
+    _Bool ResultsJZ[16] = {
+        //0000  000z  00c0  00cz
+        FALSE, TRUE, FALSE, TRUE,
+        //0s00  0s0z  0sc0  0scz
+        FALSE, TRUE, FALSE, TRUE,
+        //o000  o00z  o0c0  o0cz
+        FALSE, TRUE, FALSE, TRUE,
+        //os00  os0z  osc0  oscz
+        FALSE, TRUE, FALSE, TRUE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJZ[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -158,6 +180,28 @@
     HKHubArchProcessorSetCycles(Processor, 3);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    //ZF = 0
+    _Bool ResultsJNZ[16] = {
+        //0000  000z  00c0  00cz
+        TRUE, FALSE, TRUE, FALSE,
+        //0s00  0s0z  0sc0  0scz
+        TRUE, FALSE, TRUE, FALSE,
+        //o000  o00z  o0c0  o0cz
+        TRUE, FALSE, TRUE, FALSE,
+        //os00  os0z  osc0  oscz
+        TRUE, FALSE, TRUE, FALSE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJNZ[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
     
     HKHubArchProcessorDestroy(Processor);
     
@@ -193,6 +237,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
     
+    //SF = 1
+    _Bool ResultsJS[16] = {
+        //0000  000z  00c0  00cz
+        FALSE, FALSE, FALSE, FALSE,
+        //0s00  0s0z  0sc0  0scz
+        TRUE, TRUE, TRUE, TRUE,
+        //o000  o00z  o0c0  o0cz
+        FALSE, FALSE, FALSE, FALSE,
+        //os00  os0z  osc0  oscz
+        TRUE, TRUE, TRUE, TRUE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJS[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -226,6 +292,28 @@
     HKHubArchProcessorSetCycles(Processor, 3);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    //SF = 1
+    _Bool ResultsJNS[16] = {
+        //0000  000z  00c0  00cz
+        TRUE, TRUE, TRUE, TRUE,
+        //0s00  0s0z  0sc0  0scz
+        FALSE, FALSE, FALSE, FALSE,
+        //o000  o00z  o0c0  o0cz
+        TRUE, TRUE, TRUE, TRUE,
+        //os00  os0z  osc0  oscz
+        FALSE, FALSE, FALSE, FALSE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJNS[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
     
     HKHubArchProcessorDestroy(Processor);
     
@@ -261,6 +349,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
     
+    //OF = 1
+    _Bool ResultsJO[16] = {
+        //0000  000z  00c0  00cz
+        FALSE, FALSE, FALSE, FALSE,
+        //0s00  0s0z  0sc0  0scz
+        FALSE, FALSE, FALSE, FALSE,
+        //o000  o00z  o0c0  o0cz
+        TRUE, TRUE, TRUE, TRUE,
+        //os00  os0z  osc0  oscz
+        TRUE, TRUE, TRUE, TRUE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJO[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -294,6 +404,28 @@
     HKHubArchProcessorSetCycles(Processor, 3);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    //OF = 0
+    _Bool ResultsJNO[16] = {
+        //0000  000z  00c0  00cz
+        TRUE, TRUE, TRUE, TRUE,
+        //0s00  0s0z  0sc0  0scz
+        TRUE, TRUE, TRUE, TRUE,
+        //o000  o00z  o0c0  o0cz
+        FALSE, FALSE, FALSE, FALSE,
+        //os00  os0z  osc0  oscz
+        FALSE, FALSE, FALSE, FALSE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJNO[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
     
     HKHubArchProcessorDestroy(Processor);
     
@@ -341,6 +473,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
     
+    //SF <> OF
+    _Bool ResultsJSL[16] = {
+        //0000  000z  00c0  00cz
+        FALSE, FALSE, FALSE, FALSE,
+        //0s00  0s0z  0sc0  0scz
+        TRUE, TRUE, TRUE, TRUE,
+        //o000  o00z  o0c0  o0cz
+        TRUE, TRUE, TRUE, TRUE,
+        //os00  os0z  osc0  oscz
+        FALSE, FALSE, FALSE, FALSE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJSL[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -386,6 +540,28 @@
     HKHubArchProcessorSetCycles(Processor, 3);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    //SF = OF
+    _Bool ResultsJSGE[16] = {
+        //0000  000z  00c0  00cz
+        TRUE, TRUE, TRUE, TRUE,
+        //0s00  0s0z  0sc0  0scz
+        FALSE, FALSE, FALSE, FALSE,
+        //o000  o00z  o0c0  o0cz
+        FALSE, FALSE, FALSE, FALSE,
+        //os00  os0z  osc0  oscz
+        TRUE, TRUE, TRUE, TRUE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJSGE[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
     
     HKHubArchProcessorDestroy(Processor);
     
@@ -457,6 +633,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
     
+    //ZF = 1 or SF <> OF
+    _Bool ResultsJSLE[16] = {
+        //0000  000z  00c0  00cz
+        FALSE, TRUE, FALSE, TRUE,
+        //0s00  0s0z  0sc0  0scz
+        TRUE, TRUE, TRUE, TRUE,
+        //o000  o00z  o0c0  o0cz
+        TRUE, TRUE, TRUE, TRUE,
+        //os00  os0z  osc0  oscz
+        FALSE, TRUE, FALSE, TRUE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJSLE[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -527,6 +725,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
     
+    //ZF = 0 and SF = OF
+    _Bool ResultsJSG[16] = {
+        //0000  000z  00c0  00cz
+        TRUE, FALSE, TRUE, FALSE,
+        //0s00  0s0z  0sc0  0scz
+        FALSE, FALSE, FALSE, FALSE,
+        //o000  o00z  o0c0  o0cz
+        FALSE, FALSE, FALSE, FALSE,
+        //os00  os0z  osc0  oscz
+        TRUE, FALSE, TRUE, FALSE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJSG[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -561,6 +781,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
     
+    //CF = 1
+    _Bool ResultsJUL[16] = {
+        //0000  000z  00c0  00cz
+        FALSE, FALSE, TRUE, TRUE,
+        //0s00  0s0z  0sc0  0scz
+        FALSE, FALSE, TRUE, TRUE,
+        //o000  o00z  o0c0  o0cz
+        FALSE, FALSE, TRUE, TRUE,
+        //os00  os0z  osc0  oscz
+        FALSE, FALSE, TRUE, TRUE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJUL[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -594,6 +836,28 @@
     HKHubArchProcessorSetCycles(Processor, 3);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    
+    //CF = 0
+    _Bool ResultsJUGE[16] = {
+        //0000  000z  00c0  00cz
+        TRUE, TRUE, FALSE, FALSE,
+        //0s00  0s0z  0sc0  0scz
+        TRUE, TRUE, FALSE, FALSE,
+        //o000  o00z  o0c0  o0cz
+        TRUE, TRUE, FALSE, FALSE,
+        //os00  os0z  osc0  oscz
+        TRUE, TRUE, FALSE, FALSE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJUGE[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
     
     HKHubArchProcessorDestroy(Processor);
     
@@ -641,6 +905,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
     
+    //CF = 1 or ZF = 1
+    _Bool ResultsJULE[16] = {
+        //0000  000z  00c0  00cz
+        FALSE, TRUE, TRUE, TRUE,
+        //0s00  0s0z  0sc0  0scz
+        FALSE, TRUE, TRUE, TRUE,
+        //o000  o00z  o0c0  o0cz
+        FALSE, TRUE, TRUE, TRUE,
+        //os00  os0z  osc0  oscz
+        FALSE, TRUE, TRUE, TRUE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJULE[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
+    
     HKHubArchProcessorDestroy(Processor);
     
     
@@ -686,6 +972,28 @@
     HKHubArchProcessorSetCycles(Processor, 3);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+    
+    //CF = 0 and ZF = 0
+    _Bool ResultsJUG[16] = {
+        //0000  000z  00c0  00cz
+        TRUE, FALSE, FALSE, FALSE,
+        //0s00  0s0z  0sc0  0scz
+        TRUE, FALSE, FALSE, FALSE,
+        //o000  o00z  o0c0  o0cz
+        TRUE, FALSE, FALSE, FALSE,
+        //os00  os0z  osc0  oscz
+        TRUE, FALSE, FALSE, FALSE
+    };
+    
+    for (int Loop = 0; Loop < 16; Loop++)
+    {
+        Processor->state.flags = Loop;
+        Processor->state.pc = 0;
+        HKHubArchProcessorSetCycles(Processor, 3);
+        HKHubArchProcessorRun(Processor);
+        if (ResultsJUG[Loop]) XCTAssertEqual(Processor->state.pc, 3, @"Processes jump");
+        else XCTAssertEqual(Processor->state.pc, 2, @"Processes jump but doesn't take it");
+    }
     
     HKHubArchProcessorDestroy(Processor);
 }
