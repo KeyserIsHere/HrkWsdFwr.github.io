@@ -45,7 +45,9 @@ typedef enum {
     HKHubArchProcessorFlagsZero = (1 << 0),
     HKHubArchProcessorFlagsCarry = (1 << 1),
     HKHubArchProcessorFlagsSign = (1 << 2),
-    HKHubArchProcessorFlagsOverflow = (1 << 3)
+    HKHubArchProcessorFlagsOverflow = (1 << 3),
+    
+    HKHubArchProcessorFlagsMask = HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsOverflow
 } HKHubArchProcessorFlags;
 
 /*!

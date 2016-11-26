@@ -839,7 +839,21 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMOV(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    const size_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryWrite) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    
+    if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= Cycles;
+    uint8_t *Dest = HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[0]);
+    const uint8_t *Src = HKHubArchInstructionOperandSourceValue(Processor, &State->operand[1]);
+    
+    uint8_t Result = *Dest + *Src;
+    
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | (Result == 0 ? HKHubArchProcessorFlagsZero : (Result & 0x80 ? (HKHubArchProcessorFlagsSign | (((*Dest | *Src) & 0x80) == 0 ? HKHubArchProcessorFlagsOverflow : 0)) : 0)) | (Result < *Dest ? HKHubArchProcessorFlagsCarry : 0);
+    
+    *Dest = Result;
+    
+    return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSUB(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
