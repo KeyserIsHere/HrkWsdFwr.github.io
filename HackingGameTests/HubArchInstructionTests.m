@@ -251,6 +251,1617 @@
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 127, @"Should be unchanged");
     
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jz skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jnz skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "js skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jns skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jo skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jno skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jsl skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jsge skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jsle skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jsg skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jul skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "juge skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jule skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    
+    
+    Source =
+        "mov r2,1\n"
+        "cmp r0,r1\n"
+        "jug skip\n"
+        "mov r2,0\n"
+        "skip: hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 1;
+    Processor->state.r[1] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -1;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 5;
+    Processor->state.r[1] = 20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    Processor->state.r[0] = 20;
+    Processor->state.r[1] = 5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -5;
+    Processor->state.r[1] = -20;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 1, @"Jump should be taken");
+    
+    Processor->state.r[0] = -20;
+    Processor->state.r[1] = -5;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 20);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
