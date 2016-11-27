@@ -894,10 +894,11 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMUL(HKHu
     const uint8_t *Src = HKHubArchInstructionOperandSourceValue(Processor, &State->operand[1]);
     
     const uint8_t Result = *Dest * *Src;
+    const int32_t Temp = (int32_t)*(int8_t*)Dest * (int32_t)*(int8_t*)Src;
     const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
-    const HKHubArchProcessorFlags Carry = ((*Dest ^ *Src) & 0x80) ? (Result > *Dest ? HKHubArchProcessorFlagsCarry : 0) : (Result < *Dest ? HKHubArchProcessorFlagsCarry : 0);
+    const HKHubArchProcessorFlags Carry = (((uint16_t)*Dest * (uint16_t)*Src) & 0xff00 ? HKHubArchProcessorFlagsCarry : 0);
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
-    const HKHubArchProcessorFlags Overflow = ((*Dest ^ *Src) & 0x80) ? (Result & 0x80 ? 0 : HKHubArchProcessorFlagsOverflow) : (Result & 0x80 ? HKHubArchProcessorFlagsOverflow : (Result < *Dest ? HKHubArchProcessorFlagsOverflow : 0));
+    const HKHubArchProcessorFlags Overflow = (*Dest ^ *Src) & 0x80 ? (((Result & 0x80) && (Temp == *(int8_t*)&Result)) ? 0 : HKHubArchProcessorFlagsOverflow) : ((!(Result & 0x80) && !(Temp & 0xffffff00)) ? 0 : HKHubArchProcessorFlagsOverflow);
     
     Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
