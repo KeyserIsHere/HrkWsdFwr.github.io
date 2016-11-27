@@ -175,6 +175,126 @@
     HKHubArchProcessorDestroy(Processor);
 }
 
+-(void) testMultiplication
+{
+    const char *Source =
+        "mul r0,r1\n"
+        "hlt\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 0, @"Not enough cycles to process add");
+    
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->cycles, 6, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 128, @"Should have the correct value");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 128, @"Should have the correct value");
+    
+    Processor->state.r[0] = 0;
+    Processor->state.r[1] = 1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    Processor->state.r[0] = 2;
+    Processor->state.r[1] = -1;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], (uint8_t)-2, @"Should have the correct value");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 2;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsSign, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 254, @"Should have the correct value");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 128, @"Should have the correct value");
+    
+    Processor->state.r[0] = 128;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    Processor->state.r[0] = 127;
+    Processor->state.r[1] = 127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 1, @"Should have the correct value");
+    
+    Processor->state.r[0] = 255;
+    Processor->state.r[1] = 2;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 254, @"Should have the correct value");
+    
+    Processor->state.r[0] = 2;
+    Processor->state.r[1] = 255;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 254, @"Should have the correct value");
+    
+    Processor->state.r[0] = -2;
+    Processor->state.r[1] = 128;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    
+    HKHubArchProcessorDestroy(Processor);
+}
+
 -(void) testComparison
 {
     const char *Source =
