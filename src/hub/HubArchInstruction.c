@@ -847,9 +847,13 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHu
     uint8_t *Dest = HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[0]);
     const uint8_t *Src = HKHubArchInstructionOperandSourceValue(Processor, &State->operand[1]);
     
-    uint8_t Result = *Dest + *Src;
+    const uint8_t Result = *Dest + *Src;
+    const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
+    const HKHubArchProcessorFlags Carry = (Result < *Dest ? HKHubArchProcessorFlagsCarry : 0);
+    const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
+    const HKHubArchProcessorFlags Overflow = ((*Dest ^ *Src) & 0x80) ? 0 : (((*Dest ^ Result) & 0x80) ? HKHubArchProcessorFlagsOverflow : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | (Result == 0 ? HKHubArchProcessorFlagsZero : (Result & 0x80 ? (HKHubArchProcessorFlagsSign | (((*Dest | *Src) & 0x80) == 0 ? HKHubArchProcessorFlagsOverflow : 0)) : 0)) | (Result < *Dest ? HKHubArchProcessorFlagsCarry : 0);
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     *Dest = Result;
     
