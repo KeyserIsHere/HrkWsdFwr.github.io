@@ -43,6 +43,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationXOR(HKHu
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationOR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationAND(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNOT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNEG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationHLT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State);
 
@@ -117,7 +118,7 @@ static const struct {
     { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM  } },
     { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
     { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
-    { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
+    { CC_STRING("neg")     , HKHubArchInstructionOperationNEG,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
     { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
     { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
     { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
@@ -1139,6 +1140,28 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNOT(HKHu
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     
     Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
+    
+    *Dest = Result;
+    
+    return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
+}
+
+static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNEG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
+{
+    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite));
+    
+    if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= Cycles;
+    uint8_t *Dest = HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[0]);
+    
+    const uint8_t Result = -*Dest;
+    const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
+    const HKHubArchProcessorFlags Carry = (*Dest ? HKHubArchProcessorFlagsCarry : 0);
+    const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
+    const HKHubArchProcessorFlags Overflow = ((*Dest & 0x80) && (Result & 0x80) ? HKHubArchProcessorFlagsOverflow : 0);
+    
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     *Dest = Result;
     
