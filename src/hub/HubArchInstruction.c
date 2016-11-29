@@ -111,7 +111,7 @@ static const struct {
     { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
     { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("recv")    , HKHubArchInstructionOperationRECV, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA } },
+    { CC_STRING("recv")    , HKHubArchInstructionOperationRECV, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA } },
     { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA } },
     { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA } },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
