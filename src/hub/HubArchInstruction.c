@@ -976,7 +976,23 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSMOD(HKH
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUMOD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    const size_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    
+    if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+    
+    Processor->cycles -= Cycles;
+    uint8_t *Dest = HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[0]);
+    const uint8_t *Src = HKHubArchInstructionOperandSourceValue(Processor, &State->operand[1]);
+    
+    const uint8_t Result = *Src == 0 ? 0 : *Dest % *Src;
+    const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
+    const HKHubArchProcessorFlags DivideByZero = *Src == 0 ? (HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry) : 0;
+    
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | DivideByZero;
+    
+    *Dest = Result;
+    
+    return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationCMP(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
