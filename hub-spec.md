@@ -142,7 +142,7 @@ Instructions
 | 1      | 100100  | shr      | r/m       | r/m       |           | Logical shift right by register or memory value (operand 2) into register or memory (operand 1)   |
 | 1      | 100101  | shr      | r/m       | i         |           | Logical shift right by immediate value (operand 2) into register or memory (operand 1)            |
 |        | 100110  |          |           |           |           |                                                                                                   |
-| 4 - 12 | 100111  | recv     | i         | m         |           | Store message (operand 2) received from port (operand 1)                                          |
+| 4 - 12 | 100111  | recv     | r         | m         |           | Store message (operand 2) received from port (operand 1)                                          |
 | 1      | 101000  | xor      | r/m       | r/m       |           | Logical exclusive OR the register or memory value (operand 2) into register or memory (operand 1) |
 | 1      | 101001  | xor      | r/m       | i         |           | Logical exclusive OR the immediate value (operand 2) into register or memory (operand 1)          |
 |        | 101010  |          |           |           |           |                                                                                                   |
