@@ -93,6 +93,29 @@
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
     
+    
+    
+    Source =
+        "add flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 255;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
@@ -171,6 +194,29 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 128, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "sub flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    
     
     HKHubArchProcessorDestroy(Processor);
 }
@@ -290,6 +336,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "mul flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 255;
+    Processor->state.r[1] = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     
     
     HKHubArchProcessorDestroy(Processor);
@@ -422,6 +490,28 @@
     
     
     Source =
+        "sdiv flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, 0, @"Should have the correct value");
+    
+    
+    
+    Source =
         "udiv r0,r1\n"
         "hlt\n"
     ;
@@ -542,6 +632,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "udiv flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, 0, @"Should have the correct value");
     
     
     HKHubArchProcessorDestroy(Processor);
@@ -674,6 +786,28 @@
     
     
     Source =
+        "smod flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    
+    
+    
+    Source =
         "umod r0,r1\n"
         "hlt\n"
     ;
@@ -796,6 +930,28 @@
     XCTAssertEqual(Processor->state.r[0], 246, @"Should have the correct value");
     
     
+    
+    Source =
+        "umod flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
@@ -882,6 +1038,29 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "shl flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 0x80;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    
     
     HKHubArchProcessorDestroy(Processor);
 }
@@ -970,6 +1149,29 @@
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
     
+    
+    
+    Source =
+        "shr flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
@@ -1025,6 +1227,29 @@
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0x87, @"Should have the correct value");
     
+    
+    
+    Source =
+        "xor flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
@@ -1079,6 +1304,29 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0x87, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "or flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 0;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, 0, @"Should have the correct value");
+    
     
     HKHubArchProcessorDestroy(Processor);
 }
@@ -1143,6 +1391,29 @@
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0x80, @"Should have the correct value");
     
+    
+    
+    Source =
+        "and flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 1;
+    Processor->state.r[1] = 1;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, 0, @"Should have the correct value");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
@@ -1202,6 +1473,28 @@
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
     
+    
+    
+    Source =
+        "not flags\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 255;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
@@ -1260,6 +1553,28 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 128, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "neg flags\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = 255;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsCarry, @"Should have the correct value");
+    
     
     HKHubArchProcessorDestroy(Processor);
 }
@@ -2949,6 +3264,28 @@
     HKHubArchProcessorSetCycles(Processor, 20);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.r[2], 0, @"Jump should not be taken");
+    
+    
+    
+    Source =
+        "cmp flags,r1\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Processor->state.flags = HKHubArchProcessorFlagsZero;
+    Processor->state.r[1] = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     
     
     HKHubArchProcessorDestroy(Processor);
