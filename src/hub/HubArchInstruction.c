@@ -854,9 +854,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHu
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     const HKHubArchProcessorFlags Overflow = ((*Dest ^ *Src) & 0x80) ? 0 : (((*Dest ^ Result) & 0x80) ? HKHubArchProcessorFlagsOverflow : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -877,9 +876,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSUB(HKHu
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     const HKHubArchProcessorFlags Overflow = ((*Dest ^ *Src) & 0x80) ? (((*Dest ^ Result) & 0x80) ? HKHubArchProcessorFlagsOverflow : 0) : 0;
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -901,9 +899,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMUL(HKHu
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     const HKHubArchProcessorFlags Overflow = (*Dest ^ *Src) & 0x80 ? (((Result & 0x80) && (Temp == *(int8_t*)&Result)) ? 0 : HKHubArchProcessorFlagsOverflow) : ((!(Result & 0x80) && !(Temp & 0xffffff00)) ? 0 : HKHubArchProcessorFlagsOverflow);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -924,9 +921,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSDIV(HKH
     const HKHubArchProcessorFlags Overflow = ((*Dest & *Src) & 0x80) && (Result & 0x80) ? HKHubArchProcessorFlagsOverflow : 0;
     const HKHubArchProcessorFlags DivideByZero = *Src == 0 ? (HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry) : 0;
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign | Overflow | DivideByZero;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign | Overflow | DivideByZero;
     
     return HKHubArchInstructionOperationResultSuccess | ((uint8_t*)Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -945,9 +941,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUDIV(HKH
     const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
     const HKHubArchProcessorFlags DivideByZero = *Src == 0 ? (HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry) : 0;
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | DivideByZero;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | DivideByZero;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -968,9 +963,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSMOD(HKH
     const HKHubArchProcessorFlags Overflow = ((*Dest & *Src) & 0x80) && (Result & 0x80) ? HKHubArchProcessorFlagsOverflow : 0;
     const HKHubArchProcessorFlags DivideByZero = *Src == 0 ? (HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry) : 0;
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign | Overflow | DivideByZero;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign | Overflow | DivideByZero;
     
     return HKHubArchInstructionOperationResultSuccess | ((uint8_t*)Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -989,9 +983,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUMOD(HKH
     const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
     const HKHubArchProcessorFlags DivideByZero = *Src == 0 ? (HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry) : 0;
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | DivideByZero;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | DivideByZero;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -1033,9 +1026,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHL(HKHu
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     const HKHubArchProcessorFlags Overflow = ((*Dest >> (8 - *Src)) || ((*Src >= 8) && (*Dest)) ? HKHubArchProcessorFlagsOverflow : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -1056,9 +1048,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHR(HKHu
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     const HKHubArchProcessorFlags Overflow = ((uint8_t)(*Dest << (8 - *Src)) || ((*Src >= 8) && (*Dest)) ? HKHubArchProcessorFlagsOverflow : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -1077,9 +1068,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationXOR(HKHu
     const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -1098,9 +1088,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationOR(HKHub
     const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -1119,9 +1108,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationAND(HKHu
     const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -1139,9 +1127,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNOT(HKHu
     const HKHubArchProcessorFlags Zero = (Result == 0 ? HKHubArchProcessorFlagsZero : 0);
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Sign;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
@@ -1161,9 +1148,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNEG(HKHu
     const HKHubArchProcessorFlags Sign = (Result & 0x80 ? HKHubArchProcessorFlagsSign : 0);
     const HKHubArchProcessorFlags Overflow = ((*Dest & 0x80) && (Result & 0x80) ? HKHubArchProcessorFlagsOverflow : 0);
     
-    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
-    
     *Dest = Result;
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsMask) | Zero | Carry | Sign | Overflow;
     
     return HKHubArchInstructionOperationResultSuccess | (Dest == &Processor->state.pc ? HKHubArchInstructionOperationResultFlagSkipPC : 0);
 }
