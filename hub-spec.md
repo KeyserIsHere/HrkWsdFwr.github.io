@@ -52,33 +52,50 @@ Accessing (both r/w) a register is done at a rate of _0 cycles_. __To be tested.
 
 The flags register has the bit layout `0000oscz`.
 
-The zero flag indicates a zero result and is set by the following operations:
+#### Zero Flag:
 
-* Arithmetic operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
-* Logical operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
-* Compare operations - if the result of the operation is zero the flag is set to 1, if the result is nonzero the flag is set to 0 (or unset).
-* Port operations - if the port operation fails the flag is set to 1, if the port operation succeeds the flag is set to 0 (or unset).
+For the instructions `add`, `sub`, `mul`, `sdiv`, `udiv`, `smod`, `umod`, `cmp`, `shl`, `shr`, `xor`, `or`, `and`, `not`, `neg`, this flag is set if the result is zero. e.g. `0 + 0 = 0 (is zero)`, `0 / 1 = 0 (is zero)`, `1 / 0 = 0 (is zero)`, `1 >> 1 = 0 (is zero)`.
 
+For the instructions `send`, `recv`, this flag is set if the port operation fails, otherwise if the port operation succeeds it is cleared.
 
-The carry flag indicates the result has carried a bit beyond the 8-bit width and is set by the following operations:
-
-* Arithmetic operations - if the result of the operation carries the highest bit beyond 8-bits the flag is set to 1, if it does not the flag is set to 0 (or unset).
-* Logical operations - if the result of the operation carries the highest bit beyond 8-bits the flag is set to 1, if it does not the flag is set to 0 (or unset).
-* Compare operations - if the result of the operation carries the highest bit beyond 8-bits the flag is set to 1, if it does not the flag is set to 0 (or unset).
+All other instructions do not modify this flag.
 
 
-The sign flag indicates the signedness of the result and is set by the following operations:
+#### Carry Flag:
 
-* Arithmetic operations - if the result of the operation has the most significant bit set the sign flag is set to 1, if the result does not then the flag is set to 0 (or unset).
-* Logical operations - if the result of the operation has the most significant bit set the sign flag is set to 1, if the result does not then the flag is set to 0 (or unset).
-* Compare operations - if the result of the operation has the most significant bit set the sign flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+For the instructions `add`, `sub`, `mul`, `cmp`, this flag is set if the result has carried a bit beyond the 8-bit width. e.g. `255 + 1 = 0 (carry is set)`.
+
+For the instructions `sdiv`, `udiv`, `smod`, `umod`, this flag is set if there is a divide (mod) by zero error. e.g. `1 / 0 = 0 (carry is set)`.
+
+For the instructions `shl`, `shr`, this flag contains the last bit carried outside the 8-bit width. e.g. `0xa0 << 1 = 0x40 (carry is set)`, `0xa0 << 2 = 0x80 (carry is cleared)`.
+
+For the instruction `neg`, this flag is set if the source is a non-zero value, otherwise it is cleared.
+
+For the instructions `xor`, `or`, `and`, `not`, this flag is cleared.
+
+All other instructions do not modify this flag.
 
 
-The overflow flag indicates the result has overflowed beyond the 8-bit width and is set by the following operations:
+#### Sign Flag:
 
-* Arithmetic operations - if the result of the operation overflows the overflow flag is set to 1, if the result does not then the flag is set to 0 (or unset).
-* Logical operations - if the result of the operation overflows the overflow flag is set to 1, if the result does not then the flag is set to 0 (or unset).
-* Compare operations - if the result of the operation overflows the overflow flag is set to 1, if the result does not then the flag is set to 0 (or unset).
+For the instructions `add`, `sub`, `mul`, `sdiv`, `smod`, `cmp`, `shl`, `shr`, `xor`, `or`, `and`, `not`, `neg`, this flag is set if the result has its sign bit set (most significant bit).
+
+For the instructions `udiv`, `umod`, this flag is cleared.
+
+All other instructions do not modify this flag.
+
+
+#### Overflow Flag:
+
+For the instructions `add`, `sub`, `mul`, `sdiv`, `smod`, `neg`, `cmp`, this flag is set if the result overflows from one sign to the other due to not enough bits. e.g. `0x7f + 1 = 0x80 (overflows from + to -)`, `0x80 - 1 = 0x7f (overflows from - to +)`, `0x80 * -1 = 0x80 (overflows from + to -)`, `-0x80 = 0x80 (overflows from + to -)`.
+
+For the instructions `sdiv`, `udiv`, `smod`, `umod`, this flag is set if there is a divide (mod) by zero error. e.g. `1 / 0 = 0 (overflow is set)`.
+
+For the instructions `shl`, `shr`, this flag is set if any set bits have moved outside of the 8-bit range. e.g. `0x70 << 2 = 0xc0 (overflow is set because bit originally at 0x40 has moved beyond the representable bounds)`.
+
+For the instructions `xor`, `or`, `and`, `not`, this flag is cleared.
+
+All other instructions do not modify this flag.
 
 
 Memory
