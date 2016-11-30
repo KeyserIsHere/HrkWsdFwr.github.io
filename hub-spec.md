@@ -50,7 +50,7 @@ Accessing (both r/w) a register is done at a rate of _0 cycles_. __To be tested.
 
 ### Flags:
 
-The flags register has the bit layout `0000oscz`.
+The flags register has the bit layout `0000oscz`. The register may be used as the source or destination for any register operand. If it is used as the destination operand, the operation will modify the current value stored in the register, followed by modifying any flag bits that would normally be modified by the operation.
 
 #### Zero Flag:
 
