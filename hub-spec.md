@@ -257,3 +257,14 @@ nop # 11111000 : 0xf8
 send r0, r2, [r3+5]  # 01101110 01100010 00000101 11000000 : 0x6e 0x62 0x05 0xc0
 send 0, 0xff, [r3+5] # 11110000 00000011 11111100 10000001 01110000 : 0xf0 0x03 0xfc 0x81 0x70
 ```
+
+Calculating Cycles
+------------------
+
+Cycles are calculated based on the number of cycles required to read the bytes that make up the operand + the number of cycles needed to perform the operation + any additional cycles required for any other memory read/writes (such as from memory operands).
+
+```
+mov r0, 5 # cycles: 4 = read(3) + instruction(1)
+mov [r0], [r1] #cycles: 6 = read(3) + instruction(1) + src.read(1) + dest.write(1)
+add [r0], r2 #cycles: 6 = read(2) + instruction(2) + dest.read(1) + dest.write(1)
+```
