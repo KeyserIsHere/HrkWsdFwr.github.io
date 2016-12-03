@@ -116,6 +116,28 @@
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry, @"Should have the correct value");
     
     
+    
+    Source =
+        "add pc,Skip - .\n"
+        "hlt\n"
+        "Skip: mov r0,123\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[0], 123, @"Should have the correct value");
+    
+    
     HKHubArchProcessorDestroy(Processor);
 }
 
@@ -216,6 +238,28 @@
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "sub pc,. - Skip\n"
+        "hlt\n"
+        "Skip: mov r0,123\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[0], 123, @"Should have the correct value");
     
     
     HKHubArchProcessorDestroy(Processor);
@@ -358,6 +402,29 @@
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    
+    
+    
+    Source =
+        "nop\n"
+        "mul pc,Skip\n"
+        "hlt\n"
+        "Skip: mov r0,123\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.r[0], 123, @"Should have the correct value");
     
     
     HKHubArchProcessorDestroy(Processor);
