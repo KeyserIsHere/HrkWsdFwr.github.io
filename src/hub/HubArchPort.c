@@ -69,10 +69,12 @@ void HKHubArchPortConnectionDisconnect(HKHubArchPortConnection Connection)
 {
     CCAssertLog(Connection, "Connection must not be null");
     
-    if (Connection->port[0].disconnect) Connection->port[0].disconnect(Connection->port[0].id);
-    if (Connection->port[1].disconnect) Connection->port[1].disconnect(Connection->port[1].id);
+    const HKHubArchPortDisconnect Disconnect[2] = { Connection->port[0].disconnect, Connection->port[1].disconnect };
     
     Connection->port[0].disconnect = NULL;
     Connection->port[1].disconnect = NULL;
+    
+    if (Disconnect[0]) Disconnect[0](Connection->port[0].id);
+    if (Disconnect[1]) Disconnect[1](Connection->port[1].id);
 }
 
