@@ -25,11 +25,29 @@
 
 #include "HubArchProcessor.h"
 #include "HubArchInstruction.h"
+#include "HubArchPort.h"
 
 const double HKHubArchProcessorHertz = 400.0;
 const size_t HKHubArchProcessorSpeedMemoryRead = 1;
 const size_t HKHubArchProcessorSpeedMemoryWrite = 1;
 const size_t HKHubArchProcessorSpeedPortTransmission = 4;
+
+static uintmax_t HKHubArchProcessorPortHasher(uint8_t *Key)
+{
+    return *Key;
+}
+
+static void HKHubArchProcessorDestructor(HKHubArchProcessor Processor)
+{
+    CCOrderedCollection Connections = CCDictionaryGetValues(Processor->ports);
+    CC_COLLECTION_FOREACH(HKHubArchPortConnection, Port, Connections)
+    {
+        HKHubArchPortConnectionDisconnect(Port);
+    }
+    
+    CCDictionaryDestroy(Processor->ports);
+    CCCollectionDestroy(Connections);
+}
 
 HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArchBinary Binary)
 {
@@ -41,7 +59,11 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
                    return NULL;
                    );
     
-    Processor->ports = NULL; //TODO: init dictionary(uint8_t key, HKHubArchProcessor/module value)
+    Processor->ports = CCDictionaryCreate(Allocator, CCDictionaryHintHeavyFinding, sizeof(uint8_t), sizeof(HKHubArchPortConnection), &(CCDictionaryCallbacks){
+        .getHash = (CCDictionaryKeyHasher)HKHubArchProcessorPortHasher,
+        .valueDestructor = HKHubArchPortConnectionDestructorForDictionary
+    });
+    
     Processor->state.r[0] = 0;
     Processor->state.r[1] = 0;
     Processor->state.r[2] = 0;
@@ -52,6 +74,8 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
     Processor->complete = FALSE;
     
     memcpy(Processor->memory, Binary->data, sizeof(Processor->memory));
+    
+    CCMemorySetDestructor(Processor, (CCMemoryDestructorCallback)HKHubArchProcessorDestructor);
     
     return Processor;
 }
