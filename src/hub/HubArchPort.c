@@ -45,15 +45,16 @@ static void HKHubArchPortConnectionDestructor(HKHubArchPortConnection Connection
 
 HKHubArchPortConnection HKHubArchPortConnectionCreate(CCAllocatorType Allocator, HKHubArchPort PortA, HKHubArchPort PortB)
 {
-    HKHubArchPortConnection Connection;
-    CC_SAFE_Malloc(Connection, sizeof(HKHubArchPortConnectionInfo),
-                   CC_LOG_ERROR("Failed to create port connection, due to allocation failure (%zu)", sizeof(HKHubArchPortConnectionInfo));
-                   return NULL;
-                   );
+    HKHubArchPortConnection Connection = CCMalloc(Allocator, sizeof(HKHubArchPortConnectionInfo), NULL, CC_DEFAULT_ERROR_CALLBACK);
     
-    *Connection = (HKHubArchPortConnectionInfo){ .port = { PortA, PortB } };
+    if (Connection)
+    {
+        *Connection = (HKHubArchPortConnectionInfo){ .port = { PortA, PortB } };
+        
+        CCMemorySetDestructor(Connection, (CCMemoryDestructorCallback)HKHubArchPortConnectionDestructor);
+    }
     
-    CCMemorySetDestructor(Connection, (CCMemoryDestructorCallback)HKHubArchPortConnectionDestructor);
+    else CC_LOG_ERROR("Failed to create port connection, due to allocation failure (%zu)", sizeof(HKHubArchPortConnectionInfo));
     
     return Connection;
 }

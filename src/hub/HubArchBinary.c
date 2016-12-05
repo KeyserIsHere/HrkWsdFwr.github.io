@@ -27,13 +27,14 @@
 
 HKHubArchBinary HKHubArchBinaryCreate(CCAllocatorType Allocator)
 {
-    HKHubArchBinary Binary;
-    CC_SAFE_Malloc(Binary, sizeof(HKHubArchBinaryInfo),
-                   CC_LOG_ERROR("Failed to create binary object, due to allocation failure (%zu)", sizeof(HKHubArchBinaryInfo));
-                   return NULL;
-                   );
+    HKHubArchBinary Binary = CCMalloc(Allocator, sizeof(HKHubArchBinaryInfo), NULL, CC_DEFAULT_ERROR_CALLBACK);
     
-    memset(Binary, 0, sizeof(HKHubArchBinaryInfo));
+    if (Binary)
+    {
+        memset(Binary, 0, sizeof(HKHubArchBinaryInfo));
+    }
+    
+    else CC_LOG_ERROR("Failed to create binary object, due to allocation failure (%zu)", sizeof(HKHubArchBinaryInfo));
     
     return Binary;
 }

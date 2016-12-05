@@ -53,29 +53,30 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
 {
     CCAssertLog(Binary, "Binary must not be null");
     
-    HKHubArchProcessor Processor;
-    CC_SAFE_Malloc(Processor, sizeof(HKHubArchProcessorInfo),
-                   CC_LOG_ERROR("Failed to create processor, due to allocation failure (%zu)", sizeof(HKHubArchProcessorInfo));
-                   return NULL;
-                   );
+    HKHubArchProcessor Processor = CCMalloc(Allocator, sizeof(HKHubArchProcessorInfo), NULL, CC_DEFAULT_ERROR_CALLBACK);
     
-    Processor->ports = CCDictionaryCreate(Allocator, CCDictionaryHintHeavyFinding, sizeof(uint8_t), sizeof(HKHubArchPortConnection), &(CCDictionaryCallbacks){
-        .getHash = (CCDictionaryKeyHasher)HKHubArchProcessorPortHasher,
-        .valueDestructor = HKHubArchPortConnectionDestructorForDictionary
-    });
+    if (Processor)
+    {
+        Processor->ports = CCDictionaryCreate(Allocator, CCDictionaryHintHeavyFinding, sizeof(uint8_t), sizeof(HKHubArchPortConnection), &(CCDictionaryCallbacks){
+            .getHash = (CCDictionaryKeyHasher)HKHubArchProcessorPortHasher,
+            .valueDestructor = HKHubArchPortConnectionDestructorForDictionary
+        });
+        
+        Processor->state.r[0] = 0;
+        Processor->state.r[1] = 0;
+        Processor->state.r[2] = 0;
+        Processor->state.r[3] = 0;
+        Processor->state.pc = Binary->entrypoint;
+        Processor->state.flags = 0;
+        Processor->cycles = 0;
+        Processor->complete = FALSE;
+        
+        memcpy(Processor->memory, Binary->data, sizeof(Processor->memory));
+        
+        CCMemorySetDestructor(Processor, (CCMemoryDestructorCallback)HKHubArchProcessorDestructor);
+    }
     
-    Processor->state.r[0] = 0;
-    Processor->state.r[1] = 0;
-    Processor->state.r[2] = 0;
-    Processor->state.r[3] = 0;
-    Processor->state.pc = Binary->entrypoint;
-    Processor->state.flags = 0;
-    Processor->cycles = 0;
-    Processor->complete = FALSE;
-    
-    memcpy(Processor->memory, Binary->data, sizeof(Processor->memory));
-    
-    CCMemorySetDestructor(Processor, (CCMemoryDestructorCallback)HKHubArchProcessorDestructor);
+    else CC_LOG_ERROR("Failed to create processor, due to allocation failure (%zu)", sizeof(HKHubArchProcessorInfo));
     
     return Processor;
 }
