@@ -64,9 +64,10 @@ typedef HKHubArchPortResponse (*HKHubArchPortTransmit)(HKHubArchPortConnection C
 
 /*!
  * @brief Disconnect the device at the given port.
+ * @param Device The device the port belongs to.
  * @param Port The port being disconnected.
  */
-typedef void (*HKHubArchPortDisconnect)(HKHubArchPortID Port);
+typedef void (*HKHubArchPortDisconnect)(HKHubArchPortDevice Device, HKHubArchPortID Port);
 
 /*!
  * @brief Destructor to destroy the device.

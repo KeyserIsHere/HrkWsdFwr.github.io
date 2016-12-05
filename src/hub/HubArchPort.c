@@ -74,7 +74,7 @@ void HKHubArchPortConnectionDisconnect(HKHubArchPortConnection Connection)
     Connection->port[0].disconnect = NULL;
     Connection->port[1].disconnect = NULL;
     
-    if (Disconnect[0]) Disconnect[0](Connection->port[0].id);
-    if (Disconnect[1]) Disconnect[1](Connection->port[1].id);
+    if (Disconnect[0]) Disconnect[0](Connection->port[0].device, Connection->port[0].id);
+    if (Disconnect[1]) Disconnect[1](Connection->port[1].device, Connection->port[1].id);
 }
 
