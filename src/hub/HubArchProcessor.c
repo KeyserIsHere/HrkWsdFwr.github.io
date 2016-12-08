@@ -25,14 +25,13 @@
 
 #include "HubArchProcessor.h"
 #include "HubArchInstruction.h"
-#include "HubArchPort.h"
 
 const double HKHubArchProcessorHertz = 400.0;
 const size_t HKHubArchProcessorSpeedMemoryRead = 1;
 const size_t HKHubArchProcessorSpeedMemoryWrite = 1;
 const size_t HKHubArchProcessorSpeedPortTransmission = 4;
 
-static uintmax_t HKHubArchProcessorPortHasher(uint8_t *Key)
+static uintmax_t HKHubArchProcessorPortHasher(HKHubArchPortID *Key)
 {
     return *Key;
 }
@@ -57,7 +56,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
     
     if (Processor)
     {
-        Processor->ports = CCDictionaryCreate(Allocator, CCDictionaryHintHeavyFinding, sizeof(uint8_t), sizeof(HKHubArchPortConnection), &(CCDictionaryCallbacks){
+        Processor->ports = CCDictionaryCreate(Allocator, CCDictionaryHintHeavyFinding, sizeof(HKHubArchPortID), sizeof(HKHubArchPortConnection), &(CCDictionaryCallbacks){
             .getHash = (CCDictionaryKeyHasher)HKHubArchProcessorPortHasher,
             .valueDestructor = HKHubArchPortConnectionDestructorForDictionary
         });
@@ -118,6 +117,61 @@ void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Se
     
     Processor->cycles += Seconds * HKHubArchProcessorHertz;
     Processor->complete = FALSE;
+}
+
+static void HKHubArchProcessorDisconnectPort(HKHubArchProcessor Processor, HKHubArchPortID Port)
+{
+    CCDictionaryRemoveValue(Processor->ports, &Port);
+}
+
+HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchPortID Port)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    return (HKHubArchPort){
+        .device = Processor,
+        .id = Port,
+        .disconnect = NULL
+    };
+}
+
+static inline void HKHubArchProcessorSetConnectionDisconnectCallback(HKHubArchProcessor Processor, HKHubArchPortID Port, HKHubArchPortConnection Connection, HKHubArchPortDisconnect Disconnect)
+{
+    for (int Loop = 0; Loop < 2; Loop++)
+    {
+        if ((Connection->port[Loop].device == Processor) && (Connection->port[Loop].id == Port))
+        {
+            Connection->port[Loop].disconnect = Disconnect;
+        }
+    }
+}
+
+void HKHubArchProcessorConnect(HKHubArchProcessor Processor, HKHubArchPortID Port, HKHubArchPortConnection Connection)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    CCAssertLog(Connection, "Connection must not be null");
+    
+    CCDictionaryEntry Entry = CCDictionaryEntryForKey(Processor->ports, &Port);
+    
+    if (CCDictionaryEntryIsInitialized(Processor->ports, Entry))
+    {
+        HKHubArchPortConnection OldConnection = *(HKHubArchPortConnection*)CCDictionaryGetEntry(Processor->ports, Entry);
+        HKHubArchProcessorSetConnectionDisconnectCallback(Processor, Port, OldConnection, NULL);
+        HKHubArchPortConnectionDisconnect(OldConnection);
+    }
+    
+    HKHubArchProcessorSetConnectionDisconnectCallback(Processor, Port, Connection, (HKHubArchPortDisconnect)HKHubArchProcessorDisconnectPort);
+    
+    CCDictionarySetEntry(Processor->ports, Entry, &(HKHubArchPortConnection){ CCRetain(Connection) });
+}
+
+void HKHubArchProcessorDisconnect(HKHubArchProcessor Processor, HKHubArchPortID Port)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    HKHubArchPortConnection *Connection = CCDictionaryGetValue(Processor->ports, &Port);
+    
+    if (Connection) HKHubArchPortConnectionDisconnect(*Connection);
 }
 
 void HKHubArchProcessorRun(HKHubArchProcessor Processor)

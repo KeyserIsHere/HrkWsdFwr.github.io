@@ -28,6 +28,7 @@
 
 #include <Blob2D/Blob2D.h>
 #include "HubArchBinary.h"
+#include "HubArchPort.h"
 
 typedef struct {
     CCDictionary ports;
@@ -111,6 +112,30 @@ void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles);
  * @param Seconds The time in seconds the processor should run for.
  */
 void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Seconds);
+
+/*!
+ * @brief Add a connection to the processor.
+ * @param Processor The processor to add the connection to.
+ * @param Port The port of the processor the connection belongs to.
+ * @param Connection The connection to add to the process. A reference to the connection is
+ *        retained.
+ */
+void HKHubArchProcessorConnect(HKHubArchProcessor Processor, HKHubArchPortID Port, HKHubArchPortConnection CC_RETAIN(Connection));
+
+/*!
+ * @brief Disconnect a connection from the processor.
+ * @description Causes the connection to be disconnected completely from either interface.
+ * @param Processor The processor to remove the connection from.
+ * @param Port The port of the processor the connection belongs to.
+ */
+void HKHubArchProcessorDisconnect(HKHubArchProcessor Processor, HKHubArchPortID Port);
+
+/*!
+ * @brief Get an interfaceable port reference from the processor.
+ * @param Processor The processor get the port of.
+ * @param Port The port of the processor.
+ */
+HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchPortID Port);
 
 /*!
  * @brief Run the processor.
