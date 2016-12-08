@@ -33,6 +33,76 @@
 
 @implementation HubArchInstructionTests
 
+static int PortDeallocs = 0;
+static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Size)
+{
+    if (Event == CCCallbackAllocatorEventDeallocatePre) PortDeallocs++;
+}
+
+-(void) testPortDestruction
+{
+    const char *Source = "hlt\n";
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor P1 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchProcessor P2 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_CALLBACK_ALLOCATOR(PortAllocEvent), HKHubArchProcessorGetPort(P1, 0), HKHubArchProcessorGetPort(P2, 1));
+    
+    HKHubArchProcessorConnect(P1, 0, Conn);
+    HKHubArchProcessorConnect(P2, 1, Conn);
+    
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    HKHubArchProcessorDisconnect(P1, 0);
+    HKHubArchProcessorDisconnect(P2, 1);
+    
+    XCTAssertEqual(PortDeallocs, 1);
+    
+    
+    Conn = HKHubArchPortConnectionCreate(CC_CALLBACK_ALLOCATOR(PortAllocEvent), HKHubArchProcessorGetPort(P1, 0), HKHubArchProcessorGetPort(P2, 1));
+    
+    HKHubArchProcessorConnect(P1, 0, Conn);
+    HKHubArchProcessorConnect(P2, 1, Conn);
+    
+    HKHubArchPortConnectionDisconnect(Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    XCTAssertEqual(PortDeallocs, 2);
+    
+    
+    Conn = HKHubArchPortConnectionCreate(CC_CALLBACK_ALLOCATOR(PortAllocEvent), HKHubArchProcessorGetPort(P1, 0), HKHubArchProcessorGetPort(P2, 0));
+    
+    HKHubArchProcessorConnect(P1, 0, Conn);
+    HKHubArchProcessorConnect(P2, 0, Conn);
+    
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    XCTAssertEqual(PortDeallocs, 2);
+    
+    
+    Conn = HKHubArchPortConnectionCreate(CC_CALLBACK_ALLOCATOR(PortAllocEvent), HKHubArchProcessorGetPort(P1, 0), HKHubArchProcessorGetPort(P2, 1));
+    
+    HKHubArchProcessorConnect(P1, 0, Conn);
+    HKHubArchProcessorConnect(P2, 1, Conn);
+    
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    XCTAssertEqual(PortDeallocs, 3);
+    
+    HKHubArchProcessorDestroy(P1);
+    
+    XCTAssertEqual(PortDeallocs, 4);
+    
+    HKHubArchProcessorDestroy(P2);
+}
+
 -(void) testAddition
 {
     const char *Source =
