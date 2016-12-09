@@ -79,3 +79,26 @@ void HKHubArchPortConnectionDisconnect(HKHubArchPortConnection Connection)
     if (Disconnect[1]) Disconnect[1](Connection->port[1].device, Connection->port[1].id);
 }
 
+HKHubArchPort *HKHubArchPortConnectionGetPort(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port)
+{
+    CCAssertLog(Connection, "Connection must not be null");
+    
+    for (int Loop = 0; Loop < 2; Loop++)
+    {
+        if ((Connection->port[Loop].device == Device) && (Connection->port[Loop].id == Port)) return &Connection->port[Loop];
+    }
+    
+    return NULL;
+}
+
+HKHubArchPort *HKHubArchPortConnectionGetOppositePort(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port)
+{
+    CCAssertLog(Connection, "Connection must not be null");
+    
+    for (int Loop = 0; Loop < 2; Loop++)
+    {
+        if ((Connection->port[Loop].device != Device) || (Connection->port[Loop].id != Port)) return &Connection->port[Loop];
+    }
+    
+    return NULL;
+}

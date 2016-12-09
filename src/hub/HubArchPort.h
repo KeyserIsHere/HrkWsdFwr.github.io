@@ -114,4 +114,22 @@ void HKHubArchPortConnectionDestroy(HKHubArchPortConnection CC_DESTROY(Connectio
  */
 void HKHubArchPortConnectionDisconnect(HKHubArchPortConnection Connection);
 
+/*!
+ * @brief Get a port for the device.
+ * @param Connection The port connection to get the port of.
+ * @param Device The device the port belongs to.
+ * @param Port The port of the device.
+ * @return The port interface for the device.
+ */
+HKHubArchPort *HKHubArchPortConnectionGetPort(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port);
+
+/*!
+ * @brief Get the opposite port of the connection.
+ * @param Connection The port connection to get the port of.
+ * @param Device The device the port belongs to.
+ * @param Port The port of the device.
+ * @return The port interface for the other device/port.
+ */
+HKHubArchPort *HKHubArchPortConnectionGetOppositePort(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port);
+
 #endif
