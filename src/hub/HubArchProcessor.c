@@ -38,14 +38,17 @@ static uintmax_t HKHubArchProcessorPortHasher(HKHubArchPortID *Key)
 
 static void HKHubArchProcessorDestructor(HKHubArchProcessor Processor)
 {
-    CCOrderedCollection Connections = CCDictionaryGetValues(Processor->ports);
-    CC_COLLECTION_FOREACH(HKHubArchPortConnection, Port, Connections)
+    CC_DICTIONARY_FOREACH_VALUE(HKHubArchPortConnection, Connection, Processor->ports)
     {
-        HKHubArchPortConnectionDisconnect(Port);
+        for (int Loop = 0; Loop < 2; Loop++)
+        {
+            if (Connection->port[Loop].device == Processor) Connection->port[Loop].disconnect = NULL;
+        }
+        
+        HKHubArchPortConnectionDisconnect(Connection);
     }
     
     CCDictionaryDestroy(Processor->ports);
-    CCCollectionDestroy(Connections);
 }
 
 HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArchBinary Binary)
