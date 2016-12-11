@@ -39,7 +39,8 @@ typedef uint8_t HKHubArchPortID;
 typedef void *HKHubArchPortDevice;
 
 typedef struct {
-    const uint8_t *address;
+    const uint8_t *memory;
+    uint8_t offset;
     uint8_t size;
 } HKHubArchPortMessage;
 
