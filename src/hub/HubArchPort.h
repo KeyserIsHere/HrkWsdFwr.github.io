@@ -57,11 +57,12 @@ typedef enum {
  * @brief The transmitter protocol to be used for sending or receiving data.
  * @param Connection The connection being used.
  * @param Device The device handling this transmit.
+ * @param Port The port to be used by the device that is handling this transmit.
  * @param Message The message that is being sent or the message to be written too.
  * @param ConnectedDevice The device being communicated with.
  * @param Timestamp The cycle timestamp the event originated at.
  */
-typedef HKHubArchPortResponse (*HKHubArchPortTransmit)(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp); //TODO: needs work
+typedef HKHubArchPortResponse (*HKHubArchPortTransmit)(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp); //TODO: needs work
 
 /*!
  * @brief Disconnect the device at the given port.
