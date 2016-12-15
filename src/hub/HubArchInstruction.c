@@ -1198,6 +1198,15 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKH
         const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
         
         HKHubArchPortResponse Response = Interface->receiver(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->cycles - Cycles);
+        
+        if (Processor->message.type == HKHubArchProcessorMessageComplete)
+        {
+            Processor->message.type = HKHubArchProcessorMessageClear;
+            Processor->cycles -= Cycles;
+            
+            return HKHubArchInstructionOperationResultSuccess;
+        }
+        
         Processor->message.type = HKHubArchProcessorMessageClear;
         
         switch (Response)
@@ -1256,6 +1265,15 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
         const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
         
         HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Message, Processor, Processor->cycles - Cycles);
+        
+        if (Processor->message.type == HKHubArchProcessorMessageComplete)
+        {
+            Processor->message.type = HKHubArchProcessorMessageClear;
+            Processor->cycles -= Cycles;
+            
+            return HKHubArchInstructionOperationResultSuccess;
+        }
+        
         Processor->message.type = HKHubArchProcessorMessageClear;
         
         switch (Response)
