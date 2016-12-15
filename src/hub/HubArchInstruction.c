@@ -827,7 +827,7 @@ static inline const uint8_t *HKHubArchInstructionOperandSourceValue(HKHubArchPro
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMOV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryWrite) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryWrite) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -840,7 +840,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMOV(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -862,7 +862,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationADD(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSUB(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -884,7 +884,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSUB(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMUL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -907,7 +907,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationMUL(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSDIV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -929,7 +929,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSDIV(HKH
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUDIV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -949,7 +949,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUDIV(HKH
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSMOD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -971,7 +971,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSMOD(HKH
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUMOD(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 3 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -991,7 +991,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationUMOD(HKH
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationCMP(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 2 + ((State->operand[0].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1012,7 +1012,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationCMP(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHL(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1034,7 +1034,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHL(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1056,7 +1056,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSHR(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationXOR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1076,7 +1076,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationXOR(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationOR(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1096,7 +1096,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationOR(HKHub
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationAND(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite)) + ((State->operand[1].type == HKHubArchInstructionOperandM) * HKHubArchProcessorSpeedMemoryRead);
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1116,7 +1116,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationAND(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNOT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite));
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite));
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1135,7 +1135,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNOT(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNEG(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    const size_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite));
+    const int64_t Cycles = 1 + ((State->operand[0].type == HKHubArchInstructionOperandM) * (HKHubArchProcessorSpeedMemoryRead + HKHubArchProcessorSpeedMemoryWrite));
     
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
@@ -1165,12 +1165,127 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationHLT(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    int64_t Cycles = 4;
+    
+    if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+    
+    HKHubArchInstructionOperationResult Result = HKHubArchInstructionOperationResultSuccess;
+    HKHubArchPortID Port = *(const uint8_t*)HKHubArchInstructionOperandSourceValue(Processor, &State->operand[0]);
+    HKHubArchPortConnection *Conn = CCDictionaryGetValue(Processor->ports, &Port);
+    _Bool Success = FALSE;
+    
+    if (Processor->message.type == HKHubArchProcessorMessageComplete)
+    {
+        //could reference it from Processor->message.data
+        //Get cycles for time wait
+        //Get cycles for message transmit time
+        //Get cycles for memory read time
+        
+        Success = TRUE;
+        Processor->message.type = HKHubArchProcessorMessageClear;
+    }
+    
+    else if (Conn)
+    {
+        Processor->message.port = Port;
+        Processor->message.type = HKHubArchProcessorMessageSend;
+        Processor->message.data = (HKHubArchPortMessage){
+            .size = State->operand[1].type != HKHubArchInstructionOperandNA ? *(const uint8_t*)HKHubArchInstructionOperandSourceValue(Processor, &State->operand[1]) : 0,
+            .offset = State->operand[2].type != HKHubArchInstructionOperandNA ? (uint8_t)(HKHubArchInstructionOperandSourceValue(Processor, &State->operand[2]) - Processor->memory) : 0,
+            .memory = Processor->memory
+        };
+        
+        const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
+        
+        HKHubArchPortResponse Response = Interface->receiver(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->cycles - Cycles);
+        Processor->message.type = HKHubArchProcessorMessageClear;
+        
+        switch (Response)
+        {
+            case HKHubArchPortResponseSuccess:
+                Success = TRUE;
+                //Get cycles for time wait
+                //Get cycles for message transmit time
+                //Get cycles for memory read time
+                break;
+                
+            case HKHubArchPortResponseTimeout:
+                Cycles += 8;
+                break;
+                
+            case HKHubArchPortResponseRetry:
+                return HKHubArchInstructionOperationResultFailure;
+        }
+    }
+    
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsZero) | (Success ? 0 : HKHubArchProcessorFlagsZero);
+    Processor->cycles -= Cycles;
+    
+    return Result;
 }
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    int64_t Cycles = 4;
+    
+    if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+    
+    HKHubArchInstructionOperationResult Result = HKHubArchInstructionOperationResultSuccess;
+    HKHubArchPortID Port = *(const uint8_t*)HKHubArchInstructionOperandSourceValue(Processor, &State->operand[0]);
+    HKHubArchPortConnection *Conn = CCDictionaryGetValue(Processor->ports, &Port);
+    _Bool Success = FALSE;
+    
+    if (Processor->message.type == HKHubArchProcessorMessageComplete)
+    {
+        //could reference it from Processor->message.data, if we pass that into the sender()
+        //Get cycles for time wait
+        //Get cycles for message transmit time
+        //Get cycles for memory write time
+        
+        Success = TRUE;
+        Processor->message.type = HKHubArchProcessorMessageClear;
+    }
+    
+    else if (Conn)
+    {
+        Processor->message.data.offset = (uint8_t)(HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[1]) - Processor->memory);
+        Processor->message.port = Port;
+        Processor->message.type = HKHubArchProcessorMessageReceive;
+        
+        HKHubArchPortMessage Message;
+        const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
+        
+        HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Message, Processor, Processor->cycles - Cycles);
+        Processor->message.type = HKHubArchProcessorMessageClear;
+        
+        switch (Response)
+        {
+            case HKHubArchPortResponseSuccess:
+                Success = TRUE;
+                
+                uint8_t Offset = Processor->message.data.offset;
+                for (uint8_t Size = Message.size; Size--; )
+                {
+                    Processor->memory[Offset + Size] = Message.memory[Message.offset + Size];
+                }
+                //Get cycles for time wait
+                //Get cycles for message transmit time
+                //Get cycles for memory write time
+                break;
+                
+            case HKHubArchPortResponseTimeout:
+                Cycles += 8;
+                break;
+                
+            case HKHubArchPortResponseRetry:
+                return HKHubArchInstructionOperationResultFailure;
+        }
+    }
+    
+    Processor->state.flags = (Processor->state.flags & ~HKHubArchProcessorFlagsZero) | (Success ? 0 : HKHubArchProcessorFlagsZero);
+    Processor->cycles -= Cycles;
+    
+    return Result;
 }
 
 #pragma mark Branching

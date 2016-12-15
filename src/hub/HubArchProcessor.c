@@ -106,7 +106,7 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->complete = FALSE;
 }
 
-void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
+void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, int64_t Cycles)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
@@ -127,6 +127,54 @@ static void HKHubArchProcessorDisconnectPort(HKHubArchProcessor Processor, HKHub
     CCDictionaryRemoveValue(Processor->ports, &Port);
 }
 
+static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp)
+{
+    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
+    
+    if (Device->message.type == HKHubArchProcessorMessageSend)
+    {
+        if (Device->message.port != Port) return HKHubArchPortResponseRetry;
+        
+        *Message = Device->message.data;
+        
+        Device->message.type = HKHubArchProcessorMessageComplete;
+        
+        return HKHubArchPortResponseSuccess;
+    }
+    
+    HKHubArchProcessorRun(Device);
+    
+    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
+    
+    return HKHubArchPortResponseRetry;
+}
+
+static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp)
+{
+    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
+    
+    if (Device->message.type == HKHubArchProcessorMessageReceive)
+    {
+        if (Device->message.port != Port) return HKHubArchPortResponseRetry;
+        
+        uint8_t Offset = Device->message.data.offset;
+        for (uint8_t Size = Message->size; Size--; )
+        {
+            Device->memory[Offset + Size] = Message->memory[Message->offset + Size];
+        }
+        
+        Device->message.type = HKHubArchProcessorMessageComplete;
+        
+        return HKHubArchPortResponseSuccess;
+    }
+    
+    HKHubArchProcessorRun(Device);
+    
+    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
+    
+    return HKHubArchPortResponseRetry;
+}
+
 HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchPortID Port)
 {
     CCAssertLog(Processor, "Processor must not be null");
@@ -134,7 +182,9 @@ HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchP
     return (HKHubArchPort){
         .device = Processor,
         .id = Port,
-        .disconnect = NULL
+        .disconnect = NULL,
+        .sender = (HKHubArchPortTransmit)HKHubArchProcessorPortSend,
+        .receiver = (HKHubArchPortTransmit)HKHubArchProcessorPortReceive
     };
 }
 
@@ -181,14 +231,14 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
-    while ((Processor->cycles) && (!Processor->complete))
+    while ((Processor->cycles > 0) && (!Processor->complete))
     {
         HKHubArchInstructionState Instruction;
         uint8_t NextPC = HKHubArchInstructionDecode(Processor->state.pc, Processor->memory, &Instruction);
         
         if (Instruction.opcode != -1)
         {
-            size_t Cycles = (NextPC - Processor->state.pc) * HKHubArchProcessorSpeedMemoryRead;
+            int64_t Cycles = (NextPC - Processor->state.pc) * HKHubArchProcessorSpeedMemoryRead;
             if (Cycles < Processor->cycles)
             {
                 Processor->cycles -= Cycles;
