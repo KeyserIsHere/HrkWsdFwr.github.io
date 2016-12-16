@@ -103,6 +103,92 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     HKHubArchProcessorDestroy(P2);
 }
 
+-(void) testMessaging
+{
+    const char *Source =
+        "repeat: send 0\n" //read(2) + instruction(4) + no timeouts
+        "jmp repeat\n" //read(2) + instruction(1)
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Sender = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Source =
+        "repeat: recv r2,[r3]\n" //cycles(6) = read(2) + instruction(4) + no timeouts
+        "jmp repeat\n" //cycles(3) = read(2) + instruction(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Receiver = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Sender, 0), HKHubArchProcessorGetPort(Receiver, 1));
+    HKHubArchProcessorConnect(Sender, 0, Conn);
+    HKHubArchProcessorConnect(Receiver, 1, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    
+    Receiver->state.r[2] = 1;
+    
+    HKHubArchProcessorSetCycles(Sender, 9);
+    HKHubArchProcessorSetCycles(Receiver, 9);
+    HKHubArchProcessorRun(Receiver);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 9);
+    HKHubArchProcessorSetCycles(Receiver, 9);
+    HKHubArchProcessorRun(Sender);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 18);
+    HKHubArchProcessorSetCycles(Receiver, 18);
+    HKHubArchProcessorRun(Receiver);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 18);
+    HKHubArchProcessorSetCycles(Receiver, 18);
+    HKHubArchProcessorRun(Sender);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    
+    
+    HKHubArchProcessorDestroy(Sender);
+    HKHubArchProcessorDestroy(Receiver);
+}
+
 -(void) testAddition
 {
     const char *Source =
