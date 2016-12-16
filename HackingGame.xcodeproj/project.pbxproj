@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = F341E9321E04454000581CF8 /* HubArchScheduler.c */; };
 		F34877021DDC2E500068844D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877011DDC2E500068844D /* main.c */; };
 		F34877041DDC2E500068844D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F34877031DDC2E500068844D /* Assets.xcassets */; };
 		F34877441DDC52E50068844D /* Blob2D.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877411DDC52CE0068844D /* Blob2D.framework */; };
@@ -78,6 +79,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F341E9321E04454000581CF8 /* HubArchScheduler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchScheduler.c; sourceTree = "<group>"; };
+		F341E9331E04454000581CF8 /* HubArchScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchScheduler.h; sourceTree = "<group>"; };
 		F34876FA1DDC2E500068844D /* HackingGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HackingGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F34877011DDC2E500068844D /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		F34877031DDC2E500068844D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = mac/Assets.xcassets; sourceTree = "<group>"; };
@@ -224,6 +227,8 @@
 				F3F4922E1DE6E5B30046A391 /* HubArchProcessor.h */,
 				F3DBAA1F1DF3C1F400AFF30A /* HubArchPort.c */,
 				F3DBAA1C1DF3B8B300AFF30A /* HubArchPort.h */,
+				F341E9321E04454000581CF8 /* HubArchScheduler.c */,
+				F341E9331E04454000581CF8 /* HubArchScheduler.h */,
 			);
 			name = Hub;
 			path = hub;
@@ -409,6 +414,7 @@
 			files = (
 				F34878011DE201FE0068844D /* HubArchInstruction.c in Sources */,
 				F34877FE1DDDFBF80068844D /* HubArchBinary.c in Sources */,
+				F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */,
 				F34877EC1DDC6BCD0068844D /* HubArchAssembly.c in Sources */,
 				F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */,
 				F3DBAA201DF3C1F400AFF30A /* HubArchPort.c in Sources */,
