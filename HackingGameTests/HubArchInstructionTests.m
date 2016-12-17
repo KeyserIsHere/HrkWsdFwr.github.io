@@ -26,6 +26,7 @@
 #import <XCTest/XCTest.h>
 #import "HubArchProcessor.h"
 #import "HubArchAssembly.h"
+#import "HubArchScheduler.h"
 
 @interface HubArchInstructionTests : XCTestCase
 
@@ -140,23 +141,16 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     HKHubArchProcessorConnect(Receiver, 1, Conn);
     HKHubArchPortConnectionDestroy(Conn);
     
+    HKHubArchScheduler Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
+    HKHubArchSchedulerAddProcessor(Scheduler, Sender);
+    HKHubArchSchedulerAddProcessor(Scheduler, Receiver);
+    
     
     Receiver->state.r[2] = 1;
     
     HKHubArchProcessorSetCycles(Sender, 9);
     HKHubArchProcessorSetCycles(Receiver, 9);
-    HKHubArchProcessorRun(Receiver);
-    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
-    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
-    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
-    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
-    
-    
-    Sender->state.pc = 0;
-    Receiver->state.pc = 0;
-    HKHubArchProcessorSetCycles(Sender, 9);
-    HKHubArchProcessorSetCycles(Receiver, 9);
-    HKHubArchProcessorRun(Sender);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
     XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
     XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
     XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
@@ -167,24 +161,14 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     Receiver->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 18);
     HKHubArchProcessorSetCycles(Receiver, 18);
-    HKHubArchProcessorRun(Receiver);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
     XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
     XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
     XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
     XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
     
     
-    Sender->state.pc = 0;
-    Receiver->state.pc = 0;
-    HKHubArchProcessorSetCycles(Sender, 18);
-    HKHubArchProcessorSetCycles(Receiver, 18);
-    HKHubArchProcessorRun(Sender);
-    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
-    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
-    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
-    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
-    
-    
+    HKHubArchSchedulerDestroy(Scheduler);
     HKHubArchProcessorDestroy(Sender);
     HKHubArchProcessorDestroy(Receiver);
 }
