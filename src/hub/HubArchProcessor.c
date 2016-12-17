@@ -108,7 +108,7 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->complete = FALSE;
 }
 
-void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, int64_t Cycles)
+void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
@@ -129,7 +129,7 @@ static void HKHubArchProcessorDisconnectPort(HKHubArchProcessor Processor, HKHub
     CCDictionaryRemoveValue(Processor->ports, &Port);
 }
 
-static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp)
+static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp)
 {
     if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
     
@@ -149,7 +149,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     return HKHubArchPortResponseRetry;
 }
 
-static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp)
+static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp)
 {
     if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
     
@@ -229,14 +229,14 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
-    while ((!Processor->complete) && !(Processor->complete = !(Processor->cycles > 0)))
+    while ((!Processor->complete) && !(Processor->complete = !Processor->cycles))
     {
         HKHubArchInstructionState Instruction;
         uint8_t NextPC = HKHubArchInstructionDecode(Processor->state.pc, Processor->memory, &Instruction);
         
         if (Instruction.opcode != -1)
         {
-            int64_t Cycles = (NextPC - Processor->state.pc) * HKHubArchProcessorSpeedMemoryRead;
+            size_t Cycles = (NextPC - Processor->state.pc) * HKHubArchProcessorSpeedMemoryRead;
             if (Cycles < Processor->cycles)
             {
                 Processor->cycles -= Cycles;

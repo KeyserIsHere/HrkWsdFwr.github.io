@@ -47,7 +47,7 @@ typedef struct {
         uint8_t pc;
         uint8_t flags;
     } state;
-    int64_t cycles;
+    size_t cycles;
     _Bool complete;
     uint8_t memory[256];
 } HKHubArchProcessorInfo;
@@ -114,7 +114,7 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
  * @param Processor The processor to allocate the time to.
  * @param Cycles The number of cycles to run.
  */
-void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, int64_t Cycles);
+void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles);
 
 /*!
  * @brief Add the amount of time the processor should run for.
