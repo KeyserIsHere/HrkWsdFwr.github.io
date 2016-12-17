@@ -202,6 +202,54 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     HKHubArchSchedulerDestroy(Scheduler);
     HKHubArchProcessorDestroy(Sender);
     HKHubArchProcessorDestroy(Receiver);
+    
+    
+    
+    Source =
+        "repeat: send 0\n" //cycles(6) = read(2) + instruction(4) + timeout(8)
+        "jmp repeat\n" //cycles(3) = read(2) + instruction(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor P[3] = {
+        HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary),
+        HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary),
+        HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary)
+    };
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
+    for (size_t Loop = 0; Loop < 3; Loop++)
+    {
+        size_t Next = (Loop + 1) % 3;
+        Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(P[Loop], 0), HKHubArchProcessorGetPort(P[Next], 1));
+        HKHubArchProcessorConnect(P[Loop], 0, Conn);
+        HKHubArchProcessorConnect(P[Next], 1, Conn);
+        HKHubArchPortConnectionDestroy(Conn);
+        
+        HKHubArchProcessorSetCycles(P[Loop], 17);
+        
+        HKHubArchSchedulerAddProcessor(Scheduler, P[Loop]);
+    }
+    
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(P[0]->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(P[0]->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(P[1]->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(P[1]->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(P[2]->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(P[2]->state.pc, 0, @"Should have reached the end");
+    
+    HKHubArchSchedulerDestroy(Scheduler);
+    HKHubArchProcessorDestroy(P[0]);
+    HKHubArchProcessorDestroy(P[1]);
+    HKHubArchProcessorDestroy(P[2]);
 }
 
 -(void) testAddition
