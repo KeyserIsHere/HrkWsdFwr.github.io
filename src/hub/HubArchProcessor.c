@@ -144,6 +144,8 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
         return HKHubArchPortResponseSuccess;
     }
     
+    else if ((Device->message.type == HKHubArchProcessorMessageReceive) && (Device->cycles >= (Timestamp + 4))) return HKHubArchPortResponseTimeout;
+    
     return HKHubArchPortResponseRetry;
 }
 
@@ -165,6 +167,8 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         
         return HKHubArchPortResponseSuccess;
     }
+    
+    else if ((Device->message.type == HKHubArchProcessorMessageSend) && (Device->cycles >= (Timestamp + 4))) return HKHubArchPortResponseTimeout;
     
     return HKHubArchPortResponseRetry;
 }
