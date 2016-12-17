@@ -168,6 +168,37 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
     
     
+    Source =
+        "repeat: send 1\n" //read(2) + instruction(4) + timeout(8)
+        "jmp repeat\n" //read(2) + instruction(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Receiver, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchProcessorSetCycles(Sender, 9);
+    HKHubArchProcessorSetCycles(Receiver, 9);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 9, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 9, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    
+    
+    HKHubArchProcessorSetCycles(Sender, 17);
+    HKHubArchProcessorSetCycles(Receiver, 17);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    
     HKHubArchSchedulerDestroy(Scheduler);
     HKHubArchProcessorDestroy(Sender);
     HKHubArchProcessorDestroy(Receiver);
