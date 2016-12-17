@@ -89,8 +89,10 @@ typedef struct {
 typedef enum {
     HKHubArchInstructionOperationResultFailure,
     HKHubArchInstructionOperationResultSuccess,
+    HKHubArchInstructionOperationResultMask = 1,
     
-    HKHubArchInstructionOperationResultFlagSkipPC = (1 << 1)
+    HKHubArchInstructionOperationResultFlagSkipPC = (1 << 1),
+    HKHubArchInstructionOperationResultFlagPipelineStall = (1 << 2)
 } HKHubArchInstructionOperationResult;
 
 /*!

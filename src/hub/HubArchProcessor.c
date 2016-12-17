@@ -64,6 +64,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
             .valueDestructor = HKHubArchPortConnectionDestructorForDictionary
         });
         
+        Processor->message.type = HKHubArchProcessorMessageClear;
         Processor->state.r[0] = 0;
         Processor->state.r[1] = 0;
         Processor->state.r[2] = 0;
@@ -97,6 +98,7 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     
     memcpy(Processor->memory, Binary->data, sizeof(Processor->memory));
     
+    Processor->message.type = HKHubArchProcessorMessageClear;
     Processor->state.r[0] = 0;
     Processor->state.r[1] = 0;
     Processor->state.r[2] = 0;
@@ -142,10 +144,6 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
         return HKHubArchPortResponseSuccess;
     }
     
-    HKHubArchProcessorRun(Device);
-    
-    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
-    
     return HKHubArchPortResponseRetry;
 }
 
@@ -167,10 +165,6 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         
         return HKHubArchPortResponseSuccess;
     }
-    
-    HKHubArchProcessorRun(Device);
-    
-    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
     
     return HKHubArchPortResponseRetry;
 }
@@ -231,7 +225,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
-    while ((Processor->cycles > 0) && (!Processor->complete))
+    while ((!Processor->complete) && !(Processor->complete = !(Processor->cycles > 0)))
     {
         HKHubArchInstructionState Instruction;
         uint8_t NextPC = HKHubArchInstructionDecode(Processor->state.pc, Processor->memory, &Instruction);
@@ -244,9 +238,12 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                 Processor->cycles -= Cycles;
                 
                 HKHubArchInstructionOperationResult Result;
-                if ((Result = HKHubArchInstructionExecute(Processor, &Instruction)) == HKHubArchInstructionOperationResultFailure)
+                if (((Result = HKHubArchInstructionExecute(Processor, &Instruction)) & HKHubArchInstructionOperationResultMask) == HKHubArchInstructionOperationResultFailure)
                 {
                     Processor->cycles += Cycles;
+                    
+                    if (Result & HKHubArchInstructionOperationResultFlagPipelineStall) break;
+                    
                     Processor->complete = TRUE;
                 }
                 
