@@ -206,6 +206,80 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     
     
     Source =
+        "repeat: send 0\n" //cycles(6) = read(2) + instruction(4) + no timeouts
+        "jz fail\n" //cycles(3) = read(2) + instruction(1)
+        "add r0,1\n" //cycles(5) = read(3) + instruction(2)
+        "jmp repeat\n" //cycles(3) = read(2) + instruction(1)
+        "fail: add r1,1\n" //cycles(5) = read(3) + instruction(2)
+        "jmp repeat\n" //cycles(3) = read(2) + instruction(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Sender = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Source =
+        "repeat: recv r2,[r3]\n" //cycles(6) = read(2) + instruction(4) + no timeouts
+        "jz fail\n" //cycles(3) = read(2) + instruction(1)
+        "add r0,1\n" //cycles(5) = read(3) + instruction(2)
+        "jmp repeat\n" //cycles(3) = read(2) + instruction(1)
+        "fail: add r1,1\n" //cycles(5) = read(3) + instruction(2)
+        "jmp repeat\n" //cycles(3) = read(2) + instruction(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Receiver = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Sender, 0), HKHubArchProcessorGetPort(Receiver, 1));
+    HKHubArchProcessorConnect(Sender, 0, Conn);
+    HKHubArchProcessorConnect(Receiver, 1, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
+    HKHubArchSchedulerAddProcessor(Scheduler, Sender);
+    HKHubArchSchedulerAddProcessor(Scheduler, Receiver);
+    
+    Receiver->state.r[2] = 1;
+    
+    HKHubArchProcessorSetCycles(Sender, 17 * 3);
+    HKHubArchProcessorSetCycles(Receiver, 17 * 3);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.r[0], 3, @"Should succeed this many times");
+    XCTAssertEqual(Receiver->state.r[1], 0, @"Should fail this many times");
+    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.r[0], 3, @"Should succeed this many times");
+    XCTAssertEqual(Sender->state.r[1], 0, @"Should fail this many times");
+    
+    
+    Receiver->state.r[0] = 0;
+    Sender->state.r[0] = 0;
+    HKHubArchProcessorSetCycles(Sender, 17);
+    HKHubArchProcessorSetCycles(Receiver, (17 * 2) + 8); //first will timeout
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Receiver->state.r[0], 1, @"Should succeed this many times");
+    XCTAssertEqual(Receiver->state.r[1], 1, @"Should fail this many times");
+    XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
+    XCTAssertEqual(Sender->state.r[0], 1, @"Should succeed this many times");
+    XCTAssertEqual(Sender->state.r[1], 0, @"Should fail this many times");
+    
+    
+    
+    Source =
         "repeat: send 0\n" //cycles(6) = read(2) + instruction(4) + timeout(8)
         "jmp repeat\n" //cycles(3) = read(2) + instruction(1)
     ;
