@@ -265,6 +265,8 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     XCTAssertEqual(Sender->state.r[1], 0, @"Should fail this many times");
     
     
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
     Receiver->state.r[0] = 0;
     Sender->state.r[0] = 0;
     HKHubArchProcessorSetCycles(Sender, 17);
@@ -276,6 +278,567 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     XCTAssertEqual(Sender->cycles, 0, @"Should have the unused cycles");
     XCTAssertEqual(Sender->state.r[0], 1, @"Should succeed this many times");
     XCTAssertEqual(Sender->state.r[1], 0, @"Should fail this many times");
+    
+    HKHubArchSchedulerDestroy(Scheduler);
+    HKHubArchProcessorDestroy(Sender);
+    HKHubArchProcessorDestroy(Receiver);
+    
+    
+    
+    Source =
+        "send 0\n" //cycles(6 or 14 with timeout) = read(2) + instruction(4) + no timeouts
+        "hlt\n" //cycles(1) = read(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Sender = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Source =
+        "recv r2,[r3]\n" //cycles(6 or 14 with timeout) = read(2) + instruction(4) + no timeouts
+        "hlt\n" //cycles(1) = read(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    Receiver = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Sender, 0), HKHubArchProcessorGetPort(Receiver, 1));
+    HKHubArchProcessorConnect(Sender, 0, Conn);
+    HKHubArchProcessorConnect(Receiver, 1, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
+    HKHubArchSchedulerAddProcessor(Scheduler, Sender);
+    HKHubArchSchedulerAddProcessor(Scheduler, Receiver);
+    
+    Receiver->state.r[2] = 1;
+    
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 14);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 13);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 12);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 11);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 10);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 9);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 8);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 7);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 6);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 5);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 4);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 3);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 2);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    
+    Source =
+        "recv 1,[0+r0]\n" //cycles(8 or 16 with timeout) = read(4) + instruction(4) + no timeouts
+        "hlt\n" //cycles(1) = read(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Receiver, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Sender->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 14);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 13);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 12);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 11);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 10);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 9);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 8);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 7);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 6);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 5);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 4);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 3);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 2);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    
+    Source =
+        "send 0,0,[r0]\n" //cycles(8 or 16 with timeout) = read(4) + instruction(4) + no timeouts
+        "hlt\n" //cycles(1) = read(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Sender, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 14);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 13);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 12);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 11);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 10);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 9);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 8);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 7);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 6);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 5);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 4);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 3);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 2);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    
+    Source =
+        "send 0,0,[0]\n" //cycles(9 or 17 with timeout) = read(5) + instruction(4) + no timeouts
+        "hlt\n" //cycles(1) = read(1)
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Sender, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 14);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 13);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 12);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 11);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 10);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 9);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 8);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 7);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = HKHubArchProcessorFlagsZero;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 6);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 5);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 4);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 3);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
+    Sender->state.flags = 0;
+    HKHubArchProcessorSetCycles(Sender, 14 * 2);
+    HKHubArchProcessorSetCycles(Receiver, 14 + 2);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
+    
+    HKHubArchSchedulerDestroy(Scheduler);
+    HKHubArchProcessorDestroy(Sender);
+    HKHubArchProcessorDestroy(Receiver);
     
     
     
