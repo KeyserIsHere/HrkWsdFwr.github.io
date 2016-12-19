@@ -147,6 +147,8 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
         
         Device->message.type = HKHubArchProcessorMessageComplete;
         
+        Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
+        
         return HKHubArchPortResponseSuccess;
     }
     
@@ -177,6 +179,8 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         }
         
         Device->message.type = HKHubArchProcessorMessageComplete;
+        
+        Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
         
         return HKHubArchPortResponseSuccess;
     }

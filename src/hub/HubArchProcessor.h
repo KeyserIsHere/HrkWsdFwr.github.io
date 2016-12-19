@@ -35,6 +35,7 @@ typedef struct {
     struct {
         HKHubArchPortID port;
         HKHubArchPortMessage data;
+        uint8_t offset;
         enum {
             HKHubArchProcessorMessageClear,
             HKHubArchProcessorMessageComplete,
@@ -42,6 +43,7 @@ typedef struct {
             HKHubArchProcessorMessageReceive
         } type;
         size_t timestamp;
+        size_t wait;
     } message;
     struct {
         uint8_t r[4];

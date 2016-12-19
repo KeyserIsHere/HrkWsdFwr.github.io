@@ -1176,16 +1176,18 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKH
     
     if (Processor->message.type == HKHubArchProcessorMessageComplete)
     {
-        //could reference it from Processor->message.data
-        //Get cycles for time wait
-        //Get cycles for message transmit time
-        //Get cycles for memory read time
+        Cycles += Processor->message.wait;
+        Cycles += Processor->message.data.size * HKHubArchProcessorSpeedPortTransmission;
+        Cycles += Processor->message.data.size * HKHubArchProcessorSpeedMemoryRead;
+        
+        if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
         
         Success = TRUE;
     }
     
     else if (Conn)
     {
+        Processor->message.wait = 0;
         Processor->message.timestamp = Processor->cycles - Cycles;
         Processor->message.port = Port;
         Processor->message.type = HKHubArchProcessorMessageSend;
@@ -1202,10 +1204,13 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKH
         switch (Response)
         {
             case HKHubArchPortResponseSuccess:
+                Cycles += Processor->message.wait;
+                Cycles += Processor->message.data.size * HKHubArchProcessorSpeedPortTransmission;
+                Cycles += Processor->message.data.size * HKHubArchProcessorSpeedMemoryRead;
+                
+                if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+                
                 Success = TRUE;
-                //Get cycles for time wait
-                //Get cycles for message transmit time
-                //Get cycles for memory read time
                 break;
                 
             case HKHubArchPortResponseTimeout:
@@ -1242,39 +1247,49 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
     
     if (Processor->message.type == HKHubArchProcessorMessageComplete)
     {
-        //could reference it from Processor->message.data, if we pass that into the sender()
-        //Get cycles for time wait
-        //Get cycles for message transmit time
-        //Get cycles for memory write time
+        Cycles += Processor->message.wait;
+        Cycles += Processor->message.data.size * HKHubArchProcessorSpeedPortTransmission;
+        Cycles += Processor->message.data.size * HKHubArchProcessorSpeedMemoryWrite;
+        
+        if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
         
         Success = TRUE;
+        
+        uint8_t Offset = Processor->message.offset;
+        for (uint8_t Size = Processor->message.data.size; Size--; )
+        {
+            Processor->memory[Offset + Size] = Processor->message.data.memory[Processor->message.data.offset + Size];
+        }
     }
     
     else if (Conn)
     {
+        Processor->message.wait = 0;
         Processor->message.timestamp = Processor->cycles - Cycles;
-        Processor->message.data.offset = (uint8_t)(HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[1]) - Processor->memory);
+        Processor->message.offset = (uint8_t)(HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[1]) - Processor->memory);
         Processor->message.port = Port;
         Processor->message.type = HKHubArchProcessorMessageReceive;
         
-        HKHubArchPortMessage Message;
         const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
         
-        HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Message, Processor, Processor->message.timestamp);
+        HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->message.timestamp);
         
         switch (Response)
         {
             case HKHubArchPortResponseSuccess:
+                Cycles += Processor->message.wait;
+                Cycles += Processor->message.data.size * HKHubArchProcessorSpeedPortTransmission;
+                Cycles += Processor->message.data.size * HKHubArchProcessorSpeedMemoryWrite;
+                
+                if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
+                
                 Success = TRUE;
                 
-                uint8_t Offset = Processor->message.data.offset;
-                for (uint8_t Size = Message.size; Size--; )
+                uint8_t Offset = Processor->message.offset;
+                for (uint8_t Size = Processor->message.data.size; Size--; )
                 {
-                    Processor->memory[Offset + Size] = Message.memory[Message.offset + Size];
+                    Processor->memory[Offset + Size] = Processor->message.data.memory[Processor->message.data.offset + Size];
                 }
-                //Get cycles for time wait
-                //Get cycles for message transmit time
-                //Get cycles for memory write time
                 break;
                 
             case HKHubArchPortResponseTimeout:
