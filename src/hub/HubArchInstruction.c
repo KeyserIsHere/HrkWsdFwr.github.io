@@ -1186,6 +1186,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKH
     
     else if (Conn)
     {
+        Processor->message.timestamp = Processor->cycles - Cycles;
         Processor->message.port = Port;
         Processor->message.type = HKHubArchProcessorMessageSend;
         Processor->message.data = (HKHubArchPortMessage){
@@ -1196,7 +1197,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKH
         
         const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
         
-        HKHubArchPortResponse Response = Interface->receiver(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->cycles - Cycles);
+        HKHubArchPortResponse Response = Interface->receiver(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->message.timestamp);
         
         switch (Response)
         {
@@ -1251,6 +1252,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
     
     else if (Conn)
     {
+        Processor->message.timestamp = Processor->cycles - Cycles;
         Processor->message.data.offset = (uint8_t)(HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[1]) - Processor->memory);
         Processor->message.port = Port;
         Processor->message.type = HKHubArchProcessorMessageReceive;
@@ -1258,7 +1260,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
         HKHubArchPortMessage Message;
         const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
         
-        HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Message, Processor, Processor->cycles - Cycles);
+        HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Message, Processor, Processor->message.timestamp);
         
         switch (Response)
         {

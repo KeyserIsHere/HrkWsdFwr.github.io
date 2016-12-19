@@ -41,6 +41,7 @@ typedef struct {
             HKHubArchProcessorMessageSend,
             HKHubArchProcessorMessageReceive
         } type;
+        size_t timestamp;
     } message;
     struct {
         uint8_t r[4];

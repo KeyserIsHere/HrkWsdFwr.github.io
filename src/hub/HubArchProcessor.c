@@ -131,11 +131,17 @@ static void HKHubArchProcessorDisconnectPort(HKHubArchProcessor Processor, HKHub
 
 static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp)
 {
-    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
+    /*
+     Timestamp is the beginning of the 8 cycle wait period. While 6 cycles is the min a send/recv can consume to reach its timestamp.
+     So if the current cycles is less than (timestamp - 2), then no matter what send/recv it uses, it won't be completed within the
+     wait period.
+     */
+    if ((intmax_t)Device->cycles < ((intmax_t)Timestamp - 2)) return HKHubArchPortResponseTimeout;
     
     if (Device->message.type == HKHubArchProcessorMessageSend)
     {
         if (Device->message.port != Port) return HKHubArchPortResponseRetry;
+        else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         *Message = Device->message.data;
         
@@ -152,11 +158,17 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
 
 static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp)
 {
-    if (Device->cycles < Timestamp) return HKHubArchPortResponseTimeout;
+    /*
+     Timestamp is the beginning of the 8 cycle wait period. While 6 cycles is the min a send/recv can consume to reach its timestamp. 
+     So if the current cycles is less than (timestamp - 2), then no matter what send/recv it uses, it won't be completed within the
+     wait period.
+     */
+    if ((intmax_t)Device->cycles < ((intmax_t)Timestamp - 2)) return HKHubArchPortResponseTimeout;
     
     if (Device->message.type == HKHubArchProcessorMessageReceive)
     {
         if (Device->message.port != Port) return HKHubArchPortResponseRetry;
+        else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         const uint8_t Offset = Device->message.data.offset;
         for (uint8_t Size = Message->size; Size--; )
