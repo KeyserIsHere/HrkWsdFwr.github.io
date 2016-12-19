@@ -50,7 +50,9 @@ typedef enum {
     /// Operation is not possible
     HKHubArchPortResponseTimeout,
     /// Operation requires more cycles
-    HKHubArchPortResponseRetry
+    HKHubArchPortResponseRetry,
+    /// Operation is currently not possible
+    HKHubArchPortResponseDefer
 } HKHubArchPortResponse;
 
 /*!

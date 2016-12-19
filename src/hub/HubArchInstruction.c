@@ -1213,6 +1213,9 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKH
                 
             case HKHubArchPortResponseRetry:
                 return HKHubArchInstructionOperationResultFailure | HKHubArchInstructionOperationResultFlagPipelineStall;
+                
+            case HKHubArchPortResponseDefer:
+                return HKHubArchInstructionOperationResultFailure;
         }
     }
     
@@ -1278,6 +1281,9 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
                 
             case HKHubArchPortResponseRetry:
                 return HKHubArchInstructionOperationResultFailure | HKHubArchInstructionOperationResultFlagPipelineStall;
+                
+            case HKHubArchPortResponseDefer:
+                return HKHubArchInstructionOperationResultFailure;
         }
     }
     

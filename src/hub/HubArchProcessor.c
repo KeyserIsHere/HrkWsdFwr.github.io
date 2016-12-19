@@ -145,6 +145,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     }
     
     else if ((Device->message.type == HKHubArchProcessorMessageReceive) && (Device->cycles >= (Timestamp + 4))) return HKHubArchPortResponseTimeout;
+    else if (Device->complete) return HKHubArchPortResponseDefer;
     
     return HKHubArchPortResponseRetry;
 }
@@ -157,7 +158,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     {
         if (Device->message.port != Port) return HKHubArchPortResponseRetry;
         
-        uint8_t Offset = Device->message.data.offset;
+        const uint8_t Offset = Device->message.data.offset;
         for (uint8_t Size = Message->size; Size--; )
         {
             Device->memory[Offset + Size] = Message->memory[Message->offset + Size];
@@ -169,6 +170,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     }
     
     else if ((Device->message.type == HKHubArchProcessorMessageSend) && (Device->cycles >= (Timestamp + 4))) return HKHubArchPortResponseTimeout;
+    else if (Device->complete) return HKHubArchPortResponseDefer;
     
     return HKHubArchPortResponseRetry;
 }
