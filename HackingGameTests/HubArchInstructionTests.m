@@ -836,6 +836,53 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     HKHubArchSchedulerRun(Scheduler, 0.0);
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
+    
+    
+    Source =
+        ".byte 0, 0, 0, 0\n"
+        ".entrypoint\n"
+        "recv 1,[0]\n" //cycles(29) = read(4) + instruction(4) + wait(1) + transfer<4>(16) + write(4)
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Receiver, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Source =
+        ".byte 1, 2, 3, 4\n"
+        ".entrypoint\n"
+        "send 0,4,[0]\n" //cycles(29) = read(5) + instruction(4) + read(4) + transfer<4>(16)
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Sender, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Sender, 29);
+    HKHubArchProcessorSetCycles(Receiver, 29);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Sender->cycles, 0, @"Should have unused cycles");
+    XCTAssertEqual(Receiver->cycles, 0, @"Should have unused cycles");
+    XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    XCTAssertFalse(Receiver->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
+    XCTAssertEqual(Receiver->memory[0], 1, @"Should transfer data");
+    XCTAssertEqual(Receiver->memory[1], 2, @"Should transfer data");
+    XCTAssertEqual(Receiver->memory[2], 3, @"Should transfer data");
+    XCTAssertEqual(Receiver->memory[3], 4, @"Should transfer data");
+    
     HKHubArchSchedulerDestroy(Scheduler);
     HKHubArchProcessorDestroy(Sender);
     HKHubArchProcessorDestroy(Receiver);
