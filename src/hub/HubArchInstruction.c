@@ -1199,7 +1199,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationSEND(HKH
         
         const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
         
-        HKHubArchPortResponse Response = Interface->receiver(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->message.timestamp);
+        HKHubArchPortResponse Response = Interface->receiver(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->message.timestamp, &Processor->message.wait);
         
         switch (Response)
         {
@@ -1272,7 +1272,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
         
         const HKHubArchPort *Interface = HKHubArchPortConnectionGetOppositePort(*Conn, Processor, Port);
         
-        HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->message.timestamp);
+        HKHubArchPortResponse Response = Interface->sender(*Conn, Interface->device, Interface->id, &Processor->message.data, Processor, Processor->message.timestamp, &Processor->message.wait);
         
         switch (Response)
         {

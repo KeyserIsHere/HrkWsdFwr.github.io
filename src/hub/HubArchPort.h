@@ -63,8 +63,9 @@ typedef enum {
  * @param Message The message that is being sent or the message to be written too.
  * @param ConnectedDevice The device being communicated with.
  * @param Timestamp The cycle timestamp the event originated at.
+ * @param Wait The amount of cycles the caller must wait for (difference between timestamps).
  */
-typedef HKHubArchPortResponse (*HKHubArchPortTransmit)(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp);
+typedef HKHubArchPortResponse (*HKHubArchPortTransmit)(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait);
 
 /*!
  * @brief Disconnect the device at the given port.

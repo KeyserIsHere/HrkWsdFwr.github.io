@@ -129,7 +129,7 @@ static void HKHubArchProcessorDisconnectPort(HKHubArchProcessor Processor, HKHub
     CCDictionaryRemoveValue(Processor->ports, &Port);
 }
 
-static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp)
+static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp, size_t *Wait)
 {
     /*
      Timestamp is the beginning of the 8 cycle wait period. While 6 cycles is the min a send/recv can consume to reach its timestamp.
@@ -148,6 +148,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
         Device->message.type = HKHubArchProcessorMessageComplete;
         
         Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
+        *Wait = Device->message.timestamp < Timestamp ? Timestamp - Device->message.timestamp : 0;
         
         return HKHubArchPortResponseSuccess;
     }
@@ -158,7 +159,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     return HKHubArchPortResponseRetry;
 }
 
-static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp)
+static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp, size_t *Wait)
 {
     /*
      Timestamp is the beginning of the 8 cycle wait period. While 6 cycles is the min a send/recv can consume to reach its timestamp. 
@@ -181,6 +182,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         Device->message.type = HKHubArchProcessorMessageComplete;
         
         Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
+        *Wait = Device->message.timestamp < Timestamp ? Timestamp - Device->message.timestamp : 0;
         
         return HKHubArchPortResponseSuccess;
     }
