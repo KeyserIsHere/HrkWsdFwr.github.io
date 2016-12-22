@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F317030D1E0BA3E000476E7A /* assets in Resources */ = {isa = PBXBuildFile; fileRef = F317030C1E0BA3E000476E7A /* assets */; };
 		F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = F341E9321E04454000581CF8 /* HubArchScheduler.c */; };
 		F34877021DDC2E500068844D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877011DDC2E500068844D /* main.c */; };
 		F34877041DDC2E500068844D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F34877031DDC2E500068844D /* Assets.xcassets */; };
@@ -79,6 +80,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F317030C1E0BA3E000476E7A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		F341E9321E04454000581CF8 /* HubArchScheduler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchScheduler.c; sourceTree = "<group>"; };
 		F341E9331E04454000581CF8 /* HubArchScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchScheduler.h; sourceTree = "<group>"; };
 		F34876FA1DDC2E500068844D /* HackingGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HackingGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -140,6 +142,7 @@
 		F34876F11DDC2E500068844D = {
 			isa = PBXGroup;
 			children = (
+				F317030C1E0BA3E000476E7A /* assets */,
 				F34877351DDC51440068844D /* Dependencies */,
 				F34876FC1DDC2E500068844D /* HackingGame */,
 				F34877101DDC2E500068844D /* HackingGameTests */,
@@ -388,6 +391,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F34877041DDC2E500068844D /* Assets.xcassets in Resources */,
+				F317030D1E0BA3E000476E7A /* assets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -558,7 +562,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/src/mac/Info.plist";
 				LD_DYLIB_INSTALL_NAME = "";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../Frameworks/Blob2D.framework/Versions/A/Frameworks @executable_path/../Frameworks/Blob2D.framework/Versions/A/Frameworks/CommonGameKit.framework/Versions/A/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGame;
+				PRODUCT_BUNDLE_IDENTIFIER = io.scrimpycat.HackingGame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-ambiguous-macro";
 			};
@@ -584,7 +588,7 @@
 				INFOPLIST_FILE = "$(SRCROOT)/src/mac/Info.plist";
 				LD_DYLIB_INSTALL_NAME = "";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @executable_path/../Frameworks/Blob2D.framework/Versions/A/Frameworks @executable_path/../Frameworks/Blob2D.framework/Versions/A/Frameworks/CommonGameKit.framework/Versions/A/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = me.HackingGame;
+				PRODUCT_BUNDLE_IDENTIFIER = io.scrimpycat.HackingGame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wno-ambiguous-macro";
 			};

@@ -25,6 +25,10 @@
 
 #include <Blob2D/Blob2D.h>
 
+#if CC_PLATFORM_OS_X || CC_PLATFORM_IOS
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 static void PreSetup(void)
 {
     char Path[] = __FILE__;
@@ -41,6 +45,32 @@ int main(int argc, const char *argv[])
     PreSetup();
     
     B2EngineSetupComplete = Setup;
+    
+    B2EngineConfiguration.launch = B2LaunchOptionGame;
+    
+#if CC_PLATFORM_OS_X || CC_PLATFORM_IOS
+    CFBundleRef Bundle = CFBundleGetBundleWithIdentifier(CFSTR("io.scrimpycat.HackingGame"));
+    CFURLRef ResourceURL = CFBundleCopyResourcesDirectoryURL(Bundle);
+    char ResourcePath[PATH_MAX];
+    
+    if ((!ResourceURL) || (!CFURLGetFileSystemRepresentation(ResourceURL, TRUE, (UInt8*)ResourcePath, sizeof(ResourcePath))))
+    {
+        CC_LOG_ERROR("Could not find asset path");
+        return EXIT_FAILURE;
+    }
+    
+    CFRelease(ResourceURL);
+    
+    B2EngineConfiguration.project = FSPathCreateFromSystemPath(ResourcePath);
+#else
+    char Path[] = __FILE__;
+    Path[sizeof(__FILE__) - sizeof("HackingGame/")] = 0;
+    B2EngineConfiguration.project = FSPathCreateFromSystemPath(Path);
+#endif
+    
+    FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeDirectory, "assets"));
+    FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeFile, "game"));
+    FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeExtension, "gamepkg"));
     
     return B2EngineRun(argc, argv);
 }
