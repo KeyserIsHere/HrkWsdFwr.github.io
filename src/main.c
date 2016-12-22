@@ -64,7 +64,7 @@ int main(int argc, const char *argv[])
     B2EngineConfiguration.project = FSPathCreateFromSystemPath(ResourcePath);
 #else
     char Path[] = __FILE__;
-    Path[sizeof(__FILE__) - sizeof("HackingGame/")] = 0;
+    Path[sizeof(__FILE__) - sizeof("src/main.c")] = 0;
     B2EngineConfiguration.project = FSPathCreateFromSystemPath(Path);
 #endif
     
