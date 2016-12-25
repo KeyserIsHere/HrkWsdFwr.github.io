@@ -20,6 +20,8 @@
 		F34877FB1DDC75850068844D /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
 		F34877FE1DDDFBF80068844D /* HubArchBinary.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877FC1DDDFBF80068844D /* HubArchBinary.c */; };
 		F34878011DE201FE0068844D /* HubArchInstruction.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877FF1DE201FE0068844D /* HubArchInstruction.c */; };
+		F3C5664E1E0FB3C100A32123 /* HubComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C5664C1E0FB3C000A32123 /* HubComponent.c */; };
+		F3C566511E0FCD1400A32123 /* HubSystem.c in Sources */ = {isa = PBXBuildFile; fileRef = F3C5664F1E0FCD1400A32123 /* HubSystem.c */; };
 		F3DBAA201DF3C1F400AFF30A /* HubArchPort.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DBAA1F1DF3C1F400AFF30A /* HubArchPort.c */; };
 		F3ECD0041E0B4236007343C2 /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
 		F3ECD0051E0B423B007343C2 /* CommonC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877491DDC53150068844D /* CommonC.framework */; };
@@ -101,6 +103,10 @@
 		F34877FD1DDDFBF80068844D /* HubArchBinary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchBinary.h; sourceTree = "<group>"; };
 		F34877FF1DE201FE0068844D /* HubArchInstruction.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchInstruction.c; sourceTree = "<group>"; };
 		F34878001DE201FE0068844D /* HubArchInstruction.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchInstruction.h; sourceTree = "<group>"; };
+		F3C5664C1E0FB3C000A32123 /* HubComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubComponent.c; sourceTree = "<group>"; };
+		F3C5664D1E0FB3C000A32123 /* HubComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubComponent.h; sourceTree = "<group>"; };
+		F3C5664F1E0FCD1400A32123 /* HubSystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubSystem.c; sourceTree = "<group>"; };
+		F3C566501E0FCD1400A32123 /* HubSystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubSystem.h; sourceTree = "<group>"; };
 		F3DBAA1C1DF3B8B300AFF30A /* HubArchPort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchPort.h; sourceTree = "<group>"; };
 		F3DBAA1F1DF3C1F400AFF30A /* HubArchPort.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchPort.c; sourceTree = "<group>"; };
 		F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchProcessor.c; sourceTree = "<group>"; };
@@ -220,6 +226,8 @@
 		F34877E91DDC6B0E0068844D /* Hub */ = {
 			isa = PBXGroup;
 			children = (
+				F3C5664A1E0FB37E00A32123 /* Components */,
+				F3C5664B1E0FB37E00A32123 /* System */,
 				F34877FF1DE201FE0068844D /* HubArchInstruction.c */,
 				F34878001DE201FE0068844D /* HubArchInstruction.h */,
 				F34877EA1DDC6BCD0068844D /* HubArchAssembly.c */,
@@ -260,6 +268,24 @@
 				F348771E1DDC2E500068844D /* Info.plist */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		F3C5664A1E0FB37E00A32123 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F3C5664C1E0FB3C000A32123 /* HubComponent.c */,
+				F3C5664D1E0FB3C000A32123 /* HubComponent.h */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		F3C5664B1E0FB37E00A32123 /* System */ = {
+			isa = PBXGroup;
+			children = (
+				F3C5664F1E0FCD1400A32123 /* HubSystem.c */,
+				F3C566501E0FCD1400A32123 /* HubSystem.h */,
+			);
+			path = System;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -417,10 +443,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F34878011DE201FE0068844D /* HubArchInstruction.c in Sources */,
+				F3C5664E1E0FB3C100A32123 /* HubComponent.c in Sources */,
 				F34877FE1DDDFBF80068844D /* HubArchBinary.c in Sources */,
 				F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */,
 				F34877EC1DDC6BCD0068844D /* HubArchAssembly.c in Sources */,
 				F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */,
+				F3C566511E0FCD1400A32123 /* HubSystem.c in Sources */,
 				F3DBAA201DF3C1F400AFF30A /* HubArchPort.c in Sources */,
 				F34877021DDC2E500068844D /* main.c in Sources */,
 			);
