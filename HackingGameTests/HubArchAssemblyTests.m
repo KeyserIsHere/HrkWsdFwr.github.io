@@ -550,6 +550,25 @@
     
     
     
+    Source = ".define test_foo, 15\n.byte test_foo, ., ., . + test_foo\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 15);
+    XCTAssertEqual(Binary->data[1], 1);
+    XCTAssertEqual(Binary->data[2], 2);
+    XCTAssertEqual(Binary->data[3], 3 + 15);
+    
+    for (size_t Loop = 4; Loop < 255; Loop++) XCTAssertEqual(Binary->data[Loop], 0);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
     Source = ".define test, here\n.byte 0,0\nhere: .byte here, test\n";
     
     AST = HKHubArchAssemblyParse(Source);

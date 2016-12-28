@@ -90,7 +90,7 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                 size_t Index = 0;
                 for (char c; (c = *(Buffer++)); Index++)
                 {
-                    if (isalnum(c))
+                    if ((isalnum(c)) || (c == '_'))
                     {
                         if (!CreateNode)
                         {
