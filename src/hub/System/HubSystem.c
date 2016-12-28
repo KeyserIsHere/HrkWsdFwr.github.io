@@ -34,6 +34,7 @@ static void HKHubSystemUnlock(void);
 static _Bool HKHubSystemHandlesComponent(CCComponentID id);
 static void HKHubSystemUpdate(double DeltaTime, CCCollection Components);
 
+static HKHubArchScheduler Scheduler;
 static mtx_t Lock;
 void HKHubSystemRegister(void)
 {
@@ -43,6 +44,8 @@ void HKHubSystemRegister(void)
         CC_LOG_ERROR("Failed to create hub system lock (%d)", err);
         exit(EXIT_FAILURE); //TODO: How should we handle this?
     }
+    
+    Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
     
     CCComponentSystemRegister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeRender, (CCComponentSystemUpdateCallback)HKHubSystemUpdate, HKHubSystemHandlesComponent, NULL, NULL, HKHubSystemTryLock, HKHubSystemLock, HKHubSystemUnlock);
 }
@@ -88,7 +91,6 @@ static _Bool HKHubSystemHandlesComponent(CCComponentID id)
     return (id & 0x7f000000) == HK_HUB_COMPONENT_FLAG;
 }
 
-static HKHubArchScheduler Scheduler = NULL;
 static void HKHubSystemUpdateScheduler(CCCollection Components, void (*Update)(HKHubArchScheduler,HKHubArchProcessor))
 {
     CC_COLLECTION_FOREACH(CCComponent, Hub, Components)
