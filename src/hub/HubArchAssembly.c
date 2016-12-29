@@ -131,7 +131,7 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                     }
                 }
                 
-                if (CreateNode) HKHubArchAssemblyResolveLiteralValue(Node, Start, Buffer - Start, Hex, Sym, Dec, 0);
+                if (CreateNode) HKHubArchAssemblyResolveLiteralValue(Node, Start, (Buffer - Start) - 1, Hex, Sym, Dec, 0);
             }
         }
     }
