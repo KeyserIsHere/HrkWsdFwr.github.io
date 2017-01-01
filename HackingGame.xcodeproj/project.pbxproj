@@ -228,6 +228,7 @@
 			children = (
 				F3C5664A1E0FB37E00A32123 /* Components */,
 				F3C5664B1E0FB37E00A32123 /* System */,
+				F36EBAD91E194CD600FB308B /* Modules */,
 				F34877FF1DE201FE0068844D /* HubArchInstruction.c */,
 				F34878001DE201FE0068844D /* HubArchInstruction.h */,
 				F34877EA1DDC6BCD0068844D /* HubArchAssembly.c */,
@@ -270,13 +271,22 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		F36EBAD91E194CD600FB308B /* Modules */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Modules;
+			path = modules;
+			sourceTree = "<group>";
+		};
 		F3C5664A1E0FB37E00A32123 /* Components */ = {
 			isa = PBXGroup;
 			children = (
 				F3C5664C1E0FB3C000A32123 /* HubComponent.c */,
 				F3C5664D1E0FB3C000A32123 /* HubComponent.h */,
 			);
-			path = Components;
+			name = Components;
+			path = components;
 			sourceTree = "<group>";
 		};
 		F3C5664B1E0FB37E00A32123 /* System */ = {
@@ -285,7 +295,8 @@
 				F3C5664F1E0FCD1400A32123 /* HubSystem.c */,
 				F3C566501E0FCD1400A32123 /* HubSystem.h */,
 			);
-			path = System;
+			name = System;
+			path = system;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
