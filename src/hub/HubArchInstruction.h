@@ -129,6 +129,13 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
 uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchInstructionState *Decoded);
 
 /*!
+ * @brief Get the size of the encoded instruction state.
+ * @param State The state for the instruction.
+ * @return The size of the encoding.
+ */
+size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State);
+
+/*!
  * @brief Disassemble an instruction from state.
  * @param State The pointer to decoded instruction state.
  * @return The disassembly or 0 on failure. Must be destroyed to free memory.

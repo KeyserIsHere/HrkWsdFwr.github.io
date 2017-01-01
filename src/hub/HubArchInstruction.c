@@ -637,6 +637,55 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchI
     return Offset;
 }
 
+size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State)
+{
+    size_t InstructionBits = 6;
+    for (size_t Loop = 0; (Loop < 3) && (State->operand[Loop].type != HKHubArchInstructionOperandNA); Loop++)
+    {
+        switch (State->operand[Loop].type)
+        {
+            case HKHubArchInstructionOperandI:
+                InstructionBits += 8;
+                break;
+                
+            case HKHubArchInstructionOperandR:
+                InstructionBits += 3;
+                break;
+                
+            case HKHubArchInstructionOperandM:
+            {
+                InstructionBits += 4;
+                
+                switch (State->operand[Loop].memory.type)
+                {
+                    case HKHubArchInstructionMemoryOffset:
+                        InstructionBits += 8;
+                        break;
+                        
+                    case HKHubArchInstructionMemoryRegister:
+                        InstructionBits += 2;
+                        break;
+                        
+                    case HKHubArchInstructionMemoryRelativeOffset:
+                        InstructionBits += 8 + 2;
+                        break;
+                        
+                    case HKHubArchInstructionMemoryRelativeRegister:
+                        InstructionBits += 2 + 2;
+                        break;
+                }
+                break;
+            }
+                
+            default:
+                CCAssertLog(0, "Should not contain another operand type");
+                break;
+        }
+    }
+    
+    return (InstructionBits / 8) + 1;
+}
+
 CCString HKHubArchInstructionDisassemble(const HKHubArchInstructionState *State)
 {
     CCAssertLog(State, "State must not be null");
