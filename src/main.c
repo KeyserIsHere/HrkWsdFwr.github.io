@@ -24,6 +24,8 @@
  */
 
 #include <Blob2D/Blob2D.h>
+#include "HubSystem.h"
+#include "HubComponent.h"
 
 #if CC_PLATFORM_OS_X || CC_PLATFORM_IOS
 #include <CoreFoundation/CoreFoundation.h>
@@ -34,6 +36,9 @@ static void PreSetup(void)
     char Path[] = __FILE__;
     Path[sizeof(__FILE__) - sizeof("Hacking-Game/src/main.c")] = 0;
     CCFileFilterInputAddPath(Path);
+    
+    HKHubSystemRegister();
+    HKHubComponentRegister();
 }
 
 static void Setup(void)
