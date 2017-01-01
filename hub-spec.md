@@ -24,7 +24,7 @@ Communicating between hubs or modules is done using ports. These ports are acces
 
 e.g. HubA may have its port 0 connected to HubB's port 55. For HubA to communicate to HubB, it will reference port 0. While for HubB to communicate to HubA, it will reference port 55.
 
-Communication is done using two special instructions `send` (to send a message) and `recv` (to receive a message). For the communication to be successful the two communicating hubs must use the respective send/recv pair during the same timeout period. If neither gets the response during that time, the instruction will timeout and communication will have failed. It will then move onto the next instruction.
+Communication is done using two special instructions `send` (to send a message) and `recv` (to receive a message). For the communication to be successful the two communicating hubs must use the respective send/recv pair during the same timeout period. If neither gets the response during that time, the instruction will timeout and communication will have failed. It will then move onto the next instruction. If the port is not connected to anything then the instruction will fail but it will not wait the timeout period.
 
 Port messages can be of various sizes, ranging from 0 to 255. The instructions provide no standard mechanism to know the size of the incoming data.
 
