@@ -23,9 +23,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HackingGame_HubArchModuleDebug_h
-#define HackingGame_HubArchModuleDebug_h
+#ifndef HackingGame_HubModuleDebug_h
+#define HackingGame_HubModuleDebug_h
 
-#include <stdio.h>
+#include "HubArchPort.h"
+
+HKHubArchPort HKHubModuleDebugGetPort(void);
 
 #endif

@@ -23,25 +23,30 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "HubArchModuleDebug.h"
+#include "HubModuleDebug.h"
 #include "HubArchProcessor.h"
 
 static HKHubArchPortResponse HKHubModuleDebug(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
 {
-    /*
-     As caller will always be a processor, we can calculate the amount of cycles it has and whether it is enough.
-     
-     Possibly just pass in callers cycles
-     */
-    //    ((HKHubArchProcessor)ConnectedDevice)->
+    const size_t CallerCycles = 4 + (Message->size * (HKHubArchProcessorSpeedPortTransmission + HKHubArchProcessorSpeedMemoryRead)); //4 for cycles used by send instruction
     
-    if (4 + (Message->size * (HKHubArchProcessorSpeedPortTransmission + HKHubArchProcessorSpeedMemoryRead)) <= ((HKHubArchProcessor)ConnectedDevice)->cycles)
+    if (CallerCycles <= ((HKHubArchProcessor)ConnectedDevice)->cycles)
     {
         const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Connection, Device, Port);
         CC_LOG_DEBUG_CUSTOM("%p(%u): %[*]hhx", ConnectedDevice, OppositePort->id, (size_t)Message->size, Message->memory + Message->offset);
-        //        return HKHubArchPortResponseSuccess;
     }
     
-    //"%[count{separator}]format_specifier" : Count can either be a value or * (size_t value in arg), separator is optional can be the text or * (char * value in arg), and then the standard format specifier
     return HKHubArchPortResponseSuccess;
+}
+
+HKHubArchPort HKHubModuleDebugGetPort(void)
+{
+    return (HKHubArchPort){
+        .sender = NULL,
+        .receiver = HKHubModuleDebug,
+        .device = NULL,
+        .destructor = NULL,
+        .disconnect = NULL,
+        .id = 0
+    };
 }
