@@ -47,14 +47,14 @@ void HKHubSystemRegister(void)
     
     Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
     
-    CCComponentSystemRegister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeRender, (CCComponentSystemUpdateCallback)HKHubSystemUpdate, HKHubSystemHandlesComponent, NULL, NULL, HKHubSystemTryLock, HKHubSystemLock, HKHubSystemUnlock);
+    CCComponentSystemRegister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeUpdate, (CCComponentSystemUpdateCallback)HKHubSystemUpdate, HKHubSystemHandlesComponent, NULL, NULL, HKHubSystemTryLock, HKHubSystemLock, HKHubSystemUnlock);
 }
 
 void HKHubSystemDeregister(void)
 {
     mtx_destroy(&Lock);
     
-    CCComponentSystemDeregister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeRender);
+    CCComponentSystemDeregister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeUpdate);
 }
 
 static _Bool HKHubSystemTryLock(void)
