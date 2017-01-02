@@ -140,7 +140,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     
     if (Device->message.type == HKHubArchProcessorMessageSend)
     {
-        if (Device->message.port != Port) return HKHubArchPortResponseRetry;
+        if (Device->message.port != Port) return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         *Message = Device->message.data;
@@ -154,9 +154,8 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     }
     
     else if ((Device->message.type == HKHubArchProcessorMessageReceive) && (Device->cycles >= (Timestamp + 4))) return HKHubArchPortResponseTimeout;
-    else if (Device->complete) return HKHubArchPortResponseDefer;
     
-    return HKHubArchPortResponseRetry;
+    return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
 }
 
 static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp, size_t *Wait)
@@ -170,7 +169,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     
     if (Device->message.type == HKHubArchProcessorMessageReceive)
     {
-        if (Device->message.port != Port) return HKHubArchPortResponseRetry;
+        if (Device->message.port != Port) return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         const uint8_t Offset = Device->message.data.offset;
@@ -188,9 +187,8 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     }
     
     else if ((Device->message.type == HKHubArchProcessorMessageSend) && (Device->cycles >= (Timestamp + 4))) return HKHubArchPortResponseTimeout;
-    else if (Device->complete) return HKHubArchPortResponseDefer;
     
-    return HKHubArchPortResponseRetry;
+    return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
 }
 
 HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchPortID Port)
