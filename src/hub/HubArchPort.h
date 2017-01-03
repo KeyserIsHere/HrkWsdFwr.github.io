@@ -147,4 +147,19 @@ HKHubArchPort *HKHubArchPortConnectionGetPort(HKHubArchPortConnection Connection
  */
 HKHubArchPort *HKHubArchPortConnectionGetOppositePort(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port);
 
+/*!
+ * @brief Check if the port is ready for the operation.
+ * @param Port The port to be checked.
+ * @return Whether the port is ready or not.
+ */
+static inline _Bool HKHubArchPortIsReady(const HKHubArchPort *Port);
+
+
+#pragma mark -
+
+static inline _Bool HKHubArchPortIsReady(const HKHubArchPort *Port)
+{
+    return !Port->ready || Port->ready(Port->device, Port->id);
+}
+
 #endif
