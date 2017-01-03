@@ -144,11 +144,13 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         *Message = Device->message.data;
-        
-        Device->message.type = HKHubArchProcessorMessageComplete;
-        
+                
         Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
         *Wait = Device->message.timestamp < Timestamp ? Timestamp - Device->message.timestamp : 0;
+        
+        if ((!HKHubArchPortIsReady(HKHubArchPortConnectionGetPort(Connection, Device, Port))) || (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port)))) return HKHubArchPortResponseDefer;
+        
+        Device->message.type = HKHubArchProcessorMessageComplete;
         
         return HKHubArchPortResponseSuccess;
     }
@@ -178,10 +180,12 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
             Device->memory[Offset + Size] = Message->memory[Message->offset + Size];
         }
         
-        Device->message.type = HKHubArchProcessorMessageComplete;
-        
         Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
         *Wait = Device->message.timestamp < Timestamp ? Timestamp - Device->message.timestamp : 0;
+        
+        if ((!HKHubArchPortIsReady(HKHubArchPortConnectionGetPort(Connection, Device, Port))) || (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port)))) return HKHubArchPortResponseDefer;
+        
+        Device->message.type = HKHubArchProcessorMessageComplete;
         
         return HKHubArchPortResponseSuccess;
     }
@@ -189,6 +193,28 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     else if ((Device->message.type == HKHubArchProcessorMessageSend) && (Device->cycles >= (Timestamp + 4))) return HKHubArchPortResponseTimeout;
     
     return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
+}
+
+_Bool HKHubArchProcessorPortReady(HKHubArchProcessor Device, HKHubArchPortID Port)
+{
+    size_t Cycles = Device->message.wait + (Device->message.data.size * HKHubArchProcessorSpeedPortTransmission);
+    
+    switch (Device->message.type)
+    {
+        case HKHubArchProcessorMessageSend:
+            Cycles += Device->message.data.size * HKHubArchProcessorSpeedMemoryRead;
+            break;
+            
+        case HKHubArchProcessorMessageReceive:
+            Cycles += Device->message.data.size * HKHubArchProcessorSpeedMemoryWrite;
+            break;
+            
+        default:
+            CCAssertLog(0, "Should not be called unless operation is possible");
+            break;
+    }
+    
+    return Cycles <= Device->message.timestamp;
 }
 
 HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchPortID Port)
@@ -200,7 +226,8 @@ HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchP
         .id = Port,
         .disconnect = NULL,
         .sender = (HKHubArchPortTransmit)HKHubArchProcessorPortSend,
-        .receiver = (HKHubArchPortTransmit)HKHubArchProcessorPortReceive
+        .receiver = (HKHubArchPortTransmit)HKHubArchProcessorPortReceive,
+        .ready = (HKHubArchPortReady)HKHubArchProcessorPortReady
     };
 }
 
