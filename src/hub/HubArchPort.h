@@ -68,6 +68,15 @@ typedef enum {
 typedef HKHubArchPortResponse (*HKHubArchPortTransmit)(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait);
 
 /*!
+ * @brief Check whether the device at the given port can complete the operation.
+ * @description If not provided it is assumed the port is ready.
+ * @param Device The device the port belongs to.
+ * @param Port The port being used.
+ * @return Whether the operation can be completed or not.
+ */
+typedef _Bool (*HKHubArchPortReady)(HKHubArchPortDevice Device, HKHubArchPortID Port);
+
+/*!
  * @brief Disconnect the device at the given port.
  * @param Device The device the port belongs to.
  * @param Port The port being disconnected.
@@ -83,6 +92,7 @@ typedef void (*HKHubArchPortDeviceDestructor)(HKHubArchPortDevice Device);
 typedef struct {
     HKHubArchPortTransmit sender;
     HKHubArchPortTransmit receiver;
+    HKHubArchPortReady ready;
     HKHubArchPortDevice device;
     HKHubArchPortDeviceDestructor destructor;
     HKHubArchPortDisconnect disconnect;
