@@ -1303,12 +1303,6 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
         if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
         
         Success = TRUE;
-        
-        uint8_t Offset = Processor->message.offset;
-        for (uint8_t Size = Processor->message.data.size; Size--; )
-        {
-            Processor->memory[Offset + Size] = Processor->message.data.memory[Processor->message.data.offset + Size];
-        }
     }
     
     else if (Conn)
