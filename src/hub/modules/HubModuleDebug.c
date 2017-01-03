@@ -28,11 +28,10 @@
 
 static HKHubArchPortResponse HKHubModuleDebug(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
 {
-    const size_t CallerCycles = 4 + (Message->size * (HKHubArchProcessorSpeedPortTransmission + HKHubArchProcessorSpeedMemoryRead)); //4 for cycles used by send instruction
+    const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Connection, Device, Port);
     
-    if (CallerCycles <= ((HKHubArchProcessor)ConnectedDevice)->cycles)
+    if (HKHubArchPortIsReady(OppositePort))
     {
-        const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Connection, Device, Port);
         CC_LOG_DEBUG_CUSTOM("%p(%u): %[*]hhx", ConnectedDevice, OppositePort->id, (size_t)Message->size, Message->memory + Message->offset);
     }
     
