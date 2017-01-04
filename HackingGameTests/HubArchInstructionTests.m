@@ -990,7 +990,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchPortConnectionDestroy(Conn);
     
     Source =
-        ".define checker, 1\n"
+        ".define checker, 0\n"
         "data: .byte 9\n"
         ".entrypoint\n"
         "repeat:\n"
@@ -1012,10 +1012,10 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessor Counter = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     HKHubArchBinaryDestroy(Binary);
     
-    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Checker, 1), HKHubArchProcessorGetPort(Counter, 1));
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Checker, 1), HKHubArchProcessorGetPort(Counter, 0));
     
     HKHubArchProcessorConnect(Checker, 1, Conn);
-    HKHubArchProcessorConnect(Counter, 1, Conn);
+    HKHubArchProcessorConnect(Counter, 0, Conn);
     HKHubArchPortConnectionDestroy(Conn);
     
     
@@ -1030,6 +1030,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     }
     
     XCTAssertEqual(TestAccumulationFailedSequences, 0, @"Accumulation sequences should be synced");
+    XCTAssertTrue(TestAccumulationSequenceSum > 0, @"Accumulation must occur");
     
     HKHubArchSchedulerDestroy(Scheduler);
     HKHubArchProcessorDestroy(Counter);
