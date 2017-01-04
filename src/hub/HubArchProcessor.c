@@ -72,6 +72,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.pc = Binary->entrypoint;
         Processor->state.flags = 0;
         Processor->cycles = 0;
+        Processor->unusedTime = 0.0;
         Processor->complete = FALSE;
         
         memcpy(Processor->memory, Binary->data, sizeof(Processor->memory));
@@ -113,6 +114,7 @@ void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
     CCAssertLog(Processor, "Processor must not be null");
     
     Processor->cycles = Cycles;
+    Processor->unusedTime = 0.0;
     Processor->complete = FALSE;
 }
 
@@ -120,7 +122,9 @@ void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Se
 {
     CCAssertLog(Processor, "Processor must not be null");
     
-    Processor->cycles += Seconds * HKHubArchProcessorHertz;
+    const double Cycles = (Seconds * HKHubArchProcessorHertz) + Processor->unusedTime;
+    Processor->cycles += Cycles;
+    Processor->unusedTime = Cycles - (size_t)Cycles;
     Processor->complete = FALSE;
 }
 

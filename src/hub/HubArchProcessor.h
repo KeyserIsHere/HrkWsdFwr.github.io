@@ -51,6 +51,7 @@ typedef struct {
         uint8_t flags;
     } state;
     size_t cycles;
+    double unusedTime;
     _Bool complete;
     uint8_t memory[256];
 } HKHubArchProcessorInfo;
