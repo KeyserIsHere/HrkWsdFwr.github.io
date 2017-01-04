@@ -104,6 +104,22 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     HKHubArchProcessorDestroy(P2);
 }
 
+static int TestAccumulationFailedSequences = 0;
+static uint8_t TestAccumulationSequenceSum = 0;
+static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
+{
+    const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Connection, Device, Port);
+    
+    if (HKHubArchPortIsReady(OppositePort))
+    {
+        if (TestAccumulationSequenceSum + 1 != Message->memory[Message->offset]) TestAccumulationFailedSequences++;
+        
+        TestAccumulationSequenceSum = Message->memory[Message->offset];
+    }
+    
+    return HKHubArchPortResponseSuccess;
+}
+
 -(void) testMessaging
 {
     const char *Source =
@@ -934,6 +950,90 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     HKHubArchProcessorDestroy(P[0]);
     HKHubArchProcessorDestroy(P[1]);
     HKHubArchProcessorDestroy(P[2]);
+    
+    
+    
+    Source =
+        ".define counter, 1\n"
+        ".define test, 0\n"
+        "data: .byte 0\n"
+        ".entrypoint\n"
+        "repeat:\n"
+        "send counter, 1, [data]\n"
+        "jz repeat\n"
+        "get:\n"
+        "recv counter, [data]\n"
+        "jz get\n"
+        "send test, 1, [data]\n"
+        "jmp repeat\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Checker = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Checker, 0), (HKHubArchPort){
+        .sender = NULL,
+        .receiver = TestAccumulationSequence,
+        .device = NULL,
+        .destructor = NULL,
+        .disconnect = NULL,
+        .id = 0
+    });
+    
+    HKHubArchProcessorConnect(Checker, 0, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Source =
+        ".define checker, 1\n"
+        "data: .byte 9\n"
+        ".entrypoint\n"
+        "repeat:\n"
+        "recv checker, [data]\n"
+        "jz repeat\n"
+        "add [data], 1\n"
+        "try_again:\n"
+        "send checker, 1, [data]\n"
+        "jz try_again\n"
+        "jmp repeat\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Counter = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Checker, 1), HKHubArchProcessorGetPort(Counter, 1));
+    
+    HKHubArchProcessorConnect(Checker, 1, Conn);
+    HKHubArchProcessorConnect(Counter, 1, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    
+    Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
+    HKHubArchSchedulerAddProcessor(Scheduler, Checker);
+    HKHubArchSchedulerAddProcessor(Scheduler, Counter);
+    
+    
+    for (int Loop = 0; Loop < 100; Loop++)
+    {
+        HKHubArchSchedulerRun(Scheduler, 0.03);
+    }
+    
+    XCTAssertEqual(TestAccumulationFailedSequences, 0, @"Accumulation sequences should be synced");
+    
+    HKHubArchSchedulerDestroy(Scheduler);
+    HKHubArchProcessorDestroy(Counter);
+    HKHubArchProcessorDestroy(Checker);
 }
 
 -(void) testAddition
