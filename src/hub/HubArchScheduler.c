@@ -76,7 +76,21 @@ void HKHubArchSchedulerRemoveProcessor(HKHubArchScheduler Scheduler, HKHubArchPr
     CCAssertLog(Scheduler, "Scheduler must not be null");
     CCAssertLog(Processor, "Processor must not be null");
     
-    CCCollectionRemoveElement(Scheduler->hubs, CCCollectionFindElement(Scheduler->hubs, &Processor, NULL));
+    CCCollectionEntry Entry = CCCollectionFindElement(Scheduler->hubs, &Processor, NULL);
+    if (Entry)
+    {
+        CC_DICTIONARY_FOREACH_VALUE(HKHubArchPortConnection, Connection, Processor->ports)
+        {
+            for (int Loop = 0; Loop < 2; Loop++)
+            {
+                if (Connection->port[Loop].device == Processor) Connection->port[Loop].disconnect = NULL;
+            }
+            
+            HKHubArchPortConnectionDisconnect(Connection);
+        }
+        
+        CCCollectionRemoveElement(Scheduler->hubs, Entry);
+    }
 }
 
 void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds)

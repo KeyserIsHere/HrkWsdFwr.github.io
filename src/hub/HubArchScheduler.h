@@ -57,6 +57,7 @@ void HKHubArchSchedulerAddProcessor(HKHubArchScheduler Scheduler, HKHubArchProce
 
 /*!
  * @brief Remove a processor hub from the scheduler.
+ * @description Disconnects all connections to that processor.
  * @param Scheduler The scheduler that manages the processor.
  * @param Processor The processor to be remove from the scheduler.
  */
