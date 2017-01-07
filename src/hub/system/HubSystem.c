@@ -103,8 +103,8 @@ static void HKHubSystemUpdateScheduler(CCCollection Components, void (*Update)(H
 
 static void HKHubSystemUpdate(double DeltaTime, CCCollection Components)
 {
-    HKHubSystemUpdateScheduler(CCComponentSystemGetRemovedComponentsForSystem(HK_HUB_SYSTEM_ID), HKHubArchSchedulerRemoveProcessor);
     HKHubSystemUpdateScheduler(CCComponentSystemGetAddedComponentsForSystem(HK_HUB_SYSTEM_ID), HKHubArchSchedulerAddProcessor);
+    HKHubSystemUpdateScheduler(CCComponentSystemGetRemovedComponentsForSystem(HK_HUB_SYSTEM_ID), HKHubArchSchedulerRemoveProcessor);
     
     HKHubArchSchedulerRun(Scheduler, DeltaTime);
 }
