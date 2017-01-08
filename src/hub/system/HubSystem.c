@@ -25,7 +25,7 @@
 
 #include "HubSystem.h"
 #include <threads.h>
-#include "HubComponent.h"
+#include "HubProcessorComponent.h"
 #include "HubArchScheduler.h"
 
 static _Bool HKHubSystemTryLock(void);
@@ -97,7 +97,7 @@ static void HKHubSystemUpdateScheduler(CCCollection Components, void (*Update)(H
     {
         if ((CCComponentGetID(Hub) & HKHubTypeMask) == HKHubTypeProcessor)
         {
-            Update(Scheduler, HKHubComponentGetProcessor(Hub));
+            Update(Scheduler, HKHubProcessorComponentGetProcessor(Hub));
         }
     }
     

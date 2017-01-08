@@ -23,17 +23,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "HubComponent.h"
+#include "HubProcessorComponent.h"
 
 
-const char * const HKHubComponentName = "hub";
+const char * const HKHubProcessorComponentName = "hub";
 
-void HKHubComponentRegister(void)
+void HKHubProcessorComponentRegister(void)
 {
-    CCComponentRegister(HK_HUB_COMPONENT_ID, HKHubComponentName, CC_STD_ALLOCATOR, sizeof(HKHubComponentClass), HKHubComponentInitialize, HKHubComponentDeallocate);
+    CCComponentRegister(HK_HUB_COMPONENT_ID, HKHubProcessorComponentName, CC_STD_ALLOCATOR, sizeof(HKHubProcessorComponentClass), HKHubProcessorComponentInitialize, HKHubProcessorComponentDeallocate);
 }
 
-void HKHubComponentDeregister(void)
+void HKHubProcessorComponentDeregister(void)
 {
     CCComponentDeregister(HK_HUB_COMPONENT_ID);
 }

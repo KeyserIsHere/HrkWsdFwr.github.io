@@ -23,105 +23,105 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HackingGame_HubComponent_h
-#define HackingGame_HubComponent_h
+#ifndef HackingGame_HubProcessorComponent_h
+#define HackingGame_HubProcessorComponent_h
 
 #include <Blob2D/Blob2D.h>
 #include "HubArchProcessor.h"
 #include "HubSystem.h"
 
-#define HK_HUB_COMPONENT_ID HK_HUB_COMPONENT_FLAG
+#define HK_HUB_COMPONENT_ID (HKHubTypeProcessor | HK_HUB_COMPONENT_FLAG)
 
 typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
     CCString name;
     HKHubArchProcessor processor;
-} HKHubComponentClass, *HKHubComponentPrivate;
+} HKHubProcessorComponentClass, *HKHubProcessorComponentPrivate;
 
 
-void HKHubComponentRegister(void);
-void HKHubComponentDeregister(void);
+void HKHubProcessorComponentRegister(void);
+void HKHubProcessorComponentDeregister(void);
 
 /*!
  * @brief Initialize the hub component.
  * @param Component The component to be initialized.
  * @param id The component ID.
  */
-static inline void HKHubComponentInitialize(CCComponent Component, CCComponentID id);
+static inline void HKHubProcessorComponentInitialize(CCComponent Component, CCComponentID id);
 
 /*!
  * @brief Deallocate the hub component.
  * @param Component The component to be deallocated.
  */
-static inline void HKHubComponentDeallocate(CCComponent Component);
+static inline void HKHubProcessorComponentDeallocate(CCComponent Component);
 
 /*!
  * @brief Get the name of the hub.
  * @param Component The hub component.
  * @return The hub name.
  */
-static inline CCString HKHubComponentGetName(CCComponent Component);
+static inline CCString HKHubProcessorComponentGetName(CCComponent Component);
 
 /*!
  * @brief Set the name of the hub.
  * @param Component The hub component.
  * @param Name The hub name. Ownership is transferred to the component.
  */
-static inline void HKHubComponentSetName(CCComponent Component, CCString CC_OWN(Name));
+static inline void HKHubProcessorComponentSetName(CCComponent Component, CCString CC_OWN(Name));
 
 /*!
  * @brief Get the processor of the hub.
  * @param Component The hub component.
  * @return The hub processor.
  */
-static inline HKHubArchProcessor HKHubComponentGetProcessor(CCComponent Component);
+static inline HKHubArchProcessor HKHubProcessorComponentGetProcessor(CCComponent Component);
 
 /*!
  * @brief Set the processor of the hub.
  * @param Component The hub component.
  * @param Processor The hub processor. Ownership is transferred to the component.
  */
-static inline void HKHubComponentSetProcessor(CCComponent Component, HKHubArchProcessor CC_OWN(Processor));
+static inline void HKHubProcessorComponentSetProcessor(CCComponent Component, HKHubArchProcessor CC_OWN(Processor));
 
 
 #pragma mark -
 
-static inline void HKHubComponentInitialize(CCComponent Component, CCComponentID id)
+static inline void HKHubProcessorComponentInitialize(CCComponent Component, CCComponentID id)
 {
     CCComponentInitialize(Component, id);
-    ((HKHubComponentPrivate)Component)->name = 0;
-    ((HKHubComponentPrivate)Component)->processor = NULL;
+    ((HKHubProcessorComponentPrivate)Component)->name = 0;
+    ((HKHubProcessorComponentPrivate)Component)->processor = NULL;
 }
 
-static inline void HKHubComponentDeallocate(CCComponent Component)
+static inline void HKHubProcessorComponentDeallocate(CCComponent Component)
 {
-    if (((HKHubComponentPrivate)Component)->name) CCStringDestroy(((HKHubComponentPrivate)Component)->name);
-    if (((HKHubComponentPrivate)Component)->processor) HKHubArchProcessorDestroy(((HKHubComponentPrivate)Component)->processor);
+    if (((HKHubProcessorComponentPrivate)Component)->name) CCStringDestroy(((HKHubProcessorComponentPrivate)Component)->name);
+    if (((HKHubProcessorComponentPrivate)Component)->processor) HKHubArchProcessorDestroy(((HKHubProcessorComponentPrivate)Component)->processor);
     CCComponentDeallocate(Component);
 }
 
-static inline CCString HKHubComponentGetName(CCComponent Component)
+static inline CCString HKHubProcessorComponentGetName(CCComponent Component)
 {
-    return ((HKHubComponentPrivate)Component)->name;
+    return ((HKHubProcessorComponentPrivate)Component)->name;
 }
 
-static inline void HKHubComponentSetName(CCComponent Component, CCString Name)
+static inline void HKHubProcessorComponentSetName(CCComponent Component, CCString Name)
 {
-    if (((HKHubComponentPrivate)Component)->name) CCStringDestroy(((HKHubComponentPrivate)Component)->name);
+    if (((HKHubProcessorComponentPrivate)Component)->name) CCStringDestroy(((HKHubProcessorComponentPrivate)Component)->name);
     
-    ((HKHubComponentPrivate)Component)->name = Name;
+    ((HKHubProcessorComponentPrivate)Component)->name = Name;
 }
 
-static inline HKHubArchProcessor HKHubComponentGetProcessor(CCComponent Component)
+static inline HKHubArchProcessor HKHubProcessorComponentGetProcessor(CCComponent Component)
 {
-    return ((HKHubComponentPrivate)Component)->processor;
+    return ((HKHubProcessorComponentPrivate)Component)->processor;
 }
 
-static inline void HKHubComponentSetProcessor(CCComponent Component, HKHubArchProcessor Processor)
+static inline void HKHubProcessorComponentSetProcessor(CCComponent Component, HKHubArchProcessor Processor)
 {
-    if (((HKHubComponentPrivate)Component)->processor) HKHubArchProcessorDestroy(((HKHubComponentPrivate)Component)->processor);
+    if (((HKHubProcessorComponentPrivate)Component)->processor) HKHubArchProcessorDestroy(((HKHubProcessorComponentPrivate)Component)->processor);
     
-    ((HKHubComponentPrivate)Component)->processor = Processor;
+    ((HKHubProcessorComponentPrivate)Component)->processor = Processor;
 }
 
 #endif
