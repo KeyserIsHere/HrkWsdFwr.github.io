@@ -31,6 +31,12 @@
 #define HK_HUB_SYSTEM_ID 0x601
 #define HK_HUB_COMPONENT_FLAG 0x60000000
 
+typedef enum {
+    HKHubTypeMask = 0xff,
+    HKHubTypeProcessor = 0,
+    HKHubTypeModule
+} HKHubType;
+
 void HKHubSystemRegister(void);
 void HKHubSystemDeregister(void);
 

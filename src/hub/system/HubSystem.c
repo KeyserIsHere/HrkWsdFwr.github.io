@@ -95,7 +95,10 @@ static void HKHubSystemUpdateScheduler(CCCollection Components, void (*Update)(H
 {
     CC_COLLECTION_FOREACH(CCComponent, Hub, Components)
     {
-        Update(Scheduler, HKHubComponentGetProcessor(Hub));
+        if ((CCComponentGetID(Hub) & HKHubTypeMask) == HKHubTypeProcessor)
+        {
+            Update(Scheduler, HKHubComponentGetProcessor(Hub));
+        }
     }
     
     CCCollectionDestroy(Components);
