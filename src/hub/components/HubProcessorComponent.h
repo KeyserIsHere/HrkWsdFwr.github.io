@@ -30,7 +30,7 @@
 #include "HubArchProcessor.h"
 #include "HubSystem.h"
 
-#define HK_HUB_COMPONENT_ID (HKHubTypeProcessor | HK_HUB_COMPONENT_FLAG)
+#define HK_HUB_PROCESSOR_COMPONENT_ID (HKHubTypeProcessor | HK_HUB_COMPONENT_FLAG)
 
 typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
