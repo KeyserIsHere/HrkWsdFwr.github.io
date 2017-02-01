@@ -32,6 +32,8 @@ static uintmax_t HKHubModulePortHasher(HKHubArchPortID *Key)
 
 static void HKHubModuleDestructor(HKHubModule Module)
 {
+    if (Module->destructor) Module->destructor(Module->internal);
+    
     CC_DICTIONARY_FOREACH_VALUE(HKHubArchPortConnection, Connection, Module->ports)
     {
         for (int Loop = 0; Loop < 2; Loop++)
@@ -45,7 +47,7 @@ static void HKHubModuleDestructor(HKHubModule Module)
     CCDictionaryDestroy(Module->ports);
 }
 
-HKHubModule HKHubModuleCreate(CCAllocatorType Allocator)
+HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit Send, HKHubArchPortTransmit Receive, void *Internal, HKHubModuleDataDestructor Destructor)
 {
     HKHubModule Module = CCMalloc(Allocator, sizeof(HKHubModuleInfo), NULL, CC_DEFAULT_ERROR_CALLBACK);
     
@@ -55,6 +57,11 @@ HKHubModule HKHubModuleCreate(CCAllocatorType Allocator)
             .getHash = (CCDictionaryKeyHasher)HKHubModulePortHasher,
             .valueDestructor = HKHubArchPortConnectionDestructorForDictionary
         });
+        
+        Module->send = Send;
+        Module->receive = Receive;
+        Module->internal = Internal;
+        Module->destructor = Destructor;
         
         CCMemorySetDestructor(Module, (CCMemoryDestructorCallback)HKHubModuleDestructor);
     }
@@ -123,8 +130,8 @@ HKHubArchPort HKHubModuleGetPort(HKHubModule Module, HKHubArchPortID Port)
         .device = Module,
         .id = Port,
         .disconnect = NULL,
-        .sender = NULL,
-        .receiver = NULL,
+        .sender = (HKHubArchPortTransmit)Module->send,
+        .receiver = (HKHubArchPortTransmit)Module->receive,
         .ready = NULL
     };
 }

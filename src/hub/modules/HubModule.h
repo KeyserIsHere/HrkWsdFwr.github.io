@@ -28,9 +28,17 @@
 
 #include "HubArchPort.h"
 
+/*!
+ * @brief Callback to destroy the internal data.
+ */
+typedef void (*HKHubModuleDataDestructor)(void *Internal);
 
 typedef struct {
+    void *internal;
     CCDictionary ports;
+    HKHubArchPortTransmit send;
+    HKHubArchPortTransmit receive;
+    HKHubModuleDataDestructor destructor;
 } HKHubModuleInfo;
 
 
@@ -44,9 +52,13 @@ typedef HKHubModuleInfo *HKHubModule;
 /*!
  * @brief Create a module.
  * @param Allocator The allocator to be used.
+ * @param Send The sender.
+ * @param Receive The receiver.
+ * @param Internal The internal data.
+ * @param Destructor The destructor for the internal data.
  * @return The module. Must be destroyed to free memory.
  */
-CC_NEW HKHubModule HKHubModuleCreate(CCAllocatorType Allocator); //TODO: workout what state to init with (likely data and transmit callbacks)
+CC_NEW HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit Send, HKHubArchPortTransmit Receive, void *Internal, HKHubModuleDataDestructor Destructor);
 
 /*!
  * @brief Destroy a module.
