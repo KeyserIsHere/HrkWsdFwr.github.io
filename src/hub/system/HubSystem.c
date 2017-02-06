@@ -47,7 +47,7 @@ void HKHubSystemRegister(void)
     
     Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
     
-    CCComponentSystemRegister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeUpdate, (CCComponentSystemUpdateCallback)HKHubSystemUpdate, HKHubSystemHandlesComponent, NULL, NULL, HKHubSystemTryLock, HKHubSystemLock, HKHubSystemUnlock);
+    CCComponentSystemRegister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeUpdate, (CCComponentSystemUpdateCallback)HKHubSystemUpdate, NULL, HKHubSystemHandlesComponent, NULL, NULL, HKHubSystemTryLock, HKHubSystemLock, HKHubSystemUnlock);
 }
 
 void HKHubSystemDeregister(void)

@@ -29,7 +29,7 @@ const char * const HKHubModuleComponentName = "module";
 
 void HKHubModuleComponentRegister(void)
 {
-    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, HKHubModuleComponentDeallocate);
+    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, NULL, HKHubModuleComponentDeallocate);
 }
 
 void HKHubModuleComponentDeregister(void)

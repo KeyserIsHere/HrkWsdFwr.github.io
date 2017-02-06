@@ -30,7 +30,7 @@ const char * const HKHubProcessorComponentName = "hub";
 
 void HKHubProcessorComponentRegister(void)
 {
-    CCComponentRegister(HK_HUB_PROCESSOR_COMPONENT_ID, HKHubProcessorComponentName, CC_STD_ALLOCATOR, sizeof(HKHubProcessorComponentClass), HKHubProcessorComponentInitialize, HKHubProcessorComponentDeallocate);
+    CCComponentRegister(HK_HUB_PROCESSOR_COMPONENT_ID, HKHubProcessorComponentName, CC_STD_ALLOCATOR, sizeof(HKHubProcessorComponentClass), HKHubProcessorComponentInitialize, NULL, HKHubProcessorComponentDeallocate);
 }
 
 void HKHubProcessorComponentDeregister(void)
