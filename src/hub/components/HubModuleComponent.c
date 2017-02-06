@@ -27,12 +27,20 @@
 
 const char * const HKHubModuleComponentName = "module";
 
+static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message);
+
 void HKHubModuleComponentRegister(void)
 {
-    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, NULL, HKHubModuleComponentDeallocate);
+    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, HKHubModuleComponentMessageHandler, HKHubModuleComponentDeallocate);
 }
 
 void HKHubModuleComponentDeregister(void)
 {
     CCComponentDeregister(HK_HUB_MODULE_COMPONENT_ID);
+}
+
+static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message)
+{
+    CCComponentMessageHandler MessageHandler = HKHubModuleComponentGetMessageHandler(Component);
+    if (MessageHandler) MessageHandler(Component, Message);
 }
