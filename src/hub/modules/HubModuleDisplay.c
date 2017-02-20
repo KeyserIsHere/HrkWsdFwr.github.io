@@ -32,8 +32,11 @@ typedef struct {
 
 
 static CCData HKHubModuleDisplayBufferConversion_None(CCAllocatorType Allocator, const uint8_t Buffer[256]);
+static CCData HKHubModuleDisplayBufferConversion_UniformColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
+
 
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer = HKHubModuleDisplayBufferConversion_None;
+const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformColourRGB888 = HKHubModuleDisplayBufferConversion_UniformColourRGB888;
 
 
 static HKHubArchPortResponse HKHubModuleDisplaySetBuffer(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
@@ -84,4 +87,49 @@ CCData HKHubModuleDisplayConvertBuffer(CCAllocatorType Allocator, HKHubModule Mo
 static CCData HKHubModuleDisplayBufferConversion_None(CCAllocatorType Allocator, const uint8_t Buffer[256])
 {
     return CCDataBufferCreate(Allocator, CCDataBufferHintCopy, 256, Buffer, NULL, NULL);
+}
+
+static CCData HKHubModuleDisplayBufferConversion_UniformColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256])
+{
+    /*
+     ffrrggbb
+     
+     r = red
+     g = green
+     b = blue
+     f = scale factor
+     
+     Channel values are in multiples of 68. e.g. r = 1 (red = 68)
+     Scale factor is a multiple of 17. e.g. r = 1 (red = 68), sf = 2 (scale factor = 34) = red = 68+34 = 102
+     
+     The scale factor is applied to each channel.
+     
+     Pros:
+     Good colour distribution (equal reds, greens, blues), mixed channels, good selection of greys.
+     
+     Cons:
+     No absolute red, green, or blue.
+     */
+    
+    size_t DataSize = 256 * sizeof(uint8_t) * 3;
+    uint8_t *Data = CCMalloc(Allocator, DataSize, NULL, CC_DEFAULT_ERROR_CALLBACK);
+    if (!Data)
+    {
+        CC_LOG_ERROR("Failed to create data buffer. Allocation failure of size (%zu)", DataSize);
+        return NULL;
+    }
+    
+    for (size_t Loop = 0; Loop < 256; Loop++)
+    {
+        const uint8_t b = Buffer[Loop] & (3 << 0);
+        const uint8_t g = (Buffer[Loop] & (3 << 2)) >> 2;
+        const uint8_t r = (Buffer[Loop] & (3 << 4)) >> 4;
+        const uint8_t f = (Buffer[Loop] & (3 << 6)) >> 6;
+        
+        Data[Loop * 3] = ((r * 4) + f) * 17; //red
+        Data[(Loop * 3) + 1] = ((g * 4) + f) * 17; //green
+        Data[(Loop * 3) + 2] = ((b * 4) + f) * 17; //blue
+    }
+    
+    return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);
 }

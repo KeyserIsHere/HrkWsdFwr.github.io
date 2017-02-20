@@ -42,6 +42,30 @@ typedef CC_NEW CCData (*HKHubModuleDisplayBufferConverter)(CCAllocatorType Alloc
 extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer;
 
 /*!
+ * @brief Retrieve the display buffer as a uniformly distributed colour buffer.
+ * @description Colour is in the format RGB888. 
+ *
+ *              Display buffer is assumed to be of the format ffrrggbb, where lowest
+ *              2 bits are the blue channel, next 2 bits are the green channel, next
+ *              2 bits are the red channel, and highest two bits are the scale factor.
+ *
+ *              Channel values are in multiples of 68. e.g. r = 1 (red = 68)
+ *              Scale factor is a multiple of 17. e.g. r = 1 (red = 68), sf = 2
+ *              (scale factor = 34) = red = 68+34 = 102
+ *
+ *              The scale factor is applied to each channel.
+ *
+ *              Pros:
+ *              Good colour distribution (equal reds, greens, blues), mixed channels,
+ *              good selection of greys.
+ *
+ *              Cons:
+ *              No absolute red, green, or blue.
+ */
+extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformColourRGB888;
+
+
+/*!
  * @brief Create a display module.
  * @description This is a generic addressable memory store and data conversion device.
  * @param Allocator The allocator to be used.
