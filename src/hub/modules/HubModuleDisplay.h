@@ -37,6 +37,11 @@
 typedef CC_NEW CCData (*HKHubModuleDisplayBufferConverter)(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 
 /*!
+ * @brief Retreive the display buffer as is, applying no conversions.
+ */
+extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer;
+
+/*!
  * @brief Create a display module.
  * @description This is a generic addressable memory store and data conversion device.
  * @param Allocator The allocator to be used.

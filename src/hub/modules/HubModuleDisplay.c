@@ -30,6 +30,12 @@ typedef struct {
     uint8_t buffer[256];
 } HKHubModuleDisplayState;
 
+
+static CCData HKHubModuleDisplayBufferConversion_None(CCAllocatorType Allocator, const uint8_t Buffer[256]);
+
+const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer = HKHubModuleDisplayBufferConversion_None;
+
+
 static HKHubArchPortResponse HKHubModuleDisplaySetBuffer(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
 {
     const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Connection, Device, Port);
@@ -71,4 +77,11 @@ CCData HKHubModuleDisplayConvertBuffer(CCAllocatorType Allocator, HKHubModule Mo
     CCAssertLog(Converter, "Converter must not be null");
     
     return Converter(Allocator, ((HKHubModuleDisplayState*)Module->internal)->buffer);
+}
+
+#pragma mark - Buffer Converters
+
+static CCData HKHubModuleDisplayBufferConversion_None(CCAllocatorType Allocator, const uint8_t Buffer[256])
+{
+    return CCDataBufferCreate(Allocator, CCDataBufferHintCopy, 256, Buffer, NULL, NULL);
 }
