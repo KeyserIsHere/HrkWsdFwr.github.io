@@ -64,6 +64,23 @@ extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer;
  */
 extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformColourRGB888;
 
+/*!
+ * @brief Retrieve the display buffer as a direct RGB332 colour buffer.
+ * @description Colour is converted from RGB332 to the format RGB888.
+ *
+ *              Channel values are evenly spread across range from 0 mapping to
+ *              absolute zero, and max mapping to absolute one.
+ *
+ *              Pros:
+ *              Distributes colour in-favour of human sight, where blues are weakest
+ *              so less depth is given to it.
+ *              Decent colour distribution across channels and mixed channels.
+ *
+ *              Cons:
+ *              Poor selection of greys and blues.
+ */
+extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_DirectColourRGB888;
+
 
 /*!
  * @brief Create a display module.

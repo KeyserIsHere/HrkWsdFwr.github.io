@@ -33,10 +33,12 @@ typedef struct {
 
 static CCData HKHubModuleDisplayBufferConversion_None(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 static CCData HKHubModuleDisplayBufferConversion_UniformColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
+static CCData HKHubModuleDisplayBufferConversion_DirectColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 
 
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer = HKHubModuleDisplayBufferConversion_None;
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformColourRGB888 = HKHubModuleDisplayBufferConversion_UniformColourRGB888;
+const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_DirectColourRGB888 = HKHubModuleDisplayBufferConversion_DirectColourRGB888;
 
 
 static HKHubArchPortResponse HKHubModuleDisplaySetBuffer(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
@@ -129,6 +131,49 @@ static CCData HKHubModuleDisplayBufferConversion_UniformColourRGB888(CCAllocator
         Data[Loop * 3] = ((r * 4) + f) * 17; //red
         Data[(Loop * 3) + 1] = ((g * 4) + f) * 17; //green
         Data[(Loop * 3) + 2] = ((b * 4) + f) * 17; //blue
+    }
+    
+    return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);
+}
+
+static CCData HKHubModuleDisplayBufferConversion_DirectColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256])
+{
+    /*
+     RGB332
+     rrrgggbb
+     
+     r = red
+     g = green
+     b = blue
+     
+     Channel values are evenly spread across range from 0 mapping to absolute zero, and max mapping to absolute
+     one.
+     
+     Pros:
+     Distributes colour in-favour of human sight, where blues are weakest so less depth is given to it.
+     Decent colour distribution across channels and mixed channels.
+     
+     Cons:
+     Poor selection of greys and blues.
+     */
+    
+    size_t DataSize = 256 * sizeof(uint8_t) * 3;
+    uint8_t *Data = CCMalloc(Allocator, DataSize, NULL, CC_DEFAULT_ERROR_CALLBACK);
+    if (!Data)
+    {
+        CC_LOG_ERROR("Failed to create data buffer. Allocation failure of size (%zu)", DataSize);
+        return NULL;
+    }
+    
+    for (size_t Loop = 0; Loop < 256; Loop++)
+    {
+        const uint8_t b = Buffer[Loop] & (3 << 0);
+        const uint8_t g = (Buffer[Loop] & (7 << 2)) >> 2;
+        const uint8_t r = (Buffer[Loop] & (7 << 5)) >> 5;
+        
+        Data[Loop * 3] = (float)r * 36.428571429f; //red
+        Data[(Loop * 3) + 1] = (float)g * 36.428571429f; //green
+        Data[(Loop * 3) + 2] = b * 85; //blue
     }
     
     return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);
