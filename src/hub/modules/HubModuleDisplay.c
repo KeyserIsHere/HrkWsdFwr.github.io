@@ -34,11 +34,13 @@ typedef struct {
 static CCData HKHubModuleDisplayBufferConversion_None(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 static CCData HKHubModuleDisplayBufferConversion_UniformColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 static CCData HKHubModuleDisplayBufferConversion_DirectColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
+static CCData HKHubModuleDisplayBufferConversion_GradientColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 
 
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer = HKHubModuleDisplayBufferConversion_None;
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformColourRGB888 = HKHubModuleDisplayBufferConversion_UniformColourRGB888;
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_DirectColourRGB888 = HKHubModuleDisplayBufferConversion_DirectColourRGB888;
+const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_GradientColourRGB888 = HKHubModuleDisplayBufferConversion_GradientColourRGB888;
 
 
 static HKHubArchPortResponse HKHubModuleDisplaySetBuffer(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
@@ -174,6 +176,51 @@ static CCData HKHubModuleDisplayBufferConversion_DirectColourRGB888(CCAllocatorT
         Data[Loop * 3] = (float)r * 36.428571429f; //red
         Data[(Loop * 3) + 1] = (float)g * 36.428571429f; //green
         Data[(Loop * 3) + 2] = b * 85; //blue
+    }
+    
+    return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);
+}
+
+static CCData HKHubModuleDisplayBufferConversion_GradientColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256])
+{
+    /*
+     rgbvvvvv
+     
+     r = red
+     g = green
+     b = blue
+     v = value
+     
+     Channel are flagged in-use/not in-use (1 = on, 0 = off).
+     Value is intensity factor use by the desired channels.
+     
+     Pros:
+     Absolutes (black, white, red, green, blue, cyan, magenta, yellow).
+     High level gradients for greys, primaries (red, green, blue), secondaries (cyan, magenta, yellow).
+     
+     Cons:
+     Inability to achieve mixed ratios for colours.
+     Poor use of range, lower bound (000xxxxx) when no channels in use is wasted.
+     */
+    
+    size_t DataSize = 256 * sizeof(uint8_t) * 3;
+    uint8_t *Data = CCMalloc(Allocator, DataSize, NULL, CC_DEFAULT_ERROR_CALLBACK);
+    if (!Data)
+    {
+        CC_LOG_ERROR("Failed to create data buffer. Allocation failure of size (%zu)", DataSize);
+        return NULL;
+    }
+    
+    for (size_t Loop = 0; Loop < 256; Loop++)
+    {
+        const uint8_t b = (Buffer[Loop] & (1 << 5)) >> 5;
+        const uint8_t g = (Buffer[Loop] & (1 << 6)) >> 6;
+        const uint8_t r = (Buffer[Loop] & (1 << 7)) >> 7;
+        const uint8_t f = (Buffer[Loop] & 31) + 1;
+        
+        Data[Loop * 3] = (float)(r * f) * 7.96875f; //red
+        Data[(Loop * 3) + 1] = (float)(g * f) * 7.96875f; //green
+        Data[(Loop * 3) + 2] = (float)(b * f) * 7.96875f; //blue
     }
     
     return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);

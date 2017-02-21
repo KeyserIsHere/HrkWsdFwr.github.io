@@ -81,6 +81,28 @@ extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformC
  */
 extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_DirectColourRGB888;
 
+/*!
+ * @brief Retrieve the display buffer as a gradient colour buffer.
+ * @description Colour is in the format RGB888.
+ *
+ *              Display buffer is assumed to be of the format rgbvvvvv, where lowest
+ *              5 bits are the value, next 1 bit is the blue channel, next 1 bit is
+ *              the green channel, next 1 bit is the red channel.
+ *
+ *              Channel are flagged in-use/not in-use (1 = on, 0 = off).
+ *              Value is intensity factor use by the desired channels.
+ *
+ *              Pros:
+ *              Absolutes (black, white, red, green, blue, cyan, magenta, yellow).
+ *              High level gradients for greys, primaries (red, green, blue),
+ *              secondaries (cyan, magenta, yellow).
+ *
+ *              Cons:
+ *              Inability to achieve mixed ratios for colours.
+ *              Poor use of range, lower bound (000xxxxx) when no channels in use is wasted.
+ */
+extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_GradientColourRGB888;
+
 
 /*!
  * @brief Create a display module.
