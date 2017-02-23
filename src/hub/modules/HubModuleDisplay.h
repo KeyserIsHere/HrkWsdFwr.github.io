@@ -103,6 +103,16 @@ extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_DirectCo
  */
 extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_GradientColourRGB888;
 
+/*!
+ * @brief Retrieve the display buffer as a yuv colour buffer.
+ * @description Colour is in the format RGB888.
+ *
+ *              Display buffer is assumed to be of the format vvvuuuyy, where lowest
+ *              2 bits are the luma, next 3 bits are the u-chroma, next 3 bits are
+ *              the v-chroma.
+ */
+extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_YUVColourRGB888;
+
 
 /*!
  * @brief Create a display module.

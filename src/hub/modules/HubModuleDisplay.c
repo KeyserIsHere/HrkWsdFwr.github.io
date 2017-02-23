@@ -35,12 +35,14 @@ static CCData HKHubModuleDisplayBufferConversion_None(CCAllocatorType Allocator,
 static CCData HKHubModuleDisplayBufferConversion_UniformColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 static CCData HKHubModuleDisplayBufferConversion_DirectColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 static CCData HKHubModuleDisplayBufferConversion_GradientColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
+static CCData HKHubModuleDisplayBufferConversion_YUVColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256]);
 
 
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer = HKHubModuleDisplayBufferConversion_None;
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformColourRGB888 = HKHubModuleDisplayBufferConversion_UniformColourRGB888;
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_DirectColourRGB888 = HKHubModuleDisplayBufferConversion_DirectColourRGB888;
 const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_GradientColourRGB888 = HKHubModuleDisplayBufferConversion_GradientColourRGB888;
+const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_YUVColourRGB888 = HKHubModuleDisplayBufferConversion_YUVColourRGB888;
 
 
 static HKHubArchPortResponse HKHubModuleDisplaySetBuffer(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
@@ -221,6 +223,53 @@ static CCData HKHubModuleDisplayBufferConversion_GradientColourRGB888(CCAllocato
         Data[Loop * 3] = (float)(r * f) * 7.96875f; //red
         Data[(Loop * 3) + 1] = (float)(g * f) * 7.96875f; //green
         Data[(Loop * 3) + 2] = (float)(b * f) * 7.96875f; //blue
+    }
+    
+    return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);
+}
+
+static CCData HKHubModuleDisplayBufferConversion_YUVColourRGB888(CCAllocatorType Allocator, const uint8_t Buffer[256])
+{
+    /*
+     vvvuuuyy
+     
+     y = luma
+     u = chromaU
+     v = chromaV
+     
+     Greater precision is given to chroma channel values than luminance.
+     */
+    
+    size_t DataSize = 256 * sizeof(uint8_t) * 3;
+    uint8_t *Data = CCMalloc(Allocator, DataSize, NULL, CC_DEFAULT_ERROR_CALLBACK);
+    if (!Data)
+    {
+        CC_LOG_ERROR("Failed to create data buffer. Allocation failure of size (%zu)", DataSize);
+        return NULL;
+    }
+    
+    for (size_t Loop = 0; Loop < 256; Loop++)
+    {
+        const uint8_t y = Buffer[Loop] & (3 << 0);
+        const uint8_t u = (Buffer[Loop] & (7 << 2)) >> 2;
+        const uint8_t v = (Buffer[Loop] & (7 << 5)) >> 5;
+        
+        const float uf = (float)u - 4;
+        const float vf = (float)v - 4;
+        
+        CCVector3D YUV = CCVector3DMake((float)y / 3.0f, uf / (uf < 0.0f ? 4.0f : 3.0f), vf / (vf < 0.0f ? 4.0f : 3.0f));
+        
+        CCMatrix4 Mat = CCMatrix4Make(1.0f,      0.0f,  1.28033f, 0.0f,
+                                      1.0f, -0.21482f, -0.38059f, 0.0f,
+                                      1.0f,  2.12798f,     0.0f,  0.0f,
+                                      0.0f,      0.0f,     0.0f,  1.0f);
+        
+        CCVector3D RGB = CCVector3MulScalar(CCVector3Clamp(CCMatrix4MulPositionVector3D(Mat, YUV), CCVector3DZero, CCVector3DFill(1.0f)), 255.0f);
+        
+        
+        Data[Loop * 3] = RGB.x; //red
+        Data[(Loop * 3) + 1] = RGB.y; //green
+        Data[(Loop * 3) + 2] = RGB.z; //blue
     }
     
     return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);
