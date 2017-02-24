@@ -63,7 +63,7 @@ static HKHubArchPortResponse HKHubModuleDisplaySetBuffer(HKHubArchPortConnection
         }
     }
     
-    return HKHubArchPortResponseTimeout;
+    return HKHubArchPortResponseSuccess;
 }
 
 HKHubModule HKHubModuleDisplayCreate(CCAllocatorType Allocator)
