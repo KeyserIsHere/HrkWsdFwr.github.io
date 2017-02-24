@@ -175,8 +175,8 @@ static CCData HKHubModuleDisplayBufferConversion_DirectColourRGB888(CCAllocatorT
         const uint8_t g = (Buffer[Loop] & (7 << 2)) >> 2;
         const uint8_t r = (Buffer[Loop] & (7 << 5)) >> 5;
         
-        Data[Loop * 3] = (float)r * 36.428571429f; //red
-        Data[(Loop * 3) + 1] = (float)g * 36.428571429f; //green
+        Data[Loop * 3] = ((r >> 2) * 0x92) | (((r & 2) >> 1) * 0x49)  | ((r & 1) * 0x24); //red
+        Data[(Loop * 3) + 1] = ((g >> 2) * 0x92) | (((g & 2) >> 1) * 0x49)  | ((g & 1) * 0x24); //green
         Data[(Loop * 3) + 2] = b * 85; //blue
     }
     
