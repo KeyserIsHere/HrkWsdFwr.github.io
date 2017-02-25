@@ -220,9 +220,9 @@ static CCData HKHubModuleDisplayBufferConversion_GradientColourRGB888(CCAllocato
         const uint8_t r = (Buffer[Loop] & (1 << 7)) >> 7;
         const uint8_t f = (Buffer[Loop] & 31) + 1;
         
-        Data[Loop * 3] = (float)(r * f) * 7.96875f; //red
-        Data[(Loop * 3) + 1] = (float)(g * f) * 7.96875f; //green
-        Data[(Loop * 3) + 2] = (float)(b * f) * 7.96875f; //blue
+        Data[Loop * 3] = (uint16_t)(r * f) * 8; //red
+        Data[(Loop * 3) + 1] = (uint16_t)(g * f) * 8; //green
+        Data[(Loop * 3) + 2] = (uint16_t)(b * f) * 8; //blue
     }
     
     return CCDataBufferCreate(Allocator, CCDataBufferHintFree, DataSize, Data, NULL, NULL);
