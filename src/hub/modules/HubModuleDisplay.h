@@ -45,6 +45,8 @@ extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer;
  * @brief Retrieve the display buffer as a uniformly distributed colour buffer.
  * @description Colour is in the format RGB888. 
  *
+ *              Format: ffrrggbb
+ *
  *              Display buffer is assumed to be of the format ffrrggbb, where lowest
  *              2 bits are the blue channel, next 2 bits are the green channel, next
  *              2 bits are the red channel, and highest two bits are the scale factor.
@@ -68,6 +70,8 @@ extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_UniformC
  * @brief Retrieve the display buffer as a direct RGB332 colour buffer.
  * @description Colour is converted from RGB332 to the format RGB888.
  *
+ *              Format: rrrgggbb
+ *
  *              Channel values are evenly spread across range from 0 mapping to
  *              absolute zero, and max mapping to absolute one.
  *
@@ -84,6 +88,8 @@ extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_DirectCo
 /*!
  * @brief Retrieve the display buffer as a gradient colour buffer.
  * @description Colour is in the format RGB888.
+ *
+ *              Format: rgbvvvvv
  *
  *              Display buffer is assumed to be of the format rgbvvvvv, where lowest
  *              5 bits are the value, next 1 bit is the blue channel, next 1 bit is
@@ -106,6 +112,8 @@ extern const HKHubModuleDisplayBufferConverter HKHubModuleDisplayBuffer_Gradient
 /*!
  * @brief Retrieve the display buffer as a yuv colour buffer.
  * @description Colour is in the format RGB888.
+ *
+ *              Format: vvvuuuyy
  *
  *              Display buffer is assumed to be of the format vvvuuuyy, where lowest
  *              2 bits are the luma, next 3 bits are the u-chroma, next 3 bits are
