@@ -50,12 +50,8 @@ static CCComponentExpressionArgumentDeserializer Arguments[] = {
     { .name = CC_STRING("name:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeString, .setter = HKHubProcessorComponentSetName }
 };
 
-HKHubArchProcessor processor;
-
 void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg)
 {
-    CCInputMapKeyboardComponentSetIgnoreModifier(Component, TRUE);
-    
     if (CCExpressionGetType(Arg) == CCExpressionValueTypeList)
     {
         const size_t ArgCount = CCCollectionGetCount(CCExpressionGetList(Arg));
@@ -127,8 +123,5 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
         }
     }
     
-    if (!CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments))))
-    {
-        CCInputMapComponentDeserializer(Component, Arg);
-    }
+    CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)));
 }
