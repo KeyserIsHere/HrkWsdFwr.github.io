@@ -3,7 +3,7 @@
         {
             "name": "hub",
             "description": "Create a processor hub component.",
-            "examples": ["(input-group\n\t(action: \"move\")\n\t(input:\n\t\t(input-keyboard (keycode: :left))\n\t\t(input-keyboard (keycode: :right))\n\t)\n)"],
+            "examples": ["(hub\n\t(name: \"test\")\n\t(program: \"file.s\")\n)"],
             "return": { "type": "custom:component" },
             "options": [
                 {
@@ -17,6 +17,12 @@
                     "args": [[{ "type": "string", "name": "file" }]]
                 }
             ]
+        },
+        {
+            "name": "keyboard-module",
+            "description": "Create a keyboard module component.",
+            "examples": ["(keyboard-module)"],
+            "return": { "type": "custom:component" }
         }
     ]
 }
