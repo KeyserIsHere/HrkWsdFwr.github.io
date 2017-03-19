@@ -1,0 +1,5 @@
+{
+    "includes": [
+        "src/hub/components/hub.json"
+    ]
+}

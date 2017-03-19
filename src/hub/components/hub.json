@@ -1,0 +1,22 @@
+{
+    "functions": [
+        {
+            "name": "hub",
+            "description": "Create a processor hub component.",
+            "examples": ["(input-group\n\t(action: \"move\")\n\t(input:\n\t\t(input-keyboard (keycode: :left))\n\t\t(input-keyboard (keycode: :right))\n\t)\n)"],
+            "return": { "type": "custom:component" },
+            "options": [
+                {
+                    "name": "name",
+                    "description": "The name of the processor hub.",
+                    "args": [[{ "type": "string" }]]
+                },
+                {
+                    "name": "program",
+                    "description": "The program source.",
+                    "args": [[{ "type": "string", "name": "file" }]]
+                }
+            ]
+        }
+    ]
+}
