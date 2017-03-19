@@ -41,6 +41,7 @@ typedef struct {
 
 void HKHubProcessorComponentRegister(void);
 void HKHubProcessorComponentDeregister(void);
+void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg);
 
 /*!
  * @brief Initialize the hub component.
