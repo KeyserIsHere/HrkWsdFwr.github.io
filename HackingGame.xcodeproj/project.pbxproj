@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F308E5BB1E7E61360011F892 /* HubModuleKeyboardComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */; };
 		F317030D1E0BA3E000476E7A /* assets in Resources */ = {isa = PBXBuildFile; fileRef = F317030C1E0BA3E000476E7A /* assets */; };
 		F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = F341E9321E04454000581CF8 /* HubArchScheduler.c */; };
 		F34877021DDC2E500068844D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877011DDC2E500068844D /* main.c */; };
@@ -89,6 +90,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleKeyboardComponent.c; sourceTree = "<group>"; };
+		F308E5BA1E7E61360011F892 /* HubModuleKeyboardComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleKeyboardComponent.h; sourceTree = "<group>"; };
 		F317030C1E0BA3E000476E7A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		F341E9321E04454000581CF8 /* HubArchScheduler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchScheduler.c; sourceTree = "<group>"; };
 		F341E9331E04454000581CF8 /* HubArchScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchScheduler.h; sourceTree = "<group>"; };
@@ -315,6 +318,8 @@
 				F3C5664D1E0FB3C000A32123 /* HubProcessorComponent.h */,
 				F34967FB1E219DC300801704 /* HubModuleComponent.c */,
 				F34967FC1E219DC300801704 /* HubModuleComponent.h */,
+				F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */,
+				F308E5BA1E7E61360011F892 /* HubModuleKeyboardComponent.h */,
 			);
 			name = Components;
 			path = components;
@@ -498,6 +503,7 @@
 				F36955011E48A6A000135AF0 /* HubModuleKeyboard.c in Sources */,
 				F34877021DDC2E500068844D /* main.c in Sources */,
 				F34967FD1E219DC300801704 /* HubModuleComponent.c in Sources */,
+				F308E5BB1E7E61360011F892 /* HubModuleKeyboardComponent.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

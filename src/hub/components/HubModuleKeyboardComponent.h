@@ -23,37 +23,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "HubModuleComponent.h"
-#include "HubModuleKeyboardComponent.h"
+#ifndef HackingGame_HubModuleKeyboardComponent_h
+#define HackingGame_HubModuleKeyboardComponent_h
 
-const char * const HKHubModuleComponentName = "module";
+#include <Blob2D/Blob2D.h>
 
-static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message);
+#define HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID 'keys'
 
-static struct {
-    CCString module;
-    const CCComponentExpressionDescriptor *descriptor;
-} HKHubModuleComponentDescriptors[] = {
-    { .module = CC_STRING("keyboard-module"), .descriptor = &HKHubModuleKeyboardComponentDescriptor }
-};
+extern const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor;
 
-void HKHubModuleComponentRegister(void)
-{
-    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, HKHubModuleComponentMessageHandler, HKHubModuleComponentDeallocate);
-    
-    for (size_t Loop = 0; Loop < sizeof(HKHubModuleComponentDescriptors) / sizeof(typeof(*HKHubModuleComponentDescriptors)); Loop++)
-    {
-        CCComponentExpressionRegister(HKHubModuleComponentDescriptors[Loop].module, HKHubModuleComponentDescriptors[Loop].descriptor, TRUE);
-    }
-}
-
-void HKHubModuleComponentDeregister(void)
-{
-    CCComponentDeregister(HK_HUB_MODULE_COMPONENT_ID);
-}
-
-static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message)
-{
-    CCComponentMessageHandler MessageHandler = HKHubModuleComponentGetMessageHandler(Component);
-    if (MessageHandler) MessageHandler(Component, Message);
-}
+#endif

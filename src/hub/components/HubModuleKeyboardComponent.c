@@ -23,37 +23,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "HubModuleComponent.h"
 #include "HubModuleKeyboardComponent.h"
+#include "HubModuleComponent.h"
+#include "HubModuleKeyboard.h"
 
-const char * const HKHubModuleComponentName = "module";
+static void HKHubModuleKeyboardComponentInitializer(CCComponent Component);
 
-static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message);
-
-static struct {
-    CCString module;
-    const CCComponentExpressionDescriptor *descriptor;
-} HKHubModuleComponentDescriptors[] = {
-    { .module = CC_STRING("keyboard-module"), .descriptor = &HKHubModuleKeyboardComponentDescriptor }
+const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor = {
+    .id = HK_HUB_MODULE_COMPONENT_ID,
+    .initialize = HKHubModuleKeyboardComponentInitializer,
+    .deserialize = NULL,
+    .serialize = NULL
 };
 
-void HKHubModuleComponentRegister(void)
+static void HKHubModuleComponentKeyboardModuleMessageHandler(CCComponent Component, CCMessage *Message)
 {
-    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, HKHubModuleComponentMessageHandler, HKHubModuleComponentDeallocate);
-    
-    for (size_t Loop = 0; Loop < sizeof(HKHubModuleComponentDescriptors) / sizeof(typeof(*HKHubModuleComponentDescriptors)); Loop++)
+    switch (Message->id)
     {
-        CCComponentExpressionRegister(HKHubModuleComponentDescriptors[Loop].module, HKHubModuleComponentDescriptors[Loop].descriptor, TRUE);
+        case HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID:
+            HKHubModuleKeyboardEnterKey(HKHubModuleComponentGetModule(Component), *(uint8_t*)CCMessageGetData(Message));
+            break;
     }
 }
 
-void HKHubModuleComponentDeregister(void)
+static void HKHubModuleKeyboardComponentInitializer(CCComponent Component)
 {
-    CCComponentDeregister(HK_HUB_MODULE_COMPONENT_ID);
-}
-
-static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message)
-{
-    CCComponentMessageHandler MessageHandler = HKHubModuleComponentGetMessageHandler(Component);
-    if (MessageHandler) MessageHandler(Component, Message);
+    HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("keyboard")));
+    HKHubModuleComponentSetModule(Component, HKHubModuleKeyboardCreate(CC_STD_ALLOCATOR));
+    HKHubModuleComponentSetMessageHandler(Component, HKHubModuleComponentKeyboardModuleMessageHandler);
 }
