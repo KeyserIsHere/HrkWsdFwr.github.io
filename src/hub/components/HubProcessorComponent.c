@@ -30,6 +30,7 @@ const char * const HKHubProcessorComponentName = "hub";
 
 static const CCComponentExpressionDescriptor HKHubProcessorComponentDescriptor = {
     .id = HK_HUB_PROCESSOR_COMPONENT_ID,
+    .initialize = NULL,
     .deserialize = HKHubProcessorComponentDeserializer,
     .serialize = NULL
 };
