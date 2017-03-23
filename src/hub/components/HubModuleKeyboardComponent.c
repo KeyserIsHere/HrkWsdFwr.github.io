@@ -36,7 +36,12 @@ const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor = {
     .serialize = NULL
 };
 
-static void HKHubModuleComponentKeyboardModuleMessageHandler(CCComponent Component, CCMessage *Message)
+void HKHubModuleKeyboardComponentKeyboardCallback(CCComponent Component, CCKeyboardMap State)
+{
+    if (State.state.down) CCMessagePost(CC_STD_ALLOCATOR, HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID, CCMessageDeliverToComponentBelongingToEntity(HK_HUB_MODULE_COMPONENT_ID, CCComponentGetEntity(Component)), sizeof(uint8_t), &(uint8_t){ State.character });
+}
+
+static void HKHubModuleKeyboardComponentMessageHandler(CCComponent Component, CCMessage *Message)
 {
     switch (Message->id)
     {
@@ -50,5 +55,5 @@ static void HKHubModuleKeyboardComponentInitializer(CCComponent Component)
 {
     HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("keyboard")));
     HKHubModuleComponentSetModule(Component, HKHubModuleKeyboardCreate(CC_STD_ALLOCATOR));
-    HKHubModuleComponentSetMessageHandler(Component, HKHubModuleComponentKeyboardModuleMessageHandler);
+    HKHubModuleComponentSetMessageHandler(Component, HKHubModuleKeyboardComponentMessageHandler);
 }

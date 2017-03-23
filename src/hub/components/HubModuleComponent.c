@@ -45,6 +45,8 @@ void HKHubModuleComponentRegister(void)
     {
         CCComponentExpressionRegister(HKHubModuleComponentDescriptors[Loop].module, HKHubModuleComponentDescriptors[Loop].descriptor, TRUE);
     }
+    
+    CCInputMapComponentRegisterCallback(CC_STRING(":keyboard-module"), CCInputMapTypeKeyboard, HKHubModuleKeyboardComponentKeyboardCallback);
 }
 
 void HKHubModuleComponentDeregister(void)

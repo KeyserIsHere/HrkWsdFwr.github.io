@@ -32,4 +32,6 @@
 
 extern const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor;
 
+void HKHubModuleKeyboardComponentKeyboardCallback(CCComponent Component, CCKeyboardMap State);
+
 #endif
