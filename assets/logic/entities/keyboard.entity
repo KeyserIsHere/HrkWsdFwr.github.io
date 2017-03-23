@@ -1,0 +1,8 @@
+(entity "keyboard"
+    (keyboard-module)
+    (input-keyboard
+        (keycode: :any)
+        (repeat: #t)
+        (callback: :keyboard-module)
+    )
+)
