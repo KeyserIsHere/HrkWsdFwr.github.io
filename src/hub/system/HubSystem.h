@@ -27,6 +27,7 @@
 #define HackingGame_HubSystem_h
 
 #include <Blob2D/Blob2D.h>
+#include "HubArchScheduler.h"
 
 #define HK_HUB_SYSTEM_ID 0x601
 #define HK_HUB_COMPONENT_FLAG 0x60000000
@@ -39,5 +40,11 @@ typedef enum {
 
 void HKHubSystemRegister(void);
 void HKHubSystemDeregister(void);
+
+/*!
+ * @brief Retrieve the internal scheduler being used.
+ * @return The scheduler used internally by the system.
+ */
+HKHubArchScheduler HKHubSystemGetScheduler(void);
 
 #endif

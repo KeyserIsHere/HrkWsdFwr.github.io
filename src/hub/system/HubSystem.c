@@ -111,3 +111,8 @@ static void HKHubSystemUpdate(double DeltaTime, CCCollection Components)
     
     HKHubArchSchedulerRun(Scheduler, DeltaTime);
 }
+
+HKHubArchScheduler HKHubSystemGetScheduler(void)
+{
+    return Scheduler;
+}
