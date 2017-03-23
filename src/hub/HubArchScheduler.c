@@ -27,6 +27,7 @@
 
 typedef struct HKHubArchSchedulerInfo {
     CCCollection hubs;
+    size_t timestamp;
 } HKHubArchSchedulerInfo;
 
 
@@ -97,10 +98,15 @@ void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds)
 {
     CCAssertLog(Scheduler, "Scheduler must not be null");
     
+    size_t PrevTimestamp = 0;
+    
     CC_COLLECTION_FOREACH(HKHubArchProcessor, Processor, Scheduler->hubs)
     {
         HKHubArchProcessorAddProcessingTime(Processor, Seconds);
+        if (PrevTimestamp < Processor->cycles) PrevTimestamp = Processor->cycles;
     }
+    
+    Scheduler->timestamp = PrevTimestamp;
     
     /*
      TODO: Test a ping pong approach. Where there's two arrays, one is the active list that will be iterated (all
@@ -113,11 +119,24 @@ void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds)
      */
     for (_Bool Complete = FALSE; !Complete; )
     {
+        PrevTimestamp = 0;
+        
         Complete = TRUE;
         CC_COLLECTION_FOREACH(HKHubArchProcessor, Processor, Scheduler->hubs)
         {
             HKHubArchProcessorRun(Processor);
             Complete &= Processor->complete;
+            
+            if (PrevTimestamp < Processor->cycles) PrevTimestamp = Processor->cycles;
         }
+        
+        Scheduler->timestamp = PrevTimestamp;
     }
+}
+
+size_t HKHubArchSchedulerGetTimestamp(HKHubArchScheduler Scheduler)
+{
+    CCAssertLog(Scheduler, "Scheduler must not be null");
+    
+    return Scheduler->timestamp;
 }

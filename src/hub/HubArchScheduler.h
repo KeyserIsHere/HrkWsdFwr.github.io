@@ -70,4 +70,10 @@ void HKHubArchSchedulerRemoveProcessor(HKHubArchScheduler Scheduler, HKHubArchPr
  */
 void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds);
 
+/*!
+ * @brief Get the last timestamp still active.
+ * @return The last active timestamp.
+ */
+size_t HKHubArchSchedulerGetTimestamp(HKHubArchScheduler Scheduler);
+
 #endif
