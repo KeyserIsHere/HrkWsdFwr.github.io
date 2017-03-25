@@ -263,6 +263,65 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
     XCTAssertEqual(Data, 3, @"Packet should contain the expected data");
     
     
+    
+    
+    
+    Source =
+        ".define channel0, 0\n"
+        ".define channel2, 2\n"
+        "packet: .byte 0, 0, 0\n"
+        ".entrypoint\n"
+        "nop\n" //cycles(1) = read(1)
+        "nop\n" //cycles(1) = read(1)
+        "nop\n" //cycles(1) = read(1)
+        "nop\n" //cycles(1) = read(1)
+        "nop\n" //cycles(1) = read(1)
+        "nop\n" //cycles(1) = read(1)
+        "recv channel0, [packet]\n" //cycles(13) = read(4) + instruction(4) + write(1) + transfer<1>(4)
+        "nop\n" //cycles(1) = read(1)
+        "recv channel0, [packet+1]\n" //cycles(13) = read(4) + instruction(4) + write(1) + transfer<1>(4)
+        "nop\n" //cycles(1) = read(1)
+        "nop\n" //cycles(1) = read(1)
+        "recv channel2, [packet+2]\n" //cycles(13) = read(4) + instruction(4) + write(1) + transfer<1>(4)
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor2 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor2, 0), HKHubModuleGetPort(Transceivers[2], 0));
+    
+    HKHubArchProcessorConnect(Processor2, 0, Conn);
+    HKHubModuleConnect(Transceivers[2], 0, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor2, 2), HKHubModuleGetPort(Transceivers[2], 2));
+    
+    HKHubArchProcessorConnect(Processor2, 2, Conn);
+    HKHubModuleConnect(Transceivers[2], 2, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    HKHubArchSchedulerAddProcessor(Scheduler, Processor2);
+    
+    
+    HKHubArchProcessorSetCycles(Processor0, 100);
+    HKHubArchProcessorSetCycles(Processor1, 100);
+    HKHubArchProcessorSetCycles(Processor2, 100);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    
+    
+    XCTAssertEqual(Processor2->memory[0], 1 ^ 3, @"Should receive the correct packet");
+    XCTAssertEqual(Processor2->memory[1], 1, @"Should receive the correct packet");
+    XCTAssertEqual(Processor2->memory[2], 3, @"Should receive the correct packet");
+    
+    
+    HKHubArchProcessorDestroy(Processor2);
     HKHubArchProcessorDestroy(Processor1);
     HKHubArchProcessorDestroy(Processor0);
     HKHubArchSchedulerDestroy(Scheduler);
