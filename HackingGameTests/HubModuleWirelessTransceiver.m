@@ -26,6 +26,7 @@
 #import <XCTest/XCTest.h>
 #import "HubArchProcessor.h"
 #import "HubArchAssembly.h"
+#import "HubArchScheduler.h"
 #import "HubModuleWirelessTransceiver.h"
 
 @interface HubModuleWirelessTransceiver : XCTestCase
@@ -88,6 +89,185 @@
     XCTAssertEqual(Data, 0x10, @"Packet should contain the expected data");
     
     HKHubModuleDestroy(Transceiver);
+}
+
+static HKHubArchScheduler Scheduler;
+
+static HKHubArchScheduler GetScheduler(HKHubModule Module)
+{
+    return Scheduler;
+}
+
+static HKHubModule Transceivers[3];
+
+static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPacket Packet)
+{
+    for (size_t Loop = 0; Loop < sizeof(Transceivers) / sizeof(typeof(*Transceivers)); Loop++)
+    {
+        if (Transceivers[Loop] != Transmitter) HKHubModuleWirelessTransceiverReceivePacket(Transceivers[Loop], Packet);
+    }
+}
+
+-(void) testHubCommunication
+{
+    Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
+    HKHubModuleWirelessTransceiverGetScheduler = GetScheduler;
+    HKHubModuleWirelessTransceiverBroadcast = Broadcast;
+    
+    for (size_t Loop = 0; Loop < sizeof(Transceivers) / sizeof(typeof(*Transceivers)); Loop++) Transceivers[Loop] = HKHubModuleWirelessTransceiverCreate(CC_STD_ALLOCATOR);
+    
+    
+    const char *Source =
+        ".define channel0, 0\n"
+        ".define channel1, 1\n"
+        "packet: .byte 1\n"
+        ".entrypoint\n"
+        "send channel0, 1, [packet]\n" //cycles(14) = read(5) + instruction(4) + read(1) + transfer<1>(4)
+        "send channel0, 1, [packet]\n" //cycles(14) = read(5) + instruction(4) + read(1) + transfer<1>(4)
+        "nop\n" //cycles(1) = read(1)
+        "send channel1, 1, [packet]\n" //cycles(14) = read(5) + instruction(4) + read(1) + transfer<1>(4)
+        "hlt\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor0 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor0, 0), HKHubModuleGetPort(Transceivers[0], 0));
+    
+    HKHubArchProcessorConnect(Processor0, 0, Conn);
+    HKHubModuleConnect(Transceivers[0], 0, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor0, 1), HKHubModuleGetPort(Transceivers[0], 1));
+    
+    HKHubArchProcessorConnect(Processor0, 1, Conn);
+    HKHubModuleConnect(Transceivers[0], 1, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    HKHubArchSchedulerAddProcessor(Scheduler, Processor0);
+    
+    
+    
+    Source =
+        ".define channel0, 0\n"
+        ".define channel2, 2\n"
+        "packet: .byte 3\n"
+        ".entrypoint\n"
+        "send channel0, 1, [packet]\n" //cycles(14) = read(5) + instruction(4) + read(1) + transfer<1>(4)
+        "nop\n" //cycles(1) = read(1)
+        "send channel0, 1, [packet]\n" //cycles(14) = read(5) + instruction(4) + read(1) + transfer<1>(4)
+        "send channel2, 1, [packet]\n" //cycles(14) = read(5) + instruction(4) + read(1) + transfer<1>(4)
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor1 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor1, 0), HKHubModuleGetPort(Transceivers[1], 0));
+    
+    HKHubArchProcessorConnect(Processor1, 0, Conn);
+    HKHubModuleConnect(Transceivers[1], 0, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor1, 2), HKHubModuleGetPort(Transceivers[1], 2));
+    
+    HKHubArchProcessorConnect(Processor1, 2, Conn);
+    HKHubModuleConnect(Transceivers[1], 2, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    HKHubArchSchedulerAddProcessor(Scheduler, Processor1);
+    
+    
+    HKHubArchProcessorSetCycles(Processor0, 100);
+    HKHubArchProcessorSetCycles(Processor1, 100);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    
+    uint8_t Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[0], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 86, .channel = 0 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 3, @"Packet should contain the expected data");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[1], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 86, .channel = 0 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 1, @"Packet should contain the expected data");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[2], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 86, .channel = 0 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 1 ^ 3, @"Packet should contain the expected data");
+    
+    
+    
+    XCTAssertFalse(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[0], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 72, .channel = 0 }, &Data), @"Should contain a packet");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[1], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 72, .channel = 0 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 1, @"Packet should contain the expected data");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[2], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 72, .channel = 0 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 1, @"Packet should contain the expected data");
+    
+    
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[0], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 71, .channel = 0 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 3, @"Packet should contain the expected data");
+    
+    XCTAssertFalse(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[1], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 71, .channel = 0 }, &Data), @"Should contain a packet");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[2], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 71, .channel = 0 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 3, @"Packet should contain the expected data");
+    
+    
+    
+    XCTAssertFalse(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[0], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 0 }, &Data), @"Should contain a packet");
+    
+    XCTAssertFalse(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[1], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 0 }, &Data), @"Should contain a packet");
+    
+    XCTAssertFalse(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[2], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 0 }, &Data), @"Should contain a packet");
+    
+    
+    
+    XCTAssertFalse(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[0], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 1 }, &Data), @"Should contain a packet");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[1], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 1 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 1, @"Packet should contain the expected data");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[2], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 1 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 1, @"Packet should contain the expected data");
+    
+    
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[0], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 2 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 3, @"Packet should contain the expected data");
+    
+    XCTAssertFalse(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[1], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 2 }, &Data), @"Should contain a packet");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceivers[2], (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 57, .channel = 2 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 3, @"Packet should contain the expected data");
+    
+    
+    HKHubArchProcessorDestroy(Processor1);
+    HKHubArchProcessorDestroy(Processor0);
+    HKHubArchSchedulerDestroy(Scheduler);
+    
+    for (size_t Loop = 0; Loop < sizeof(Transceivers) / sizeof(typeof(*Transceivers)); Loop++) HKHubModuleDestroy(Transceivers[Loop]);
 }
 
 @end
