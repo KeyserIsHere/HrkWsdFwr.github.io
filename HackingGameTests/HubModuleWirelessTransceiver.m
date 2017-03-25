@@ -132,11 +132,10 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
     CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
     
     CCOrderedCollection Errors = NULL;
-    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    HKHubArchBinary Binary0 = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    HKHubArchProcessor Processor0 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
-    HKHubArchBinaryDestroy(Binary);
+    HKHubArchProcessor Processor0 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary0);
     
     HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor0, 0), HKHubModuleGetPort(Transceivers[0], 0));
     
@@ -169,11 +168,10 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
     AST = HKHubArchAssemblyParse(Source);
     
     Errors = NULL;
-    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    HKHubArchBinary Binary1 = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    HKHubArchProcessor Processor1 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
-    HKHubArchBinaryDestroy(Binary);
+    HKHubArchProcessor Processor1 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary1);
     
     Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor1, 0), HKHubModuleGetPort(Transceivers[1], 0));
     
@@ -289,11 +287,10 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
     AST = HKHubArchAssemblyParse(Source);
     
     Errors = NULL;
-    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    HKHubArchBinary Binary2 = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    HKHubArchProcessor Processor2 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
-    HKHubArchBinaryDestroy(Binary);
+    HKHubArchProcessor Processor2 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary2);
     
     Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor2, 0), HKHubModuleGetPort(Transceivers[2], 0));
     
@@ -309,6 +306,11 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
     
     HKHubArchSchedulerAddProcessor(Scheduler, Processor2);
     
+    for (size_t Loop = 0; Loop < sizeof(Transceivers) / sizeof(typeof(*Transceivers)); Loop++) HKHubModuleWirelessTransceiverPacketPurge(Transceivers[Loop], 0);
+    
+    HKHubArchProcessorReset(Processor0, Binary0);
+    HKHubArchProcessorReset(Processor1, Binary1);
+    HKHubArchProcessorReset(Processor2, Binary2);
     
     HKHubArchProcessorSetCycles(Processor0, 100);
     HKHubArchProcessorSetCycles(Processor1, 100);
@@ -321,6 +323,9 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
     XCTAssertEqual(Processor2->memory[2], 3, @"Should receive the correct packet");
     
     
+    HKHubArchBinaryDestroy(Binary2);
+    HKHubArchBinaryDestroy(Binary1);
+    HKHubArchBinaryDestroy(Binary0);
     HKHubArchProcessorDestroy(Processor2);
     HKHubArchProcessorDestroy(Processor1);
     HKHubArchProcessorDestroy(Processor0);
