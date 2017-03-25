@@ -98,7 +98,7 @@ static HKHubArchScheduler GetScheduler(HKHubModule Module)
     return Scheduler;
 }
 
-static HKHubModule Transceivers[3];
+static HKHubModule Transceivers[4];
 
 static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPacket Packet)
 {
@@ -323,9 +323,84 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
     XCTAssertEqual(Processor2->memory[2], 3, @"Should receive the correct packet");
     
     
+    
+    for (size_t Loop = 0; Loop < sizeof(Transceivers) / sizeof(typeof(*Transceivers)); Loop++) HKHubModuleWirelessTransceiverPacketPurge(Transceivers[Loop], 0);
+    
+    HKHubArchProcessorReset(Processor0, Binary0);
+    HKHubArchProcessorReset(Processor1, Binary2);
+    HKHubArchProcessorReset(Processor2, Binary1);
+    
+    HKHubArchProcessorSetCycles(Processor0, 100);
+    HKHubArchProcessorSetCycles(Processor1, 100);
+    HKHubArchProcessorSetCycles(Processor2, 100);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    
+    
+    XCTAssertEqual(Processor1->memory[0], 1 ^ 3, @"Should receive the correct packet");
+    XCTAssertEqual(Processor1->memory[1], 1, @"Should receive the correct packet");
+    XCTAssertEqual(Processor1->memory[2], 3, @"Should receive the correct packet");
+    
+    
+    
+    HKHubArchProcessor Processor3 = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary2);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor3, 0), HKHubModuleGetPort(Transceivers[3], 0));
+    
+    HKHubArchProcessorConnect(Processor3, 0, Conn);
+    HKHubModuleConnect(Transceivers[3], 0, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor3, 2), HKHubModuleGetPort(Transceivers[3], 2));
+    
+    HKHubArchProcessorConnect(Processor3, 2, Conn);
+    HKHubModuleConnect(Transceivers[3], 2, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    HKHubArchSchedulerAddProcessor(Scheduler, Processor3);
+    
+    for (size_t Loop = 0; Loop < sizeof(Transceivers) / sizeof(typeof(*Transceivers)); Loop++) HKHubModuleWirelessTransceiverPacketPurge(Transceivers[Loop], 0);
+    
+    HKHubArchProcessorReset(Processor0, Binary0);
+    HKHubArchProcessorReset(Processor1, Binary2);
+    HKHubArchProcessorReset(Processor2, Binary1);
+    
+    HKHubArchProcessorSetCycles(Processor0, 100);
+    HKHubArchProcessorSetCycles(Processor1, 100);
+    HKHubArchProcessorSetCycles(Processor2, 100);
+    HKHubArchProcessorSetCycles(Processor3, 100);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    
+    
+    XCTAssertEqual(Processor1->memory[0], 1 ^ 3, @"Should receive the correct packet");
+    XCTAssertEqual(Processor1->memory[1], 1, @"Should receive the correct packet");
+    XCTAssertEqual(Processor1->memory[2], 3, @"Should receive the correct packet");
+    
+    XCTAssertEqual(Processor3->memory[0], 1 ^ 3, @"Should receive the correct packet");
+    XCTAssertEqual(Processor3->memory[1], 1, @"Should receive the correct packet");
+    XCTAssertEqual(Processor3->memory[2], 3, @"Should receive the correct packet");
+    
+    
+    
+    //Test there's no dead locking on send/recv
+    for (size_t Cycles = 0; Cycles < 100; Cycles++)
+    {
+        HKHubArchProcessorReset(Processor0, Binary0);
+        HKHubArchProcessorReset(Processor1, Binary2);
+        HKHubArchProcessorReset(Processor2, Binary1);
+        HKHubArchProcessorReset(Processor3, Binary2);
+        
+        HKHubArchProcessorSetCycles(Processor0, Cycles);
+        HKHubArchProcessorSetCycles(Processor1, Cycles);
+        HKHubArchProcessorSetCycles(Processor2, Cycles);
+        HKHubArchProcessorSetCycles(Processor3, Cycles);
+        HKHubArchSchedulerRun(Scheduler, 0.0);
+    }
+    
+    
     HKHubArchBinaryDestroy(Binary2);
     HKHubArchBinaryDestroy(Binary1);
     HKHubArchBinaryDestroy(Binary0);
+    HKHubArchProcessorDestroy(Processor3);
     HKHubArchProcessorDestroy(Processor2);
     HKHubArchProcessorDestroy(Processor1);
     HKHubArchProcessorDestroy(Processor0);
