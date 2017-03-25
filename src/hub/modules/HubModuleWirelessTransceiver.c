@@ -48,7 +48,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverTransmit(HKHubArchPor
 }
 
 static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchProcessor ConnectedDevice, int64_t Timestamp, size_t *Wait)
-{    
+{
     const size_t GlobalTimestamp = HKHubArchSchedulerGetTimestamp(HKHubModuleWirelessTransceiverGetScheduler(Device));
     if (ConnectedDevice->message.timestamp > GlobalTimestamp) return HKHubArchPortResponseDefer; //TODO: How to handle transmits on the same timestamp
     
@@ -91,6 +91,8 @@ HKHubModule HKHubModuleWirelessTransceiverCreate(CCAllocatorType Allocator)
 
 void HKHubModuleWirelessTransceiverReceivePacket(HKHubModule Module, HKHubModuleWirelessTransceiverPacket Packet)
 {
+    CCAssertLog(Module, "Module must not be null");
+    
     CCDictionary Packets = Module->internal;
     CCDictionaryEntry Entry = CCDictionaryEntryForKey(Packets, &Packet.sig);
     
@@ -104,6 +106,8 @@ void HKHubModuleWirelessTransceiverReceivePacket(HKHubModule Module, HKHubModule
 
 _Bool HKHubModuleWirelessTransceiverInspectPacket(HKHubModule Module, HKHubModuleWirelessTransceiverPacketSignature Sig, uint8_t *Data)
 {
+    CCAssertLog(Module, "Module must not be null");
+    
     CCDictionary Packets = Module->internal;
     CCDictionaryEntry Entry = CCDictionaryFindKey(Packets, &Sig);
     
@@ -114,6 +118,8 @@ _Bool HKHubModuleWirelessTransceiverInspectPacket(HKHubModule Module, HKHubModul
 
 void HKHubModuleWirelessTransceiverPacketPurge(HKHubModule Module, size_t Timestamp)
 {
+    CCAssertLog(Module, "Module must not be null");
+    
     CCDictionary Packets = Module->internal;
     CCOrderedCollection Keys = CCDictionaryGetKeys(Packets);
     

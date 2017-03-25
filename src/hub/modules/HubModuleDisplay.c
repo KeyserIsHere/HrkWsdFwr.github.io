@@ -83,6 +83,7 @@ HKHubModule HKHubModuleDisplayCreate(CCAllocatorType Allocator)
 
 CCData HKHubModuleDisplayConvertBuffer(CCAllocatorType Allocator, HKHubModule Module, HKHubModuleDisplayBufferConverter Converter)
 {
+    CCAssertLog(Module, "Module must not be null");
     CCAssertLog(Converter, "Converter must not be null");
     
     return Converter(Allocator, ((HKHubModuleDisplayState*)Module->internal)->buffer);

@@ -100,5 +100,7 @@ HKHubModule HKHubModuleKeyboardCreate(CCAllocatorType Allocator)
 
 void HKHubModuleKeyboardEnterKey(HKHubModule Module, uint8_t Key)
 {
+    CCAssertLog(Module, "Module must not be null");
+    
     CCQueuePush(((HKHubModuleKeyboardState*)Module->internal)->input, CCQueueCreateNode(CC_STD_ALLOCATOR, sizeof(uint8_t), &Key));
 }
