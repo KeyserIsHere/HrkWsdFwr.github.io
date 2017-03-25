@@ -38,7 +38,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverTransmit(HKHubArchPor
         if (Message->size >= 1)
         {
             HKHubModuleWirelessTransceiverBroadcast(Device, (HKHubModuleWirelessTransceiverPacket){
-                .sig = { .channel = Port, .timestamp = Timestamp },
+                .sig = { .channel = Port, .timestamp = Timestamp - ((Message->size * HKHubArchProcessorSpeedMemoryRead) + (Message->size * HKHubArchProcessorSpeedPortTransmission)) },
                 .data = Message->memory[Message->offset]
             });
         }
