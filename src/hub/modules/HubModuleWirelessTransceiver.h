@@ -88,4 +88,12 @@ void HKHubModuleWirelessTransceiverReceivePacket(HKHubModule Module, HKHubModule
  */
 _Bool HKHubModuleWirelessTransceiverInspectPacket(HKHubModule Module, HKHubModuleWirelessTransceiverPacketSignature Sig, uint8_t *Data);
 
+/*!
+ * @brief Purge the received packets at the timestamp and older.
+ * @param Module The wireless transceiver.
+ * @param Timestamp The timestamp to purge up to (and including). To purge every packet, 0 can be
+ *        used to guarantee that.
+ */
+void HKHubModuleWirelessTransceiverPacketPurge(HKHubModule Module, size_t Timestamp);
+
 #endif

@@ -48,10 +48,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverTransmit(HKHubArchPor
 }
 
 static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchProcessor ConnectedDevice, int64_t Timestamp, size_t *Wait)
-{
-    //TODO: Iterate over keys removing timestamps older than GlobalTimestamp (!problem if it ends up in the next scheduler cycle)
-    //Maybe add a packet purge function, that the HubSystem will call when it's finished?
-    
+{    
     const size_t GlobalTimestamp = HKHubArchSchedulerGetTimestamp(HKHubModuleWirelessTransceiverGetScheduler(Device));
     if (ConnectedDevice->message.timestamp > GlobalTimestamp) return HKHubArchPortResponseDefer; //TODO: How to handle transmits on the same timestamp
     
@@ -113,4 +110,15 @@ _Bool HKHubModuleWirelessTransceiverInspectPacket(HKHubModule Module, HKHubModul
     if ((Entry) && (Data)) *Data = *(uint8_t*)CCDictionaryGetEntry(Packets, Entry);
     
     return Entry;
+}
+
+void HKHubModuleWirelessTransceiverPacketPurge(HKHubModule Module, size_t Timestamp)
+{
+    CCDictionary Packets = Module->internal;
+    CCOrderedCollection Keys = CCDictionaryGetKeys(Packets);
+    
+    CC_COLLECTION_FOREACH_PTR(HKHubModuleWirelessTransceiverPacketSignature, Sig, Keys)
+    {
+        if (Sig->timestamp >= Timestamp) CCDictionaryRemoveValue(Packets, Sig);
+    }
 }
