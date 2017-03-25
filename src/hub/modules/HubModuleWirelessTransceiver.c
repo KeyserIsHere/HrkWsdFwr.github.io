@@ -25,6 +25,11 @@
 
 #include "HubModuleWirelessTransceiver.h"
 
+typedef struct {
+    CCDictionary packets;
+    size_t prevGlobalTimestamp;
+} HKHubModuleWirelessTransceiverState;
+
 
 HKHubModuleWirelessTransceiverBroadcastCallback HKHubModuleWirelessTransceiverBroadcast = NULL;
 HKHubModuleWirelessTransceiverGetSchedulerCallback HKHubModuleWirelessTransceiverGetScheduler = NULL;
@@ -49,10 +54,21 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverTransmit(HKHubArchPor
 
 static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchProcessor ConnectedDevice, int64_t Timestamp, size_t *Wait)
 {
+    /*
+     Timestamp is compared against global timestamp to make sure receive will only occur once all transmits have been performed. The
+     8 is due to the smallest recv requiring 8 cycles, while the smallest send (send r, r, [r]) that can successfully transmit is 9
+     cycles.
+     */
     const size_t GlobalTimestamp = HKHubArchSchedulerGetTimestamp(HKHubModuleWirelessTransceiverGetScheduler(Device));
-    if (ConnectedDevice->message.timestamp > GlobalTimestamp) return HKHubArchPortResponseDefer; //TODO: How to handle transmits on the same timestamp
+    if ((Timestamp + 8) < GlobalTimestamp)
+    {
+        if (((HKHubModuleWirelessTransceiverState*)Device->internal)->prevGlobalTimestamp == GlobalTimestamp) return  HKHubArchPortResponseDefer;
+        
+        ((HKHubModuleWirelessTransceiverState*)Device->internal)->prevGlobalTimestamp = GlobalTimestamp;
+        return HKHubArchPortResponseRetry;
+    }
     
-    CCDictionary Packets = Device->internal;
+    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Device->internal)->packets;
     uint8_t *Data = CCDictionaryGetValue(Packets, &(HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = Timestamp, .channel = Port });
     
     if (Data)
@@ -81,19 +97,38 @@ static CCComparisonResult HKHubModuleWirelessTransceiverPacketSignatureComparato
     return (left->channel == right->channel) && (left->timestamp == right->timestamp) ? CCComparisonResultEqual : CCComparisonResultInvalid;
 }
 
+static void HKHubModuleWirelessTransceiverStateDestructor(HKHubModuleWirelessTransceiverState *State)
+{
+    CCDictionaryDestroy(State->packets);
+    CCFree(State);
+}
+
 HKHubModule HKHubModuleWirelessTransceiverCreate(CCAllocatorType Allocator)
 {
-    return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverReceive, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverTransmit, CCDictionaryCreate(Allocator, CCDictionaryHintHeavyFinding | CCDictionaryHintHeavyInserting | CCDictionaryHintHeavyDeleting, sizeof(HKHubModuleWirelessTransceiverPacketSignature), sizeof(uint8_t), &(CCDictionaryCallbacks){
-        .getHash = (CCDictionaryKeyHasher)HKHubModuleWirelessTransceiverPacketSignatureHasher,
-        .compareKeys = (CCComparator)HKHubModuleWirelessTransceiverPacketSignatureComparator
-    }), (HKHubModuleDataDestructor)CCDictionaryDestroy);
+    HKHubModuleWirelessTransceiverState *State = CCMalloc(Allocator, sizeof(HKHubModuleWirelessTransceiverState), NULL, CC_DEFAULT_ERROR_CALLBACK);
+    if (State)
+    {
+        *State = (HKHubModuleWirelessTransceiverState){
+            .packets = CCDictionaryCreate(Allocator, CCDictionaryHintHeavyFinding | CCDictionaryHintHeavyInserting | CCDictionaryHintHeavyDeleting, sizeof(HKHubModuleWirelessTransceiverPacketSignature), sizeof(uint8_t), &(CCDictionaryCallbacks){
+                .getHash = (CCDictionaryKeyHasher)HKHubModuleWirelessTransceiverPacketSignatureHasher,
+                .compareKeys = (CCComparator)HKHubModuleWirelessTransceiverPacketSignatureComparator
+            }),
+            .prevGlobalTimestamp = 0
+        };
+        
+        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverReceive, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverTransmit, State, (HKHubModuleDataDestructor)HKHubModuleWirelessTransceiverStateDestructor);
+    }
+    
+    else CC_LOG_ERROR("Failed to create wireless transceiver module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleWirelessTransceiverState));
+    
+    return NULL;
 }
 
 void HKHubModuleWirelessTransceiverReceivePacket(HKHubModule Module, HKHubModuleWirelessTransceiverPacket Packet)
 {
     CCAssertLog(Module, "Module must not be null");
     
-    CCDictionary Packets = Module->internal;
+    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
     CCDictionaryEntry Entry = CCDictionaryEntryForKey(Packets, &Packet.sig);
     
     if (CCDictionaryEntryIsInitialized(Packets, Entry))
@@ -108,7 +143,7 @@ _Bool HKHubModuleWirelessTransceiverInspectPacket(HKHubModule Module, HKHubModul
 {
     CCAssertLog(Module, "Module must not be null");
     
-    CCDictionary Packets = Module->internal;
+    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
     CCDictionaryEntry Entry = CCDictionaryFindKey(Packets, &Sig);
     
     if ((Entry) && (Data)) *Data = *(uint8_t*)CCDictionaryGetEntry(Packets, Entry);
@@ -120,7 +155,9 @@ void HKHubModuleWirelessTransceiverPacketPurge(HKHubModule Module, size_t Timest
 {
     CCAssertLog(Module, "Module must not be null");
     
-    CCDictionary Packets = Module->internal;
+    ((HKHubModuleWirelessTransceiverState*)Module->internal)->prevGlobalTimestamp = 0;
+    
+    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
     CCOrderedCollection Keys = CCDictionaryGetKeys(Packets);
     
     CC_COLLECTION_FOREACH_PTR(HKHubModuleWirelessTransceiverPacketSignature, Sig, Keys)
