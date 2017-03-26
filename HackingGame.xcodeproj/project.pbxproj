@@ -11,6 +11,7 @@
 		F317030D1E0BA3E000476E7A /* assets in Resources */ = {isa = PBXBuildFile; fileRef = F317030C1E0BA3E000476E7A /* assets */; };
 		F31CB6491E7FD04300C85B0D /* HubModuleWirelessTransceiver.c in Sources */ = {isa = PBXBuildFile; fileRef = F31CB6471E7FD04300C85B0D /* HubModuleWirelessTransceiver.c */; };
 		F32039A11E845BDA00280DC9 /* HubModuleWirelessTransceiver.m in Sources */ = {isa = PBXBuildFile; fileRef = F32039A01E845BDA00280DC9 /* HubModuleWirelessTransceiver.m */; };
+		F32039A41E87BE4500280DC9 /* HubArchDebuggingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */; };
 		F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = F341E9321E04454000581CF8 /* HubArchScheduler.c */; };
 		F34877021DDC2E500068844D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877011DDC2E500068844D /* main.c */; };
 		F34877041DDC2E500068844D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F34877031DDC2E500068844D /* Assets.xcassets */; };
@@ -98,6 +99,7 @@
 		F31CB6471E7FD04300C85B0D /* HubModuleWirelessTransceiver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleWirelessTransceiver.c; sourceTree = "<group>"; };
 		F31CB6481E7FD04300C85B0D /* HubModuleWirelessTransceiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleWirelessTransceiver.h; sourceTree = "<group>"; };
 		F32039A01E845BDA00280DC9 /* HubModuleWirelessTransceiver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubModuleWirelessTransceiver.m; sourceTree = "<group>"; };
+		F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchDebuggingTests.m; sourceTree = "<group>"; };
 		F341E9321E04454000581CF8 /* HubArchScheduler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchScheduler.c; sourceTree = "<group>"; };
 		F341E9331E04454000581CF8 /* HubArchScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchScheduler.h; sourceTree = "<group>"; };
 		F34876FA1DDC2E500068844D /* HackingGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HackingGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -286,6 +288,7 @@
 			children = (
 				F34877F31DDC73A40068844D /* HubArchAssemblyTests.m */,
 				F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */,
+				F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */,
 				F34BB7DB1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m */,
 				F3653F961E600A51002AB66D /* HubModuleDisplayTests.m */,
 				F32039A01E845BDA00280DC9 /* HubModuleWirelessTransceiver.m */,
@@ -520,6 +523,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F32039A41E87BE4500280DC9 /* HubArchDebuggingTests.m in Sources */,
 				F3653F971E600A51002AB66D /* HubModuleDisplayTests.m in Sources */,
 				F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */,
 				F34BB7DC1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m in Sources */,
