@@ -71,6 +71,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.r[3] = 0;
         Processor->state.pc = Binary->entrypoint;
         Processor->state.flags = 0;
+        Processor->state.debug.step = 0;
         Processor->cycles = 0;
         Processor->unusedTime = 0.0;
         Processor->complete = FALSE;
@@ -106,6 +107,7 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->state.r[3] = 0;
     Processor->state.pc = Binary->entrypoint;
     Processor->state.flags = 0;
+    Processor->state.debug.step = 0;
     Processor->complete = FALSE;
 }
 
@@ -300,7 +302,12 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                     Processor->complete = TRUE;
                 }
                 
-                else if (!(Result & HKHubArchInstructionOperationResultFlagSkipPC)) Processor->state.pc = NextPC;
+                else
+                {
+                    if (!(Result & HKHubArchInstructionOperationResultFlagSkipPC)) Processor->state.pc = NextPC;
+                    
+                    if ((Processor->state.debug.step) && (--Processor->state.debug.step == 0)) break;
+                }
             }
             
             else Processor->complete = TRUE;
@@ -308,4 +315,11 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
         
         else Processor->complete = TRUE;
     }
+}
+
+void HKHubArchProcessorStep(HKHubArchProcessor Processor, size_t Count)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    Processor->state.debug.step = Count;
 }

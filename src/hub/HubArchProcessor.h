@@ -49,6 +49,9 @@ typedef struct {
         uint8_t r[4];
         uint8_t pc;
         uint8_t flags;
+        struct {
+            size_t step;
+        } debug;
     } state;
     size_t cycles;
     double unusedTime;
@@ -156,5 +159,12 @@ HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchP
  * @param Processor The processor to be run.
  */
 void HKHubArchProcessorRun(HKHubArchProcessor Processor);
+
+/*!
+ * @brief Set the number of instructions the processor should step in debug mode.
+ * @param Processor The processor to step.
+ * @param Count The number of instructions to step over.
+ */
+void HKHubArchProcessorStep(HKHubArchProcessor Processor, size_t Count);
 
 #endif
