@@ -49,6 +49,8 @@ static void HKHubArchProcessorDestructor(HKHubArchProcessor Processor)
     }
     
     CCDictionaryDestroy(Processor->ports);
+    
+    if (Processor->state.debug.breakpoints) CCDictionaryDestroy(Processor->state.debug.breakpoints);
 }
 
 HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArchBinary Binary)
@@ -73,6 +75,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.flags = 0;
         Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
         Processor->state.debug.step = 0;
+        Processor->state.debug.breakpoints = NULL;
         Processor->cycles = 0;
         Processor->unusedTime = 0.0;
         Processor->complete = FALSE;
@@ -108,9 +111,9 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->state.r[3] = 0;
     Processor->state.pc = Binary->entrypoint;
     Processor->state.flags = 0;
-    Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
-    Processor->state.debug.step = 0;
     Processor->complete = FALSE;
+    
+    HKHubArchProcessorDebugReset(Processor);
 }
 
 void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
@@ -119,6 +122,12 @@ void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
     
     Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
     Processor->state.debug.step = 0;
+    
+    if (Processor->state.debug.breakpoints)
+    {
+        CCDictionaryDestroy(Processor->state.debug.breakpoints);
+        Processor->state.debug.breakpoints = NULL;
+    }
 }
 
 void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
@@ -286,6 +295,23 @@ void HKHubArchProcessorDisconnect(HKHubArchProcessor Processor, HKHubArchPortID 
     if (Connection) HKHubArchPortConnectionDisconnect(*Connection);
 }
 
+static HKHubArchProcessorDebugBreakpoint HKHubArchProcessorGetBreakpoint(HKHubArchProcessor Processor, uint8_t Offset)
+{
+    HKHubArchProcessorDebugBreakpoint *Breakpoint = CCDictionaryGetValue(Processor->state.debug.breakpoints, &Offset);
+    
+    return Breakpoint ? *Breakpoint : HKHubArchProcessorDebugBreakpointNone;
+}
+
+static _Bool HKHubArchProcessorShouldBreakForRange(HKHubArchProcessor Processor, uint8_t From, uint8_t Till, HKHubArchProcessorDebugBreakpoint Breakpoint)
+{
+    for ( ; From != Till; From++)
+    {
+        if (HKHubArchProcessorGetBreakpoint(Processor, From) & Breakpoint) return TRUE;
+    }
+    
+    return FALSE;
+}
+
 void HKHubArchProcessorRun(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
@@ -297,6 +323,67 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
         
         if (Instruction.opcode != -1)
         {
+            if ((Processor->state.debug.breakpoints) && (Processor->state.debug.step == 0))
+            {
+                if (HKHubArchProcessorShouldBreakForRange(Processor, Processor->state.pc, NextPC, HKHubArchProcessorDebugBreakpointRead))
+                {
+                    Processor->state.debug.mode = HKHubArchProcessorDebugModePause;
+                    continue;
+                }
+                
+                _Bool TriggeredBP = FALSE;
+                HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(&Instruction);
+                for (size_t Loop = 0; Loop < 3; Loop++)
+                {
+                    if (Instruction.operand[Loop].type == HKHubArchInstructionOperandM)
+                    {
+                        uint8_t Offset = 0;
+                        switch (Instruction.operand[Loop].memory.type)
+                        {
+                            case HKHubArchInstructionMemoryOffset:
+                                Offset = Instruction.operand[Loop].memory.offset;
+                                break;
+                                
+                            case HKHubArchInstructionMemoryRegister:
+                                Offset = Processor->state.r[Instruction.operand[Loop].memory.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
+                                break;
+                                
+                            case HKHubArchInstructionMemoryRelativeOffset:
+                                Offset = Instruction.operand[Loop].memory.relativeOffset.offset + Processor->state.r[Instruction.operand[Loop].memory.relativeOffset.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
+                                break;
+                                
+                            case HKHubArchInstructionMemoryRelativeRegister:
+                                Offset = Processor->state.r[Instruction.operand[Loop].memory.relativeReg[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask] + Processor->state.r[Instruction.operand[Loop].memory.relativeReg[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
+                                break;
+                        }
+                        
+                        
+                        _Static_assert(HKHubArchInstructionMemoryOperationMask == 3 &&
+                                       HKHubArchInstructionMemoryOperationSrc == 1 &&
+                                       HKHubArchInstructionMemoryOperationDst == 2 &&
+                                       HKHubArchInstructionMemoryOperationOp1 == 0 &&
+                                       HKHubArchInstructionMemoryOperationOp2 == 2 &&
+                                       HKHubArchInstructionMemoryOperationOp3 == 4, "Expects the following operand mask layout");
+                        
+                        static const HKHubArchProcessorDebugBreakpoint Breakpoint[] = {
+                            HKHubArchProcessorDebugBreakpointNone,
+                            HKHubArchProcessorDebugBreakpointRead,
+                            HKHubArchProcessorDebugBreakpointWrite,
+                            HKHubArchProcessorDebugBreakpointRead | HKHubArchProcessorDebugBreakpointWrite
+                        };
+                        
+                        if (HKHubArchProcessorShouldBreakForRange(Processor, Offset, Offset + 1, Breakpoint[(MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationMask]))
+                        {
+                            Processor->state.debug.mode = HKHubArchProcessorDebugModePause;
+                            TriggeredBP = TRUE;
+                            break;
+                        }
+                    }
+                }
+                
+                if (TriggeredBP) continue;
+            }
+            
             size_t Cycles = (NextPC - Processor->state.pc) * HKHubArchProcessorSpeedMemoryRead;
             if (Cycles < Processor->cycles)
             {
@@ -339,4 +426,13 @@ void HKHubArchProcessorSetDebugMode(HKHubArchProcessor Processor, HKHubArchProce
     CCAssertLog(Processor, "Processor must not be null");
     
     Processor->state.debug.mode = Mode;
+}
+
+void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    if (!Processor->state.debug.breakpoints) Processor->state.debug.breakpoints = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintHeavyEnumerating | CCDictionaryHintHeavyFinding | CCCollectionHintHeavyInserting | CCCollectionHintHeavyDeleting, sizeof(uint8_t), sizeof(HKHubArchProcessorDebugBreakpoint), NULL);
+    
+    CCDictionarySetValue(Processor->state.debug.breakpoints, &Offset, &Breakpoint);
 }

@@ -35,6 +35,12 @@ typedef enum {
     HKHubArchProcessorDebugModePause
 } HKHubArchProcessorDebugMode;
 
+typedef enum {
+    HKHubArchProcessorDebugBreakpointNone,
+    HKHubArchProcessorDebugBreakpointRead = (1 << 0),
+    HKHubArchProcessorDebugBreakpointWrite = (1 << 1)
+} HKHubArchProcessorDebugBreakpoint;
+
 typedef struct {
     CCDictionary ports;
     struct {
@@ -57,6 +63,7 @@ typedef struct {
         struct {
             HKHubArchProcessorDebugMode mode;
             size_t step;
+            CCDictionary breakpoints;
         } debug;
     } state;
     size_t cycles;
@@ -185,5 +192,16 @@ void HKHubArchProcessorStep(HKHubArchProcessor Processor, size_t Count);
  * @param Mode The debug mode to be used.
  */
 void HKHubArchProcessorSetDebugMode(HKHubArchProcessor Processor, HKHubArchProcessorDebugMode Mode);
+
+/*!
+ * @brief Set a breakpoint in the processor.
+ * @description When hit will cause the debug mode to be switched to @b HKHubArchProcessorDebugModePause.
+ * @param Processor The processor to have a breakpoint set.
+ * @param Breakpoint The type of breakpoint to be set. Use @b HKHubArchProcessorDebugBreakpointNone to
+ *        disable a breakpoint at a given offset.
+ *
+ * @param Offset The offset the breakpoint should be located at.
+ */
+void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset);
 
 #endif
