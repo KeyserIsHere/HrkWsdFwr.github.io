@@ -123,6 +123,12 @@ void HKHubArchProcessorDestroy(HKHubArchProcessor CC_DESTROY(Processor));
 void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binary);
 
 /*!
+ * @brief Reset the processor's debug state.
+ * @param Processor The processor to reset.
+ */
+void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor);
+
+/*!
  * @brief Set the cycles the processor should run.
  * @param Processor The processor to allocate the time to.
  * @param Cycles The number of cycles to run.

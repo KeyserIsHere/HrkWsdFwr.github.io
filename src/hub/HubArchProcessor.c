@@ -113,6 +113,14 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->complete = FALSE;
 }
 
+void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
+    Processor->state.debug.step = 0;
+}
+
 void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
 {
     CCAssertLog(Processor, "Processor must not be null");
