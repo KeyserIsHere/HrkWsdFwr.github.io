@@ -40,6 +40,35 @@ typedef enum {
 } HKHubArchInstructionOperand;
 
 typedef enum {
+    HKHubArchInstructionMemoryOperationMask = 3,
+    HKHubArchInstructionMemoryOperationSrc = (1 << 0),
+    HKHubArchInstructionMemoryOperationDst = (1 << 2),
+    
+    HKHubArchInstructionMemoryOperationOp1 = 0,
+    HKHubArchInstructionMemoryOperationOp2 = 2,
+    HKHubArchInstructionMemoryOperationOp3 = 4,
+    
+    HKHubArchInstructionMemoryOperationNone = 0,
+    HKHubArchInstructionMemoryOperationS = (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp1),
+    HKHubArchInstructionMemoryOperationD = (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp1),
+    HKHubArchInstructionMemoryOperationB = ((HKHubArchInstructionMemoryOperationSrc | HKHubArchInstructionMemoryOperationDst) << HKHubArchInstructionMemoryOperationOp1),
+    
+    HKHubArchInstructionMemoryOperationSS = (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp2),
+    HKHubArchInstructionMemoryOperationSD = (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp2),
+    HKHubArchInstructionMemoryOperationDS = (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp2),
+    HKHubArchInstructionMemoryOperationDD = (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp2),
+    
+    HKHubArchInstructionMemoryOperationSSS = (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp3),
+    HKHubArchInstructionMemoryOperationSSD = (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp3),
+    HKHubArchInstructionMemoryOperationSDS = (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp3),
+    HKHubArchInstructionMemoryOperationSDD = (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp3),
+    HKHubArchInstructionMemoryOperationDSS = (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp3),
+    HKHubArchInstructionMemoryOperationDSD = (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp3),
+    HKHubArchInstructionMemoryOperationDDS = (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationSrc << HKHubArchInstructionMemoryOperationOp3),
+    HKHubArchInstructionMemoryOperationDDD = (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp1) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp2) | (HKHubArchInstructionMemoryOperationDst << HKHubArchInstructionMemoryOperationOp3)
+} HKHubArchInstructionMemoryOperation;
+
+typedef enum {
     HKHubArchInstructionRegisterSpecialPurpose = (1 << 1),
     HKHubArchInstructionRegisterGeneralPurpose = (1 << 2),
     HKHubArchInstructionRegisterGeneralPurposeIndexMask = 3,
@@ -134,6 +163,13 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchI
  * @return The size of the encoding.
  */
 size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State);
+
+/*!
+ * @brief Get the memory operation of the instruction.
+ * @param State The state for the instruction.
+ * @return The memory operation.
+ */
+HKHubArchInstructionMemoryOperation HKHubArchInstructionGetMemoryOperation(const HKHubArchInstructionState *State);
 
 /*!
  * @brief Disassemble an instruction from state.
