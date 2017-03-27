@@ -30,6 +30,11 @@
 #include "HubArchBinary.h"
 #include "HubArchPort.h"
 
+typedef enum {
+    HKHubArchProcessorDebugModeContinue,
+    HKHubArchProcessorDebugModePause
+} HKHubArchProcessorDebugMode;
+
 typedef struct {
     CCDictionary ports;
     struct {
@@ -50,6 +55,7 @@ typedef struct {
         uint8_t pc;
         uint8_t flags;
         struct {
+            HKHubArchProcessorDebugMode mode;
             size_t step;
         } debug;
     } state;
@@ -166,5 +172,12 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor);
  * @param Count The number of instructions to step over.
  */
 void HKHubArchProcessorStep(HKHubArchProcessor Processor, size_t Count);
+
+/*!
+ * @brief Set the debug mode of the processor.
+ * @param Processor The processor to have its debug mode set.
+ * @param Mode The debug mode to be used.
+ */
+void HKHubArchProcessorSetDebugMode(HKHubArchProcessor Processor, HKHubArchProcessorDebugMode Mode);
 
 #endif
