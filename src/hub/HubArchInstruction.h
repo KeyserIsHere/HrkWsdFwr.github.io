@@ -42,7 +42,7 @@ typedef enum {
 typedef enum {
     HKHubArchInstructionMemoryOperationMask = 3,
     HKHubArchInstructionMemoryOperationSrc = (1 << 0),
-    HKHubArchInstructionMemoryOperationDst = (1 << 2),
+    HKHubArchInstructionMemoryOperationDst = (1 << 1),
     
     HKHubArchInstructionMemoryOperationOp1 = 0,
     HKHubArchInstructionMemoryOperationOp2 = 2,
