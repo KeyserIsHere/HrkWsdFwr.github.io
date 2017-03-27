@@ -102,7 +102,9 @@ void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds)
     
     CC_COLLECTION_FOREACH(HKHubArchProcessor, Processor, Scheduler->hubs)
     {
-        HKHubArchProcessorAddProcessingTime(Processor, Seconds);
+        if ((Processor->state.debug.mode != HKHubArchProcessorDebugModePause) || (Processor->state.debug.step)) HKHubArchProcessorAddProcessingTime(Processor, Seconds);
+        else HKHubArchProcessorSetCycles(Processor, 0);
+        
         if (PrevTimestamp < Processor->cycles) PrevTimestamp = Processor->cycles;
     }
     
@@ -125,8 +127,9 @@ void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds)
         CC_COLLECTION_FOREACH(HKHubArchProcessor, Processor, Scheduler->hubs)
         {
             HKHubArchProcessorRun(Processor);
-            Complete &= Processor->complete;
+            Complete &= Processor->complete || (Processor->state.debug.mode == HKHubArchProcessorDebugModePause);
             
+            if (Processor->state.debug.mode == HKHubArchProcessorDebugModePause) HKHubArchProcessorSetCycles(Processor, 0);
             if (PrevTimestamp < Processor->cycles) PrevTimestamp = Processor->cycles;
         }
         
