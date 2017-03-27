@@ -160,4 +160,83 @@
     HKHubArchProcessorDestroy(Processor);
 }
 
+-(void) testBreakpoints
+{
+    const char *Source =
+        "data: .byte 2\n" //0:
+        ".entrypoint\n"
+        "mov r0, [data]\n" //1:
+        "add r0, 2\n" //4:
+        "jmp skip\n" //7:
+        "sub r0, 2\n" //9:
+        "skip:\n"
+        "mov [data], r0\n" //12:
+        "hlt\n" //15:
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    
+    HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    HKHubArchProcessorSetBreakpoint(Processor, HKHubArchProcessorDebugBreakpointRead | HKHubArchProcessorDebugBreakpointWrite, 0);
+    HKHubArchProcessorSetBreakpoint(Processor, HKHubArchProcessorDebugBreakpointRead, 4);
+    
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 1, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 1, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    
+    HKHubArchProcessorStep(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 4, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    
+    HKHubArchProcessorStep(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 7, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 12, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorSetBreakpoint(Processor, HKHubArchProcessorDebugBreakpointWrite, 0);
+    
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 12, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorSetBreakpoint(Processor, HKHubArchProcessorDebugBreakpointRead, 0);
+    
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 1, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    HKHubArchProcessorStep(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.pc, 15, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModeContinue, "Should break at the correct location");
+    
+    HKHubArchBinaryDestroy(Binary);
+    HKHubArchProcessorDestroy(Processor);
+}
+
 @end
