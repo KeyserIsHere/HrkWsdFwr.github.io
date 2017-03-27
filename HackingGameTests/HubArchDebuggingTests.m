@@ -26,6 +26,7 @@
 #import <XCTest/XCTest.h>
 #import "HubArchProcessor.h"
 #import "HubArchAssembly.h"
+#import "HubArchScheduler.h"
 
 @interface HubArchDebuggingTests : XCTestCase
 
@@ -237,6 +238,57 @@
     
     HKHubArchBinaryDestroy(Binary);
     HKHubArchProcessorDestroy(Processor);
+}
+
+-(void) testDebuggingCycles
+{
+    const char *Source =
+        "data: .byte 2\n" //0:
+        ".entrypoint\n"
+        "mov r0, [data]\n" //1:
+        "add r0, 2\n" //4:
+        "jmp skip\n" //7:
+        "sub r0, 2\n" //9:
+        "skip:\n"
+        "mov [data], r0\n" //12:
+        "hlt\n" //15:
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    
+    HKHubArchScheduler Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
+    HKHubArchSchedulerAddProcessor(Scheduler, Processor);
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    HKHubArchProcessorSetBreakpoint(Processor, HKHubArchProcessorDebugBreakpointRead, 4);
+    
+    HKHubArchSchedulerRun(Scheduler, 1.0);
+    XCTAssertEqual(Processor->state.pc, 4, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    XCTAssertEqual(Processor->cycles, 0, "Should have the correct amount of cycles");
+    
+    HKHubArchProcessorStep(Processor, 1);
+    HKHubArchSchedulerRun(Scheduler, 1.0);
+    XCTAssertEqual(Processor->state.pc, 7, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModePause, "Should break at the correct location");
+    XCTAssertEqual(Processor->cycles, 0, "Should have the correct amount of cycles");
+    
+    HKHubArchProcessorStep(Processor, 1);
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    HKHubArchSchedulerRun(Scheduler, 1.0);
+    XCTAssertEqual(Processor->state.pc, 15, "Should break at the correct location");
+    XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModeContinue, "Should break at the correct location");
+    XCTAssertEqual(Processor->cycles, HKHubArchProcessorHertz - 8, "Should have the correct amount of cycles");
+    
+    HKHubArchBinaryDestroy(Binary);
+    HKHubArchProcessorDestroy(Processor);
+    HKHubArchSchedulerDestroy(Scheduler);
 }
 
 @end
