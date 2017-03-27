@@ -56,6 +56,7 @@
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
     HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModePause);
     
     HKHubArchProcessorStep(Processor, 1); //mov r0, [data]
     HKHubArchProcessorRun(Processor);
@@ -85,6 +86,7 @@
     
     HKHubArchProcessorReset(Processor, Binary);
     HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModePause);
     
     HKHubArchProcessorStep(Processor, 3); //mov r0, [data]; add r0, 2; jmp skip
     HKHubArchProcessorRun(Processor);
@@ -100,6 +102,59 @@
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->memory[0], 4, "Should remain unchanged");
     XCTAssertEqual(Processor->state.r[0], 4, "Should remain unchanged");
+    
+    HKHubArchBinaryDestroy(Binary);
+    HKHubArchProcessorDestroy(Processor);
+}
+
+-(void) testDebugMode
+{
+    const char *Source =
+        "data: .byte 2\n"
+        ".entrypoint\n"
+        "mov r0, [data]\n"
+        "add r0, 2\n"
+        "jmp skip\n"
+        "sub r0, 2\n"
+        "skip:\n"
+        "mov [data], r0\n"
+        "hlt\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    
+    HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->memory[0], 4, "Should change");
+    XCTAssertEqual(Processor->state.r[0], 4, "Should change");
+    
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModePause);
+    
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->memory[0], 2, "Should remain unchanged");
+    XCTAssertEqual(Processor->state.r[0], 0, "Should remain unchanged");
+    
+    HKHubArchProcessorStep(Processor, 1); //mov r0, [data]
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->memory[0], 2, "Should remain unchanged");
+    XCTAssertEqual(Processor->state.r[0], 2, "Should change");
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    HKHubArchProcessorStep(Processor, 1); //add r0, 2
+    HKHubArchProcessorRun(Processor); //jmp skip ; mov [data], r0 ; hlt
+    XCTAssertEqual(Processor->memory[0], 4, "Should change");
+    XCTAssertEqual(Processor->state.r[0], 4, "Should change");
     
     HKHubArchBinaryDestroy(Binary);
     HKHubArchProcessorDestroy(Processor);
