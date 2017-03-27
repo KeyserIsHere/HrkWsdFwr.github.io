@@ -290,9 +290,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
-    if ((Processor->state.debug.mode == HKHubArchProcessorDebugModePause) && (!Processor->state.debug.step)) return;
-    
-    while ((!Processor->complete) && !(Processor->complete = !Processor->cycles))
+    while ((!Processor->complete) && !(Processor->complete = !Processor->cycles) && (((Processor->state.debug.mode != HKHubArchProcessorDebugModePause) || (Processor->state.debug.step))))
     {
         HKHubArchInstructionState Instruction;
         uint8_t NextPC = HKHubArchInstructionDecode(Processor->state.pc, Processor->memory, &Instruction);
@@ -318,7 +316,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                 {
                     if (!(Result & HKHubArchInstructionOperationResultFlagSkipPC)) Processor->state.pc = NextPC;
                     
-                    if ((Processor->state.debug.step) && (--Processor->state.debug.step == 0)) break;
+                    if ((Processor->state.debug.step) && (--Processor->state.debug.step == 0)) continue;
                 }
             }
             
