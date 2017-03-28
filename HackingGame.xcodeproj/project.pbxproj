@@ -12,6 +12,7 @@
 		F31CB6491E7FD04300C85B0D /* HubModuleWirelessTransceiver.c in Sources */ = {isa = PBXBuildFile; fileRef = F31CB6471E7FD04300C85B0D /* HubModuleWirelessTransceiver.c */; };
 		F32039A11E845BDA00280DC9 /* HubModuleWirelessTransceiver.m in Sources */ = {isa = PBXBuildFile; fileRef = F32039A01E845BDA00280DC9 /* HubModuleWirelessTransceiver.m */; };
 		F32039A41E87BE4500280DC9 /* HubArchDebuggingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */; };
+		F32039A71E8A788300280DC9 /* HubModuleDisplayComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F32039A51E8A788300280DC9 /* HubModuleDisplayComponent.c */; };
 		F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = F341E9321E04454000581CF8 /* HubArchScheduler.c */; };
 		F34877021DDC2E500068844D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877011DDC2E500068844D /* main.c */; };
 		F34877041DDC2E500068844D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F34877031DDC2E500068844D /* Assets.xcassets */; };
@@ -100,6 +101,8 @@
 		F31CB6481E7FD04300C85B0D /* HubModuleWirelessTransceiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleWirelessTransceiver.h; sourceTree = "<group>"; };
 		F32039A01E845BDA00280DC9 /* HubModuleWirelessTransceiver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubModuleWirelessTransceiver.m; sourceTree = "<group>"; };
 		F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchDebuggingTests.m; sourceTree = "<group>"; };
+		F32039A51E8A788300280DC9 /* HubModuleDisplayComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleDisplayComponent.c; sourceTree = "<group>"; };
+		F32039A61E8A788300280DC9 /* HubModuleDisplayComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleDisplayComponent.h; sourceTree = "<group>"; };
 		F341E9321E04454000581CF8 /* HubArchScheduler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchScheduler.c; sourceTree = "<group>"; };
 		F341E9331E04454000581CF8 /* HubArchScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchScheduler.h; sourceTree = "<group>"; };
 		F34876FA1DDC2E500068844D /* HackingGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HackingGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -331,6 +334,8 @@
 				F34967FC1E219DC300801704 /* HubModuleComponent.h */,
 				F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */,
 				F308E5BA1E7E61360011F892 /* HubModuleKeyboardComponent.h */,
+				F32039A51E8A788300280DC9 /* HubModuleDisplayComponent.c */,
+				F32039A61E8A788300280DC9 /* HubModuleDisplayComponent.h */,
 			);
 			name = Components;
 			path = components;
@@ -516,6 +521,7 @@
 				F34877021DDC2E500068844D /* main.c in Sources */,
 				F34967FD1E219DC300801704 /* HubModuleComponent.c in Sources */,
 				F308E5BB1E7E61360011F892 /* HubModuleKeyboardComponent.c in Sources */,
+				F32039A71E8A788300280DC9 /* HubModuleDisplayComponent.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

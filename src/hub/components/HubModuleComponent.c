@@ -25,6 +25,7 @@
 
 #include "HubModuleComponent.h"
 #include "HubModuleKeyboardComponent.h"
+#include "HubModuleDisplayComponent.h"
 
 const char * const HKHubModuleComponentName = "module";
 
@@ -34,7 +35,8 @@ static struct {
     CCString module;
     const CCComponentExpressionDescriptor *descriptor;
 } HKHubModuleComponentDescriptors[] = {
-    { .module = CC_STRING("keyboard-module"), .descriptor = &HKHubModuleKeyboardComponentDescriptor }
+    { .module = CC_STRING("keyboard-module"), .descriptor = &HKHubModuleKeyboardComponentDescriptor },
+    { .module = CC_STRING("display-module"), .descriptor = &HKHubModuleDisplayComponentDescriptor }
 };
 
 void HKHubModuleComponentRegister(void)
