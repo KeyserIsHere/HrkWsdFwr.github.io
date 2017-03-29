@@ -36,7 +36,7 @@
 typedef struct {
     CC_COMPONENT_INHERIT(HKHubModuleComponentClass);
     CCVector2Di resolution;
-    CCColourFormat encoding;
+    HKHubModuleDisplayBufferConverter encoder;
 } HKHubModuleDisplayComponentClass, *HKHubModuleDisplayComponentPrivate;
 
 extern const CCComponentExpressionDescriptor HKHubModuleDisplayComponentDescriptor;
@@ -72,18 +72,18 @@ static inline CCVector2Di HKHubModuleDisplayComponentGetResolution(CCComponent C
 static inline void HKHubModuleDisplayComponentSetResolution(CCComponent Component, CCVector2Di Resolution);
 
 /*!
- * @brief Get the buffer encoding for the display module.
+ * @brief Get the buffer encoder for the display module.
  * @param Component The display module component.
- * @return The display module buffer encoding.
+ * @return The display module buffer encoder.
  */
-static inline CCColourFormat HKHubModuleDisplayComponentGetEncoding(CCComponent Component);
+static inline HKHubModuleDisplayBufferConverter HKHubModuleDisplayComponentGetEncoder(CCComponent Component);
 
 /*!
- * @brief Set the buffer encoding of the display module.
+ * @brief Set the buffer encoder of the display module.
  * @param Component The display module component.
- * @param Resolution The display module buffer encoding.
+ * @param Encoder The display module buffer encoder.
  */
-static inline void HKHubModuleDisplayComponentSetEncoding(CCComponent Component, CCColourFormat encoding);
+static inline void HKHubModuleDisplayComponentSetEncoder(CCComponent Component, HKHubModuleDisplayBufferConverter Encoder);
 
 #pragma mark -
 
@@ -110,14 +110,14 @@ static inline void HKHubModuleDisplayComponentSetResolution(CCComponent Componen
     ((HKHubModuleDisplayComponentPrivate)Component)->resolution = Resolution;
 }
 
-static inline CCColourFormat HKHubModuleDisplayComponentGetEncoding(CCComponent Component)
+static inline HKHubModuleDisplayBufferConverter HKHubModuleDisplayComponentGetEncoder(CCComponent Component)
 {
-    return ((HKHubModuleDisplayComponentPrivate)Component)->encoding;
+    return ((HKHubModuleDisplayComponentPrivate)Component)->encoder;
 }
 
-static inline void HKHubModuleDisplayComponentSetEncoding(CCComponent Component, CCColourFormat Encoding)
+static inline void HKHubModuleDisplayComponentSetEncoder(CCComponent Component, HKHubModuleDisplayBufferConverter Encoder)
 {
-    ((HKHubModuleDisplayComponentPrivate)Component)->encoding = Encoding;
+    ((HKHubModuleDisplayComponentPrivate)Component)->encoder = Encoder;
 }
 
 #endif
