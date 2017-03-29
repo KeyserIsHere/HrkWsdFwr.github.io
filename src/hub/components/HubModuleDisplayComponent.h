@@ -93,6 +93,8 @@ static inline void HKHubModuleDisplayComponentInitialize(CCComponent Component, 
     
     HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("display")));
     HKHubModuleComponentSetModule(Component, HKHubModuleDisplayCreate(CC_STD_ALLOCATOR));
+    HKHubModuleDisplayComponentSetResolution(Component, (CCVector2Di){ 16, 16 });
+    HKHubModuleDisplayComponentSetEncoder(Component, HKHubModuleDisplayBuffer_UniformColourRGB888);
 }
 
 static inline void HKHubModuleDisplayComponentDeallocate(CCComponent Component)
@@ -107,6 +109,8 @@ static inline CCVector2Di HKHubModuleDisplayComponentGetResolution(CCComponent C
 
 static inline void HKHubModuleDisplayComponentSetResolution(CCComponent Component, CCVector2Di Resolution)
 {
+    CCAssertLog(Resolution.x * Resolution.y == 256, "Resolution must cover 256 pixels");
+    
     ((HKHubModuleDisplayComponentPrivate)Component)->resolution = Resolution;
 }
 
