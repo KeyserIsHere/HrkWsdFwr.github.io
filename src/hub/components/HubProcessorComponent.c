@@ -58,15 +58,15 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
         const size_t ArgCount = CCCollectionGetCount(CCExpressionGetList(Arg));
         if (CCCollectionGetCount(CCExpressionGetList(Arg)) >= 2)
         {
-            CCExpression NameExpr = *(CCExpression*)CCOrderedCollectionGetEntryAtIndex(CCExpressionGetList(Arg), 0);
-            if (CCExpressionGetType(NameExpr) == CCExpressionValueTypeString)
+            CCExpression NameExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 0);
+            if (CCExpressionGetType(NameExpr) == CCExpressionValueTypeAtom)
             {
-                CCString Name = CCExpressionGetString(NameExpr);
+                CCString Name = CCExpressionGetAtom(NameExpr);
                 if (CCStringEqual(Name, CC_STRING("program:")))
                 {
                     if (ArgCount == 2)
                     {
-                        CCExpression File = *(CCExpression*)CCOrderedCollectionGetEntryAtIndex(CCExpressionGetList(Arg), 1);
+                        CCExpression File = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 1);
                         if (CCExpressionGetType(File) == CCExpressionValueTypeString)
                         {
                             CC_STRING_TEMP_BUFFER(Buffer, CCExpressionGetString(File))

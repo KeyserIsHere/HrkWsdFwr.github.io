@@ -73,15 +73,15 @@ void HKHubModuleDisplayComponenDeserializer(CCComponent Component, CCExpression 
         const size_t ArgCount = CCCollectionGetCount(CCExpressionGetList(Arg));
         if (CCCollectionGetCount(CCExpressionGetList(Arg)) >= 2)
         {
-            CCExpression NameExpr = *(CCExpression*)CCOrderedCollectionGetEntryAtIndex(CCExpressionGetList(Arg), 0);
-            if (CCExpressionGetType(NameExpr) == CCExpressionValueTypeString)
+            CCExpression NameExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 0);
+            if (CCExpressionGetType(NameExpr) == CCExpressionValueTypeAtom)
             {
-                CCString Name = CCExpressionGetString(NameExpr);
+                CCString Name = CCExpressionGetAtom(NameExpr);
                 if (CCStringEqual(Name, CC_STRING("encoding:")))
                 {
                     if (ArgCount == 2)
                     {
-                        CCExpression EncodingExpr = *(CCExpression*)CCOrderedCollectionGetEntryAtIndex(CCExpressionGetList(Arg), 1);
+                        CCExpression EncodingExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 1);
                         if (CCExpressionGetType(EncodingExpr) == CCExpressionValueTypeAtom)
                         {
                             CCString Encoding = CCExpressionGetAtom(EncodingExpr);
