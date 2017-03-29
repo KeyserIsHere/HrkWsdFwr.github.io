@@ -1,0 +1,6 @@
+(entity "display"
+    (display-module
+        (resolution: 16 16)
+        (encoding: :uniform)
+    )
+)
