@@ -35,6 +35,8 @@
 
 typedef struct {
     CC_COMPONENT_INHERIT(HKHubModuleComponentClass);
+    CCVector2Di resolution;
+    CCColourFormat encoding;
 } HKHubModuleDisplayComponentClass, *HKHubModuleDisplayComponentPrivate;
 
 extern const CCComponentExpressionDescriptor HKHubModuleDisplayComponentDescriptor;
@@ -55,6 +57,33 @@ static inline void HKHubModuleDisplayComponentInitialize(CCComponent Component, 
  */
 static inline void HKHubModuleDisplayComponentDeallocate(CCComponent Component);
 
+/*!
+ * @brief Get the resolution of the display module.
+ * @param Component The display module component.
+ * @return The display module resolution.
+ */
+static inline CCVector2Di HKHubModuleDisplayComponentGetResolution(CCComponent Component);
+
+/*!
+ * @brief Set the resolution of the display module.
+ * @param Component The display module component.
+ * @param Resolution The display module resolution.
+ */
+static inline void HKHubModuleDisplayComponentSetResolution(CCComponent Component, CCVector2Di Resolution);
+
+/*!
+ * @brief Get the buffer encoding for the display module.
+ * @param Component The display module component.
+ * @return The display module buffer encoding.
+ */
+static inline CCColourFormat HKHubModuleDisplayComponentGetEncoding(CCComponent Component);
+
+/*!
+ * @brief Set the buffer encoding of the display module.
+ * @param Component The display module component.
+ * @param Resolution The display module buffer encoding.
+ */
+static inline void HKHubModuleDisplayComponentSetEncoding(CCComponent Component, CCColourFormat encoding);
 
 #pragma mark -
 
@@ -69,6 +98,26 @@ static inline void HKHubModuleDisplayComponentInitialize(CCComponent Component, 
 static inline void HKHubModuleDisplayComponentDeallocate(CCComponent Component)
 {
     HKHubModuleComponentDeallocate(Component);
+}
+
+static inline CCVector2Di HKHubModuleDisplayComponentGetResolution(CCComponent Component)
+{
+    return ((HKHubModuleDisplayComponentPrivate)Component)->resolution;
+}
+
+static inline void HKHubModuleDisplayComponentSetResolution(CCComponent Component, CCVector2Di Resolution)
+{
+    ((HKHubModuleDisplayComponentPrivate)Component)->resolution = Resolution;
+}
+
+static inline CCColourFormat HKHubModuleDisplayComponentGetEncoding(CCComponent Component)
+{
+    return ((HKHubModuleDisplayComponentPrivate)Component)->encoding;
+}
+
+static inline void HKHubModuleDisplayComponentSetEncoding(CCComponent Component, CCColourFormat Encoding)
+{
+    ((HKHubModuleDisplayComponentPrivate)Component)->encoding = Encoding;
 }
 
 #endif
