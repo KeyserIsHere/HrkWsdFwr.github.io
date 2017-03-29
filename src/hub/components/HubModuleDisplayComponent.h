@@ -28,6 +28,47 @@
 
 #include <Blob2D/Blob2D.h>
 
+#include "HubModuleComponent.h"
+#include "HubModuleDisplay.h"
+
+#define HK_HUB_MODULE_DISPLAY_COMPONENT_ID (HK_HUB_MODULE_COMPONENT_ID | HKHubTypeModuleDisplay)
+
+typedef struct {
+    CC_COMPONENT_INHERIT(HKHubModuleComponentClass);
+} HKHubModuleDisplayComponentClass, *HKHubModuleDisplayComponentPrivate;
+
 extern const CCComponentExpressionDescriptor HKHubModuleDisplayComponentDescriptor;
+
+void HKHubModuleDisplayComponentRegister(void);
+void HKHubModuleDisplayComponentDeregister(void);
+
+/*!
+ * @brief Initialize the display module component.
+ * @param Component The component to be initialized.
+ * @param id The component ID.
+ */
+static inline void HKHubModuleDisplayComponentInitialize(CCComponent Component, CCComponentID id);
+
+/*!
+ * @brief Deallocate the display module component.
+ * @param Component The component to be deallocated.
+ */
+static inline void HKHubModuleDisplayComponentDeallocate(CCComponent Component);
+
+
+#pragma mark -
+
+static inline void HKHubModuleDisplayComponentInitialize(CCComponent Component, CCComponentID id)
+{
+    HKHubModuleComponentInitialize(Component, id);
+    
+    HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("display")));
+    HKHubModuleComponentSetModule(Component, HKHubModuleDisplayCreate(CC_STD_ALLOCATOR));
+}
+
+static inline void HKHubModuleDisplayComponentDeallocate(CCComponent Component)
+{
+    HKHubModuleComponentDeallocate(Component);
+}
 
 #endif

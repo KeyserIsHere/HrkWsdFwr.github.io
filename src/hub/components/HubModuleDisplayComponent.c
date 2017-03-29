@@ -27,17 +27,24 @@
 #include "HubModuleComponent.h"
 #include "HubModuleDisplay.h"
 
-static void HKHubModuleDisplayComponentInitializer(CCComponent Component);
 
-const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor = {
-    .id = HK_HUB_MODULE_COMPONENT_ID,
-    .initialize = HKHubModuleDisplayComponentInitializer,
+const char * const HKHubModuleDisplayComponentName = "display-module";
+
+const CCComponentExpressionDescriptor HKHubModuleDisplayComponentDescriptor = {
+    .id = HK_HUB_MODULE_DISPLAY_COMPONENT_ID,
+    .initialize = NULL,
     .deserialize = NULL,
     .serialize = NULL
 };
 
-static void HKHubModuleDisplayComponentInitializer(CCComponent Component)
+void HKHubModuleDisplayComponentRegister(void)
 {
-    HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("display")));
-    HKHubModuleComponentSetModule(Component, HKHubModuleDisplayCreate(CC_STD_ALLOCATOR));
+    CCComponentRegister(HK_HUB_MODULE_DISPLAY_COMPONENT_ID, HKHubModuleDisplayComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleDisplayComponentClass), HKHubModuleDisplayComponentInitialize, NULL, HKHubModuleDisplayComponentDeallocate);
+    
+    CCComponentExpressionRegister(CC_STRING("display-module"), &HKHubModuleDisplayComponentDescriptor, TRUE);
+}
+
+void HKHubModuleDisplayComponentDeregister(void)
+{
+    CCComponentDeregister(HK_HUB_MODULE_DISPLAY_COMPONENT_ID);
 }

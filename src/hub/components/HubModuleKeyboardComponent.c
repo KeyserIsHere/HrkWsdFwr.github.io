@@ -27,18 +27,19 @@
 #include "HubModuleComponent.h"
 #include "HubModuleKeyboard.h"
 
-static void HKHubModuleKeyboardComponentInitializer(CCComponent Component);
+
+const char * const HKHubModuleKeyboardComponentName = "keyboard-module";
 
 const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor = {
-    .id = HK_HUB_MODULE_COMPONENT_ID,
-    .initialize = HKHubModuleKeyboardComponentInitializer,
+    .id = HK_HUB_MODULE_KEYBOARD_COMPONENT_ID,
+    .initialize = NULL,
     .deserialize = NULL,
     .serialize = NULL
 };
 
 void HKHubModuleKeyboardComponentKeyboardCallback(CCComponent Component, CCKeyboardMap State)
 {
-    if (State.state.down) CCMessagePost(CC_STD_ALLOCATOR, HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID, CCMessageDeliverToComponentBelongingToEntity(HK_HUB_MODULE_COMPONENT_ID, CCComponentGetEntity(Component)), sizeof(uint8_t), &(uint8_t){ State.character });
+    if (State.state.down) CCMessagePost(CC_STD_ALLOCATOR, HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID, CCMessageDeliverToComponentBelongingToEntity(HK_HUB_MODULE_KEYBOARD_COMPONENT_ID, CCComponentGetEntity(Component)), sizeof(uint8_t), &(uint8_t){ State.character });
 }
 
 static void HKHubModuleKeyboardComponentMessageHandler(CCComponent Component, CCMessage *Message)
@@ -51,9 +52,16 @@ static void HKHubModuleKeyboardComponentMessageHandler(CCComponent Component, CC
     }
 }
 
-static void HKHubModuleKeyboardComponentInitializer(CCComponent Component)
+void HKHubModuleKeyboardComponentRegister(void)
 {
-    HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("keyboard")));
-    HKHubModuleComponentSetModule(Component, HKHubModuleKeyboardCreate(CC_STD_ALLOCATOR));
-    HKHubModuleComponentSetMessageHandler(Component, HKHubModuleKeyboardComponentMessageHandler);
+    CCComponentRegister(HK_HUB_MODULE_KEYBOARD_COMPONENT_ID, HKHubModuleKeyboardComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleKeyboardComponentClass), HKHubModuleKeyboardComponentInitialize, HKHubModuleKeyboardComponentMessageHandler, HKHubModuleKeyboardComponentDeallocate);
+    
+    CCComponentExpressionRegister(CC_STRING("keyboard-module"), &HKHubModuleKeyboardComponentDescriptor, TRUE);
+    
+    CCInputMapComponentRegisterCallback(CC_STRING(":keyboard-module"), CCInputMapTypeKeyboard, HKHubModuleKeyboardComponentKeyboardCallback);
+}
+
+void HKHubModuleKeyboardComponentDeregister(void)
+{
+    CCComponentDeregister(HK_HUB_MODULE_KEYBOARD_COMPONENT_ID);
 }

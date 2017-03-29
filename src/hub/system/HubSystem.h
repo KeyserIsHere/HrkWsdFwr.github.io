@@ -33,9 +33,14 @@
 #define HK_HUB_COMPONENT_FLAG 0x60000000
 
 typedef enum {
-    HKHubTypeMask = 0xff,
+    HKHubTypeMask = 1,
     HKHubTypeProcessor = 0,
-    HKHubTypeModule
+    HKHubTypeModule,
+    
+    HKHubTypeModuleMask = (0xff << 1),
+    HKHubTypeModuleKeyboard = (1 << 1),
+    HKHubTypeModuleDisplay = (2 << 1),
+    HKHubTypeModuleWirelessTransceiver = (3 << 1)
 } HKHubType;
 
 void HKHubSystemRegister(void);

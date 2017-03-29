@@ -27,11 +27,50 @@
 #define HackingGame_HubModuleKeyboardComponent_h
 
 #include <Blob2D/Blob2D.h>
+#include "HubModuleComponent.h"
+#include "HubModuleKeyboard.h"
+
+#define HK_HUB_MODULE_KEYBOARD_COMPONENT_ID (HK_HUB_MODULE_COMPONENT_ID | HKHubTypeModuleKeyboard)
+
+typedef struct {
+    CC_COMPONENT_INHERIT(HKHubModuleComponentClass);
+} HKHubModuleKeyboardComponentClass, *HKHubModuleKeyboardComponentPrivate;
 
 #define HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID 'keys'
 
 extern const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor;
 
+void HKHubModuleKeyboardComponentRegister(void);
+void HKHubModuleKeyboardComponentDeregister(void);
 void HKHubModuleKeyboardComponentKeyboardCallback(CCComponent Component, CCKeyboardMap State);
+
+/*!
+ * @brief Initialize the keyboard module component.
+ * @param Component The component to be initialized.
+ * @param id The component ID.
+ */
+static inline void HKHubModuleKeyboardComponentInitialize(CCComponent Component, CCComponentID id);
+
+/*!
+ * @brief Deallocate the keyboard module component.
+ * @param Component The component to be deallocated.
+ */
+static inline void HKHubModuleKeyboardComponentDeallocate(CCComponent Component);
+
+
+#pragma mark -
+
+static inline void HKHubModuleKeyboardComponentInitialize(CCComponent Component, CCComponentID id)
+{
+    HKHubModuleComponentInitialize(Component, id);
+    
+    HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("keyboard")));
+    HKHubModuleComponentSetModule(Component, HKHubModuleKeyboardCreate(CC_STD_ALLOCATOR));
+}
+
+static inline void HKHubModuleKeyboardComponentDeallocate(CCComponent Component)
+{
+    HKHubModuleComponentDeallocate(Component);
+}
 
 #endif

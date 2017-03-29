@@ -29,35 +29,12 @@
 
 const char * const HKHubModuleComponentName = "module";
 
-static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message);
-
-static struct {
-    CCString module;
-    const CCComponentExpressionDescriptor *descriptor;
-} HKHubModuleComponentDescriptors[] = {
-    { .module = CC_STRING("keyboard-module"), .descriptor = &HKHubModuleKeyboardComponentDescriptor },
-    { .module = CC_STRING("display-module"), .descriptor = &HKHubModuleDisplayComponentDescriptor }
-};
-
 void HKHubModuleComponentRegister(void)
 {
-    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, HKHubModuleComponentMessageHandler, HKHubModuleComponentDeallocate);
-    
-    for (size_t Loop = 0; Loop < sizeof(HKHubModuleComponentDescriptors) / sizeof(typeof(*HKHubModuleComponentDescriptors)); Loop++)
-    {
-        CCComponentExpressionRegister(HKHubModuleComponentDescriptors[Loop].module, HKHubModuleComponentDescriptors[Loop].descriptor, TRUE);
-    }
-    
-    CCInputMapComponentRegisterCallback(CC_STRING(":keyboard-module"), CCInputMapTypeKeyboard, HKHubModuleKeyboardComponentKeyboardCallback);
+    CCComponentRegister(HK_HUB_MODULE_COMPONENT_ID, HKHubModuleComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleComponentClass), HKHubModuleComponentInitialize, NULL, HKHubModuleComponentDeallocate);
 }
 
 void HKHubModuleComponentDeregister(void)
 {
     CCComponentDeregister(HK_HUB_MODULE_COMPONENT_ID);
-}
-
-static void HKHubModuleComponentMessageHandler(CCComponent Component, CCMessage *Message)
-{
-    CCComponentMessageHandler MessageHandler = HKHubModuleComponentGetMessageHandler(Component);
-    if (MessageHandler) MessageHandler(Component, Message);
 }

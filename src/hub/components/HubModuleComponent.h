@@ -36,7 +36,6 @@ typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
     CCString name;
     HKHubModule module;
-    CCComponentMessageHandler messageHandler;
 } HKHubModuleComponentClass, *HKHubModuleComponentPrivate;
 
 
@@ -84,21 +83,6 @@ static inline HKHubModule HKHubModuleComponentGetModule(CCComponent Component);
  */
 static inline void HKHubModuleComponentSetModule(CCComponent Component, HKHubModule CC_OWN(Module));
 
-/*!
- * @brief Get the message handler.
- * @param Component The module component.
- * @return The message handler for the module.
- */
-static inline CCComponentMessageHandler HKHubModuleComponentGetMessageHandler(CCComponent Component);
-
-/*!
- * @brief Set the message handler.
- * @description Messages will be forwarded this module specific handler.
- * @param Component The module component.
- * @param MessageHandler The message handler.
- */
-static inline void HKHubModuleComponentSetMessageHandler(CCComponent Component, CCComponentMessageHandler MessageHandler);
-
 
 #pragma mark -
 
@@ -107,7 +91,6 @@ static inline void HKHubModuleComponentInitialize(CCComponent Component, CCCompo
     CCComponentInitialize(Component, id);
     ((HKHubModuleComponentPrivate)Component)->name = 0;
     ((HKHubModuleComponentPrivate)Component)->module = NULL;
-    ((HKHubModuleComponentPrivate)Component)->messageHandler = NULL;
 }
 
 static inline void HKHubModuleComponentDeallocate(CCComponent Component)
@@ -139,16 +122,6 @@ static inline void HKHubModuleComponentSetModule(CCComponent Component, HKHubMod
     if (((HKHubModuleComponentPrivate)Component)->module) HKHubModuleDestroy(((HKHubModuleComponentPrivate)Component)->module);
     
     ((HKHubModuleComponentPrivate)Component)->module = Module;
-}
-
-static inline CCComponentMessageHandler HKHubModuleComponentGetMessageHandler(CCComponent Component)
-{
-    return ((HKHubModuleComponentPrivate)Component)->messageHandler;
-}
-
-static inline void HKHubModuleComponentSetMessageHandler(CCComponent Component, CCComponentMessageHandler MessageHandler)
-{
-    ((HKHubModuleComponentPrivate)Component)->messageHandler = MessageHandler;
 }
 
 #endif
