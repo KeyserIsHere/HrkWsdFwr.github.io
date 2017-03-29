@@ -23,6 +23,32 @@
             "description": "Create a keyboard module component.",
             "examples": ["(keyboard-module)"],
             "return": { "type": "custom:component" }
+        },
+        {
+            "name": "display-module",
+            "description": "Create a display module component.",
+            "examples": ["(display-module (resolution: 16 16) (encoding: :direct))"],
+            "return": { "type": "custom:component" },
+            "options": [
+                {
+                    "name": "resolution",
+                    "description": "The size of the display. Must be 256 pixels big.",
+                    "args": [
+                        [{ "type": "integer", "name": "width" }, { "type": "integer", "name": "height" }],
+                        [{ "type": "list", "name": "resolution", "value": [{ "type": "integer", "name": "width" }, { "type": "integer", "name": "height" }] }]
+                    ]
+                },
+                {
+                    "name": "encoding",
+                    "description": "The colour encoding type of the display.",
+                    "args": [
+                        [{ "type": "atom", "name": "uniform" }],
+                        [{ "type": "atom", "name": "direct" }],
+                        [{ "type": "atom", "name": "gradient" }],
+                        [{ "type": "atom", "name": "yuv" }]
+                    ]
+                }
+            ]
         }
     ]
 }
