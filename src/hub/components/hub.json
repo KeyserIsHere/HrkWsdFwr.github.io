@@ -42,10 +42,11 @@
                     "name": "encoding",
                     "description": "The colour encoding type of the display.",
                     "args": [
-                        [{ "type": "atom", "name": "uniform" }],
-                        [{ "type": "atom", "name": "direct" }],
-                        [{ "type": "atom", "name": "gradient" }],
-                        [{ "type": "atom", "name": "yuv" }]
+                        [{ "type": "atom", "name": "encoding" }],
+                        [{ "type": "atom", "value": "uniform" }],
+                        [{ "type": "atom", "value": "direct" }],
+                        [{ "type": "atom", "value": "gradient" }],
+                        [{ "type": "atom", "value": "yuv" }]
                     ]
                 }
             ]
