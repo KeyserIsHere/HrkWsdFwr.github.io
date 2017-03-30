@@ -28,7 +28,7 @@
 #include "HubModuleKeyboard.h"
 
 
-const char * const HKHubModuleKeyboardComponentName = "keyboard-module";
+const char * const HKHubModuleKeyboardComponentName = "keyboard_module";
 
 const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor = {
     .id = HK_HUB_MODULE_KEYBOARD_COMPONENT_ID,

@@ -28,7 +28,7 @@
 #include "HubModuleDisplay.h"
 
 
-const char * const HKHubModuleDisplayComponentName = "display-module";
+const char * const HKHubModuleDisplayComponentName = "display_module";
 
 const CCComponentExpressionDescriptor HKHubModuleDisplayComponentDescriptor = {
     .id = HK_HUB_MODULE_DISPLAY_COMPONENT_ID,
