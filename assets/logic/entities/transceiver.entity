@@ -1,0 +1,5 @@
+(entity "transceiver"
+    (wireless-transceiver-module
+        (range: 500) ; TODO: workout good signal range
+    )
+)
