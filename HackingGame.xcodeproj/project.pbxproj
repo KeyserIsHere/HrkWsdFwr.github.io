@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F305A5F11E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F305A5EF1E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c */; };
 		F308E5BB1E7E61360011F892 /* HubModuleKeyboardComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */; };
 		F317030D1E0BA3E000476E7A /* assets in Resources */ = {isa = PBXBuildFile; fileRef = F317030C1E0BA3E000476E7A /* assets */; };
 		F31CB6491E7FD04300C85B0D /* HubModuleWirelessTransceiver.c in Sources */ = {isa = PBXBuildFile; fileRef = F31CB6471E7FD04300C85B0D /* HubModuleWirelessTransceiver.c */; };
@@ -94,6 +95,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		F305A5EF1E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleWirelessTransceiverComponent.c; sourceTree = "<group>"; };
+		F305A5F01E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleWirelessTransceiverComponent.h; sourceTree = "<group>"; };
 		F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleKeyboardComponent.c; sourceTree = "<group>"; };
 		F308E5BA1E7E61360011F892 /* HubModuleKeyboardComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleKeyboardComponent.h; sourceTree = "<group>"; };
 		F317030C1E0BA3E000476E7A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
@@ -336,6 +339,8 @@
 				F308E5BA1E7E61360011F892 /* HubModuleKeyboardComponent.h */,
 				F32039A51E8A788300280DC9 /* HubModuleDisplayComponent.c */,
 				F32039A61E8A788300280DC9 /* HubModuleDisplayComponent.h */,
+				F305A5EF1E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c */,
+				F305A5F01E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.h */,
 			);
 			name = Components;
 			path = components;
@@ -515,6 +520,7 @@
 				F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */,
 				F31CB6491E7FD04300C85B0D /* HubModuleWirelessTransceiver.c in Sources */,
 				F3C566511E0FCD1400A32123 /* HubSystem.c in Sources */,
+				F305A5F11E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c in Sources */,
 				F36EBADC1E194E3000FB308B /* HubModuleDebug.c in Sources */,
 				F3DBAA201DF3C1F400AFF30A /* HubArchPort.c in Sources */,
 				F36955011E48A6A000135AF0 /* HubModuleKeyboard.c in Sources */,
