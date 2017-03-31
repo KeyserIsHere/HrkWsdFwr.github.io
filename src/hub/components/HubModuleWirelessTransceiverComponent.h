@@ -35,6 +35,7 @@
 
 typedef struct {
     CC_COMPONENT_INHERIT(HKHubModuleComponentClass);
+    float range;
 } HKHubModuleWirelessTransceiverComponentClass, *HKHubModuleWirelessTransceiverComponentPrivate;
 
 extern const CCComponentExpressionDescriptor HKHubModuleWirelessTransceiverComponentDescriptor;
@@ -55,11 +56,26 @@ static inline void HKHubModuleWirelessTransceiverComponentInitialize(CCComponent
  */
 static inline void HKHubModuleWirelessTransceiverComponentDeallocate(CCComponent Component);
 
+/*!
+ * @brief Get the range of the wireless transceiver module.
+ * @param Component The wireless transceiver module component.
+ * @return The wireless transceiver module range.
+ */
+static inline float HKHubModuleWirelessTransceiverComponentGetRange(CCComponent Component);
+
+/*!
+ * @brief Set the range of the wireless transceiver module.
+ * @param Component The wireless transceiver module component.
+ * @param Range The wireless transceiver module range.
+ */
+static inline void HKHubModuleWirelessTransceiverComponentSetRange(CCComponent Component, float Range);
+
 #pragma mark -
 
 static inline void HKHubModuleWirelessTransceiverComponentInitialize(CCComponent Component, CCComponentID id)
 {
     HKHubModuleComponentInitialize(Component, id);
+    ((HKHubModuleWirelessTransceiverComponentPrivate)Component)->range = 0.0f;
     
     HKHubModuleComponentSetName(Component, CCStringCopy(CC_STRING("wireless transceiver")));
     HKHubModuleComponentSetModule(Component, HKHubModuleWirelessTransceiverCreate(CC_STD_ALLOCATOR));
@@ -68,6 +84,16 @@ static inline void HKHubModuleWirelessTransceiverComponentInitialize(CCComponent
 static inline void HKHubModuleWirelessTransceiverComponentDeallocate(CCComponent Component)
 {
     HKHubModuleComponentDeallocate(Component);
+}
+
+static inline float HKHubModuleWirelessTransceiverComponentGetRange(CCComponent Component)
+{
+    return ((HKHubModuleWirelessTransceiverComponentPrivate)Component)->range;
+}
+
+static inline void HKHubModuleWirelessTransceiverComponentSetRange(CCComponent Component, float Range)
+{
+    ((HKHubModuleWirelessTransceiverComponentPrivate)Component)->range = Range;
 }
 
 #endif
