@@ -29,12 +29,30 @@
 
 const char * const HKHubModuleWirelessTransceiverComponentName = "wireless_transceiver_module";
 
+const CCComponentExpressionDescriptor HKHubModuleWirelessTransceiverComponentDescriptor = {
+    .id = HK_HUB_MODULE_WIRELESS_TRANSCEIVER_COMPONENT_ID,
+    .initialize = NULL,
+    .deserialize = HKHubModuleWirelessTransceiverComponenDeserializer,
+    .serialize = NULL
+};
+
 void HKHubModuleWirelessTransceiverComponentRegister(void)
 {
     CCComponentRegister(HK_HUB_MODULE_WIRELESS_TRANSCEIVER_COMPONENT_ID, HKHubModuleWirelessTransceiverComponentName, CC_STD_ALLOCATOR, sizeof(HKHubModuleWirelessTransceiverComponentClass), HKHubModuleWirelessTransceiverComponentInitialize, NULL, HKHubModuleWirelessTransceiverComponentDeallocate);
+    
+    CCComponentExpressionRegister(CC_STRING("wireless-transceiver-module"), &HKHubModuleWirelessTransceiverComponentDescriptor, TRUE);
 }
 
 void HKHubModuleWirelessTransceiverComponentDeregister(void)
 {
     CCComponentDeregister(HK_HUB_MODULE_WIRELESS_TRANSCEIVER_COMPONENT_ID);
+}
+
+static CCComponentExpressionArgumentDeserializer Arguments[] = {
+    { .name = CC_STRING("range:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeFloat32, .setter = (void(*)())HKHubModuleWirelessTransceiverComponentSetRange }
+};
+
+void HKHubModuleWirelessTransceiverComponenDeserializer(CCComponent Component, CCExpression Arg)
+{
+   CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)));
 }
