@@ -50,6 +50,21 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "wireless-transceiver-module",
+            "description": "Create a wireless transceiver module component.",
+            "examples": ["(wireless-transceiver-module (range: 20))"],
+            "return": { "type": "custom:component" },
+            "options": [
+                {
+                    "name": "range",
+                    "description": "The signal range of the wireless transceiver.",
+                    "args": [[
+                        { "type": "number", "name": "range" }
+                    ]]
+                }
+            ]
         }
     ]
 }
