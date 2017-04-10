@@ -40,7 +40,7 @@ CCExpression HKHubArchExpressionDisassemble(CCExpression Expression)
             uint8_t Data[6], Address = CCExpressionGetInteger(Offset);
             for (uint8_t Loop = 0; Loop < sizeof(Data) / sizeof(typeof(*Data)); Loop++)
             {
-                CCExpression Byte = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Bytes), Address + Loop);
+                CCExpression Byte = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Bytes), (uint8_t)(Address + Loop));
                 if (CCExpressionGetType(Byte) != CCExpressionValueTypeInteger)
                 {
                     CC_EXPRESSION_EVALUATOR_LOG_FUNCTION_ERROR("disassemble", "bytes:list offset:integer");
