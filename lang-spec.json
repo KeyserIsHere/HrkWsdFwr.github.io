@@ -1,5 +1,6 @@
 {
     "includes": [
-        "src/hub/components/hub.json"
+        "src/hub/components/hub.json",
+        "src/hub/hub_arch.json"
     ]
 }

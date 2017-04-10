@@ -1,0 +1,11 @@
+{
+    "functions": [
+        {
+            "name": "disassemble",
+            "description": "Disassemble the given instruction returning the number of bytes needed to decode the instruction and the disassembly itself.",
+            "examples": ["(disassemble (248) 0) ;(1 \"nop\")"],
+            "return": { "type": "list" },
+            "args": [[{ "type": "list", "name": "bytes" }, { "type": "integer", "name": "offset" }]]
+        }
+    ]
+}
