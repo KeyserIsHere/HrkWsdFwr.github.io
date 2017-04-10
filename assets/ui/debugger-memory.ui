@@ -1,0 +1,16 @@
+(gui "debugger-memory"
+    (state! ".colour" (0 0 0))
+
+    (state! ".bytes" (quote (flatten text:
+        (cat (loop "@line" (parts 16 .memory)
+            (format :hex @line (compact: #f) (precision: 2) (separator: " "))
+        ) "\n")
+        ((flatten colour: .colour)) ;TODO: add list value type for text colour field?
+    )) (invalidate: (quote .memory-changed)))
+
+    (children:
+        (gui-text
+            (.string! (quote .bytes))
+        )
+    )
+)
