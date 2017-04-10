@@ -1,14 +1,47 @@
 (gui "debugger-memory"
     (state! ".colour" (0 0 0))
+    (state! ".change-colour" (255 0 0))
     (state! ".read-breakpoint-colour" (0 255 0))
     (state! ".write-breakpoint-colour" (0 0 255))
     (state! ".breakpoint-colour" (0 255 255))
+    (state! ".bytes" (quote (begin
+        (state! ".modified" (unquote (flatten flatten (loop "@item" .memory-modified
+            (if (= 0 (get 0 @item))
+                ((- (get 1 @item) 1))
+                (if (= 255 (+ (get 0 @item) (get 1 @item)))
+                    ((- (get 0 @item) (get 1 @item)))
+                    (+ @item (-1 (- (get 0 @item) 1)))
+                )
+            )
+        ))))
+        (state! ".parts"
+            (chop (+ (* .modified 3) 2) (cat (loop "@line" (parts 16 .memory)
+                (format :hex @line (compact: #f) (precision: 2) (separator: " "))
+            ) "\n"))
+        )
 
-    (state! ".bytes" (quote (flatten text:
-        (cat (loop "@line" (parts 16 .memory)
-            (format :hex @line (compact: #f) (precision: 2) (separator: " "))
-        ) "\n")
-        ((flatten colour: .colour)) ;TODO: add list value type for text colour field?
+        ;TODO: add list value type for text colour fields so we don't need to flatten?
+        (if (= 2 (count .memory-modified))
+            (
+                (text: (get 0 .parts) (flatten colour: .change-colour))
+                (text: (get 1 .parts) (flatten colour: .colour))
+                (text: (get 2 .parts) (flatten colour: .change-colour))
+            ) ;(0 2)
+            (if (= 1 (count .memory-modified))
+                (if (= 2 (count .parts))
+                    (if (= 0 (get 0 (get 0 .memory-modified)))
+                        ((text: (get 0 .parts) (flatten colour: .change-colour)) (text: (get 1 .parts) (flatten colour: .colour))) ;(0)
+                        ((text: (get 0 .parts) (flatten colour: .colour)) (text: (get 1 .parts) (flatten colour: .change-colour))) ;(1)
+                    )
+                    (
+                        (text: (get 0 .parts) (flatten colour: .colour))
+                        (text: (get 1 .parts) (flatten colour: .change-colour))
+                        (text: (get 2 .parts) (flatten colour: .colour))
+                    ) ;(1)
+                )
+                (text: (get 0 .parts) (flatten colour: .colour)) ;()
+            )
+        )
     )) (invalidate: (quote .memory-changed)))
 
     (children:
