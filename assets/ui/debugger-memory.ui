@@ -1,5 +1,8 @@
 (gui "debugger-memory"
     (state! ".colour" (0 0 0))
+    (state! ".read-breakpoint-colour" (0 255 0))
+    (state! ".write-breakpoint-colour" (0 0 255))
+    (state! ".breakpoint-colour" (0 255 255))
 
     (state! ".bytes" (quote (flatten text:
         (cat (loop "@line" (parts 16 .memory)
@@ -11,6 +14,27 @@
     (children:
         (gui-text
             (.string! (quote .bytes))
+
+            ;TODO: Need to think about a better way to represent breakpoints
+            (state! ".breakpoint-markers" (quote
+                (loop "@bp" .breakpoints
+                    (render-rect (- (flatten (text-cursor-position .text (+ (- (* (get 0 @bp) 3) (/ (get 0 @bp) 16)) 1)) 20 20) (10 5)) (0 0 0 0) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
+                        (outline: 2
+                            (if (= (get 1 @bp) :read)
+                                .read-breakpoint-colour
+                                (if (= (get 1 @bp) :write)
+                                    .write-breakpoint-colour
+                                    .breakpoint-colour
+                                )
+                            )
+                        )
+                    )
+                )
+            ) (invalidate: (quote .breakpoints-changed)))
+
+            (render:
+                .breakpoint-markers
+            )
         )
     )
 )
