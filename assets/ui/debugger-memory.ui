@@ -5,6 +5,7 @@
     (state! ".read-breakpoint-colour" (0 255 0))
     (state! ".write-breakpoint-colour" (0 0 255))
     (state! ".breakpoint-colour" (0 255 255))
+    (state! ".text-alignment" :center)
     (state! ".bytes" (quote (begin
         (state! ".modified" (unquote (flatten flatten (loop "@item" .memory-modified
             (if (= 0 (get 0 @item))
@@ -45,7 +46,7 @@
         )
     )) (invalidate: (quote .memory-changed)))
 
-    (state! ".text" (quote (render-text .rect .bytes (align: :center) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (frame-changed?))))
+    (state! ".text" (quote (render-text .rect .bytes (align: .text-alignment) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (frame-changed?))))
 
     (state! ".instruction-marker" (quote (repeat "@index" (get 0 (disassemble .memory .pc))
         (begin
