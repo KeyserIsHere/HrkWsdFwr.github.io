@@ -1,0 +1,40 @@
+(gui "debugger-disassembly"
+    (state! ".colour" (0 0 0))
+    (state! ".change-colour" (255 0 0))
+    (state! ".instruction-colour" (50 50 50))
+    (state! ".read-breakpoint-colour" (0 255 0))
+    (state! ".write-breakpoint-colour" (0 0 255))
+    (state! ".breakpoint-colour" (0 255 255))
+    (state! ".text-alignment" :center)
+    (state! ".instructions" (quote (begin
+        (state! ".offset")
+
+        (.offset! .pc)
+
+        (repeat "@index" 50 (begin
+            (state! ".instruction" (flatten (disassemble .memory .offset) .offset))
+
+            (.offset! (+ (get 0 .instruction) .offset))
+            (if (> .offset 255) (.offset! (- .offset 256)))
+            ((get 2 .instruction) (get 1 .instruction))
+        ))
+    )) (invalidate: (quote (not (= (#f #f) (.pc-changed .memory-changed)))))) ;TODO: create bitwise expressions and make (invalidate: (quote (or .pc-changed .memory-changed)))
+
+    (state! ".text" (quote (render-text .rect
+        (text:
+            (cat (loop "@instruction" .instructions
+                (format :hex @instruction (suffix: ": ") (compact: #f) (precision: 2))
+            ) "\n")
+            (flatten colour: .colour)
+        )
+        (align: .text-alignment)
+        (wrap: :word :multi)
+        (offset: 0)
+        (length: :max)
+    )) (invalidate: (quote (frame-changed?))))
+
+    (render:
+        .instruction-marker
+        .text
+    )
+)
