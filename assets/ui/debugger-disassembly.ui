@@ -6,13 +6,20 @@
     (state! ".write-breakpoint-colour" (0 0 255))
     (state! ".breakpoint-colour" (0 255 255))
     (state! ".text-alignment" :center)
+    (state! ".current-instruction")
     (state! ".instructions" (quote (begin
         (state! ".offset")
+        (state! ".length")
 
         (.offset! .pc)
+        (.length! 0)
 
         (repeat "@index" 50 (begin
             (state! ".instruction" (flatten (disassemble .memory .offset) .offset))
+
+            (state! ".end-length" (+ .length 4 (length (get 1 .instruction))))
+            (if (= .pc .offset) (.current-instruction! (.length .end-length)))
+            (.length! .end-length)
 
             (.offset! (+ (get 0 .instruction) .offset))
             (if (> .offset 255) (.offset! (- .offset 256)))
@@ -32,6 +39,8 @@
         (offset: 0)
         (length: :max)
     )) (invalidate: (quote (frame-changed?))))
+
+    (state! ".instruction-marker" (quote (render-rect (- (flatten (text-cursor-position .text (+ 1 (get 0 .current-instruction))) (get 0 (text-cursor-position .text (- (get 1 .current-instruction) 2))) 20) (10 5)) .instruction-colour)) (invalidate: (quote (frame-changed?)))) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
 
     (render:
         .instruction-marker
