@@ -7,7 +7,10 @@
     (state! ".breakpoint-colour" (0 255 255))
     (state! ".text-alignment" :center)
     (state! ".bytes" (quote (begin
-        (state! ".modified" (unquote (flatten flatten (loop "@item" .memory-modified
+        (state! ".modified")
+        (state! ".parts")
+
+        (.modified! (unquote (flatten flatten (loop "@item" .memory-modified
             (if (= 0 (get 0 @item))
                 ((- (get 1 @item) 1))
                 (if (= 255 (+ (get 0 @item) (get 1 @item)))
@@ -16,7 +19,7 @@
                 )
             )
         ))))
-        (state! ".parts"
+        (.parts!
             (chop (+ (* .modified 3) 2) (cat (loop "@line" (parts 16 .memory)
                 (format :hex @line (compact: #f) (precision: 2) (separator: " "))
             ) "\n"))
