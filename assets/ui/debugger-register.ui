@@ -1,0 +1,34 @@
+(gui "debugger-register"
+    (state! ".colour" (0 0 0))
+    (state! ".change-colour" (255 0 0))
+    (state! ".text-alignment" :center)
+
+    (state! ".text" (quote (render-text .rect
+        (text:
+            (cat (
+                (cat ("r0 = " (format :hex .r0 (compact: #f) (precision: 2))))
+                (cat ("r1 = " (format :hex .r1 (compact: #f) (precision: 2))))
+                (cat ("r2 = " (format :hex .r2 (compact: #f) (precision: 2))))
+                (cat ("r3 = " (format :hex .r3 (compact: #f) (precision: 2))))
+                (cat ("pc = " (format :hex .pc (compact: #f) (precision: 2))))
+                (cat (
+                    "flags = " (format :hex .flags (compact: #f) (precision: 2))
+                    " (o = " (format :dec .overflow-flag)
+                    ",s = " (format :dec .sign-flag)
+                    ",c = " (format :dec .carry-flag)
+                    ",z = " (format :dec .zero-flag)
+                    ")"
+                ))
+            ) "\n")
+            (flatten colour: .colour)
+        )
+        (align: .text-alignment)
+        (wrap: :word :multi)
+        (offset: 0)
+        (length: :max)
+    )) (invalidate: (quote (frame-changed?))))
+
+    (render:
+        .text
+    )
+)
