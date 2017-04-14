@@ -57,7 +57,7 @@ CCExpression HKHubArchExpressionDisassemble(CCExpression Expression)
             
             CCExpression Result = CCExpressionCreateList(CC_STD_ALLOCATOR);
             CCOrderedCollectionAppendElement(CCExpressionGetList(Result), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Count) });
-            CCOrderedCollectionAppendElement(CCExpressionGetList(Result), &(CCExpression){ CCExpressionCreateString(CC_STD_ALLOCATOR, Disassembly ? Disassembly : CCStringCopy(CC_STRING("")), TRUE) });
+            CCOrderedCollectionAppendElement(CCExpressionGetList(Result), &(CCExpression){ CCExpressionCreateString(CC_STD_ALLOCATOR, Disassembly ? Disassembly : CCStringCopy(CC_STRING("")), FALSE) });
             
             return Result;
         }
