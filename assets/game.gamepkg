@@ -1,5 +1,5 @@
 (game "Hacking Game" ; title
-    (default-resolution: 640 480) ; resolution or window size
+    (default-resolution: 740 650) ; resolution or window size
     (default-fullscreen: #f) ; fullscreen mode
 
     (dir-fonts: "font/") ; font directories
