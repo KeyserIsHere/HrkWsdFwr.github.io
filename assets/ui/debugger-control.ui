@@ -31,5 +31,32 @@
                 ))
             )))
         )
+        (gui-button
+            (state! ".step-instruction-symbol" (quote (
+                (render-rect ((+ .x 12 6 4 5) (+ .y 7) 6 6) .secondary-colour)
+                (render-rect ((+ .x 12 6 4 5) (+ .y 17) 6 6) .secondary-colour)
+                (render-rect ((+ .x 12 6 4 5) (+ .y 27) 6 6) .secondary-colour)
+                (render-rect ((+ .x 12) (+ .y 20) 6 13) .secondary-colour)
+                ;draw triangle pointing down
+            )) (invalidate: (quote (frame-changed?))))
+
+            (.rect! (quote (+ (super .x) 40 20)) (quote (super .y)) 40 40)
+            (.colour! (quote (super .colour)))
+            (.label! (quote (
+                ;TODO: design step
+                (quote (
+                    (render-rect .rect .colour (outline: 4 .secondary-colour))
+                    .step-instruction-symbol
+                ))
+                (quote (
+                    (render-rect .rect (lighten .colour 5) (outline: 4 .secondary-colour))
+                    .step-instruction-symbol
+                ))
+                (quote (
+                    (render-rect .rect (darken .colour 5) (outline: 4 .secondary-colour))
+                    .step-instruction-symbol
+                ))
+            )))
+        )
     )
 )
