@@ -15,11 +15,11 @@
             (.label! (quote (
                 (quote (
                     (render-rect .rect .colour (outline: 4 .secondary-colour))
-                    .continue-symbol
+                    .pause-symbol
                 ))
                 (quote (
                     (render-rect .rect .colour (outline: 4 .secondary-colour))
-                    .pause-symbol
+                    .continue-symbol
                 ))
                 (quote (
                     (render-rect .rect (lighten .colour 5) (outline: 4 .secondary-colour))
