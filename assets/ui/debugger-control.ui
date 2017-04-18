@@ -1,0 +1,35 @@
+(gui "debugger-control"
+    (state! ".colour" (0 0 0))
+    (state! ".secondary-colour" (255 255 255))
+
+    (children:
+        (gui-toggle
+            (state! ".continue-symbol" (quote ()) (invalidate: (frame-changed?))) ;draw play symbol (.colour)
+            (state! ".pause-symbol" (quote (
+                (render-rect ((+ .x 12) (+ .y 12) 6 (- .height 24)) .secondary-colour)
+                (render-rect ((+ .x 12 6 4) (+ .y 12) 6 (- .height 24)) .secondary-colour)
+            )) (invalidate: (quote (frame-changed?))))
+
+            (.rect! (quote (super .x)) (quote (super .y)) 40 40)
+            (.colour! (quote (super .colour)))
+            (.label! (quote (
+                (quote (
+                    (render-rect .rect .colour (outline: 4 .secondary-colour))
+                    .continue-symbol
+                ))
+                (quote (
+                    (render-rect .rect .colour (outline: 4 .secondary-colour))
+                    .pause-symbol
+                ))
+                (quote (
+                    (render-rect .rect (lighten .colour 5) (outline: 4 .secondary-colour))
+                    (if .active .continue-symbol .pause-symbol)
+                ))
+                (quote (
+                    (render-rect .rect (darken .colour 5) (outline: 4 .secondary-colour))
+                    (if .active .continue-symbol .pause-symbol)
+                ))
+            )))
+        )
+    )
+)
