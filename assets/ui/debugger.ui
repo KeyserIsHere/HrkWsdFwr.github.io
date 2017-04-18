@@ -1,0 +1,102 @@
+(gui "debugger"
+    (state! ".memory" (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255))
+    (state! ".memory-changed" #f)
+    (state! ".memory-modified" ((0 1) (254 2)))
+    (state! ".breakpoints" (
+        (1 :read)
+        (5 :read)
+        (10 :write)
+        (55 :read-write)
+        (112 :write)
+    ))
+    (state! ".breakpoints-changed" #f)
+
+    (state! ".r0" 14)
+    (state! ".r1" 50)
+    (state! ".r2" 1)
+    (state! ".r3" 100)
+    (state! ".r0-changed" #f)
+    (state! ".r1-changed" #f)
+    (state! ".r2-changed" #f)
+    (state! ".r3-changed" #f)
+
+    (state! ".flags" 2)
+    (state! ".flags-changed" #f)
+
+    (state! ".overflow-flag" (quote (< 0 (and .flags 8))))
+    (state! ".sign-flag" (quote (< 0 (and .flags 4))))
+    (state! ".carry-flag" (quote (< 0 (and .flags 2))))
+    (state! ".zero-flag" (quote (< 0 (and .flags 1))))
+    (state! ".overflow-flag-changed" #f)
+    (state! ".sign-flag-changed" #f)
+    (state! ".carry-flag-changed" #f)
+    (state! ".zero-flag-changed" #f)
+
+    (state! ".a" 0.0)
+    (state! ".pc" (quote (float->integer (.a! (if (> 256 .a) (+ .a 0.001) 0.0)))))
+    (state! ".pc-changed" #t)
+
+    (state! ".ports" (
+        (0 :connected)
+        (15 :connected)
+        (16 :disconnected)
+        (20 :connected)
+    ))
+    (state! ".ports-changed" #f)
+
+    (state! ".background-colour" (206 23 35))
+    (state! ".text-colour" (215 147 143))
+    (state! ".text-change-colour" (255 94 94))
+    (state! ".highlight-read-breakpoint-colour" (147 207 153))
+    (state! ".highlight-write-breakpoint-colour" (147 173 207))
+    (state! ".highlight-breakpoint-colour" (207 147 194))
+    (state! ".highlight-instruction-colour" (255 255 255))
+    (state! ".button-focus-colour" (quote .highlight-instruction-colour))
+    (state! ".button-fill-colour" (quote .background-colour))
+
+    (children:
+        (gui-rect
+            (.colour! (quote .background-colour))
+
+            (children:
+                (debugger-register
+                    (.rect! (quote (max (- (super .width) 370) (/ (super .width) 2))) (quote (+ (/ (super .height) 2) (/ (super .height) 4))) (quote (- (/ (super .width) 2) 20)) (quote (- (/ (super .height) 4) 10)))
+                    (.colour! (quote .text-colour))
+                    (.change-colour! (quote .text-change-colour))
+                    (.text-alignment! :left)
+                )
+                (debugger-port
+                    (.rect! (quote (max (- (super .width) 370) (/ (super .width) 2))) (quote (/ (super .height) 2)) (quote (- (/ (super .width) 2) 20)) (quote (- (/ (super .height) 4) 10)))
+                    (.colour! (quote .text-colour))
+                    (.change-colour! (quote .text-change-colour))
+                    (.text-alignment! :left)
+                )
+                (debugger-memory
+                    (.rect! (quote (/ (super .width) 2)) 0 (quote (- (/ (super .width) 2) 20)) (quote (/ (super .height) 2)))
+                    (.colour! (quote .text-colour))
+                    (.change-colour! (quote .text-change-colour))
+                    (.read-breakpoint-colour! (quote .highlight-read-breakpoint-colour))
+                    (.write-breakpoint-colour! (quote .highlight-write-breakpoint-colour))
+                    (.breakpoint-colour! (quote .highlight-breakpoint-colour))
+                    (.instruction-colour! (quote .highlight-instruction-colour))
+                    (.text-alignment! :right)
+                )
+                (debugger-disassembly
+                    (.rect! 20 80 (quote (- (/ (super .width) 2) 20)) (quote (- (super .height) 90)))
+                    (.colour! (quote .text-colour))
+                    (.change-colour! (quote .text-change-colour))
+                    (.read-breakpoint-colour! (quote .highlight-read-breakpoint-colour))
+                    (.write-breakpoint-colour! (quote .highlight-write-breakpoint-colour))
+                    (.breakpoint-colour! (quote .highlight-breakpoint-colour))
+                    (.instruction-colour! (quote .highlight-instruction-colour))
+                    (.text-alignment! :left)
+                )
+                (debugger-control
+                    (.rect! 20 20 (quote (- (/ (super .width) 2) 20)) 40)
+                    (.colour! (quote .button-fill-colour))
+                    (.secondary-colour! (quote .button-focus-colour))
+                )
+            )
+        )
+    )
+)
