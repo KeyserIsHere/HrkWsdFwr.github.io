@@ -54,6 +54,9 @@
     (state! ".button-focus-colour" (quote .highlight-instruction-colour))
     (state! ".button-fill-colour" (quote .background-colour))
 
+    (state! ".palette" "basic/red")
+    (eval (cat (@cd "assets/palettes/" .palette "/debugger.blob")))
+
     (children:
         (gui-rect
             (.colour! (quote .background-colour))
