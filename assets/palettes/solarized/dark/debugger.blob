@@ -1,0 +1,15 @@
+(begin
+    (unquote (flatten begin (loop "@colour" (eval (cat (@cd "../palette.blob")))
+        (flatten super ((flatten state! (cat ("." (get 0 @colour))) ((get 1 @colour)))))
+    )))
+
+    (.background-colour! .base03)
+    (.text-colour! .base0)
+    (.text-change-colour! .red)
+    (.highlight-read-breakpoint-colour! .green)
+    (.highlight-write-breakpoint-colour! .blue)
+    (.highlight-breakpoint-colour! .magenta)
+    (.highlight-instruction-colour! .base02)
+    (.button-focus-colour! .violet)
+    (.button-fill-colour! (quote .background-colour))
+)
