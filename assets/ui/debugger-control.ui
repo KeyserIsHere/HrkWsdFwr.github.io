@@ -1,4 +1,5 @@
 (gui "debugger-control"
+    (namespace! :debugger-control)
     (state! ".colour" (0 0 0))
     (state! ".secondary-colour" (255 255 255))
 

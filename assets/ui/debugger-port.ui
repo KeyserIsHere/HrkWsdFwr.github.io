@@ -1,4 +1,5 @@
 (gui "debugger-port"
+    (namespace! :debugger-port)
     (state! ".colour" (0 0 0))
     (state! ".change-colour" (255 0 0))
     (state! ".text-alignment" :center)

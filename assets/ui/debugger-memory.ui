@@ -1,4 +1,5 @@
 (gui "debugger-memory"
+    (namespace! :debugger-memory)
     (state! ".colour" (0 0 0))
     (state! ".change-colour" (255 0 0))
     (state! ".instruction-colour" (50 50 50))
