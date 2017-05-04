@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, Stefan Johnson
+ *  Copyright (c) 2017, Stefan Johnson
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -23,34 +23,46 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HackingGame_HubSystem_h
-#define HackingGame_HubSystem_h
+#ifndef HackingGame_HubDebuggerComponent_h
+#define HackingGame_HubDebuggerComponent_h
 
 #include <Blob2D/Blob2D.h>
-#include "HubArchScheduler.h"
+#include "HubSystem.h"
 
-#define HK_HUB_SYSTEM_ID 0x601
-#define HK_HUB_COMPONENT_FLAG 0x60000000
+#define HK_HUB_DEBUGGER_COMPONENT_ID (HKHubTypeDebugger | HK_HUB_COMPONENT_FLAG)
 
-typedef enum {
-    HKHubTypeMask = 0xff,
-    HKHubTypeProcessor = 0,
-    HKHubTypeModule,
-    HKHubTypeDebugger,
-    
-    HKHubTypeModuleMask = (0xff << 8),
-    HKHubTypeModuleKeyboard = (1 << 8),
-    HKHubTypeModuleDisplay = (2 << 8),
-    HKHubTypeModuleWirelessTransceiver = (3 << 8)
-} HKHubType;
+typedef struct {
+    CC_COMPONENT_INHERIT(CCComponentClass);
+} HKHubDebuggerComponentClass, *HKHubDebuggerComponentPrivate;
 
-void HKHubSystemRegister(void);
-void HKHubSystemDeregister(void);
+
+void HKHubDebuggerComponentRegister(void);
+void HKHubDebuggerComponentDeregister(void);
 
 /*!
- * @brief Retrieve the internal scheduler being used.
- * @return The scheduler used internally by the system.
+ * @brief Initialize the debugger component.
+ * @param Component The component to be initialized.
+ * @param id The component ID.
  */
-HKHubArchScheduler HKHubSystemGetScheduler(void);
+static inline void HKHubDebuggerComponentInitialize(CCComponent Component, CCComponentID id);
+
+/*!
+ * @brief Deallocate the debugger component.
+ * @param Component The component to be deallocated.
+ */
+static inline void HKHubDebuggerComponentDeallocate(CCComponent Component);
+
+
+#pragma mark -
+
+static inline void HKHubDebuggerComponentInitialize(CCComponent Component, CCComponentID id)
+{
+    CCComponentInitialize(Component, id);
+}
+
+static inline void HKHubDebuggerComponentDeallocate(CCComponent Component)
+{
+    CCComponentDeallocate(Component);
+}
 
 #endif

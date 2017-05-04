@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, Stefan Johnson
+ *  Copyright (c) 2017, Stefan Johnson
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -23,34 +23,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HackingGame_HubSystem_h
-#define HackingGame_HubSystem_h
+#include "HubDebuggerComponent.h"
 
-#include <Blob2D/Blob2D.h>
-#include "HubArchScheduler.h"
+const char * const HKHubDebuggerComponentName = "debugger";
 
-#define HK_HUB_SYSTEM_ID 0x601
-#define HK_HUB_COMPONENT_FLAG 0x60000000
+static const CCComponentExpressionDescriptor HKHubDebuggerComponentDescriptor = {
+    .id = HK_HUB_DEBUGGER_COMPONENT_ID,
+    .initialize = NULL,
+    .deserialize = NULL,
+    .serialize = NULL
+};
 
-typedef enum {
-    HKHubTypeMask = 0xff,
-    HKHubTypeProcessor = 0,
-    HKHubTypeModule,
-    HKHubTypeDebugger,
+void HKHubDebuggerComponentRegister(void)
+{
+    CCComponentRegister(HK_HUB_DEBUGGER_COMPONENT_ID, HKHubDebuggerComponentName, CC_STD_ALLOCATOR, sizeof(HKHubDebuggerComponentClass), HKHubDebuggerComponentInitialize, NULL, HKHubDebuggerComponentDeallocate);
     
-    HKHubTypeModuleMask = (0xff << 8),
-    HKHubTypeModuleKeyboard = (1 << 8),
-    HKHubTypeModuleDisplay = (2 << 8),
-    HKHubTypeModuleWirelessTransceiver = (3 << 8)
-} HKHubType;
+    CCComponentExpressionRegister(CC_STRING("debugger"), &HKHubDebuggerComponentDescriptor, TRUE);
+}
 
-void HKHubSystemRegister(void);
-void HKHubSystemDeregister(void);
-
-/*!
- * @brief Retrieve the internal scheduler being used.
- * @return The scheduler used internally by the system.
- */
-HKHubArchScheduler HKHubSystemGetScheduler(void);
-
-#endif
+void HKHubDebuggerComponentDeregister(void)
+{
+    CCComponentDeregister(HK_HUB_DEBUGGER_COMPONENT_ID);
+}
