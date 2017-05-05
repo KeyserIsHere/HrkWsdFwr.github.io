@@ -186,7 +186,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     
     else if ((Device->message.type == HKHubArchProcessorMessageReceive) && (Device->message.timestamp <= Timestamp)) return HKHubArchPortResponseTimeout;
     
-    return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
+    return (Device->complete || (Device->state.debug.mode == HKHubArchProcessorDebugModePause && !Device->state.debug.step)) ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
 }
 
 static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp, size_t *Wait)
@@ -221,7 +221,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     
     else if ((Device->message.type == HKHubArchProcessorMessageSend) && (Device->message.timestamp <= Timestamp)) return HKHubArchPortResponseTimeout;
     
-    return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
+    return (Device->complete || (Device->state.debug.mode == HKHubArchProcessorDebugModePause && !Device->state.debug.step)) ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
 }
 
 _Bool HKHubArchProcessorPortReady(HKHubArchProcessor Device, HKHubArchPortID Port)
