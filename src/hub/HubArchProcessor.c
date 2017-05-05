@@ -76,6 +76,8 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
         Processor->state.debug.step = 0;
         Processor->state.debug.breakpoints = NULL;
+        Processor->state.debug.operation = NULL;
+        Processor->state.debug.context = NULL;
         Processor->cycles = 0;
         Processor->unusedTime = 0.0;
         Processor->complete = FALSE;
@@ -122,6 +124,8 @@ void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
     
     Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
     Processor->state.debug.step = 0;
+    Processor->state.debug.operation = NULL;
+    Processor->state.debug.context = NULL;
     
     if (Processor->state.debug.breakpoints)
     {
@@ -402,6 +406,8 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                 else
                 {
                     if (!(Result & HKHubArchInstructionOperationResultFlagSkipPC)) Processor->state.pc = NextPC;
+                    
+                    if (Processor->state.debug.operation) Processor->state.debug.operation(Processor, &Instruction);
                     
                     if ((Processor->state.debug.step) && (--Processor->state.debug.step == 0)) continue;
                 }

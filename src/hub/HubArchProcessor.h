@@ -29,6 +29,7 @@
 #include <Blob2D/Blob2D.h>
 #include "HubArchBinary.h"
 #include "HubArchPort.h"
+#include "HubArchInstructionType.h"
 
 typedef enum {
     HKHubArchProcessorDebugModeContinue,
@@ -41,7 +42,20 @@ typedef enum {
     HKHubArchProcessorDebugBreakpointWrite = (1 << 1)
 } HKHubArchProcessorDebugBreakpoint;
 
-typedef struct {
+/*!
+ * @brief The processor.
+ * @description Allows @b CCRetain.
+ */
+typedef struct HKHubArchProcessorInfo *HKHubArchProcessor;
+
+/*!
+ * @brief Get the current state after each executed instruction.
+ * @param Processor The processor that was executed.
+ * @param Instruction The instruction state of the executed operation.
+ */
+typedef void (*HKHubArchProcessorDebugOperationCallback)(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction);
+
+typedef struct HKHubArchProcessorInfo {
     CCDictionary ports;
     struct {
         HKHubArchPortID port;
@@ -64,6 +78,10 @@ typedef struct {
             HKHubArchProcessorDebugMode mode;
             size_t step;
             CCDictionary breakpoints;
+            struct {
+                void *context;
+                HKHubArchProcessorDebugOperationCallback operation;
+            };
         } debug;
     } state;
     size_t cycles;
@@ -80,12 +98,6 @@ typedef enum {
     
     HKHubArchProcessorFlagsMask = HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsOverflow
 } HKHubArchProcessorFlags;
-
-/*!
- * @brief The processor.
- * @description Allows @b CCRetain.
- */
-typedef HKHubArchProcessorInfo *HKHubArchProcessor;
 
 /*!
  * @brief The clock rate of the processor;
