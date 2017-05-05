@@ -27,6 +27,7 @@
 #include <threads.h>
 #include "HubProcessorComponent.h"
 #include "HubArchScheduler.h"
+#include "HubArchInstruction.h"
 
 static _Bool HKHubSystemTryLock(void);
 static void HKHubSystemLock(void);
@@ -91,13 +92,205 @@ static _Bool HKHubSystemHandlesComponent(CCComponentID id)
     return (id & 0x7f000000) == HK_HUB_COMPONENT_FLAG;
 }
 
-static void HKHubSystemUpdateScheduler(CCCollection Components, void (*Update)(HKHubArchScheduler,HKHubArchProcessor))
+static GUIObject GUIObjectWithNamespace(CCString Namespace)
+{
+    CC_COLLECTION_FOREACH(GUIObject, UI, GUIManagerGetObjects())
+    {
+        CCExpression Name = CCExpressionGetStateStrict(GUIObjectGetExpressionState(UI), CC_STRING("@namespace"));
+        if ((Name) && (CCExpressionGetType(Name) == CCExpressionValueTypeAtom) && (CCStringEqual(CCExpressionGetAtom(Name), Namespace))) return UI;
+        
+        GUIObjectWithNamespace(Namespace);
+    }
+    
+    return NULL;
+}
+
+static CCString BreakpointType[] = {
+    0,
+    CC_STRING(":read"),
+    CC_STRING(":write"),
+    CC_STRING(":read-write")
+};
+
+static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Processor)
+{
+    //TODO: Set target processor? so it can message back
+    CCExpression State = GUIObjectGetExpressionState(Debugger);
+    
+    CCExpression Memory = CCExpressionCreateList(CC_STD_ALLOCATOR);
+    for (size_t Loop = 0; Loop < sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)); Loop++)
+    {
+        CCOrderedCollectionAppendElement(CCExpressionGetList(Memory), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->memory[Loop]) });
+    }
+    
+    CCExpressionSetState(State, CC_STRING(".memory"), Memory, FALSE);
+    CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateList(CC_STD_ALLOCATOR), FALSE);
+    
+    
+    CCExpressionSetState(State, CC_STRING(".r0"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[0]), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r1"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[1]), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r2"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[2]), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r3"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[3]), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r0-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r1-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r2-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r3-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    
+    CCExpressionSetState(State, CC_STRING(".flags"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.flags), FALSE);
+    CCExpressionSetState(State, CC_STRING(".flags-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    
+    CCExpressionSetState(State, CC_STRING(".pc"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.pc), FALSE);
+    CCExpressionSetState(State, CC_STRING(".pc-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    
+    
+    CCExpression Breakpoints = CCExpressionCreateList(CC_STD_ALLOCATOR);
+    if (Processor->state.debug.breakpoints)
+    {
+        CC_DICTIONARY_FOREACH_KEY(uint8_t, Offset, Processor->state.debug.breakpoints)
+        {
+            HKHubArchProcessorDebugBreakpoint *Bp = CCDictionaryGetValue(Processor->state.debug.breakpoints, &Offset);
+            
+            if (BreakpointType[*Bp])
+            {
+                CCExpression Breakpoint = CCExpressionCreateList(CC_STD_ALLOCATOR);
+                CCOrderedCollectionAppendElement(CCExpressionGetList(Breakpoint), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Offset) });
+                CCOrderedCollectionAppendElement(CCExpressionGetList(Breakpoint), &(CCExpression){ CCExpressionCreateAtom(CC_STD_ALLOCATOR, BreakpointType[*Bp], TRUE) });
+                
+                CCOrderedCollectionAppendElement(CCExpressionGetList(Breakpoints), &Breakpoint);
+            }
+        }
+    }
+    
+    CCExpressionSetState(State, CC_STRING(".breakpoints"), Breakpoints, FALSE);
+    CCExpressionSetState(State, CC_STRING(".breakpoints-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    
+    
+    CCExpression Ports = CCExpressionCreateList(CC_STD_ALLOCATOR);
+    //TODO: Get list of open ports (so it can display connected/disconnected)
+    
+    CCExpressionSetState(State, CC_STRING(".ports"), Ports, FALSE);
+    CCExpressionSetState(State, CC_STRING(".ports-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+}
+
+static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction)
+{
+    //TODO: Send update message (instead of update here/avoid locking UI)
+    GUIManagerLock();
+    
+    CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
+    
+    CCExpressionSetState(State, CC_STRING(".r0-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r1-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r2-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r3-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    
+    CCExpressionSetState(State, CC_STRING(".flags"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.flags), FALSE); //TODO: Workout how to convey changed flags
+    CCExpressionSetState(State, CC_STRING(".flags-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    
+    CCExpressionSetState(State, CC_STRING(".pc"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.pc), FALSE);
+    CCExpressionSetState(State, CC_STRING(".pc-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    
+    
+    HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(Instruction);
+    for (size_t Loop = 0; Loop < 3; Loop++)
+    {
+        if (Instruction->operand[Loop].type == HKHubArchInstructionOperandM)
+        {
+            //TODO: Calculating offset could be wrong as processor state has changed, implement better alternative to get changed state
+        }
+        
+        else if (Instruction->operand[Loop].type == HKHubArchInstructionOperandR)
+        {
+            if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)
+            {
+                CCString Reg[][2] = {
+                    { CC_STRING(".r0"), CC_STRING(".r0-changed") },
+                    { CC_STRING(".r1"), CC_STRING(".r1-changed") },
+                    { CC_STRING(".r2"), CC_STRING(".r2-changed") },
+                    { CC_STRING(".r3"), CC_STRING(".r3-changed") },
+                    { CC_STRING(".flags"), CC_STRING(".flags-changed") },
+                    { CC_STRING(".pc"), CC_STRING(".pc-changed") }
+                };
+                
+                if (Instruction->operand[Loop].reg & HKHubArchInstructionRegisterGeneralPurpose)
+                {
+                    const size_t Index = Instruction->operand[Loop].reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask;
+                    
+                    CCExpressionSetState(State, Reg[Index][0], CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[Index]), FALSE);
+                    CCExpressionSetState(State, Reg[Index][1], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+                }
+                
+                else if (Instruction->operand[Loop].reg & HKHubArchInstructionRegisterSpecialPurpose)
+                {
+                    const size_t Index = (Instruction->operand[Loop].reg &  HKHubArchInstructionRegisterSpecialPurposeIndexMask) + 4;
+                    
+                    CCExpressionSetState(State, Reg[Index][0], CCExpressionCreateInteger(CC_STD_ALLOCATOR, Index == 4 ? Processor->state.flags : Processor->state.pc), FALSE);
+                    CCExpressionSetState(State, Reg[Index][1], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+                }
+            }
+        }
+    }
+    
+    GUIManagerUnlock();
+}
+
+static void HKHubSystemAttachDebugger(CCComponent Debugger)
+{
+    CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+    {
+        if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+        {
+            HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+            HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModePause);
+            
+            Target->state.debug.operation = HKHubSystemDebuggerInstructionHook;
+            
+            GUIManagerLock();
+            Target->state.debug.context = GUIObjectWithNamespace(CC_STRING(":debugger"));
+            HKHubSystemInitDebugger(Target->state.debug.context, Target);
+            GUIManagerUnlock();
+            
+            break;
+        }
+    }
+}
+
+static void HKHubSystemDetachDebugger(CCComponent Debugger)
+{
+    CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+    {
+        if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+        {
+            HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+            HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModeContinue);
+            
+            Target->state.debug.context = NULL;
+            Target->state.debug.operation = NULL;
+            
+            break;
+        }
+    }
+}
+
+typedef struct {
+    void (*processor)(HKHubArchScheduler, HKHubArchProcessor);
+    void (*debugger)(CCComponent);
+} HKHubSystemUpdater;
+
+static void HKHubSystemUpdateScheduler(CCCollection Components, HKHubSystemUpdater Update)
 {
     CC_COLLECTION_FOREACH(CCComponent, Hub, Components)
     {
-        if ((CCComponentGetID(Hub) & HKHubTypeMask) == HKHubTypeProcessor)
+        const HKHubType Type = CCComponentGetID(Hub) & HKHubTypeMask;
+        if (Type == HKHubTypeProcessor)
         {
-            Update(Scheduler, HKHubProcessorComponentGetProcessor(Hub));
+            Update.processor(Scheduler, HKHubProcessorComponentGetProcessor(Hub));
+        }
+        
+        else if (Type == HKHubTypeDebugger)
+        {
+            Update.debugger(Hub);
         }
     }
     
@@ -106,8 +299,14 @@ static void HKHubSystemUpdateScheduler(CCCollection Components, void (*Update)(H
 
 static void HKHubSystemUpdate(double DeltaTime, CCCollection Components)
 {
-    HKHubSystemUpdateScheduler(CCComponentSystemGetAddedComponentsForSystem(HK_HUB_SYSTEM_ID), HKHubArchSchedulerAddProcessor);
-    HKHubSystemUpdateScheduler(CCComponentSystemGetRemovedComponentsForSystem(HK_HUB_SYSTEM_ID), HKHubArchSchedulerRemoveProcessor);
+    HKHubSystemUpdateScheduler(CCComponentSystemGetAddedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
+        .processor = HKHubArchSchedulerAddProcessor,
+        .debugger = HKHubSystemAttachDebugger
+    });
+    HKHubSystemUpdateScheduler(CCComponentSystemGetRemovedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
+        .processor = HKHubArchSchedulerRemoveProcessor,
+        .debugger = HKHubSystemDetachDebugger
+    });
     
     HKHubArchSchedulerRun(Scheduler, DeltaTime);
 }
