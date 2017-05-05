@@ -103,6 +103,7 @@
 		F308E5BA1E7E61360011F892 /* HubModuleKeyboardComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleKeyboardComponent.h; sourceTree = "<group>"; };
 		F30DE0571EBB4B5100C6F845 /* HubDebuggerComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubDebuggerComponent.c; sourceTree = "<group>"; };
 		F30DE0581EBB4B5100C6F845 /* HubDebuggerComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubDebuggerComponent.h; sourceTree = "<group>"; };
+		F30DE05B1EBC817700C6F845 /* HubArchInstructionType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HubArchInstructionType.h; sourceTree = "<group>"; };
 		F317030C1E0BA3E000476E7A /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = assets; sourceTree = "<group>"; };
 		F31CB6471E7FD04300C85B0D /* HubModuleWirelessTransceiver.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleWirelessTransceiver.c; sourceTree = "<group>"; };
 		F31CB6481E7FD04300C85B0D /* HubModuleWirelessTransceiver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleWirelessTransceiver.h; sourceTree = "<group>"; };
@@ -272,6 +273,7 @@
 				F36EBAD91E194CD600FB308B /* Modules */,
 				F34877FF1DE201FE0068844D /* HubArchInstruction.c */,
 				F34878001DE201FE0068844D /* HubArchInstruction.h */,
+				F30DE05B1EBC817700C6F845 /* HubArchInstructionType.h */,
 				F34877EA1DDC6BCD0068844D /* HubArchAssembly.c */,
 				F34877EB1DDC6BCD0068844D /* HubArchAssembly.h */,
 				F34877FC1DDDFBF80068844D /* HubArchBinary.c */,
