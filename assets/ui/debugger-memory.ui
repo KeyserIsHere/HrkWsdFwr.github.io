@@ -11,7 +11,7 @@
         (state! ".modified")
         (state! ".parts")
 
-        (.modified! (unquote (flatten flatten (loop "@item" .memory-modified
+        (.modified! (if (count .memory-modified) (unquote (flatten flatten (loop "@item" .memory-modified
             (if (= 0 (get 0 @item))
                 ((- (get 1 @item) 1))
                 (if (= 255 (+ (get 0 @item) (get 1 @item)))
@@ -19,7 +19,7 @@
                     (+ @item (-1 (- (get 0 @item) 1)))
                 )
             )
-        ))))
+        ))) ()))
         (.parts!
             (chop (+ (* .modified 3) 2) (cat (loop "@line" (parts 16 .memory)
                 (format :hex @line (compact: #f) (precision: 2) (separator: " "))
