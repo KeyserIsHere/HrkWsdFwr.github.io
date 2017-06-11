@@ -70,6 +70,20 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
             }
             break;
         }
+            
+        case HK_HUB_DEBUGGER_COMPONENT_STEP_MESSAGE_ID:
+        {
+            CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+            {
+                if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+                {
+                    HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+                    HKHubArchProcessorStep(Target, 1);
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 
