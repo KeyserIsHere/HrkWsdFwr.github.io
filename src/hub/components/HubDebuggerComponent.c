@@ -56,6 +56,20 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
             }
             break;
         }
+            
+        case HK_HUB_DEBUGGER_COMPONENT_CONTINUE_MESSAGE_ID:
+        {
+            CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+            {
+                if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+                {
+                    HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+                    HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModeContinue);
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 

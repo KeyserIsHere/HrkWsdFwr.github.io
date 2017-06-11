@@ -37,6 +37,7 @@ typedef struct {
 
 #define HK_HUB_DEBUGGER_COMPONENT_EXIT_MESSAGE_ID 'exit'
 #define HK_HUB_DEBUGGER_COMPONENT_PAUSE_MESSAGE_ID 'paus'
+#define HK_HUB_DEBUGGER_COMPONENT_CONTINUE_MESSAGE_ID 'cont'
 
 void HKHubDebuggerComponentRegister(void);
 void HKHubDebuggerComponentDeregister(void);
