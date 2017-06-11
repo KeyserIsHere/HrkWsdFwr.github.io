@@ -305,12 +305,17 @@ static void HKHubSystemAttachDebugger(CCComponent Debugger)
 
 static void HKHubSystemDetachDebugger(CCComponent Debugger)
 {
-    CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+    CCEntity Entity = CCComponentGetEntity(Debugger);
+    CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(Entity))
     {
         if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
         {
             HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
             HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModeContinue);
+            
+            GUIManagerLock();
+            GUIObjectSetEnabled(Target->state.debug.context, FALSE);
+            GUIManagerUnlock();
             
             Target->state.debug.context = NULL;
             Target->state.debug.operation = NULL;
@@ -318,6 +323,8 @@ static void HKHubSystemDetachDebugger(CCComponent Debugger)
             break;
         }
     }
+    
+    CCEntityDetachComponent(Entity, Debugger);
 }
 
 typedef struct {

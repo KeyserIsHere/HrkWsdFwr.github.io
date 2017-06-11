@@ -35,6 +35,7 @@ typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
 } HKHubDebuggerComponentClass, *HKHubDebuggerComponentPrivate;
 
+#define HK_HUB_DEBUGGER_COMPONENT_EXIT_MESSAGE_ID 'exit'
 
 void HKHubDebuggerComponentRegister(void);
 void HKHubDebuggerComponentDeregister(void);

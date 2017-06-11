@@ -34,9 +34,19 @@ static const CCComponentExpressionDescriptor HKHubDebuggerComponentDescriptor = 
     .serialize = NULL
 };
 
+static void HKHubDebuggerComponentMessageHandler(CCComponent Component, CCMessage *Message)
+{
+    switch (Message->id)
+    {
+        case HK_HUB_DEBUGGER_COMPONENT_EXIT_MESSAGE_ID:
+            CCComponentSystemRemoveComponent(Component);
+            break;
+    }
+}
+
 void HKHubDebuggerComponentRegister(void)
 {
-    CCComponentRegister(HK_HUB_DEBUGGER_COMPONENT_ID, HKHubDebuggerComponentName, CC_STD_ALLOCATOR, sizeof(HKHubDebuggerComponentClass), HKHubDebuggerComponentInitialize, NULL, HKHubDebuggerComponentDeallocate);
+    CCComponentRegister(HK_HUB_DEBUGGER_COMPONENT_ID, HKHubDebuggerComponentName, CC_STD_ALLOCATOR, sizeof(HKHubDebuggerComponentClass), HKHubDebuggerComponentInitialize, HKHubDebuggerComponentMessageHandler, HKHubDebuggerComponentDeallocate);
     
     CCComponentExpressionRegister(CC_STRING("debugger"), &HKHubDebuggerComponentDescriptor, TRUE);
 }
