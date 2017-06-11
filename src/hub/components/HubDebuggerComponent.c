@@ -24,6 +24,7 @@
  */
 
 #include "HubDebuggerComponent.h"
+#include "HubProcessorComponent.h"
 
 const char * const HKHubDebuggerComponentName = "debugger";
 
@@ -34,13 +35,27 @@ static const CCComponentExpressionDescriptor HKHubDebuggerComponentDescriptor = 
     .serialize = NULL
 };
 
-static void HKHubDebuggerComponentMessageHandler(CCComponent Component, CCMessage *Message)
+static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage *Message)
 {
     switch (Message->id)
     {
         case HK_HUB_DEBUGGER_COMPONENT_EXIT_MESSAGE_ID:
-            CCComponentSystemRemoveComponent(Component);
+            CCComponentSystemRemoveComponent(Debugger);
             break;
+            
+        case HK_HUB_DEBUGGER_COMPONENT_PAUSE_MESSAGE_ID:
+        {
+            CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+            {
+                if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+                {
+                    HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+                    HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModePause);
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 
