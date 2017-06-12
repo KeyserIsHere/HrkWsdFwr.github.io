@@ -84,6 +84,29 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
             }
             break;
         }
+            
+        case HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID:
+        {
+            CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+            {
+                if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+                {
+                    HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+                    const HKHubDebuggerComponentMessageBreakpoint *Data = CCMessageGetData(Message);
+                    
+                    HKHubArchProcessorDebugBreakpoint CurrentBP = 0;
+                    if (Target->state.debug.breakpoints)
+                    {
+                        HKHubArchProcessorDebugBreakpoint *Breakpoint = CCDictionaryGetValue(Target->state.debug.breakpoints, &Data->offset);
+                        if (Breakpoint) CurrentBP = *Breakpoint;
+                    }
+                    
+                    HKHubArchProcessorSetBreakpoint(Target, CurrentBP ^ Data->breakpoint, Data->offset);
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 

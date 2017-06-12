@@ -35,10 +35,16 @@ typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
 } HKHubDebuggerComponentClass, *HKHubDebuggerComponentPrivate;
 
+typedef struct {
+    HKHubArchProcessorDebugBreakpoint breakpoint;
+    uint8_t offset;
+} HKHubDebuggerComponentMessageBreakpoint;
+
 #define HK_HUB_DEBUGGER_COMPONENT_EXIT_MESSAGE_ID 'exit'
 #define HK_HUB_DEBUGGER_COMPONENT_PAUSE_MESSAGE_ID 'paus'
 #define HK_HUB_DEBUGGER_COMPONENT_CONTINUE_MESSAGE_ID 'cont'
 #define HK_HUB_DEBUGGER_COMPONENT_STEP_MESSAGE_ID 'step'
+#define HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID 'brk\0'
 
 void HKHubDebuggerComponentRegister(void);
 void HKHubDebuggerComponentDeregister(void);
