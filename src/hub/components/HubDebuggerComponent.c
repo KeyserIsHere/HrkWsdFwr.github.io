@@ -64,6 +64,7 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
                 if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
                 {
                     HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+                    HKHubArchProcessorStep(Target, 1);
                     HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModeContinue);
                     break;
                 }
