@@ -46,6 +46,7 @@ typedef struct {
 #define HK_HUB_DEBUGGER_COMPONENT_STEP_MESSAGE_ID 'step'
 #define HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID 'brk\0'
 #define HK_HUB_DEBUGGER_COMPONENT_TOGGLE_BREAKPOINT_MESSAGE_ID 'tbrk'
+#define HK_HUB_DEBUGGER_COMPONENT_CLEAR_BREAKPOINT_MESSAGE_ID 'cbrk'
 
 void HKHubDebuggerComponentRegister(void);
 void HKHubDebuggerComponentDeregister(void);

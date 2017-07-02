@@ -124,6 +124,24 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
             }
             break;
         }
+            
+        case HK_HUB_DEBUGGER_COMPONENT_CLEAR_BREAKPOINT_MESSAGE_ID:
+        {
+            CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+            {
+                if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+                {
+                    HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+                    if (Target->state.debug.breakpoints)
+                    {
+                        CCDictionaryDestroy(Target->state.debug.breakpoints);
+                        Target->state.debug.breakpoints = NULL;
+                    }
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 
@@ -138,7 +156,8 @@ static const struct {
     { .name = CC_STRING(":debug-continue"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_CONTINUE_MESSAGE_ID, .post = CCMessageExpressionBasicPoster } },
     { .name = CC_STRING(":debug-step"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_STEP_MESSAGE_ID, .post = CCMessageExpressionBasicPoster } },
     { .name = CC_STRING(":debug-break"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID, .post = HKHubDebuggerComponentMessagePostBreakpoint } },
-    { .name = CC_STRING(":debug-toggle-break"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_TOGGLE_BREAKPOINT_MESSAGE_ID, .post = HKHubDebuggerComponentMessagePostBreakpoint } }
+    { .name = CC_STRING(":debug-toggle-break"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_TOGGLE_BREAKPOINT_MESSAGE_ID, .post = HKHubDebuggerComponentMessagePostBreakpoint } },
+    { .name = CC_STRING(":debug-clear-break"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_TOGGLE_BREAKPOINT_MESSAGE_ID, .post = CCMessageExpressionBasicPoster } }
 };
 
 void HKHubDebuggerComponentRegister(void)
