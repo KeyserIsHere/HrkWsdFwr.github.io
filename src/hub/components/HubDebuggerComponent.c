@@ -195,7 +195,7 @@ static _Bool HKHubDebuggerComponentMessagePostBreakpoint(CCMessageRouter *Router
             if (CCStringEqual(Name, CC_STRING(":none"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointNone;
             else if (CCStringEqual(Name, CC_STRING(":read"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointRead;
             else if (CCStringEqual(Name, CC_STRING(":write"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointWrite;
-            else if (CCStringEqual(Name, CC_STRING(":readwrite"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointRead | HKHubArchProcessorDebugBreakpointWrite;
+            else if (CCStringEqual(Name, CC_STRING(":read-write"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointRead | HKHubArchProcessorDebugBreakpointWrite;
             else CC_EXPRESSION_EVALUATOR_LOG_ERROR("message: :debug-%s expects condition type of (:none, :read, :write, :readwrite)", (id == HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID ? "break" : "toggle-break"));
             
             CCMessagePost(CC_STD_ALLOCATOR, id, Router, sizeof(HKHubDebuggerComponentMessageBreakpoint), &Breakpoint);
