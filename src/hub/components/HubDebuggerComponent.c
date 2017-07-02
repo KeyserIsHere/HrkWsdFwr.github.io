@@ -86,7 +86,7 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
             break;
         }
             
-        case HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID:
+        case HK_HUB_DEBUGGER_COMPONENT_TOGGLE_BREAKPOINT_MESSAGE_ID:
         {
             CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
             {
@@ -108,6 +108,22 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
             }
             break;
         }
+            
+        case HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID:
+        {
+            CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+            {
+                if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+                {
+                    HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
+                    const HKHubDebuggerComponentMessageBreakpoint *Data = CCMessageGetData(Message);
+                    
+                    HKHubArchProcessorSetBreakpoint(Target, Data->breakpoint, Data->offset);
+                    break;
+                }
+            }
+            break;
+        }
     }
 }
 
@@ -121,7 +137,8 @@ static const struct {
     { .name = CC_STRING(":debug-pause"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_PAUSE_MESSAGE_ID, .post = CCMessageExpressionBasicPoster } },
     { .name = CC_STRING(":debug-continue"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_CONTINUE_MESSAGE_ID, .post = CCMessageExpressionBasicPoster } },
     { .name = CC_STRING(":debug-step"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_STEP_MESSAGE_ID, .post = CCMessageExpressionBasicPoster } },
-    { .name = CC_STRING(":debug-break"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID, .post = HKHubDebuggerComponentMessagePostBreakpoint } }
+    { .name = CC_STRING(":debug-break"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID, .post = HKHubDebuggerComponentMessagePostBreakpoint } },
+    { .name = CC_STRING(":debug-toggle-break"), .descriptor = { .id = HK_HUB_DEBUGGER_COMPONENT_TOGGLE_BREAKPOINT_MESSAGE_ID, .post = HKHubDebuggerComponentMessagePostBreakpoint } }
 };
 
 void HKHubDebuggerComponentRegister(void)
@@ -160,7 +177,7 @@ static _Bool HKHubDebuggerComponentMessagePostBreakpoint(CCMessageRouter *Router
             else if (CCStringEqual(Name, CC_STRING(":read"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointRead;
             else if (CCStringEqual(Name, CC_STRING(":write"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointWrite;
             else if (CCStringEqual(Name, CC_STRING(":readwrite"))) Breakpoint.breakpoint = HKHubArchProcessorDebugBreakpointRead | HKHubArchProcessorDebugBreakpointWrite;
-            else CC_EXPRESSION_EVALUATOR_LOG_ERROR("message: :debug-step expects condition type of (:none, :read, :write, :readwrite)");
+            else CC_EXPRESSION_EVALUATOR_LOG_ERROR("message: :debug-%s expects condition type of (:none, :read, :write, :readwrite)", (id == HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID ? "break" : "toggle-break"));
             
             CCMessagePost(CC_STD_ALLOCATOR, id, Router, sizeof(HKHubDebuggerComponentMessageBreakpoint), &Breakpoint);
             
@@ -168,7 +185,7 @@ static _Bool HKHubDebuggerComponentMessagePostBreakpoint(CCMessageRouter *Router
         }
     }
     
-    CC_EXPRESSION_EVALUATOR_LOG_ERROR("message: :debug-step expects the arguments (offset:integer condition:atom)");
+    CC_EXPRESSION_EVALUATOR_LOG_ERROR("message: :debug-%s expects the arguments (offset:integer condition:atom)", (id == HK_HUB_DEBUGGER_COMPONENT_BREAKPOINT_MESSAGE_ID ? "break" : "toggle-break"));
     
     CCMessageRouterDestroy(Router);
     
