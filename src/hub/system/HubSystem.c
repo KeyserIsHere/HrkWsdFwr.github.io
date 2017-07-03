@@ -282,6 +282,37 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     GUIManagerUnlock();
 }
 
+static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor)
+{
+    //TODO: Send update message (instead of update here/avoid locking UI)
+    GUIManagerLock();
+    
+    CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
+    
+    CCExpression Breakpoints = CCExpressionCreateList(CC_STD_ALLOCATOR);
+    if (Processor->state.debug.breakpoints)
+    {
+        CC_DICTIONARY_FOREACH_KEY(uint8_t, Offset, Processor->state.debug.breakpoints)
+        {
+            HKHubArchProcessorDebugBreakpoint *Bp = CCDictionaryGetValue(Processor->state.debug.breakpoints, &Offset);
+            
+            if (BreakpointType[*Bp])
+            {
+                CCExpression Breakpoint = CCExpressionCreateList(CC_STD_ALLOCATOR);
+                CCOrderedCollectionAppendElement(CCExpressionGetList(Breakpoint), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Offset) });
+                CCOrderedCollectionAppendElement(CCExpressionGetList(Breakpoint), &(CCExpression){ CCExpressionCreateAtom(CC_STD_ALLOCATOR, BreakpointType[*Bp], TRUE) });
+                
+                CCOrderedCollectionAppendElement(CCExpressionGetList(Breakpoints), &Breakpoint);
+            }
+        }
+    }
+    
+    CCExpressionSetState(State, CC_STRING(".breakpoints"), Breakpoints, FALSE);
+    CCExpressionSetState(State, CC_STRING(".breakpoints-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    
+    GUIManagerUnlock();
+}
+
 static void HKHubSystemAttachDebugger(CCComponent Debugger)
 {
     CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
@@ -292,6 +323,7 @@ static void HKHubSystemAttachDebugger(CCComponent Debugger)
             HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModePause);
             
             Target->state.debug.operation = HKHubSystemDebuggerInstructionHook;
+            Target->state.debug.breakpointChange = HKHubSystemDebuggerBreakpointChangeHook;
             
             GUIManagerLock();
             Target->state.debug.context = GUIObjectWithNamespace(CC_STRING(":debugger"));
