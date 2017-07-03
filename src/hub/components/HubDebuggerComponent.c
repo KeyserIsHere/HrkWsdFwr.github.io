@@ -132,11 +132,7 @@ static void HKHubDebuggerComponentMessageHandler(CCComponent Debugger, CCMessage
                 if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
                 {
                     HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
-                    if (Target->state.debug.breakpoints)
-                    {
-                        CCDictionaryDestroy(Target->state.debug.breakpoints);
-                        Target->state.debug.breakpoints = NULL;
-                    }
+                    HKHubArchProcessorClearBreakpoints(Target);
                     break;
                 }
             }
