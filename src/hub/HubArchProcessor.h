@@ -55,6 +55,12 @@ typedef struct HKHubArchProcessorInfo *HKHubArchProcessor;
  */
 typedef void (*HKHubArchProcessorDebugOperationCallback)(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction);
 
+/*!
+ * @brief Callback to hook any breakpoint changes.
+ * @param Processor The processor that had a breakpoint changed.
+ */
+typedef void (*HKHubArchProcessorDebugBreakpointChangeCallback)(HKHubArchProcessor Processor);
+
 typedef struct HKHubArchProcessorInfo {
     CCDictionary ports;
     struct {
@@ -81,6 +87,7 @@ typedef struct HKHubArchProcessorInfo {
             struct {
                 void *context;
                 HKHubArchProcessorDebugOperationCallback operation;
+                HKHubArchProcessorDebugBreakpointChangeCallback breakpointChange;
             };
         } debug;
     } state;
@@ -215,5 +222,11 @@ void HKHubArchProcessorSetDebugMode(HKHubArchProcessor Processor, HKHubArchProce
  * @param Offset The offset the breakpoint should be located at.
  */
 void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset);
+
+/*!
+ * @brief Remove all breakpoints in the processor.
+ * @param Processor The processor to remove the breakpoints of.
+ */
+void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor);
 
 #endif

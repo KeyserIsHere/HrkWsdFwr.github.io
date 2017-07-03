@@ -441,4 +441,19 @@ void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProc
     if (!Processor->state.debug.breakpoints) Processor->state.debug.breakpoints = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintHeavyEnumerating | CCDictionaryHintHeavyFinding | CCCollectionHintHeavyInserting | CCCollectionHintHeavyDeleting, sizeof(uint8_t), sizeof(HKHubArchProcessorDebugBreakpoint), NULL);
     
     CCDictionarySetValue(Processor->state.debug.breakpoints, &Offset, &Breakpoint);
+    
+    if (Processor->state.debug.breakpointChange) Processor->state.debug.breakpointChange(Processor);
+}
+
+void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    if (Processor->state.debug.breakpoints)
+    {
+        CCDictionaryDestroy(Processor->state.debug.breakpoints);
+        Processor->state.debug.breakpoints = NULL;
+        
+        if (Processor->state.debug.breakpointChange) Processor->state.debug.breakpointChange(Processor);
+    }
 }
