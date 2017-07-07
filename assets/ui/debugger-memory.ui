@@ -81,4 +81,25 @@
         .text
         .breakpoint-markers
     )
+
+    (control:
+        (on (click: :left .rect)
+            (if @press
+                (begin
+                    (state! ".index")
+                    (.index! (text-cursor-offset .text @pos)) ;TODO: make selection easier by using a radius and choosing the offset that represents the biggest area of that radius
+                    (if (!= .index -1) (message (component-router :debugger) :debug-toggle-break ((/ (+ .index (/ .index 47)) 3) :read)))
+                )
+            )
+        )
+        (on (click: :right .rect)
+            (if @press
+                (begin
+                    (state! ".index")
+                    (.index! (text-cursor-offset .text @pos)) ;TODO: make selection easier by using a radius and choosing the offset that represents the biggest area of that radius
+                    (if (!= .index -1) (message (component-router :debugger) :debug-toggle-break ((/ (+ .index (/ .index 47)) 3) :write)))
+                )
+            )
+        )
+    )
 )
