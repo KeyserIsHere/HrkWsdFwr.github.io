@@ -163,14 +163,14 @@ static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Proce
     }
     
     CCExpressionSetState(State, CC_STRING(".breakpoints"), Breakpoints, FALSE);
-    CCExpressionSetState(State, CC_STRING(".breakpoints-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".breakpoints-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     
     
     CCExpression Ports = CCExpressionCreateList(CC_STD_ALLOCATOR);
     //TODO: Get list of open ports (so it can display connected/disconnected)
     
     CCExpressionSetState(State, CC_STRING(".ports"), Ports, FALSE);
-    CCExpressionSetState(State, CC_STRING(".ports-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".ports-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
 }
 
 static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction)
@@ -308,7 +308,7 @@ static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor
     }
     
     CCExpressionSetState(State, CC_STRING(".breakpoints"), Breakpoints, FALSE);
-    CCExpressionSetState(State, CC_STRING(".breakpoints-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".breakpoints-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     
     GUIManagerUnlock();
 }
