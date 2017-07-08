@@ -15,7 +15,7 @@
         (wrap: :word :multi)
         (offset: 0)
         (length: :max)
-    )) (invalidate: (quote (or .ports-changed (window-resized?)))))
+    )) (invalidate: (quote (any? .ports-changed .rect-changed))))
 
     (render:
         (if (count .ports) .text)
