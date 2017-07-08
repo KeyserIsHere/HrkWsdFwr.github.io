@@ -26,7 +26,7 @@
             (if (> .offset 255) (.offset! (- .offset 256)))
             ((get 2 .instruction) (get 1 .instruction))
         ))
-    )) (invalidate: (quote (not (= (#f #f) (.pc-changed .memory-changed)))))) ;TODO: create bitwise expressions and make (invalidate: (quote (or .pc-changed .memory-changed)))
+    )) (invalidate: (quote (or .pc-changed .memory-changed))))
 
     (state! ".text" (quote (render-text .rect
         (text:
@@ -39,9 +39,9 @@
         (wrap: :word :multi)
         (offset: 0)
         (length: :max)
-    )) (invalidate: (quote (frame-changed?))))
+    )) (invalidate: (quote (or .pc-changed .memory-changed (window-resized?)))))
 
-    (state! ".instruction-marker" (quote (render-rect (- (flatten (text-cursor-position .text (+ 1 (get 0 .current-instruction))) (get 0 (text-cursor-position .text (- (get 1 .current-instruction) 2))) 20) (10 5)) .instruction-colour)) (invalidate: (quote (frame-changed?)))) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
+    (state! ".instruction-marker" (quote (render-rect (- (flatten (text-cursor-position .text (+ 1 (get 0 .current-instruction))) (get 0 (text-cursor-position .text (- (get 1 .current-instruction) 2))) 20) (10 5)) .instruction-colour)) (invalidate: (quote (or .pc-changed .memory-changed (window-resized?))))) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
 
     (render:
         .instruction-marker

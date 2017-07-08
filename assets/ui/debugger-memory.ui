@@ -50,14 +50,14 @@
         )
     )) (invalidate: (quote .memory-changed)))
 
-    (state! ".text" (quote (render-text .rect .bytes (align: .text-alignment) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (frame-changed?)))) ;TODO: set invalidate on either .memory-changed or rect change
+    (state! ".text" (quote (render-text .rect .bytes (align: .text-alignment) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (or .memory-changed (window-resized?)))))
 
     (state! ".instruction-marker" (quote (repeat "@index" (get 0 (disassemble .memory .pc))
         (begin
             (state! ".offset" (if (>= 255 (+ @index .pc)) (+ @index .pc) (- (+ @index .pc) 256)))
             (render-rect (- (flatten (text-cursor-position .text (+ (- (* .offset 3) (/ .offset 16)) 1)) 23 20) (13 5)) .instruction-colour) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
         )
-    )) (invalidate: (quote (frame-changed?)))) ;TODO: set invalidate on either .pc-changed or rect change
+    )) (invalidate: (quote (or .pc-changed (window-resized?)))))
 
     ;TODO: Need to think about a better way to represent breakpoints
     (state! ".breakpoint-markers" (quote
@@ -74,7 +74,7 @@
                 )
             )
         )
-    ) (invalidate: (quote (frame-changed?)))) ;TODO: set invalidate on either .breakpoints-changed or rect change
+    ) (invalidate: (quote (or .breakpoints-changed (window-resized?)))))
 
     (render:
         .instruction-marker
