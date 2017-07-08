@@ -20,22 +20,28 @@
     (state! ".r1-changed" #f)
     (state! ".r2-changed" #f)
     (state! ".r3-changed" #f)
+    (state! ".r0-modified" #f)
+    (state! ".r1-modified" #f)
+    (state! ".r2-modified" #f)
+    (state! ".r3-modified" #f)
 
     (state! ".flags" 2)
     (state! ".flags-changed" #f)
+    (state! ".flags-modified" #f)
 
     (state! ".overflow-flag" (quote (< 0 (and .flags 8))))
     (state! ".sign-flag" (quote (< 0 (and .flags 4))))
     (state! ".carry-flag" (quote (< 0 (and .flags 2))))
     (state! ".zero-flag" (quote (< 0 (and .flags 1))))
-    (state! ".overflow-flag-changed" #f)
-    (state! ".sign-flag-changed" #f)
-    (state! ".carry-flag-changed" #f)
-    (state! ".zero-flag-changed" #f)
+    (state! ".overflow-flag-modified" #f)
+    (state! ".sign-flag-modified" #f)
+    (state! ".carry-flag-modified" #f)
+    (state! ".zero-flag-modified" #f)
 
     (state! ".a" 0.0)
     (state! ".pc" (quote (float->integer (.a! (if (> 256 .a) (+ .a 0.001) 0.0)))))
     (state! ".pc-changed" #t)
+    (state! ".pc-modified" #t)
 
     (state! ".ports" (
         (0 :connected)
