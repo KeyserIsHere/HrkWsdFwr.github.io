@@ -30,7 +30,7 @@
         (wrap: :word :multi)
         (offset: 0)
         (length: :max)
-    )) (invalidate: (quote (any? .pc-changed .r0-changed .r1-changed .r2-changed .r3-changed .flags-changed .rect-changed))))
+    )) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .r0-changed .r1-changed .r2-changed .r3-changed .flags-changed .rect-changed) #f))))
 
     (render:
         .text

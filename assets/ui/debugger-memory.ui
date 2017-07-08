@@ -48,16 +48,16 @@
                 (text: (get 0 .parts) (flatten colour: .colour)) ;()
             )
         )
-    )) (invalidate: (quote .memory-changed)))
+    )) (invalidate: (quote (if (frame-changed?) .memory-changed #f))))
 
-    (state! ".text" (quote (render-text .rect .bytes (align: .text-alignment) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (any? .memory-changed .rect-changed))))
+    (state! ".text" (quote (render-text .rect .bytes (align: .text-alignment) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (if (frame-changed?) (any? .memory-changed .rect-changed) #f))))
 
     (state! ".instruction-marker" (quote (repeat "@index" (get 0 (disassemble .memory .pc))
         (begin
             (state! ".offset" (if (>= 255 (+ @index .pc)) (+ @index .pc) (- (+ @index .pc) 256)))
             (render-rect (- (flatten (text-cursor-position .text (+ (- (* .offset 3) (/ .offset 16)) 1)) 23 20) (13 5)) .instruction-colour) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
         )
-    )) (invalidate: (quote (any? .pc-changed .rect-changed))))
+    )) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .rect-changed) #f))))
 
     ;TODO: Need to think about a better way to represent breakpoints
     (state! ".breakpoint-markers" (quote
@@ -74,7 +74,7 @@
                 )
             )
         )
-    ) (invalidate: (quote (any? .breakpoints-changed .rect-changed))))
+    ) (invalidate: (quote (if (frame-changed?) (any? .breakpoints-changed .rect-changed) #f))))
 
     (render:
         .instruction-marker
