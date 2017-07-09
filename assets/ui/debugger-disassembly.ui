@@ -8,6 +8,7 @@
     (state! ".breakpoint-colour" (0 255 255))
     (state! ".text-alignment" :center)
     (state! ".current-instruction")
+    (state! ".instruction-cache" (repeat "@i" 256 0))
     (state! ".instructions" (quote (begin
         (state! ".offset")
         (state! ".length")
@@ -15,8 +16,15 @@
         (.offset! .pc)
         (.length! 0)
 
+        (if .memory-changed
+            (.instruction-cache! (repeat "@i" 256 0)) ; TODO: Use .memory-modified to clear only the entries that would have changed
+        )
+
         (repeat "@index" 50 (begin
-            (state! ".instruction" (flatten (disassemble .memory .offset) .offset))
+            (state! ".instruction" (if (= 0 (get .offset .instruction-cache))
+                (get .offset (.instruction-cache! (set .offset .instruction-cache (flatten (disassemble .memory .offset) .offset))))
+                (get .offset .instruction-cache)
+            ))
 
             (state! ".end-length" (+ .length 4 (length (get 1 .instruction))))
             (if (= .pc .offset) (.current-instruction! (.length .end-length)))
