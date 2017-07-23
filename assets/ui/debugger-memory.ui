@@ -7,6 +7,7 @@
     (state! ".write-breakpoint-colour" (0 0 255))
     (state! ".breakpoint-colour" (0 255 255))
     (state! ".text-alignment" :center)
+    (state! ".bytes-changed" #t)
     (state! ".bytes" (quote (begin
         (state! ".modified")
         (state! ".parts")
@@ -25,6 +26,8 @@
                 (format :hex @line (compact: #f) (precision: 2) (separator: " "))
             ) "\n"))
         )
+
+        (.bytes-changed! .memory-changed)
 
         ;TODO: add list value type for text colour fields so we don't need to flatten?
         (if (= 2 (count .memory-modified))
@@ -48,9 +51,9 @@
                 (text: (get 0 .parts) (flatten colour: .colour)) ;()
             )
         )
-    )) (invalidate: (quote (if (frame-changed?) .memory-changed #f))))
+    )) (invalidate: (quote (if (frame-changed?) (any? .memory-changed (all? .pc-changed .bytes-changed)) #f))))
 
-    (state! ".text" (quote (render-text .rect .bytes (align: .text-alignment) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (if (frame-changed?) (any? .memory-changed .rect-changed) #f))))
+    (state! ".text" (quote (render-text .rect .bytes (align: .text-alignment) (wrap: :word :multi) (offset: 0) (length: :max))) (invalidate: (quote (if (frame-changed?) (any? .memory-changed (all? .pc-changed .bytes-changed) .rect-changed) #f))))
 
     (state! ".instruction-marker" (quote (repeat "@index" (get 0 (disassemble .memory .pc))
         (begin
