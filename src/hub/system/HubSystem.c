@@ -208,8 +208,7 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     CCExpressionSetState(State, CC_STRING(".pc-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     CCExpressionSetState(State, CC_STRING(".pc-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     
-    CCExpression Modified = CCExpressionGetStateStrict(State, CC_STRING(".memory-modified"));
-    CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, ((Modified) && (CCExpressionGetType(Modified) == CCExpressionValueTypeInteger) ? !CCExpressionGetInteger(Modified) : TRUE)), FALSE);
+    CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateList(CC_STD_ALLOCATOR), FALSE);
     
     
