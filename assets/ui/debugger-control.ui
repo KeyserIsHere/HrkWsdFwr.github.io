@@ -34,6 +34,8 @@
 
             (.off-click! (quote (message (component-router :debugger) :debug-continue)))
             (.on-click! (quote (message (component-router :debugger) :debug-pause)))
+
+            (render: (.active! (= .debug-mode :pause)))
         )
         (gui-button
             (state! ".step-instruction-symbol" (quote (

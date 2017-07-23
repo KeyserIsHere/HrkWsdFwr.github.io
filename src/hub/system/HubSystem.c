@@ -117,6 +117,11 @@ static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Proce
     //TODO: Set target processor? so it can message back
     CCExpression State = GUIObjectGetExpressionState(Debugger);
     
+    CCExpressionSetState(State, CC_STRING(".debug-mode"), CCExpressionCreateAtom(CC_STD_ALLOCATOR, (CCString[2]){
+        CC_STRING(":continue"),
+        CC_STRING(":pause")
+    }[Processor->state.debug.mode], TRUE), FALSE);
+    
     CCExpression Memory = CCExpressionCreateList(CC_STD_ALLOCATOR);
     for (size_t Loop = 0; Loop < sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)); Loop++)
     {
@@ -327,6 +332,21 @@ static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor
     GUIManagerUnlock();
 }
 
+static void HKHubSystemDebuggerDebugModeChangeHook(HKHubArchProcessor Processor)
+{
+    //TODO: Send update message (instead of update here/avoid locking UI)
+    GUIManagerLock();
+    
+    CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
+    
+    CCExpressionSetState(State, CC_STRING(".debug-mode"), CCExpressionCreateAtom(CC_STD_ALLOCATOR, (CCString[2]){
+        CC_STRING(":continue"),
+        CC_STRING(":pause")
+    }[Processor->state.debug.mode], TRUE), FALSE);
+    
+    GUIManagerUnlock();
+}
+
 static void HKHubSystemAttachDebugger(CCComponent Debugger)
 {
     CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
@@ -338,6 +358,7 @@ static void HKHubSystemAttachDebugger(CCComponent Debugger)
             
             Target->state.debug.operation = HKHubSystemDebuggerInstructionHook;
             Target->state.debug.breakpointChange = HKHubSystemDebuggerBreakpointChangeHook;
+            Target->state.debug.debugModeChange = HKHubSystemDebuggerDebugModeChangeHook;
             
             GUIManagerLock();
             Target->state.debug.context = GUIObjectWithNamespace(CC_STRING(":debugger"));
