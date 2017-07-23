@@ -17,7 +17,11 @@
         (.length! 0)
 
         (if .memory-changed
-            (.instruction-cache! (repeat "@i" 256 0)) ; TODO: Use .memory-modified to clear only the entries that would have changed
+            (loop "@range" .memory-modified
+                (repeat "@index" (get 1 @range)
+                    (.instruction-cache! (set (+ @index (get 0 @range)) .instruction-cache 0))
+                )
+            )
         )
 
         (repeat "@index" 50 (begin
