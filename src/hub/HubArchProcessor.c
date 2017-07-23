@@ -77,6 +77,8 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.step = 0;
         Processor->state.debug.breakpoints = NULL;
         Processor->state.debug.operation = NULL;
+        Processor->state.debug.breakpointChange = NULL;
+        Processor->state.debug.debugModeChange = NULL;
         Processor->state.debug.context = NULL;
         Processor->cycles = 0;
         Processor->unusedTime = 0.0;
@@ -132,6 +134,9 @@ void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
         CCDictionaryDestroy(Processor->state.debug.breakpoints);
         Processor->state.debug.breakpoints = NULL;
     }
+    
+    if (Processor->state.debug.breakpointChange) Processor->state.debug.breakpointChange(Processor);
+    if (Processor->state.debug.debugModeChange) Processor->state.debug.debugModeChange(Processor);
 }
 
 void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
@@ -332,6 +337,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                 if (HKHubArchProcessorShouldBreakForRange(Processor, Processor->state.pc, NextPC, HKHubArchProcessorDebugBreakpointRead))
                 {
                     Processor->state.debug.mode = HKHubArchProcessorDebugModePause;
+                    if (Processor->state.debug.debugModeChange) Processor->state.debug.debugModeChange(Processor);
                     continue;
                 }
                 
@@ -379,6 +385,8 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                         if (HKHubArchProcessorShouldBreakForRange(Processor, Offset, Offset + 1, Breakpoint[(MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationMask]))
                         {
                             Processor->state.debug.mode = HKHubArchProcessorDebugModePause;
+                            if (Processor->state.debug.debugModeChange) Processor->state.debug.debugModeChange(Processor);
+                            
                             TriggeredBP = TRUE;
                             break;
                         }
@@ -432,6 +440,8 @@ void HKHubArchProcessorSetDebugMode(HKHubArchProcessor Processor, HKHubArchProce
     CCAssertLog(Processor, "Processor must not be null");
     
     Processor->state.debug.mode = Mode;
+    
+    if (Processor->state.debug.debugModeChange) Processor->state.debug.debugModeChange(Processor);
 }
 
 void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)

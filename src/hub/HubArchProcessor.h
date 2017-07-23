@@ -61,6 +61,12 @@ typedef void (*HKHubArchProcessorDebugOperationCallback)(HKHubArchProcessor Proc
  */
 typedef void (*HKHubArchProcessorDebugBreakpointChangeCallback)(HKHubArchProcessor Processor);
 
+/*!
+ * @brief Callback to hook any debug mode changes.
+ * @param Processor The processor that had its debug mode changed.
+ */
+typedef void (*HKHubArchProcessorDebugModeChangeCallback)(HKHubArchProcessor Processor);
+
 typedef struct HKHubArchProcessorInfo {
     CCDictionary ports;
     struct {
@@ -88,6 +94,7 @@ typedef struct HKHubArchProcessorInfo {
                 void *context;
                 HKHubArchProcessorDebugOperationCallback operation;
                 HKHubArchProcessorDebugBreakpointChangeCallback breakpointChange;
+                HKHubArchProcessorDebugModeChangeCallback debugModeChange;
             };
         } debug;
     } state;
