@@ -16,7 +16,7 @@
         (.offset! .pc)
         (.length! 0)
 
-        (if .memory-changed
+        (if .memory-changed ;TODO: Check that any surrounding instructions wouldn't need to be invalidated (e.g. cached instruction at offset 0x0, changed byte at offset 0x02, instruction at offset 0x0 may be 4 bytes long so would be invalidated)
             (loop "@range" .memory-modified
                 (repeat "@index" (get 1 @range)
                     (.instruction-cache! (set (+ @index (get 0 @range)) .instruction-cache 0))
