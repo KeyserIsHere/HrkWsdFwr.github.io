@@ -40,6 +40,7 @@
 		F3E8BDFC1E33D670002523DF /* HubModule.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E8BDFA1E33D670002523DF /* HubModule.c */; };
 		F3ECD0041E0B4236007343C2 /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
 		F3ECD0051E0B423B007343C2 /* CommonC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877491DDC53150068844D /* CommonC.framework */; };
+		F3EEE60F20357031006A09DA /* ItemManualComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F3EEE60E20357031006A09DA /* ItemManualComponent.c */; };
 		F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */; };
 		F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */; };
 /* End PBXBuildFile section */
@@ -151,6 +152,8 @@
 		F3DBAA1F1DF3C1F400AFF30A /* HubArchPort.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchPort.c; sourceTree = "<group>"; };
 		F3E8BDFA1E33D670002523DF /* HubModule.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModule.c; sourceTree = "<group>"; };
 		F3E8BDFB1E33D670002523DF /* HubModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModule.h; sourceTree = "<group>"; };
+		F3EEE60D20357031006A09DA /* ItemManualComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ItemManualComponent.h; sourceTree = "<group>"; };
+		F3EEE60E20357031006A09DA /* ItemManualComponent.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ItemManualComponent.c; sourceTree = "<group>"; };
 		F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchProcessor.c; sourceTree = "<group>"; };
 		F3F4922E1DE6E5B30046A391 /* HubArchProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchProcessor.h; sourceTree = "<group>"; };
 		F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchInstructionTests.m; sourceTree = "<group>"; };
@@ -213,6 +216,7 @@
 			isa = PBXGroup;
 			children = (
 				F34877011DDC2E500068844D /* main.c */,
+				F3EEE60A20356FE0006A09DA /* Item */,
 				F34877E91DDC6B0E0068844D /* Hub */,
 				F348772A1DDC31230068844D /* Supporting Files */,
 			);
@@ -366,6 +370,25 @@
 			);
 			name = System;
 			path = system;
+			sourceTree = "<group>";
+		};
+		F3EEE60A20356FE0006A09DA /* Item */ = {
+			isa = PBXGroup;
+			children = (
+				F3EEE60C2035700E006A09DA /* Components */,
+			);
+			name = Item;
+			path = item;
+			sourceTree = "<group>";
+		};
+		F3EEE60C2035700E006A09DA /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				F3EEE60E20357031006A09DA /* ItemManualComponent.c */,
+				F3EEE60D20357031006A09DA /* ItemManualComponent.h */,
+			);
+			name = Components;
+			path = components;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -536,6 +559,7 @@
 				F305A5F11E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c in Sources */,
 				F36EBADC1E194E3000FB308B /* HubModuleDebug.c in Sources */,
 				F30DE0591EBB4B5100C6F845 /* HubDebuggerComponent.c in Sources */,
+				F3EEE60F20357031006A09DA /* ItemManualComponent.c in Sources */,
 				F3DBAA201DF3C1F400AFF30A /* HubArchPort.c in Sources */,
 				F36955011E48A6A000135AF0 /* HubModuleKeyboard.c in Sources */,
 				F34877021DDC2E500068844D /* main.c in Sources */,
