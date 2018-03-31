@@ -2,7 +2,7 @@
     "functions": [
         {
             "name": "item-manual",
-            "description": "Create an item manual.",
+            "description": "Create an item manual component.",
             "examples": ["(item-manual\n\t(name: (text: \"Example\"))\n\t(brief: (text: \"This is an example\"))\n)"],
             "return": { "type": "custom:component" },
             "options": [
