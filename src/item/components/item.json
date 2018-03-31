@@ -1,0 +1,156 @@
+{
+    "functions": [
+        {
+            "name": "item-manual",
+            "description": "Create an item manual.",
+            "examples": ["(item-manual\n\t(name: (text: \"Example\"))\n\t(brief: (text: \"This is an example\"))\n)"],
+            "return": { "type": "custom:component" },
+            "options": [
+                {
+                    "name": "name",
+                    "description": "The displayable name of the item.",
+                    "options": [
+                        {
+                            "name": "text",
+                            "description": "Styled text.",
+                            "args": [[{ "type": "string", "name": "text" }]],
+                            "options": [
+                                {
+                                    "name": "colour",
+                                    "description": "The colour of the text.",
+                                    "args": [[{ "type": "number", "name": "red" }, { "type": "number", "name": "green" }, { "type": "number", "name": "blue" }, { "type": "number", "name": "alpha", "optional": true }]]
+                                },
+                                {
+                                    "name": "scale",
+                                    "description": "The scale of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "offset",
+                                    "description": "The offset of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "tilt",
+                                    "description": "The tilt of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "space",
+                                    "description": "The character spacing of the text.",
+                                    "args": [[{ "type": "number", "name": "spacing" }]]
+                                },
+                                {
+                                    "name": "softness",
+                                    "description": "The softness of the text.",
+                                    "args": [[{ "type": "number", "name": "softness" }]]
+                                },
+                                {
+                                    "name": "thickness",
+                                    "description": "The thickness of the text.",
+                                    "args": [[{ "type": "number", "name": "thickness" }]]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "brief",
+                    "description": "The displayable short description of the item.",
+                    "options": [
+                        {
+                            "name": "text",
+                            "description": "Styled text.",
+                            "args": [[{ "type": "string", "name": "text" }]],
+                            "options": [
+                                {
+                                    "name": "colour",
+                                    "description": "The colour of the text.",
+                                    "args": [[{ "type": "number", "name": "red" }, { "type": "number", "name": "green" }, { "type": "number", "name": "blue" }, { "type": "number", "name": "alpha", "optional": true }]]
+                                },
+                                {
+                                    "name": "scale",
+                                    "description": "The scale of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "offset",
+                                    "description": "The offset of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "tilt",
+                                    "description": "The tilt of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "space",
+                                    "description": "The character spacing of the text.",
+                                    "args": [[{ "type": "number", "name": "spacing" }]]
+                                },
+                                {
+                                    "name": "softness",
+                                    "description": "The softness of the text.",
+                                    "args": [[{ "type": "number", "name": "softness" }]]
+                                },
+                                {
+                                    "name": "thickness",
+                                    "description": "The thickness of the text.",
+                                    "args": [[{ "type": "number", "name": "thickness" }]]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "description",
+                    "description": "The displayable long description of the item.",
+                    "options": [
+                        {
+                            "name": "text",
+                            "description": "Styled text.",
+                            "args": [[{ "type": "string", "name": "text" }]],
+                            "options": [
+                                {
+                                    "name": "colour",
+                                    "description": "The colour of the text.",
+                                    "args": [[{ "type": "number", "name": "red" }, { "type": "number", "name": "green" }, { "type": "number", "name": "blue" }, { "type": "number", "name": "alpha", "optional": true }]]
+                                },
+                                {
+                                    "name": "scale",
+                                    "description": "The scale of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "offset",
+                                    "description": "The offset of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "tilt",
+                                    "description": "The tilt of the text.",
+                                    "args": [[{ "type": "number", "name": "x" }, { "type": "number", "name": "y" }]]
+                                },
+                                {
+                                    "name": "space",
+                                    "description": "The character spacing of the text.",
+                                    "args": [[{ "type": "number", "name": "spacing" }]]
+                                },
+                                {
+                                    "name": "softness",
+                                    "description": "The softness of the text.",
+                                    "args": [[{ "type": "number", "name": "softness" }]]
+                                },
+                                {
+                                    "name": "thickness",
+                                    "description": "The thickness of the text.",
+                                    "args": [[{ "type": "number", "name": "thickness" }]]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
