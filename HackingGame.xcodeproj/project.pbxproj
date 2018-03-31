@@ -144,6 +144,7 @@
 		F36EBADB1E194E3000FB308B /* HubModuleDebug.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleDebug.h; sourceTree = "<group>"; };
 		F388286A1E9B9CA500E6D7A3 /* HubArchExpressions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchExpressions.c; sourceTree = "<group>"; };
 		F388286B1E9B9CA500E6D7A3 /* HubArchExpressions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchExpressions.h; sourceTree = "<group>"; };
+		F392E521206FF0A500E359D3 /* SystemID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SystemID.h; sourceTree = "<group>"; };
 		F3C5664C1E0FB3C000A32123 /* HubProcessorComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubProcessorComponent.c; sourceTree = "<group>"; };
 		F3C5664D1E0FB3C000A32123 /* HubProcessorComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubProcessorComponent.h; sourceTree = "<group>"; };
 		F3C5664F1E0FCD1400A32123 /* HubSystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubSystem.c; sourceTree = "<group>"; };
@@ -216,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				F34877011DDC2E500068844D /* main.c */,
+				F392E521206FF0A500E359D3 /* SystemID.h */,
 				F3EEE60A20356FE0006A09DA /* Item */,
 				F34877E91DDC6B0E0068844D /* Hub */,
 				F348772A1DDC31230068844D /* Supporting Files */,

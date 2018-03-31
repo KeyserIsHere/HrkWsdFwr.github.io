@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, Stefan Johnson
+ *  Copyright (c) 2018, Stefan Johnson
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -23,35 +23,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HackingGame_HubSystem_h
-#define HackingGame_HubSystem_h
+#ifndef HackingGame_SystemID_h
+#define HackingGame_SystemID_h
 
 #include <Blob2D/Blob2D.h>
-#include "HubArchScheduler.h"
-#include "SystemID.h"
 
-typedef enum {
-    HKHubTypeMask = 0xff,
-    HKHubTypeProcessor = 0,
-    HKHubTypeModule,
-    HKHubTypeDebugger,
-    
-    HKHubTypeModuleMask = (0xff << 8),
-    HKHubTypeModuleKeyboard = (1 << 8),
-    HKHubTypeModuleDisplay = (2 << 8),
-    HKHubTypeModuleWirelessTransceiver = (3 << 8)
-} HKHubType;
+enum {
+    HKHubSystemID = CCSystemIDAvailable,
+    HKItemSystemID,
+    HKSystemIDAvailable
+};
 
-_Static_assert(!(CC_COMPONENT_SYSTEM_FLAG_MASK & HKHubTypeMask), "Type mask conflicts with component flag");
-_Static_assert(!(CC_COMPONENT_SYSTEM_FLAG_MASK & HKHubTypeModuleMask), "Module mask conflicts with component flag");
+#define HK_HUB_SYSTEM_ID HKHubSystemID
+#define HK_HUB_COMPONENT_FLAG (HK_HUB_SYSTEM_ID << CC_COMPONENT_SYSTEM_FLAG_INDEX)
 
-void HKHubSystemRegister(void);
-void HKHubSystemDeregister(void);
-
-/*!
- * @brief Retrieve the internal scheduler being used.
- * @return The scheduler used internally by the system.
- */
-HKHubArchScheduler HKHubSystemGetScheduler(void);
+#define HK_ITEM_SYSTEM_ID HKItemSystemID
+#define HK_ITEM_COMPONENT_FLAG (HK_ITEM_SYSTEM_ID << CC_COMPONENT_SYSTEM_FLAG_INDEX)
 
 #endif

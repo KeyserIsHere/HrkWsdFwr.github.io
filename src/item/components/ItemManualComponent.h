@@ -27,8 +27,9 @@
 #define HackingGame_ItemManualComponent_h
 
 #include <Blob2D/Blob2D.h>
+#include "SystemID.h"
 
-#define HK_ITEM_MANUAL_COMPONENT_ID 0 //TODO: Change ID
+#define HK_ITEM_MANUAL_COMPONENT_ID (0 | HK_ITEM_COMPONENT_FLAG) //TODO: Change ID
 
 typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
