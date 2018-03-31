@@ -25,14 +25,34 @@
 
 #include "ItemManualComponent.h"
 
-const char * const HKItemManualComponentName = "item-manual";
+const CCString HKItemManualComponentName = CC_STRING("item-manual");
+
+static const CCComponentExpressionDescriptor HKItemManualComponentDescriptor = {
+    .id = HK_ITEM_MANUAL_COMPONENT_ID,
+    .initialize = NULL,
+    .deserialize = HKItemManualComponentDeserializer,
+    .serialize = NULL
+};
 
 void HKItemManualComponentRegister(void)
 {
     CCComponentRegister(HK_ITEM_MANUAL_COMPONENT_ID, HKItemManualComponentName, CC_STD_ALLOCATOR, sizeof(HKItemManualComponentClass), HKItemManualComponentInitialize, NULL, HKItemManualComponentDeallocate);
+    
+    CCComponentExpressionRegister(CC_STRING("item-manual"), &HKItemManualComponentDescriptor, TRUE);
 }
 
 void HKItemManualComponentDeregister(void)
 {
     CCComponentDeregister(HK_ITEM_MANUAL_COMPONENT_ID);
+}
+
+static CCComponentExpressionArgumentDeserializer Arguments[] = {
+    { .name = CC_STRING("name:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeTextAttribute, .setter = HKItemManualComponentSetName },
+    { .name = CC_STRING("brief:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeTextAttribute, .setter = HKItemManualComponentSetBrief },
+    { .name = CC_STRING("description:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeTextAttribute, .setter = HKItemManualComponentSetDescription }
+};
+
+void HKItemManualComponentDeserializer(CCComponent Component, CCExpression Arg)
+{
+    CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)));
 }
