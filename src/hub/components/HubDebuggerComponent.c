@@ -26,7 +26,7 @@
 #include "HubDebuggerComponent.h"
 #include "HubProcessorComponent.h"
 
-const char * const HKHubDebuggerComponentName = "debugger";
+const CCString HKHubDebuggerComponentName = CC_STRING("debugger");
 
 static const CCComponentExpressionDescriptor HKHubDebuggerComponentDescriptor = {
     .id = HK_HUB_DEBUGGER_COMPONENT_ID,

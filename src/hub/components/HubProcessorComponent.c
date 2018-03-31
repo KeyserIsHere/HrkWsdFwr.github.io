@@ -26,7 +26,7 @@
 #include "HubProcessorComponent.h"
 #include "HubArchAssembly.h"
 
-const char * const HKHubProcessorComponentName = "hub";
+const CCString HKHubProcessorComponentName = CC_STRING("hub");
 
 static const CCComponentExpressionDescriptor HKHubProcessorComponentDescriptor = {
     .id = HK_HUB_PROCESSOR_COMPONENT_ID,

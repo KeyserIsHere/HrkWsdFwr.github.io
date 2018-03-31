@@ -27,7 +27,7 @@
 #include "HubModuleComponent.h"
 
 
-const char * const HKHubModuleWirelessTransceiverComponentName = "wireless_transceiver_module";
+const CCString HKHubModuleWirelessTransceiverComponentName = CC_STRING("wireless_transceiver_module");
 
 const CCComponentExpressionDescriptor HKHubModuleWirelessTransceiverComponentDescriptor = {
     .id = HK_HUB_MODULE_WIRELESS_TRANSCEIVER_COMPONENT_ID,
@@ -49,7 +49,7 @@ void HKHubModuleWirelessTransceiverComponentDeregister(void)
 }
 
 static CCComponentExpressionArgumentDeserializer Arguments[] = {
-    { .name = CC_STRING("range:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeFloat32, .setter = (void(*)())HKHubModuleWirelessTransceiverComponentSetRange }
+    { .name = CC_STRING("range:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeFloat32, .setter = (CCComponentExpressionSetter)HKHubModuleWirelessTransceiverComponentSetRange }
 };
 
 void HKHubModuleWirelessTransceiverComponenDeserializer(CCComponent Component, CCExpression Arg)

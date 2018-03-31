@@ -27,7 +27,7 @@
 #include "HubModuleKeyboardComponent.h"
 #include "HubModuleDisplayComponent.h"
 
-const char * const HKHubModuleComponentName = "module";
+const CCString HKHubModuleComponentName = CC_STRING("module");
 
 void HKHubModuleComponentRegister(void)
 {
