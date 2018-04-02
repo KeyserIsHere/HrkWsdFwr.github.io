@@ -7,3 +7,4 @@
 *.font linguist-language=Scheme
 *.ui linguist-language=Scheme
 *.entity linguist-language=Scheme
+*.chasm linguist-language=Assembly
