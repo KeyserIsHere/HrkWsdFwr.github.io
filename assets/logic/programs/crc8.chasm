@@ -1,0 +1,41 @@
+# CRC8 Procedure
+# Calculates an 8-bit checksum of the given input
+#
+# Input
+# r0: crc base value
+# r1: data
+# r2: length
+#
+# Output
+# r0: crc value
+# r1: data + length
+# r2: 0xff
+# r3: 0 or 1 or original value
+
+crc8:
+    sub r2, 1
+    jul crc8_ret
+    mov [crc8_save], r1
+    mov [crc8_save + 1], r2
+    mov r1, [r1]
+    mov r2, 9
+    jmp crc8_crc
+crc8_save: .byte 0, 0
+crc8_crc:
+    sub r2, 1
+    jz crc8_next
+    mov r3, r0
+    xor r3, r1
+    shr r0, 1
+    and r3, 1
+    jz crc8_skip
+    xor r0, 0x8c
+crc8_skip:
+    shr r1, 1
+    jmp crc8_crc
+crc8_next:
+    mov r1, [crc8_save]
+    mov r2, [crc8_save + 1]
+    add r1, 1
+    jmp crc8
+crc8_ret:
