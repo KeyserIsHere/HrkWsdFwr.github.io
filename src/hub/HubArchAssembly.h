@@ -132,12 +132,12 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
 /*!
  * @brief Convenience function for adding error messages.
  * @param Errors The collection of errors.
- * @param Message The error message.
+ * @param Message The error message. Ownership is transferred to the error list.
  * @param Command The command the error is referencing.
  * @param Operand The operand the error is referencing.
  * @param Value The value the error is referencing.
  */
-static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value);
+static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString CC_OWN(Message), HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value);
 
 #pragma mark -
 
