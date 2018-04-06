@@ -65,6 +65,15 @@ typedef struct {
     HKHubArchAssemblyASTNode *value;
 } HKHubArchAssemblyASTError;
 
+/*!
+ * @brief Stores the paths that will be searched when using the include directive.
+ * @description This should be an ordered collection of @b FSPath paths for all
+ *              directories that will be available to include searches.
+ *
+ *              When including a file that can be found in multiple paths, the first path
+ *              in the list will take precedence.
+ */
+extern CCOrderedCollection HKHubArchAssemblyIncludeSearchPaths;
 
 /*!
  * @brief Parse the source and produce the AST for the given assembly.
