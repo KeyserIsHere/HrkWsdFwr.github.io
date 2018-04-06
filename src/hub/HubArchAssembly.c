@@ -360,7 +360,12 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
                     
                     Offset = HKHubArchAssemblyCompile(Offset, Binary, AST, Errors, Labels, Defines, !Binary);
                     
-                    CCCollectionDestroy(AST);
+                    if (Command->string) CCStringDestroy(Command->string);
+                    if (Command->childNodes) CCCollectionDestroy(Command->childNodes);
+                    
+                    Command->type = HKHubArchAssemblyASTTypeAST;
+                    Command->string = 0;
+                    Command->childNodes = AST;
                 }
                 
                 else CC_LOG_ERROR("Could not open file (%s) for argument (program:)", FSPathGetPathString(Path));
@@ -408,7 +413,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
                     
                     if ((Alias->type == HKHubArchAssemblyASTTypeSymbol) || (Alias->type == HKHubArchAssemblyASTTypeInteger))
                     {
-                        CCDictionarySetValue(Defines, &(CCString){ CCStringCopy(Name->string) }, &Alias);
+                        CCDictionarySetValue(Defines, &Name->string, &Alias);
                     }
                     
                     else
@@ -557,7 +562,7 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
         switch (Command->type)
         {
             case HKHubArchAssemblyASTTypeLabel:
-                CCDictionarySetValue(Labels, &(CCString){ CCStringCopy(Command->string) }, &Offset);
+                CCDictionarySetValue(Labels, &Command->string, &Offset);
                 break;
                 
             case HKHubArchAssemblyASTTypeInstruction:
@@ -573,6 +578,10 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                         break;
                     }
                 }
+                break;
+                
+            case HKHubArchAssemblyASTTypeAST:
+                Offset = HKHubArchAssemblyCompile(Offset, Binary, Command->childNodes, Errors, Labels, Defines, Pass);
                 break;
                 
             default:
@@ -603,7 +612,6 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
     HKHubArchBinary Binary = HKHubArchBinaryCreate(Allocator);
     
     CCDictionary Labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
-        .keyDestructor = CCStringDestructorForDictionary,
         .getHash = CCStringHasherForDictionary,
         .compareKeys = CCStringComparatorForDictionary
     });
@@ -613,7 +621,6 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
     for (int Pass = 1; Pass >= 0; Pass--)
     {
         CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
-            .keyDestructor = CCStringDestructorForDictionary,
             .getHash = CCStringHasherForDictionary,
             .compareKeys = CCStringComparatorForDictionary
         });
