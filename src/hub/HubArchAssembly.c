@@ -340,7 +340,7 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
                 
                 FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "logic"));
                 FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "programs"));
-                FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, "crc8"));
+                CC_STRING_TEMP_BUFFER(Name, Proc->string) FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, Name));
                 FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeExtension, "chasm"));
                 
                 FSHandle Handle;
