@@ -24,8 +24,15 @@
  */
 
 #include <Blob2D/Blob2D.h>
+#include "HubArchExpressions.h"
 #include "HubSystem.h"
-#include "HubComponent.h"
+#include "HubProcessorComponent.h"
+#include "HubDebuggerComponent.h"
+#include "HubModuleComponent.h"
+#include "HubModuleKeyboardComponent.h"
+#include "HubModuleDisplayComponent.h"
+#include "HubModuleWirelessTransceiverComponent.h"
+#include "ItemManualComponent.h"
 
 #if CC_PLATFORM_OS_X || CC_PLATFORM_IOS
 #include <CoreFoundation/CoreFoundation.h>
@@ -37,8 +44,17 @@ static void PreSetup(void)
     Path[sizeof(__FILE__) - sizeof("Hacking-Game/src/main.c")] = 0;
     CCFileFilterInputAddPath(Path);
     
+    CCExpressionEvaluatorRegister(CC_STRING("disassemble"), HKHubArchExpressionDisassemble);
+    
     HKHubSystemRegister();
-    HKHubComponentRegister();
+    HKHubProcessorComponentRegister();
+    HKHubDebuggerComponentRegister();
+    HKHubModuleComponentRegister();
+    HKHubModuleKeyboardComponentRegister();
+    HKHubModuleDisplayComponentRegister();
+    HKHubModuleWirelessTransceiverComponentRegister();
+    
+    HKItemManualComponentRegister();
 }
 
 static void Setup(void)
@@ -47,8 +63,7 @@ static void Setup(void)
 
 int main(int argc, const char *argv[])
 {
-    PreSetup();
-    
+    B2EngineSetupBegin = PreSetup;
     B2EngineSetupComplete = Setup;
     
     B2EngineConfiguration.launch = B2LaunchOptionGame;
