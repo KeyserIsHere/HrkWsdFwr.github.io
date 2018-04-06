@@ -26,6 +26,8 @@
 #include "HubArchAssembly.h"
 #include "HubArchInstruction.h"
 
+static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection AST, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, int Pass);
+
 static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssemblyASTNode *Node)
 {
     if (Node->string) CCStringDestroy(Node->string);
@@ -313,11 +315,79 @@ static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("o
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
 static const CCString HKHubArchAssemblyErrorMessageMin0Max0Operands = CC_STRING("expects no operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
+static const CCString HKHubArchAssemblyErrorMessageMin1Max1Operands = CC_STRING("expects one operand");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
 static const CCString HKHubArchAssemblyErrorMessageUnknownCommand = CC_STRING("unknown command");
 
 #pragma mark - Directives
+static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+{
+    if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 1))
+    {
+        HKHubArchAssemblyASTNode *ProcOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+
+        if ((ProcOp->type == HKHubArchAssemblyASTTypeOperand) && (ProcOp->childNodes) && (CCCollectionGetCount(ProcOp->childNodes) == 1))
+        {
+            HKHubArchAssemblyASTNode *Proc = CCOrderedCollectionGetElementAtIndex(ProcOp->childNodes, 0);
+
+            if (Proc->type == HKHubArchAssemblyASTTypeSymbol)
+            {
+                FSPath Path = FSPathCopy(B2EngineConfiguration.project);
+                
+                FSPathRemoveComponentLast(Path);
+                FSPathRemoveComponentLast(Path);
+                
+                FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "logic"));
+                FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "programs"));
+                FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, "crc8"));
+                FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeExtension, "chasm"));
+                
+                FSHandle Handle;
+                if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
+                {
+                    size_t Size = FSManagerGetSize(Path);
+                    char *Source;
+                    CC_SAFE_Malloc(Source, sizeof(char) * (Size + 1));
+                    
+                    FSHandleRead(Handle, &Size, Source, FSBehaviourDefault);
+                    Source[Size] = 0;
+                    
+                    FSHandleClose(Handle);
+                    
+                    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+                    CC_SAFE_Free(Source);
+                    
+                    Offset = HKHubArchAssemblyCompile(Offset, Binary, AST, Errors, Labels, Defines, !Binary);
+                    
+                    CCCollectionDestroy(AST);
+                }
+                
+                else CC_LOG_ERROR("Could not open file (%s) for argument (program:)", FSPathGetPathString(Path));
+                
+                FSPathDestroy(Path);
+            }
+
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, ProcOp, Proc);
+            }
+        }
+
+        else
+        {
+            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, ProcOp, NULL);
+        }
+    }
+
+    else
+    {
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin1Max1Operands, Command, NULL, NULL);
+    }
+    
+    return Offset;
+}
+
 static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
@@ -338,7 +408,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
                     
                     if ((Alias->type == HKHubArchAssemblyASTTypeSymbol) || (Alias->type == HKHubArchAssemblyASTTypeInteger))
                     {
-                        CCDictionarySetValue(Defines, &Name->string, &Alias);
+                        CCDictionarySetValue(Defines, &(CCString){ CCStringCopy(Name->string) }, &Alias);
                     }
                     
                     else
@@ -423,7 +493,8 @@ static const struct {
 } Directives[] = {
     { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine },
     { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte },
-    { CC_STRING(".entrypoint"), HKHubArchAssemblyCompileDirectiveEntrypoint }
+    { CC_STRING(".entrypoint"), HKHubArchAssemblyCompileDirectiveEntrypoint },
+    { CC_STRING(".include"), HKHubArchAssemblyCompileDirectiveInclude }
 };
 
 _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
@@ -479,6 +550,47 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
     return Success;
 }
 
+static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection AST, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, int Pass)
+{
+    CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
+    {
+        switch (Command->type)
+        {
+            case HKHubArchAssemblyASTTypeLabel:
+                CCDictionarySetValue(Labels, &(CCString){ CCStringCopy(Command->string) }, &Offset);
+                break;
+                
+            case HKHubArchAssemblyASTTypeInstruction:
+                Offset = HKHubArchInstructionEncode(Offset, (Pass ? NULL : Binary->data), Command, (Pass ? NULL : Errors), Labels, Defines);
+                break;
+                
+            case HKHubArchAssemblyASTTypeDirective:
+                for (size_t Loop = 0; Loop < sizeof(Directives) / sizeof(typeof(*Directives)); Loop++) //TODO: make dictionary
+                {
+                    if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
+                    {
+                        Offset = Directives[Loop].compile(Offset, (Pass ? NULL : Binary), Command, (Pass ? NULL : Errors), Labels, Defines);
+                        break;
+                    }
+                }
+                break;
+                
+            default:
+                HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageUnknownCommand, Command, NULL, NULL);
+                break;
+        }
+        
+        if (Offset > sizeof(Binary->data))
+        {
+            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageSizeLimit, Command, NULL, NULL);
+            Pass = 0;
+            break;
+        }
+    }
+    
+    return Offset;
+}
+
 static void HKHubArchAssemblyASTErrorDestructor(void *Container, HKHubArchAssemblyASTError *Error)
 {
     if (Error->message) CCStringDestroy(Error->message);
@@ -491,6 +603,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
     HKHubArchBinary Binary = HKHubArchBinaryCreate(Allocator);
     
     CCDictionary Labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+        .keyDestructor = CCStringDestructorForDictionary,
         .getHash = CCStringHasherForDictionary,
         .compareKeys = CCStringComparatorForDictionary
     });
@@ -500,46 +613,12 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
     for (int Pass = 1; Pass >= 0; Pass--)
     {
         CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
+            .keyDestructor = CCStringDestructorForDictionary,
             .getHash = CCStringHasherForDictionary,
             .compareKeys = CCStringComparatorForDictionary
         });
         
-        size_t Offset = 0;
-        CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
-        {
-            switch (Command->type)
-            {
-                case HKHubArchAssemblyASTTypeLabel:
-                    CCDictionarySetValue(Labels, &Command->string, &Offset);
-                    break;
-                    
-                case HKHubArchAssemblyASTTypeInstruction:
-                    Offset = HKHubArchInstructionEncode(Offset, (Pass ? NULL : Binary->data), Command, (Pass ? NULL : Err), Labels, Defines);
-                    break;
-                    
-                case HKHubArchAssemblyASTTypeDirective:
-                    for (size_t Loop = 0; Loop < sizeof(Directives) / sizeof(typeof(*Directives)); Loop++) //TODO: make dictionary
-                    {
-                        if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
-                        {
-                            Offset = Directives[Loop].compile(Offset, (Pass ? NULL : Binary), Command, (Pass ? NULL : Err), Labels, Defines);
-                            break;
-                        }
-                    }
-                    break;
-                    
-                default:
-                    HKHubArchAssemblyErrorAddMessage(Err, HKHubArchAssemblyErrorMessageUnknownCommand, Command, NULL, NULL);
-                    break;
-            }
-            
-            if (Offset > sizeof(Binary->data))
-            {
-                HKHubArchAssemblyErrorAddMessage(Err, HKHubArchAssemblyErrorMessageSizeLimit, Command, NULL, NULL);
-                Pass = 0;
-                break;
-            }
-        }
+        HKHubArchAssemblyCompile(0, Binary, AST, Err, Labels, Defines, Pass);
         
         CCDictionaryDestroy(Defines);
     }
