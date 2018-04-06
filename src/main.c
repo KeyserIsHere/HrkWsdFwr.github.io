@@ -25,6 +25,7 @@
 
 #include <Blob2D/Blob2D.h>
 #include "HubArchExpressions.h"
+#include "HubArchAssembly.h"
 #include "HubSystem.h"
 #include "HubProcessorComponent.h"
 #include "HubDebuggerComponent.h"
@@ -59,6 +60,17 @@ static void PreSetup(void)
 
 static void Setup(void)
 {
+    HKHubArchAssemblyIncludeSearchPaths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(FSPath), FSPathComponentDestructorForCollection);
+    
+    FSPath IncludeSearchPath = FSPathCopy(B2EngineConfiguration.project);
+    
+    FSPathRemoveComponentLast(IncludeSearchPath);
+    FSPathRemoveComponentLast(IncludeSearchPath);
+    
+    FSPathAppendComponent(IncludeSearchPath, FSPathComponentCreate(FSPathComponentTypeDirectory, "logic"));
+    FSPathAppendComponent(IncludeSearchPath, FSPathComponentCreate(FSPathComponentTypeDirectory, "programs"));
+    
+    CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &IncludeSearchPath);
 }
 
 int main(int argc, const char *argv[])
