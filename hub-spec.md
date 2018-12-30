@@ -140,7 +140,7 @@ Instructions
 | 3      | 010001  | udiv     | r/m       | i         |           | Unsigned divide by immediate value (operand 2) into register or memory (operand 1)                           |
 | 3      | 010010  |          |           |           |           |                                                                                                              |
 | 1      | 010011  | jo       | rel       |           |           | Jump if overflow (OF=1)                                                                                      |
-| 3      | 010100  | smod     | r/m       | r/m       |           | Signed (dividend) modulo by register or memory valuevalue (operand 2) into register or memory (operand 1)    |
+| 3      | 010100  | smod     | r/m       | r/m       |           | Signed (dividend) modulo by register or memory value (operand 2) into register or memory (operand 1)    |
 | 3      | 010101  | smod     | r/m       | i         |           | Signed (dividend) modulo by immediate value (operand 2) into register or memory (operand 1)                  |
 |        | 010110  |          |           |           |           |                                                                                                              |
 | 1      | 010111  | jno      | rel       |           |           | Jump if not overflow (OF=0)                                                                                  |
