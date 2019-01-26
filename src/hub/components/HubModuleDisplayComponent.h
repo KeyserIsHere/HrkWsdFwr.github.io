@@ -43,7 +43,7 @@ extern const CCComponentExpressionDescriptor HKHubModuleDisplayComponentDescript
 
 void HKHubModuleDisplayComponentRegister(void);
 void HKHubModuleDisplayComponentDeregister(void);
-void HKHubModuleDisplayComponenDeserializer(CCComponent Component, CCExpression Arg);
+void HKHubModuleDisplayComponenDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred);
 
 /*!
  * @brief Initialize the display module component.

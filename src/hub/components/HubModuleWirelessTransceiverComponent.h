@@ -42,7 +42,7 @@ extern const CCComponentExpressionDescriptor HKHubModuleWirelessTransceiverCompo
 
 void HKHubModuleWirelessTransceiverComponentRegister(void);
 void HKHubModuleWirelessTransceiverComponentDeregister(void);
-void HKHubModuleWirelessTransceiverComponenDeserializer(CCComponent Component, CCExpression Arg);
+void HKHubModuleWirelessTransceiverComponenDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred);
 
 /*!
  * @brief Initialize the wireless transceiver module component.

@@ -51,7 +51,7 @@ static CCComponentExpressionArgumentDeserializer Arguments[] = {
     { .name = CC_STRING("name:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeString, .setter = HKHubProcessorComponentSetName }
 };
 
-void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg)
+void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred)
 {
     if (CCExpressionGetType(Arg) == CCExpressionValueTypeList)
     {
@@ -124,5 +124,5 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
         }
     }
     
-    CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)));
+    CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)), Deferred);
 }

@@ -52,7 +52,7 @@ static CCComponentExpressionArgumentDeserializer Arguments[] = {
     { .name = CC_STRING("range:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeFloat32, .setter = (CCComponentExpressionSetter)HKHubModuleWirelessTransceiverComponentSetRange }
 };
 
-void HKHubModuleWirelessTransceiverComponenDeserializer(CCComponent Component, CCExpression Arg)
+void HKHubModuleWirelessTransceiverComponenDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred)
 {
-   CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)));
+   CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)), Deferred);
 }

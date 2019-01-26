@@ -40,7 +40,7 @@ typedef struct {
 
 void HKItemManualComponentRegister(void);
 void HKItemManualComponentDeregister(void);
-void HKItemManualComponentDeserializer(CCComponent Component, CCExpression Arg);
+void HKItemManualComponentDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred);
 
 /*!
  * @brief Initialize the hub component.

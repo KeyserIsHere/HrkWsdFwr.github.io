@@ -52,7 +52,7 @@ static CCComponentExpressionArgumentDeserializer Arguments[] = {
     { .name = CC_STRING("description:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeTextAttribute, .setter = HKItemManualComponentSetDescription }
 };
 
-void HKItemManualComponentDeserializer(CCComponent Component, CCExpression Arg)
+void HKItemManualComponentDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred)
 {
-    CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)));
+    CCComponentExpressionDeserializeArgument(Component, Arg, Arguments, sizeof(Arguments) / sizeof(typeof(*Arguments)), Deferred);
 }
