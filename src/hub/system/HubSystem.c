@@ -29,10 +29,10 @@
 #include "HubArchScheduler.h"
 #include "HubArchInstruction.h"
 
-static _Bool HKHubSystemTryLock(void);
-static void HKHubSystemLock(void);
-static void HKHubSystemUnlock(void);
-static _Bool HKHubSystemHandlesComponent(CCComponentID id);
+static _Bool HKHubSystemTryLock(CCComponentSystemHandle *Handle);
+static void HKHubSystemLock(CCComponentSystemHandle *Handle);
+static void HKHubSystemUnlock(CCComponentSystemHandle *Handle);
+static _Bool HKHubSystemHandlesComponent(CCComponentSystemHandle *Handle, CCComponentID id);
 static void HKHubSystemUpdate(double DeltaTime, CCCollection Components);
 
 static HKHubArchScheduler Scheduler;
@@ -58,7 +58,7 @@ void HKHubSystemDeregister(void)
     CCComponentSystemDeregister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeUpdate);
 }
 
-static _Bool HKHubSystemTryLock(void)
+static _Bool HKHubSystemTryLock(CCComponentSystemHandle *Handle)
 {
     int err = mtx_trylock(&Lock);
     if ((err != thrd_success) && (err != thrd_busy))
@@ -69,7 +69,7 @@ static _Bool HKHubSystemTryLock(void)
     return err == thrd_success;
 }
 
-static void HKHubSystemLock(void)
+static void HKHubSystemLock(CCComponentSystemHandle *Handle)
 {
     int err;
     if ((err = mtx_lock(&Lock)) != thrd_success)
@@ -78,7 +78,7 @@ static void HKHubSystemLock(void)
     }
 }
 
-static void HKHubSystemUnlock(void)
+static void HKHubSystemUnlock(CCComponentSystemHandle *Handle)
 {
     int err;
     if ((err = mtx_unlock(&Lock)) != thrd_success)
@@ -87,7 +87,7 @@ static void HKHubSystemUnlock(void)
     }
 }
 
-static _Bool HKHubSystemHandlesComponent(CCComponentID id)
+static _Bool HKHubSystemHandlesComponent(CCComponentSystemHandle *Handle, CCComponentID id)
 {
     return (id & 0x7f000000) == HK_HUB_COMPONENT_FLAG;
 }
