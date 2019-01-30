@@ -135,7 +135,7 @@ static ssize_t RapServerRecv(int Connection, void *Buffer, size_t Size)
     {
         Received += Ret;
         
-        switch (((HKRapServerDataRequest*)Buffer)->op)
+        switch (((HKRapServerDataRequest*)Buffer)->op & ~HKRapServerOperationReply)
         {
             case HKRapServerOperationOpen:
                 Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_OPEN_SIZE(0)) && (Received == HK_RAP_SERVER_DATA_REQUEST_OPEN_SIZE(((HKRapServerDataRequest*)Buffer)->open.length));
@@ -177,7 +177,7 @@ static ssize_t RapServerSend(int Connection, void *Buffer, size_t Size)
     {
         Sent += Ret;
         
-        switch (((HKRapServerDataResponse*)Buffer)->op ^ HKRapServerOperationReply)
+        switch (((HKRapServerDataResponse*)Buffer)->op & ~HKRapServerOperationReply)
         {
             case HKRapServerOperationOpen:
                 Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_OPEN_SIZE);
@@ -394,8 +394,51 @@ static int RapServerLoop(void *Arg)
                     {
                         uint32_t Length = 0;
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
+                        
+                        CCString Cmd = CCStringCreateWithSize(CC_STD_ALLOCATOR, (CCStringHint)CCStringEncodingASCII, (char*)((HKRapServerDataRequest*)Buffer)->cmd.command, ntohl(((HKRapServerDataRequest*)Buffer)->cmd.length));
+                        
+                        if (CCStringEqual(Cmd, CC_STRING("drp")))
+                        {
+                            ((HKRapServerDataResponse*)Buffer)->op ^= HKRapServerOperationReply;
+                            
+                            FSPath Path = FSPathCopy(B2EngineConfiguration.project);
+                            FSPathRemoveComponentLast(Path);
+                            FSPathRemoveComponentLast(Path);
+                            FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "radare"));
+                            FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, "register-profile"));
+                            
+                            const char *Profile = FSPathGetPathString(Path); // TODO: Add function to retrieve system path
+                            Length = (uint32_t)strlen(Profile) + 1;
+                            if ((Length + 4) < HK_RAP_SERVER_BINARY_SIZE)
+                            {
+                                memcpy(((HKRapServerDataResponse*)Buffer)->cmd.result + 4, Profile, Length);
+                                Length += 4;
+                                memcpy(((HKRapServerDataResponse*)Buffer)->cmd.result, "drp ", 4);
+                            }
+                            
+                            else
+                            {
+                                CC_LOG_ERROR("Path to register profile (%s) exceeds allowed size for RAP server CMD response", Profile);
+                                Length = 0;
+                            }
+                            
+                            FSPathDestroy(Path);
+                        }
+                        
+                        CCStringDestroy(Cmd);
+                        
                         ((HKRapServerDataResponse*)Buffer)->cmd.length = htonl(Length);
-                        memcpy(((HKRapServerDataResponse*)Buffer)->cmd.result, (uint8_t[]){ 0 }, Length);
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_CMD_SIZE(Length));
+                        if (Size == -1) perror("reply cmd");
+                        break;
+                    }
+                        
+                    case HKRapServerOperationCmd | HKRapServerOperationReply:
+                    {
+                        uint32_t Length = 0;
+                        ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
+                        
+                        ((HKRapServerDataResponse*)Buffer)->cmd.length = htonl(Length);
                         Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_CMD_SIZE(Length));
                         if (Size == -1) perror("reply cmd");
                         break;
