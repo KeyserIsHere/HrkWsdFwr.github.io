@@ -41,70 +41,84 @@ typedef enum {
     HKRapServerOperationReply = 0x80
 } HKRapServerOperation;
 
+typedef enum {
+    HKRapServerSeekSet = 0,
+    HKRapServerSeekCur,
+    HKRapServerSeekEnd
+} HKRapServerSeek;
+
 typedef struct {
     uint8_t op; // HKRapServerOperation
     union {
         struct {
             uint8_t rw;
-            uint32_t length;
+            uint8_t length;
             uint8_t filename[];
-        } open;
+        } CC_PACKED open;
         struct {
             uint32_t length;
-        } read;
+        } CC_PACKED read;
         struct {
             uint32_t length;
             uint8_t data[];
-        } write;
+        } CC_PACKED write;
         struct {
-            uint8_t flag;
+            uint8_t flag; // HKRapServerSeek
             uint64_t offset;
-        } seek;
+        } CC_PACKED seek;
         struct {
             uint32_t fd;
-        } close;
+        } CC_PACKED close;
         struct {
             uint32_t length;
             uint8_t command[];
-        } system;
+        } CC_PACKED system;
         struct {
             uint32_t length;
             uint8_t command[];
-        } cmd;
+        } CC_PACKED cmd;
     };
-} HKRapServerDataRequest;
+} CC_PACKED HKRapServerDataRequest;
 
 typedef struct {
     uint8_t op; // HKRapServerOperation
     union {
         struct {
             uint32_t fd;
-        } open;
+        } CC_PACKED open;
         struct {
             uint32_t length;
             uint8_t data[];
-        } read;
+        } CC_PACKED read;
         struct {
             uint32_t length;
-        } write;
+        } CC_PACKED write;
         struct {
             uint64_t offset;
-        } seek;
+        } CC_PACKED seek;
         struct {
             uint32_t ret;
-        } close;
+        } CC_PACKED close;
         struct {
             uint32_t length;
             uint8_t result[];
-        } system;
+        } CC_PACKED system;
         struct {
             uint32_t length;
             uint8_t result[];
-        } cmd;
+        } CC_PACKED cmd;
     };
 } CC_PACKED HKRapServerDataResponse;
 
 #define HK_RAP_SERVER_DATA_OP_SIZE sizeof(uint8_t)
+
+#define HK_RAP_SERVER_DATA_REQUEST_OPEN_SIZE(length)    (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataRequest*)NULL)->open)) + length)
+#define HK_RAP_SERVER_DATA_REQUEST_READ_SIZE            (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataRequest*)NULL)->read)))
+#define HK_RAP_SERVER_DATA_REQUEST_WRITE_SIZE(length)   (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataRequest*)NULL)->write)) + length)
+#define HK_RAP_SERVER_DATA_REQUEST_SEEK_SIZE            (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataRequest*)NULL)->seek)))
+#define HK_RAP_SERVER_DATA_REQUEST_CLOSE_SIZE           (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataRequest*)NULL)->close)))
+#define HK_RAP_SERVER_DATA_REQUEST_SYSTEM_SIZE(length)  (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataRequest*)NULL)->system)) + length)
+#define HK_RAP_SERVER_DATA_REQUEST_CMD_SIZE(length)     (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataRequest*)NULL)->cmd)) + length)
 
 #define HK_RAP_SERVER_DATA_RESPONSE_OPEN_SIZE           (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataResponse*)NULL)->open)))
 #define HK_RAP_SERVER_DATA_RESPONSE_READ_SIZE(length)   (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataResponse*)NULL)->read)) + length)
@@ -113,6 +127,99 @@ typedef struct {
 #define HK_RAP_SERVER_DATA_RESPONSE_CLOSE_SIZE          (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataResponse*)NULL)->close)))
 #define HK_RAP_SERVER_DATA_RESPONSE_SYSTEM_SIZE(length) (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataResponse*)NULL)->system)) + length)
 #define HK_RAP_SERVER_DATA_RESPONSE_CMD_SIZE(length)    (HK_RAP_SERVER_DATA_OP_SIZE + sizeof(typeof(((HKRapServerDataResponse*)NULL)->cmd)) + length)
+
+static ssize_t RapServerRecv(int Connection, void *Buffer, size_t Size)
+{
+    ssize_t Received = 0, Ret = 0;
+    for (_Bool Complete = FALSE; (!Complete) && (Received < Size) && ((Ret = recv(Connection, Buffer + Received, Size - Received, 0)) > 0); )
+    {
+        Received += Ret;
+        
+        switch (((HKRapServerDataRequest*)Buffer)->op)
+        {
+            case HKRapServerOperationOpen:
+                Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_OPEN_SIZE(0)) && (Received == HK_RAP_SERVER_DATA_REQUEST_OPEN_SIZE(((HKRapServerDataRequest*)Buffer)->open.length));
+                break;
+                
+            case HKRapServerOperationRead:
+                Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_READ_SIZE);
+                break;
+                
+            case HKRapServerOperationWrite:
+                Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_WRITE_SIZE(0)) && (Received == HK_RAP_SERVER_DATA_REQUEST_WRITE_SIZE(ntohl(((HKRapServerDataRequest*)Buffer)->write.length)));
+                break;
+                
+            case HKRapServerOperationSeek:
+                Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_SEEK_SIZE);
+                break;
+                
+            case HKRapServerOperationClose:
+                Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_CLOSE_SIZE);
+                break;
+                
+            case HKRapServerOperationSystem:
+                Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_SYSTEM_SIZE(0)) && (Received == HK_RAP_SERVER_DATA_REQUEST_SYSTEM_SIZE(ntohl(((HKRapServerDataRequest*)Buffer)->system.length)));
+                break;
+                
+            case HKRapServerOperationCmd:
+                Complete = (Received >= HK_RAP_SERVER_DATA_REQUEST_CMD_SIZE(0)) && (Received == HK_RAP_SERVER_DATA_REQUEST_CMD_SIZE(ntohl(((HKRapServerDataRequest*)Buffer)->cmd.length)));
+                break;
+        }
+    }
+    
+    return Ret == -1 ? -1 : Received;
+}
+
+static ssize_t RapServerSend(int Connection, void *Buffer, size_t Size)
+{
+    ssize_t Sent = 0, Ret = 0;
+    for (_Bool Complete = FALSE; (!Complete) && ((Ret = send(Connection, Buffer + Sent, Size - Sent, 0)) <= Size) && (Ret != -1); )
+    {
+        Sent += Ret;
+        
+        switch (((HKRapServerDataResponse*)Buffer)->op ^ HKRapServerOperationReply)
+        {
+            case HKRapServerOperationOpen:
+                Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_OPEN_SIZE);
+                break;
+                
+            case HKRapServerOperationRead:
+                Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_READ_SIZE(0)) && (Sent == HK_RAP_SERVER_DATA_RESPONSE_READ_SIZE(ntohl(((HKRapServerDataResponse*)Buffer)->read.length)));
+                break;
+                
+            case HKRapServerOperationWrite:
+                Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_WRITE_SIZE);
+                break;
+                
+            case HKRapServerOperationSeek:
+                Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_SEEK_SIZE);
+                break;
+                
+            case HKRapServerOperationClose:
+                Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_CLOSE_SIZE);
+                break;
+                
+            case HKRapServerOperationSystem:
+                Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_SYSTEM_SIZE(0)) && (Sent == HK_RAP_SERVER_DATA_RESPONSE_SYSTEM_SIZE(ntohl(((HKRapServerDataResponse*)Buffer)->system.length)));
+                break;
+                
+            case HKRapServerOperationCmd:
+                Complete = (Sent >= HK_RAP_SERVER_DATA_RESPONSE_CMD_SIZE(0)) && (Sent == HK_RAP_SERVER_DATA_RESPONSE_CMD_SIZE(ntohl(((HKRapServerDataResponse*)Buffer)->cmd.length)));
+                break;
+        }
+    }
+
+    return Ret == -1 ? -1 : Sent;
+}
+
+static struct {
+    uint8_t pc;
+    uint8_t memory[256];
+} DataPool[3];
+static atomic_flag AvailableIndex[3] = { ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT };
+static CCConcurrentBuffer DataIndex = NULL;
+
+#define HK_RAP_SERVER_BINARY_SIZE (sizeof(DataPool->memory) / sizeof(typeof(*DataPool->memory)))
 
 static int RapServerLoop(void *Arg)
 {
@@ -161,7 +268,9 @@ static int RapServerLoop(void *Arg)
         return EXIT_FAILURE;
     }
     
-    uint8_t Buffer[256];
+    uint8_t Buffer[sizeof(HKRapServerDataResponse) + HK_RAP_SERVER_BINARY_SIZE];
+    uintptr_t Index = 0;
+    uint64_t Offset = 0;
     for ( ; ; )
     {
         int Connection = accept(SockFd, (struct sockaddr*)&Address, &(socklen_t){ sizeof(Address) });
@@ -169,7 +278,7 @@ static int RapServerLoop(void *Arg)
         
         for ( ; Connection != -1; )
         {
-            ssize_t Size = recv(Connection, Buffer, sizeof(Buffer) / sizeof(typeof(*Buffer)), 0);
+            ssize_t Size = RapServerRecv(Connection, Buffer, sizeof(Buffer) / sizeof(typeof(*Buffer)));
             if (Size > 0)
             {
                 switch (((HKRapServerDataRequest*)Buffer)->op)
@@ -179,18 +288,40 @@ static int RapServerLoop(void *Arg)
                         uint32_t Fd = 1;
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
                         ((HKRapServerDataResponse*)Buffer)->open.fd = htonl(Fd);
-                        Size = send(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_OPEN_SIZE, 0);
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_OPEN_SIZE);
                         if (Size == -1) perror("reply open");
                         break;
                     }
                         
                     case HKRapServerOperationRead:
                     {
+                        uintptr_t NewIndex = (uintptr_t)CCConcurrentBufferReadData(DataIndex);
+                        if (NewIndex)
+                        {
+                            atomic_flag_clear_explicit(&AvailableIndex[(uintptr_t)Index - 1], memory_order_relaxed);
+                            Index = NewIndex;
+                        }
+                        
                         uint32_t Length = 0;
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
+                        
+                        if (Index)
+                        {
+                            Length = ntohl(((HKRapServerDataRequest*)Buffer)->read.length);
+                            if (Length > HK_RAP_SERVER_BINARY_SIZE) Length = HK_RAP_SERVER_BINARY_SIZE;
+                            
+                            if (Offset < HK_RAP_SERVER_BINARY_SIZE)
+                            {
+                                Length -= Offset;
+                                memcpy(((HKRapServerDataResponse*)Buffer)->read.data, DataPool[Index - 1].memory + Offset, Length);
+                            }
+                            
+                            else Length = 0;
+                        }
+                        
                         ((HKRapServerDataResponse*)Buffer)->read.length = htonl(Length);
-                        memcpy(((HKRapServerDataResponse*)Buffer)->read.data, (uint8_t[]){ 0 }, Length);
-                        Size = send(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_READ_SIZE(Length), 0);
+                        
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_READ_SIZE(Length));
                         if (Size == -1) perror("reply read");
                         break;
                     }
@@ -200,17 +331,38 @@ static int RapServerLoop(void *Arg)
                         uint32_t Length = 0;
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
                         ((HKRapServerDataResponse*)Buffer)->write.length = htonl(Length);
-                        Size = send(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_WRITE_SIZE, 0);
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_WRITE_SIZE);
                         if (Size == -1) perror("reply write");
                         break;
                     }
                         
                     case HKRapServerOperationSeek:
                     {
-                        uint64_t Offset = 0;
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
+                        
+                        if (Index)
+                        {
+                            switch (((HKRapServerDataRequest*)Buffer)->seek.flag)
+                            {
+                                case HKRapServerSeekSet:
+                                    Offset = ntohll(((HKRapServerDataRequest*)Buffer)->seek.offset);
+                                    break;
+                                    
+                                case HKRapServerSeekCur:
+                                    Offset += ntohll(((HKRapServerDataRequest*)Buffer)->seek.offset);
+                                    break;
+                                    
+                                case HKRapServerSeekEnd:
+                                    Offset = HK_RAP_SERVER_BINARY_SIZE + ntohll(((HKRapServerDataRequest*)Buffer)->seek.offset);
+                                    break;
+                            }
+                        }
+                        
+                        else Offset = 0 + ntohll(((HKRapServerDataRequest*)Buffer)->seek.offset);
+                        
                         ((HKRapServerDataResponse*)Buffer)->seek.offset = htonll(Offset);
-                        Size = send(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_SEEK_SIZE, 0);
+                        
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_SEEK_SIZE);
                         if (Size == -1) perror("reply seek");
                         break;
                     }
@@ -220,7 +372,7 @@ static int RapServerLoop(void *Arg)
                         uint32_t Ret = 0;
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
                         ((HKRapServerDataResponse*)Buffer)->close.ret = htonl(Ret);
-                        Size = send(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_CLOSE_SIZE, 0);
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_CLOSE_SIZE);
                         if (Size == -1) perror("reply close");
                         
                         close(Connection); Connection = -1;
@@ -233,7 +385,7 @@ static int RapServerLoop(void *Arg)
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
                         ((HKRapServerDataResponse*)Buffer)->system.length = htonl(Length);
                         memcpy(((HKRapServerDataResponse*)Buffer)->system.result, (uint8_t[]){ 0 }, Length);
-                        Size = send(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_SYSTEM_SIZE(Length), 0);
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_SYSTEM_SIZE(Length));
                         if (Size == -1) perror("reply system");
                         break;
                     }
@@ -244,7 +396,7 @@ static int RapServerLoop(void *Arg)
                         ((HKRapServerDataResponse*)Buffer)->op |= HKRapServerOperationReply;
                         ((HKRapServerDataResponse*)Buffer)->cmd.length = htonl(Length);
                         memcpy(((HKRapServerDataResponse*)Buffer)->cmd.result, (uint8_t[]){ 0 }, Length);
-                        Size = send(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_CMD_SIZE(Length), 0);
+                        Size = RapServerSend(Connection, Buffer, HK_RAP_SERVER_DATA_RESPONSE_CMD_SIZE(Length));
                         if (Size == -1) perror("reply cmd");
                         break;
                     }
@@ -262,13 +414,31 @@ static int RapServerLoop(void *Arg)
     return EXIT_SUCCESS;
 }
 
+static void HKRapServerDataIndexDestructor(void *Index)
+{
+    atomic_flag_clear_explicit(&AvailableIndex[(uintptr_t)Index - 1], memory_order_relaxed);
+}
+
 static thrd_t RapServerThread;
 void HKRapServerStart(void)
 {
+    DataIndex = CCConcurrentBufferCreate(CC_STD_ALLOCATOR, HKRapServerDataIndexDestructor);
+    
     int err;
     if ((err = thrd_create(&RapServerThread, (thrd_start_t)RapServerLoop, NULL)) != thrd_success)
     {
         CC_LOG_ERROR("Failed to create rap server thread (%d)", err);
         return;
     }
+}
+
+void HKRapServerUpdate(HKHubArchProcessor Processor)
+{
+    uintptr_t Index = 0;
+    while (atomic_flag_test_and_set_explicit(&AvailableIndex[Index++], memory_order_relaxed));
+    
+    DataPool[Index - 1].pc = Processor->state.pc;
+    memcpy(DataPool[Index - 1].memory, Processor->memory, sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)));
+    
+    CCConcurrentBufferWriteData(DataIndex, (void*)Index);
 }
