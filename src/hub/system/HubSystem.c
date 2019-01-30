@@ -28,6 +28,7 @@
 #include "HubProcessorComponent.h"
 #include "HubArchScheduler.h"
 #include "HubArchInstruction.h"
+#include "RapServer.h"
 
 static _Bool HKHubSystemTryLock(CCComponentSystemHandle *Handle);
 static void HKHubSystemLock(CCComponentSystemHandle *Handle);
@@ -182,6 +183,8 @@ static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Proce
     
     CCExpressionSetState(State, CC_STRING(".ports"), Ports, FALSE);
     CCExpressionSetState(State, CC_STRING(".ports-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    
+    HKRapServerUpdate(Processor);
 }
 
 static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction)
@@ -298,6 +301,8 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     }
     
     GUIManagerUnlock();
+    
+    HKRapServerUpdate(Processor);
 }
 
 static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor)
@@ -329,6 +334,8 @@ static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor
     CCExpressionSetState(State, CC_STRING(".breakpoints-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     
     GUIManagerUnlock();
+    
+    HKRapServerUpdate(Processor);
 }
 
 static void HKHubSystemDebuggerDebugModeChangeHook(HKHubArchProcessor Processor)
