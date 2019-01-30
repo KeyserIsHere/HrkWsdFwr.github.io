@@ -1,0 +1,11 @@
+=PC pc
+gpr r0 .8 0 0
+gpr r1 .8 1 0
+gpr r2 .8 2 0
+gpr r3 .8 3 0
+flg flags .8 4 0 ....oscz
+flg of .1 4.0 0 overflow
+flg sf .1 4.1 0 sign
+flg cf .1 4.2 0 carry
+flg zf .1 4.3 0 zero
+gpr pc .8 5 0
