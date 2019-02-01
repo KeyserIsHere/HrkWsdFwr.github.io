@@ -399,27 +399,37 @@ static int RapServerLoop(void *Arg)
                         
                         if (CCStringEqual(Cmd, CC_STRING("drp")))
                         {
-                            ((HKRapServerDataResponse*)Buffer)->op ^= HKRapServerOperationReply;
-                            
                             FSPath Path = FSPathCopy(B2EngineConfiguration.project);
                             FSPathRemoveComponentLast(Path);
                             FSPathRemoveComponentLast(Path);
                             FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "radare"));
                             FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, "register-profile"));
                             
-                            const char *Profile = FSPathGetPathString(Path); // TODO: Add function to retrieve system path
-                            Length = (uint32_t)strlen(Profile) + 1;
-                            if ((Length + 4) < HK_RAP_SERVER_BINARY_SIZE)
+                            FSHandle Handle;
+                            if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
                             {
-                                memcpy(((HKRapServerDataResponse*)Buffer)->cmd.result + 4, Profile, Length);
-                                Length += 4;
-                                memcpy(((HKRapServerDataResponse*)Buffer)->cmd.result, "drp ", 4);
-                            }
-                            
-                            else
-                            {
-                                CC_LOG_ERROR("Path to register profile (%s) exceeds allowed size for RAP server CMD response", Profile);
-                                Length = 0;
+                                size_t Size = FSManagerGetSize(Path);
+                                char *Profile;
+                                CC_SAFE_Malloc(Profile, sizeof(char) * (Size + 1));
+                                
+                                FSHandleRead(Handle, &Size, Profile, FSBehaviourDefault);
+                                Profile[Size] = 0;
+                                
+                                FSHandleClose(Handle);
+                                
+                                Length = (uint32_t)Size + 1;
+                                if (Length < HK_RAP_SERVER_BINARY_SIZE)
+                                {
+                                    memcpy(((HKRapServerDataResponse*)Buffer)->cmd.result, Profile, Length);
+                                }
+                                
+                                else
+                                {
+                                    CC_LOG_ERROR("Path to register profile (%s) exceeds allowed size for RAP server CMD response", Profile);
+                                    Length = 0;
+                                }
+                                
+                                CC_SAFE_Free(Profile);
                             }
                             
                             FSPathDestroy(Path);
