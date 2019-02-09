@@ -45,7 +45,7 @@
             (cat (loop "@instruction" .instructions
                 (format :hex @instruction (suffix: ": ") (compact: #f) (precision: 2))
             ) "\n")
-            (flatten colour: .colour)
+            (colour: .colour)
         )
         (align: .text-alignment)
         (wrap: :word :multi)
