@@ -57,14 +57,14 @@
     (state! ".instruction-marker" (quote (repeat "@index" (get 0 (disassemble .memory .pc))
         (begin
             (state! ".offset" (if (>= 255 (+ @index .pc)) (+ @index .pc) (- (+ @index .pc) 256)))
-            (render-rect (- (flatten (text-cursor-position .text (+ (- (* .offset 3) (/ .offset 16)) 1)) 23 20) (13 5)) .instruction-colour) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
+            (render-rect (- (flatten (text-cursor-position .text (+ (* .offset 3) 1)) 23 20) (13 5)) .instruction-colour) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
         )
     )) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .rect-changed) #f))))
 
     ;TODO: Need to think about a better way to represent breakpoints
     (state! ".breakpoint-markers" (quote
         (loop "@bp" .breakpoints
-            (render-rect (- (flatten (text-cursor-position .text (+ (- (* (get 0 @bp) 3) (/ (get 0 @bp) 16)) 1)) 20 20) (10 5)) (0 0 0 0) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
+            (render-rect (- (flatten (text-cursor-position .text (+ (* (get 0 @bp) 3) 1)) 20 20) (10 5)) (0 0 0 0) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
                 (outline: 2
                     (if (= (get 1 @bp) :read)
                         .read-breakpoint-colour
@@ -90,7 +90,7 @@
                 (begin
                     (state! ".index")
                     (.index! (text-cursor-offset .text @pos)) ;TODO: make selection easier by using a radius and choosing the offset that represents the biggest area of that radius
-                    (if (!= .index -1) (message (component-router :debugger) :debug-toggle-break ((/ (+ .index (/ .index 47)) 3) :read)))
+                    (if (!= .index -1) (message (component-router :debugger) :debug-toggle-break ((/ .index 3) :read)))
                 )
             )
         )
@@ -99,7 +99,7 @@
                 (begin
                     (state! ".index")
                     (.index! (text-cursor-offset .text @pos)) ;TODO: make selection easier by using a radius and choosing the offset that represents the biggest area of that radius
-                    (if (!= .index -1) (message (component-router :debugger) :debug-toggle-break ((/ (+ .index (/ .index 47)) 3) :write)))
+                    (if (!= .index -1) (message (component-router :debugger) :debug-toggle-break ((/ .index 3) :write)))
                 )
             )
         )
