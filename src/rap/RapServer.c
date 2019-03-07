@@ -216,8 +216,7 @@ static struct {
     uint8_t pc;
     uint8_t memory[256];
 } DataPool[3];
-static atomic_flag AvailableIndex[3] = { ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT, ATOMIC_FLAG_INIT };
-static CCConcurrentBuffer DataIndex = NULL;
+static CCConcurrentIndexBuffer DataIndex = NULL;
 
 #define HK_RAP_SERVER_BINARY_SIZE (sizeof(DataPool->memory) / sizeof(typeof(*DataPool->memory)))
 
@@ -269,7 +268,7 @@ static int RapServerLoop(void *Arg)
     }
     
     uint8_t Buffer[sizeof(HKRapServerDataResponse) + HK_RAP_SERVER_BINARY_SIZE];
-    uintptr_t Index = 0;
+    size_t Index = 0;
     uint64_t Offset = 0;
     for ( ; ; )
     {
@@ -295,11 +294,12 @@ static int RapServerLoop(void *Arg)
                         
                     case HKRapServerOperationRead:
                     {
-                        uintptr_t NewIndex = (uintptr_t)CCConcurrentBufferReadData(DataIndex);
-                        if (NewIndex)
+                        size_t NewIndex;
+                        if (CCConcurrentIndexBufferReadAcquire(DataIndex, &NewIndex))
                         {
-                            atomic_flag_clear_explicit(&AvailableIndex[(uintptr_t)Index - 1], memory_order_relaxed);
-                            Index = NewIndex;
+                            if (Index) CCConcurrentIndexBufferDiscard(DataIndex, Index);
+                            
+                            Index = NewIndex + 1;
                         }
                         
                         uint32_t Length = 0;
@@ -467,15 +467,10 @@ static int RapServerLoop(void *Arg)
     return EXIT_SUCCESS;
 }
 
-static void HKRapServerDataIndexDestructor(void *Index)
-{
-    atomic_flag_clear_explicit(&AvailableIndex[(uintptr_t)Index - 1], memory_order_relaxed);
-}
-
 static thrd_t RapServerThread;
 void HKRapServerStart(void)
 {
-    DataIndex = CCConcurrentBufferCreate(CC_STD_ALLOCATOR, HKRapServerDataIndexDestructor);
+    DataIndex = CCConcurrentIndexBufferCreate(CC_STD_ALLOCATOR, sizeof(DataPool) / sizeof(typeof(*DataPool)));
     
     int err;
     if ((err = thrd_create(&RapServerThread, (thrd_start_t)RapServerLoop, NULL)) != thrd_success)
@@ -487,11 +482,10 @@ void HKRapServerStart(void)
 
 void HKRapServerUpdate(HKHubArchProcessor Processor)
 {
-    uintptr_t Index = 0;
-    while (atomic_flag_test_and_set_explicit(&AvailableIndex[Index++], memory_order_relaxed));
+    const size_t Index = CCConcurrentIndexBufferWriteAcquire(DataIndex);
     
-    DataPool[Index - 1].pc = Processor->state.pc;
-    memcpy(DataPool[Index - 1].memory, Processor->memory, sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)));
+    DataPool[Index].pc = Processor->state.pc;
+    memcpy(DataPool[Index].memory, Processor->memory, sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)));
     
-    CCConcurrentBufferWriteData(DataIndex, (void*)Index);
+    CCConcurrentIndexBufferStage(DataIndex, Index);
 }
