@@ -93,19 +93,6 @@ static _Bool HKHubSystemHandlesComponent(CCComponentSystemHandle *Handle, CCComp
     return (id & 0x7f000000) == HK_HUB_COMPONENT_FLAG;
 }
 
-static GUIObject GUIObjectWithNamespace(CCString Namespace)
-{
-    CC_COLLECTION_FOREACH(GUIObject, UI, GUIManagerGetObjects())
-    {
-        CCExpression Name = CCExpressionGetStateStrict(GUIObjectGetExpressionState(UI), CC_STRING("@namespace"));
-        if ((Name) && (CCExpressionGetType(Name) == CCExpressionValueTypeAtom) && (CCStringEqual(CCExpressionGetAtom(Name), Namespace))) return UI;
-        
-        GUIObjectWithNamespace(Namespace);
-    }
-    
-    return NULL;
-}
-
 static CCString BreakpointType[] = {
     0,
     CC_STRING(":read"),
@@ -367,7 +354,7 @@ static void HKHubSystemAttachDebugger(CCComponent Debugger)
             Target->state.debug.debugModeChange = HKHubSystemDebuggerDebugModeChangeHook;
             
             GUIManagerLock();
-            Target->state.debug.context = GUIObjectWithNamespace(CC_STRING(":debugger"));
+            Target->state.debug.context = GUIManagerFindObjectWithNamespace(CC_STRING(":debugger"));
             HKHubSystemInitDebugger(Target->state.debug.context, Target);
             GUIManagerUnlock();
             
