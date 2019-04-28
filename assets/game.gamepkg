@@ -2,6 +2,9 @@
     (default-resolution: 740 650) ; resolution or window size
     (default-fullscreen: #f) ; fullscreen mode
 
+    (renderer: :opengl) ; renderer API
+    (vsync: #t) ; vertical sync
+
     (dir-fonts: "font/") ; font directories
     (dir-levels: "logic/levels/") ; level directories
     (dir-rules: "logic/rules/") ; rule directories
@@ -10,6 +13,7 @@
     (dir-sounds: "audio/") ; sound directories
     (dir-layouts: "ui/") ; layout directories
     (dir-entities: "logic/entities/") ; entity directories
+    (dir-save: "save/") ; save directory
     (dir-logs: "logs/") ; log directory
     (dir-tmp: "tmp/") ; tmp directory
 )
