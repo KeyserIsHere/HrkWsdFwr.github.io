@@ -1,0 +1,22 @@
+# Psuedo Random Number Generator Procedure
+# An 8-bit xorshift based PRNG
+#
+# Input
+# r0: seed
+#
+# Output
+# r0: random value
+# r1: modified
+# r2: unchanged
+# r3: unchanged
+
+rand:
+    mov r1, r0
+    shl r0, 2
+    xor r0, r1
+    mov r1, r0
+    shr r0, 6
+    xor r0, r1
+    mov r1, r0
+    shl r0, 5
+    xor r0, r1
