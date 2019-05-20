@@ -1,0 +1,66 @@
+.define htp_buffer_hash, 0
+.define htp_buffer_count, 1
+.define htp_buffer_data, 2
+.define htp_buffer_data_size, 10
+.define htp_buffer_size, 12 #htp_buffer_data_size + 2
+
+.entrypoint
+listen:
+    recv wireless_receiver_in, [packet]
+    jz listen
+    mov r0, [packet]
+    mov r1, r0
+    and r1, 0x80
+    jnz hash_trailing
+    # 0hhhdddd
+    mov r1, r0
+    and r0, 0xf
+    shr r1, 4
+    jnz hash
+    # 00000hhh
+find_free_buffer:
+    mov r2, [buffers + r3 + htp_buffer_hash]
+    cmp r2, 0
+    jz init_buffer
+    add r3, htp_buffer_size
+    cmp r3, 120 # TODO: htp_buffer_data_size * 3
+    jul find_free_buffer
+    mov r3, 0
+    # TODO: handle force find or not found
+    jmp find_free_buffer
+init_buffer:
+    mov [buffers + r3 + htp_buffer_hash], r0
+    mov [buffers + r3 + htp_buffer_count], 0
+    jmp listen
+hash_trailing:
+    # 1ddddhhh
+    mov r1, r0
+    and r1, 7
+    shr r0, 3
+    and r0, 4
+    # TODO: check end 1dddd000
+hash:
+    mov r2, [packet]
+    umod r2, 7
+    add r2, 1
+find_buffer:
+    cmp r2, [buffers + r3 + htp_buffer_hash]
+    jz set_buffer
+    add r3, htp_buffer_size
+    cmp r3, 120 # TODO: htp_buffer_data_size * 3
+    jul find_buffer
+    mov r3, 0
+    # TODO: handle not found
+    jmp find_buffer
+set_buffer:
+    mov [buffers + r3 + htp_buffer_hash], r1
+    mov r2, [buffers + r3 + htp_buffer_count]
+    and r2, 1
+    jnz skip_shift
+    shl r0, 4
+skip_shift:
+    or [buffers + r3 + htp_buffer_data], r0
+    add [buffers + r3 + htp_buffer_count], 1
+    jmp listen
+packet: .byte 0
+buffers:
