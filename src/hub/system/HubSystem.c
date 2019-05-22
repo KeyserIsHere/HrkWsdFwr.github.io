@@ -244,7 +244,7 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
                     CCExpression ModifiedMemory = CCExpressionCreateList(CC_STD_ALLOCATOR);
                     CCExpression ModifiedRange = CCExpressionCreateList(CC_STD_ALLOCATOR);
                     CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Offset) });
-                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Offset + 1) });
+                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, 1) });
                     
                     CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedMemory), &ModifiedRange);
                     
