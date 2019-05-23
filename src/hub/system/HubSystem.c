@@ -207,31 +207,10 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     {
         if (Instruction->operand[Loop].type == HKHubArchInstructionOperandM)
         {
-            //TODO: Calculating offset could be wrong as processor state has changed, implement better alternative to get changed state
             if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)
             {
                 if (Instruction->operand[Loop].type == HKHubArchInstructionOperandM)
                 {
-                    uint8_t Offset = 0;
-                    switch (Instruction->operand[Loop].memory.type)
-                    {
-                        case HKHubArchInstructionMemoryOffset:
-                            Offset = Instruction->operand[Loop].memory.offset;
-                            break;
-                            
-                        case HKHubArchInstructionMemoryRegister:
-                            Offset = Processor->state.r[Instruction->operand[Loop].memory.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
-                            break;
-                            
-                        case HKHubArchInstructionMemoryRelativeOffset:
-                            Offset = Instruction->operand[Loop].memory.relativeOffset.offset + Processor->state.r[Instruction->operand[Loop].memory.relativeOffset.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
-                            break;
-                            
-                        case HKHubArchInstructionMemoryRelativeRegister:
-                            Offset = Processor->state.r[Instruction->operand[Loop].memory.relativeReg[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask] + Processor->state.r[Instruction->operand[Loop].memory.relativeReg[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask];
-                            break;
-                    }
-                    
                     CCExpression Memory = CCExpressionCreateList(CC_STD_ALLOCATOR);
                     for (size_t Loop = 0; Loop < sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)); Loop++)
                     {
@@ -240,11 +219,11 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
                     
                     CCExpressionSetState(State, CC_STRING(".memory"), Memory, FALSE);
                     CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
-                    //TODO: Change modified range to work for variable recv's (only instruction that may modify more than 1 byte)
+                    
                     CCExpression ModifiedMemory = CCExpressionCreateList(CC_STD_ALLOCATOR);
                     CCExpression ModifiedRange = CCExpressionCreateList(CC_STD_ALLOCATOR);
-                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Offset) });
-                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, 1) });
+                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.debug.modified.offset) });
+                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.debug.modified.size) });
                     
                     CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedMemory), &ModifiedRange);
                     
