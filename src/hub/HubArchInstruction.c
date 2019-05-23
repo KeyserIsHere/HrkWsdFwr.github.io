@@ -856,6 +856,9 @@ static inline uint8_t *HKHubArchInstructionOperandDestinationValue(HKHubArchProc
                     break;
             }
             
+            Processor->state.debug.modified.offset = Offset;
+            Processor->state.debug.modified.size = 1;
+            
             return &Processor->memory[Offset];
         }
             
@@ -1345,10 +1348,13 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
                 Success = TRUE;
                 
                 uint8_t Offset = Processor->message.offset;
-                for (uint8_t Size = Processor->message.data.size; Size--; )
+                for (size_t Loop = 0; Loop < Processor->message.data.size; Loop++)
                 {
-                    Processor->memory[Offset + Size] = Processor->message.data.memory[Processor->message.data.offset + Size];
+                    Processor->memory[Offset + Loop] = Processor->message.data.memory[Processor->message.data.offset + Loop];
                 }
+                
+                Processor->state.debug.modified.offset = Offset;
+                Processor->state.debug.modified.size = Processor->message.data.size;
                 break;
                 
             case HKHubArchPortResponseTimeout:

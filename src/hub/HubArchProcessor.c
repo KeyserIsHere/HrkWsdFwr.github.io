@@ -76,6 +76,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
         Processor->state.debug.step = 0;
         Processor->state.debug.breakpoints = NULL;
+        Processor->state.debug.modified.size = 0;
         Processor->state.debug.operation = NULL;
         Processor->state.debug.breakpointChange = NULL;
         Processor->state.debug.debugModeChange = NULL;
@@ -115,6 +116,7 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->state.r[3] = 0;
     Processor->state.pc = Binary->entrypoint;
     Processor->state.flags = 0;
+    Processor->state.debug.modified.size = 0;
     Processor->complete = FALSE;
     
     HKHubArchProcessorDebugReset(Processor);
@@ -126,6 +128,7 @@ void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
     
     Processor->state.debug.mode = HKHubArchProcessorDebugModeContinue;
     Processor->state.debug.step = 0;
+    Processor->state.debug.modified.size = 0;
     Processor->state.debug.operation = NULL;
     Processor->state.debug.context = NULL;
     
@@ -209,9 +212,9 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         const uint8_t Offset = Device->message.data.offset;
-        for (uint8_t Size = Message->size; Size--; )
+        for (size_t Loop = 0; Loop < Message->size; Loop++)
         {
-            Device->memory[Offset + Size] = Message->memory[Message->offset + Size];
+            Device->memory[Offset + Loop] = Message->memory[Message->offset + Loop];
         }
         
         Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
@@ -220,6 +223,9 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         if ((!HKHubArchPortIsReady(HKHubArchPortConnectionGetPort(Connection, Device, Port))) || (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port)))) return HKHubArchPortResponseDefer;
         
         Device->message.type = HKHubArchProcessorMessageComplete;
+        
+        Device->state.debug.modified.offset = Offset;
+        Device->state.debug.modified.size = Message->size;
         
         return HKHubArchPortResponseSuccess;
     }
@@ -416,6 +422,8 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                     if (!(Result & HKHubArchInstructionOperationResultFlagSkipPC)) Processor->state.pc = NextPC;
                     
                     if (Processor->state.debug.operation) Processor->state.debug.operation(Processor, &Instruction);
+                    
+                    Processor->state.debug.modified.size = 0;
                     
                     if ((Processor->state.debug.step) && (--Processor->state.debug.step == 0)) continue;
                 }

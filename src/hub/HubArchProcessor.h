@@ -91,6 +91,10 @@ typedef struct HKHubArchProcessorInfo {
             size_t step;
             CCDictionary breakpoints;
             struct {
+                uint8_t offset;
+                uint8_t size;
+            } modified;
+            struct {
                 void *context;
                 HKHubArchProcessorDebugOperationCallback operation;
                 HKHubArchProcessorDebugBreakpointChangeCallback breakpointChange;
