@@ -71,6 +71,7 @@ skip_shift:
     and r1, 0x80
     jz listen
     # end
+    sub r2, r3
     add r2, 1
     send wireless_receiver_out, r2, [buffers + r3 + htp_buffer_data]
     jz listen
