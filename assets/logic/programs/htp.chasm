@@ -3,11 +3,24 @@
 .define htp_buffer_data, 2
 .define htp_buffer_data_size, 10
 .define htp_buffer_size, 12 #htp_buffer_data_size + 2
+.define htp_buffer_max, 60 # TODO: htp_buffer_data_size * 3
 
 .entrypoint
 listen:
     recv wireless_receiver_in, [packet]
+    jnz decode_packet
+    add r3, htp_buffer_size
+    cmp r3, htp_buffer_max
+    jul find_complete_buffer
+    mov r3, 0
+find_complete_buffer:
+    mov r1, [buffers + r3 + htp_buffer_hash]
+    and r1, 0x80
     jz listen
+    mov r2, [buffers + r3 + htp_buffer_count]
+    udiv r2, 2
+    jmp send_buffer
+decode_packet:
     mov r0, [packet]
     mov r1, r0
     and r1, 0x80
@@ -19,12 +32,11 @@ listen:
     jnz hash
     # 00000hhh
 find_free_buffer:
-    mov r2, [buffers + r3 + htp_buffer_hash]
-    cmp r2, 0
+    cmp [buffers + r3 + htp_buffer_hash], 0
     jz init_buffer
     # TODO: check if r2 has 0x80 bit set and reclaim buffer
     add r3, htp_buffer_size
-    cmp r3, 120 # TODO: htp_buffer_data_size * 3
+    cmp r3, htp_buffer_max
     jul find_free_buffer
     mov r3, 0
     # TODO: handle force find or not found
@@ -51,7 +63,7 @@ find_buffer:
     cmp r2, [buffers + r3 + htp_buffer_hash]
     jz set_buffer
     add r3, htp_buffer_size
-    cmp r3, 120 # TODO: htp_buffer_data_size * 3
+    cmp r3, htp_buffer_max
     jul find_buffer
     mov r3, 0
     # TODO: handle not found
@@ -73,6 +85,7 @@ skip_shift:
     # end
     sub r2, r3
     add r2, 1
+send_buffer:
     send wireless_receiver_out, r2, [buffers + r3 + htp_buffer_data]
     jz listen
     mov [buffers + r3 + htp_buffer_hash], 0
