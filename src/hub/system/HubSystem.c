@@ -198,41 +198,38 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     CCExpressionSetState(State, CC_STRING(".pc-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     CCExpressionSetState(State, CC_STRING(".pc-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     
-    CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateList(CC_STD_ALLOCATOR), FALSE);
+    if (Processor->state.debug.modified.size)
+    {
+        CCExpression Memory = CCExpressionCreateList(CC_STD_ALLOCATOR);
+        for (size_t Loop = 0; Loop < sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)); Loop++)
+        {
+            CCOrderedCollectionAppendElement(CCExpressionGetList(Memory), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->memory[Loop]) });
+        }
+        
+        CCExpressionSetState(State, CC_STRING(".memory"), Memory, FALSE);
+        CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+        
+        CCExpression ModifiedMemory = CCExpressionCreateList(CC_STD_ALLOCATOR);
+        CCExpression ModifiedRange = CCExpressionCreateList(CC_STD_ALLOCATOR);
+        CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.debug.modified.offset) });
+        CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.debug.modified.size) });
+        
+        CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedMemory), &ModifiedRange);
+        
+        CCExpressionSetState(State, CC_STRING(".memory-modified"), ModifiedMemory, FALSE);
+    }
+    
+    else
+    {
+        CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+        CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateList(CC_STD_ALLOCATOR), FALSE);
+    }
     
     
     HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(Instruction);
     for (size_t Loop = 0; Loop < 3; Loop++)
     {
-        if (Instruction->operand[Loop].type == HKHubArchInstructionOperandM)
-        {
-            if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)
-            {
-                if (Instruction->operand[Loop].type == HKHubArchInstructionOperandM)
-                {
-                    CCExpression Memory = CCExpressionCreateList(CC_STD_ALLOCATOR);
-                    for (size_t Loop = 0; Loop < sizeof(Processor->memory) / sizeof(typeof(*Processor->memory)); Loop++)
-                    {
-                        CCOrderedCollectionAppendElement(CCExpressionGetList(Memory), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->memory[Loop]) });
-                    }
-                    
-                    CCExpressionSetState(State, CC_STRING(".memory"), Memory, FALSE);
-                    CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
-                    
-                    CCExpression ModifiedMemory = CCExpressionCreateList(CC_STD_ALLOCATOR);
-                    CCExpression ModifiedRange = CCExpressionCreateList(CC_STD_ALLOCATOR);
-                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.debug.modified.offset) });
-                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedRange), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.debug.modified.size) });
-                    
-                    CCOrderedCollectionAppendElement(CCExpressionGetList(ModifiedMemory), &ModifiedRange);
-                    
-                    CCExpressionSetState(State, CC_STRING(".memory-modified"), ModifiedMemory, FALSE);
-                }
-            }
-        }
-        
-        else if (Instruction->operand[Loop].type == HKHubArchInstructionOperandR)
+        if (Instruction->operand[Loop].type == HKHubArchInstructionOperandR)
         {
             if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)
             {
