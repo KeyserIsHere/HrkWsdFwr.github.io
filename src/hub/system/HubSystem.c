@@ -225,42 +225,31 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
         CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateList(CC_STD_ALLOCATOR), FALSE);
     }
     
+    CCString Reg[][3] = {
+        { CC_STRING(".r0"), CC_STRING(".r0-changed"), CC_STRING(".r0-modified") },
+        { CC_STRING(".r1"), CC_STRING(".r1-changed"), CC_STRING(".r1-modified") },
+        { CC_STRING(".r2"), CC_STRING(".r2-changed"), CC_STRING(".r2-modified") },
+        { CC_STRING(".r3"), CC_STRING(".r3-changed"), CC_STRING(".r3-modified") },
+        { CC_STRING(".flags"), CC_STRING(".flags-changed"), CC_STRING(".flags-modified") },
+        { CC_STRING(".pc"), CC_STRING(".pc-changed"), CC_STRING(".pc-modified") }
+    };
     
-    HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(Instruction);
-    for (size_t Loop = 0; Loop < 3; Loop++)
+    if (Processor->state.debug.modified.reg & HKHubArchInstructionRegisterGeneralPurpose)
     {
-        if (Instruction->operand[Loop].type == HKHubArchInstructionOperandR)
-        {
-            if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)
-            {
-                CCString Reg[][3] = {
-                    { CC_STRING(".r0"), CC_STRING(".r0-changed"), CC_STRING(".r0-modified") },
-                    { CC_STRING(".r1"), CC_STRING(".r1-changed"), CC_STRING(".r1-modified") },
-                    { CC_STRING(".r2"), CC_STRING(".r2-changed"), CC_STRING(".r2-modified") },
-                    { CC_STRING(".r3"), CC_STRING(".r3-changed"), CC_STRING(".r3-modified") },
-                    { CC_STRING(".flags"), CC_STRING(".flags-changed"), CC_STRING(".flags-modified") },
-                    { CC_STRING(".pc"), CC_STRING(".pc-changed"), CC_STRING(".pc-modified") }
-                };
-                
-                if (Instruction->operand[Loop].reg & HKHubArchInstructionRegisterGeneralPurpose)
-                {
-                    const size_t Index = Instruction->operand[Loop].reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask;
-                    
-                    CCExpressionSetState(State, Reg[Index][0], CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[Index]), FALSE);
-                    CCExpressionSetState(State, Reg[Index][1], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
-                    CCExpressionSetState(State, Reg[Index][2], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
-                }
-                
-                else if (Instruction->operand[Loop].reg & HKHubArchInstructionRegisterSpecialPurpose)
-                {
-                    const size_t Index = (Instruction->operand[Loop].reg &  HKHubArchInstructionRegisterSpecialPurposeIndexMask) + 4;
-                    
-                    CCExpressionSetState(State, Reg[Index][0], CCExpressionCreateInteger(CC_STD_ALLOCATOR, Index == 4 ? Processor->state.flags : Processor->state.pc), FALSE);
-                    CCExpressionSetState(State, Reg[Index][1], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
-                    CCExpressionSetState(State, Reg[Index][2], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
-                }
-            }
-        }
+        const size_t Index = Processor->state.debug.modified.reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask;
+        
+        CCExpressionSetState(State, Reg[Index][0], CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[Index]), FALSE);
+        CCExpressionSetState(State, Reg[Index][1], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+        CCExpressionSetState(State, Reg[Index][2], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    }
+    
+    else if (Processor->state.debug.modified.reg & HKHubArchInstructionRegisterSpecialPurpose)
+    {
+        const size_t Index = (Processor->state.debug.modified.reg &  HKHubArchInstructionRegisterSpecialPurposeIndexMask) + 4;
+        
+        CCExpressionSetState(State, Reg[Index][0], CCExpressionCreateInteger(CC_STD_ALLOCATOR, Index == 4 ? Processor->state.flags : Processor->state.pc), FALSE);
+        CCExpressionSetState(State, Reg[Index][1], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+        CCExpressionSetState(State, Reg[Index][2], CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     }
     
     GUIManagerUnlock();
