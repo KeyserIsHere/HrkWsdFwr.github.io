@@ -91,6 +91,7 @@ typedef struct HKHubArchProcessorInfo {
             size_t step;
             CCDictionary breakpoints;
             struct {
+                HKHubArchInstructionRegister reg;
                 uint8_t offset;
                 uint8_t size;
             } modified;
