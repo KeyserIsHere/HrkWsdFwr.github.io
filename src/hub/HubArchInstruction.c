@@ -1074,7 +1074,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationCMP(HKHu
     if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
     
     Processor->cycles -= Cycles;
-    uint8_t *Dest = HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[0]);
+    uint8_t *Dest = HKHubArchInstructionOperandStateValue(Processor, &State->operand[0], FALSE);
     const uint8_t *Src = HKHubArchInstructionOperandSourceValue(Processor, &State->operand[1]);
     
     const uint8_t Result = *Dest - *Src;
