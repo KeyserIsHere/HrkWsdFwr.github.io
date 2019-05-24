@@ -22,6 +22,7 @@ find_free_buffer:
     mov r2, [buffers + r3 + htp_buffer_hash]
     cmp r2, 0
     jz init_buffer
+    # TODO: check if r2 has 0x80 bit set and reclaim buffer
     add r3, htp_buffer_size
     cmp r3, 120 # TODO: htp_buffer_data_size * 3
     jul find_free_buffer
@@ -37,8 +38,11 @@ hash_trailing:
     mov r1, r0
     and r1, 7
     shr r0, 3
-    and r0, 4
-    # TODO: check end 1dddd000
+    and r0, 0xf
+    # check end 1dddd000
+    cmp r1, 0
+    jnz hash
+    or r1, 0x80
 hash:
     mov r2, [packet]
     umod r2, 7
@@ -59,8 +63,18 @@ set_buffer:
     jnz skip_shift
     shl r0, 4
 skip_shift:
-    or [buffers + r3 + htp_buffer_data], r0
+    mov r2, [buffers + r3 + htp_buffer_count]
+    udiv r2, 2
+    add r2, r3
+    or [buffers + r2 + htp_buffer_data], r0
     add [buffers + r3 + htp_buffer_count], 1
+    and r1, 0x80
+    jz listen
+    # end
+    add r2, 1
+    send wireless_receiver_out, r2, [buffers + r3 + htp_buffer_data]
+    jz listen
+    mov [buffers + r3 + htp_buffer_hash], 0
     jmp listen
 packet: .byte 0
 buffers:
