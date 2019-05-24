@@ -185,7 +185,7 @@ Instructions
 | 0      | 111110  | nop      |           |           |           | No operation                                                                                                 |
 | 1      | 111111  | jmp      | rel       |           |           | Jump                                                                                                         |
 
-The send/recv instructions can take 4 - 12 cycles because of timeout threshold. This means that if the send/recv does not pair up with another within 12 cycles then it will have reached it's max threshold and continue. If the send/recv do pair up they will take a minimum of 4 cycles (if they were executed at the same time) but could take anywhere from 4 to 12. This does not include the time for the data transfer to complete.
+The send/recv instructions can take 4 - 12 cycles because of timeout threshold. This means that if the send/recv does not pair up with another within 12 cycles then it will have reached its max threshold and continue. If the send/recv do pair up they will take a minimum of 4 cycles (if they were executed at the same time) but could take anywhere from 4 to 12. This does not include the time for the data transfer to complete.
 
 A failed send/recv will set the z flag to one in the flags register. If they succeed they will set the z flag to zero.
 
