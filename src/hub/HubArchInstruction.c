@@ -829,7 +829,7 @@ static inline uint8_t *HKHubArchInstructionOperandStateValue(HKHubArchProcessor 
     switch (Operand->type)
     {
         case HKHubArchInstructionOperandR:
-            Processor->state.debug.modified.reg = Operand->reg;
+            if (ModifyDebug) Processor->state.debug.modified.reg = Operand->reg;
             
             if (Operand->reg & HKHubArchInstructionRegisterGeneralPurpose) return Processor->state.r + (Operand->reg & HKHubArchInstructionRegisterGeneralPurposeIndexMask);
             else if (Operand->reg == HKHubArchInstructionRegisterFlags) return &Processor->state.flags;
