@@ -824,7 +824,7 @@ HKHubArchInstructionOperationResult HKHubArchInstructionExecute(HKHubArchProcess
 
 #pragma mark - Instruction Operations
 
-static inline uint8_t *HKHubArchInstructionOperandDestinationValue(HKHubArchProcessor Processor, const HKHubArchInstructionOperandValue *Operand)
+static inline uint8_t *HKHubArchInstructionOperandStateValue(HKHubArchProcessor Processor, const HKHubArchInstructionOperandValue *Operand, _Bool ModifyDebug)
 {
     switch (Operand->type)
     {
@@ -856,8 +856,11 @@ static inline uint8_t *HKHubArchInstructionOperandDestinationValue(HKHubArchProc
                     break;
             }
             
-            Processor->state.debug.modified.offset = Offset;
-            Processor->state.debug.modified.size = 1;
+            if (ModifyDebug)
+            {
+                Processor->state.debug.modified.offset = Offset;
+                Processor->state.debug.modified.size = 1;
+            }
             
             return &Processor->memory[Offset];
         }
@@ -871,6 +874,11 @@ static inline uint8_t *HKHubArchInstructionOperandDestinationValue(HKHubArchProc
     return NULL;
 }
 
+static inline uint8_t *HKHubArchInstructionOperandDestinationValue(HKHubArchProcessor Processor, const HKHubArchInstructionOperandValue *Operand)
+{
+    return HKHubArchInstructionOperandStateValue(Processor, Operand, TRUE);
+}
+
 static inline const uint8_t *HKHubArchInstructionOperandSourceValue(HKHubArchProcessor Processor, const HKHubArchInstructionOperandValue *Operand)
 {
     switch (Operand->type)
@@ -880,7 +888,7 @@ static inline const uint8_t *HKHubArchInstructionOperandSourceValue(HKHubArchPro
             
         case HKHubArchInstructionOperandR:
         case HKHubArchInstructionOperandM:
-            return HKHubArchInstructionOperandDestinationValue(Processor, Operand);
+            return HKHubArchInstructionOperandStateValue(Processor, Operand, FALSE);
             
         default:
             break;
