@@ -1338,7 +1338,7 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
     {
         Processor->message.wait = 0;
         Processor->message.timestamp = Processor->cycles - Cycles;
-        Processor->message.offset = (uint8_t)(HKHubArchInstructionOperandDestinationValue(Processor, &State->operand[1]) - Processor->memory);
+        Processor->message.offset = (uint8_t)(HKHubArchInstructionOperandStateValue(Processor, &State->operand[1], FALSE) - Processor->memory);
         Processor->message.port = Port;
         Processor->message.type = HKHubArchProcessorMessageReceive;
         
