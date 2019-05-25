@@ -14,7 +14,7 @@ listen:
     add r3, htp_buffer_size
     cmp r3, htp_buffer_max
     jul find_complete_buffer
-    mov r3, 0
+    xor r3, r3
 find_complete_buffer:
     mov r1, [buffers + r3 + htp_buffer_hash]
     and r1, 0x80
@@ -34,29 +34,23 @@ decode_packet:
     jnz hash
     add [counter], 1
     # 00000hhh
-    mov r1, r3
+    xor r3, r3
 find_free_buffer:
     cmp [buffers + r3 + htp_buffer_hash], 0
     jz init_buffer
     add r3, htp_buffer_size
-    cmp r1, r3
-    jz find_old_buffer
     cmp r3, htp_buffer_max
     jul find_free_buffer
-    mov r3, 0
-    jmp find_free_buffer
+    xor r3, r3
 find_old_buffer:
     mov r2, [counter]
     sub r2, [buffers + r3 + htp_buffer_timestamp]
     cmp r2, htp_threshold
     juge init_buffer
     add r3, htp_buffer_size
-    cmp r1, r3
-    jz listen
     cmp r3, htp_buffer_max
     jul find_old_buffer
-    mov r3, 0
-    jmp find_old_buffer
+    jmp listen
 init_buffer:
     mov [buffers + r3 + htp_buffer_timestamp], [counter]
     mov [buffers + r3 + htp_buffer_hash], r0
@@ -76,14 +70,14 @@ hash:
     mov r2, [packet]
     umod r2, 7
     add r2, 1
-    mov r3, 0
+    xor r3, r3
 find_buffer:
     cmp r2, [buffers + r3 + htp_buffer_hash]
     jz set_buffer
     add r3, htp_buffer_size
     cmp r3, htp_buffer_max
     jul find_buffer
-    mov r3, 0
+    xor r3, r3
     # TODO: handle not found
     jmp find_buffer
 set_buffer:
