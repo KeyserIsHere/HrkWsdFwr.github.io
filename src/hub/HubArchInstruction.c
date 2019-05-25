@@ -456,7 +456,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                     }
                 }
                 
-                const size_t ByteCount = (BitCount / 8) + 1;
+                const size_t ByteCount = (BitCount / 8) + (_Bool)(BitCount % 8);
                 if (Data) memcpy(&Data[Offset], Bytes, ByteCount);
                 
                 return Offset + ByteCount;
