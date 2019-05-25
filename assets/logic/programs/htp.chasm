@@ -1,9 +1,11 @@
 .define htp_buffer_hash, 0
-.define htp_buffer_count, 1
-.define htp_buffer_data, 2
+.define htp_buffer_timestamp, 1
+.define htp_buffer_count, 2
+.define htp_buffer_data, 3
 .define htp_buffer_data_size, 10
-.define htp_buffer_size, 12 #htp_buffer_data_size + 2
-.define htp_buffer_max, 60 # TODO: htp_buffer_data_size * 3
+.define htp_buffer_size, 13 #htp_buffer_data_size + 3
+.define htp_buffer_max, 50 # TODO: htp_buffer_data_size * 3
+.define htp_threshold, 8 # TODO: play around with value
 
 .entrypoint
 listen:
@@ -30,18 +32,33 @@ decode_packet:
     and r0, 0xf
     shr r1, 4
     jnz hash
+    add [counter], 1
     # 00000hhh
+    mov r1, r3
 find_free_buffer:
     cmp [buffers + r3 + htp_buffer_hash], 0
     jz init_buffer
-    # TODO: check if r2 has 0x80 bit set and reclaim buffer
     add r3, htp_buffer_size
+    cmp r1, r3
+    jz find_old_buffer
     cmp r3, htp_buffer_max
     jul find_free_buffer
     mov r3, 0
-    # TODO: handle force find or not found
     jmp find_free_buffer
+find_old_buffer:
+    mov r2, [counter]
+    sub r2, [buffers + r3 + htp_buffer_timestamp]
+    cmp r2, htp_threshold
+    juge init_buffer
+    add r3, htp_buffer_size
+    cmp r1, r3
+    jz listen
+    cmp r3, htp_buffer_max
+    jul find_old_buffer
+    mov r3, 0
+    jmp find_old_buffer
 init_buffer:
+    mov [buffers + r3 + htp_buffer_timestamp], [counter]
     mov [buffers + r3 + htp_buffer_hash], r0
     mov [buffers + r3 + htp_buffer_count], 0
     jmp listen
@@ -59,6 +76,7 @@ hash:
     mov r2, [packet]
     umod r2, 7
     add r2, 1
+    mov r3, 0
 find_buffer:
     cmp r2, [buffers + r3 + htp_buffer_hash]
     jz set_buffer
@@ -69,6 +87,7 @@ find_buffer:
     # TODO: handle not found
     jmp find_buffer
 set_buffer:
+    mov [buffers + r3 + htp_buffer_timestamp], [counter]
     mov [buffers + r3 + htp_buffer_hash], r1
     mov r2, [buffers + r3 + htp_buffer_count]
     and r2, 1
@@ -91,4 +110,5 @@ send_buffer:
     mov [buffers + r3 + htp_buffer_hash], 0
     jmp listen
 packet: .byte 0
+counter: .byte 0
 buffers:
