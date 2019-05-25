@@ -1,15 +1,47 @@
+# HTP Packet Decoder
+# Decodes HTP (Hashed Transfer Protocol) packets and forwards the decoded
+# data to the next device.
+#
+# This is intended to be a standalone program that runs indefinitely. To
+# use it, simply define an 'htp_in' and 'htp_out' for the appropriate ports.
+#
+# htp_in: Is the port that passes HTP packets to this program.
+# It expects to receive only 1 byte at a time. The byte can be any HTP
+# packet.
+#
+# The program can keep track of 5 unique HTP packet sequences at any given
+# time. If there is not enough room for the new packet sequence, it will
+# either purge an older one, or it will discard the incoming one.
+#
+# htp_out: Is the port this program will send the decoded data to.
+# It will send the full block of data with the structure:
+#
+#   0 1 2 3 4 5 6 7
+#  +-+-+-+-+-+-+-+-+
+#  |     Size      |
+#  +-+-+-+-+-+-+-+-+
+#  |     Data ...
+#  +-+-+-+-+-+-+-+-+
+#
+# Size:  1 byte
+#    The size of the data
+#
+# Data: 1 to 6 bytes
+#    The decoded data (of length Size)
+#
+
 .define htp_buffer_hash, 0
 .define htp_buffer_timestamp, 1
 .define htp_buffer_count, 2
 .define htp_buffer_data, 3
 .define htp_buffer_data_size, 6
 .define htp_buffer_size, 9 #htp_buffer_data_size + 3
-.define htp_buffer_max, 45 # TODO: htp_buffer_data_size * 3
+.define htp_buffer_max, 45 # TODO: htp_buffer_data_size * 5
 .define htp_threshold, 8 # TODO: play around with value
 
 .entrypoint
 listen:
-    recv wireless_receiver_in, [packet]
+    recv htp_in, [packet]
     jnz decode_packet
     add r3, htp_buffer_size
     cmp r3, htp_buffer_max
@@ -93,11 +125,10 @@ skip_shift:
     add [buffers + r3 + htp_buffer_count], 1
     and r1, 0x80
     jz listen
-    # end
     sub r2, r3
     add r2, 1
 send_buffer:
-    send wireless_receiver_out, r2, [buffers + r3 + htp_buffer_data]
+    send htp_out, r2, [buffers + r3 + htp_buffer_data]
     jz listen
     mov [buffers + r3 + htp_buffer_hash], 0
     jmp listen
