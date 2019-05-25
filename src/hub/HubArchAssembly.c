@@ -703,6 +703,7 @@ static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)
         
         static const char *Types[] = {
             "source",
+            "ast",
             "unknown",
             "instruction",
             "directive",
