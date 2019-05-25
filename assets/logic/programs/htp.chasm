@@ -23,7 +23,7 @@
 #  |     Data ...
 #  +-+-+-+-+-+-+-+-+
 #
-# Size:  1 byte
+# Size: 1 byte
 #    The size of the data
 #
 # Data: 1 to 6 bytes
@@ -114,13 +114,9 @@ set_buffer:
     mov [buffers + r3 + htp_buffer_timestamp], [counter]
     mov [buffers + r3 + htp_buffer_hash], r1
     mov r2, [buffers + r3 + htp_buffer_count]
-    and r2, 1
-    jnz skip_shift
-    shl r0, 4
-skip_shift:
-    mov r2, [buffers + r3 + htp_buffer_count]
     udiv r2, 2
     add r2, r3
+    shl [buffers + r2 + htp_buffer_data], 4
     or [buffers + r2 + htp_buffer_data], r0
     add [buffers + r3 + htp_buffer_count], 1
     and r1, 0x80
