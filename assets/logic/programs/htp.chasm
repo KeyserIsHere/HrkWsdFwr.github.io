@@ -2,9 +2,9 @@
 .define htp_buffer_timestamp, 1
 .define htp_buffer_count, 2
 .define htp_buffer_data, 3
-.define htp_buffer_data_size, 10
-.define htp_buffer_size, 13 #htp_buffer_data_size + 3
-.define htp_buffer_max, 50 # TODO: htp_buffer_data_size * 3
+.define htp_buffer_data_size, 6
+.define htp_buffer_size, 9 #htp_buffer_data_size + 3
+.define htp_buffer_max, 45 # TODO: htp_buffer_data_size * 3
 .define htp_threshold, 8 # TODO: play around with value
 
 .entrypoint
@@ -77,9 +77,7 @@ find_buffer:
     add r3, htp_buffer_size
     cmp r3, htp_buffer_max
     jul find_buffer
-    xor r3, r3
-    # TODO: handle not found
-    jmp find_buffer
+    jmp listen
 set_buffer:
     mov [buffers + r3 + htp_buffer_timestamp], [counter]
     mov [buffers + r3 + htp_buffer_hash], r1
