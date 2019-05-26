@@ -39,7 +39,7 @@
 .define htp_buffer_payload_data_length_mask, 3
 .define htp_buffer_payload_data, 4 #htp_buffer_payload + 1
 .define htp_buffer_size, 10 #htp_buffer_payload_size + 3
-.define htp_buffer_max, 80 #htp_buffer_payload_size * 8
+.define htp_buffer_max, 70 #htp_buffer_payload_size * 7
 .define htp_threshold, 8 # TODO: play around with value
 
 .entrypoint
@@ -58,6 +58,7 @@ find_complete_buffer:
     and r2, htp_buffer_payload_data_length_mask
     jmp send_buffer
 hash:
+    add [counter], 1
     mov r0, [packet]
     umod r0, 0x7f
     add r0, 1
