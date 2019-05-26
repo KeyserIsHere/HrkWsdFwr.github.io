@@ -33,98 +33,88 @@
 .define htp_buffer_hash, 0
 .define htp_buffer_timestamp, 1
 .define htp_buffer_count, 2
-.define htp_buffer_data, 3
-.define htp_buffer_data_size, 6
-.define htp_buffer_size, 9 #htp_buffer_data_size + 3
-.define htp_buffer_max, 45 # TODO: htp_buffer_data_size * 5
+.define htp_buffer_payload, 3
+.define htp_buffer_payload_size, 6
+.define htp_buffer_payload_data_length, 3 #htp_buffer_payload
+.define htp_buffer_payload_data_length_mask, 3
+.define htp_buffer_payload_data, 4 #htp_buffer_payload + 1
+.define htp_buffer_size, 9 #htp_buffer_payload_size + 3
+.define htp_buffer_max, 45 # TODO: htp_buffer_payload_size * 5
 .define htp_threshold, 8 # TODO: play around with value
 
 .entrypoint
 listen:
     recv htp_in, [packet]
-    jnz decode_packet
+    jnz hash
     add r3, htp_buffer_size
     cmp r3, htp_buffer_max
     jul find_complete_buffer
     xor r3, r3
 find_complete_buffer:
-    mov r1, [buffers + r3 + htp_buffer_hash]
+    mov r2, [buffers + r3 + htp_buffer_hash]
+    mov r1, r2
     and r1, 0x80
     jz listen
-    mov r2, [buffers + r3 + htp_buffer_count]
-    udiv r2, 2
+    and r2, htp_buffer_payload_data_length_mask
     jmp send_buffer
-decode_packet:
-    mov r0, [packet]
-    mov r1, r0
-    and r1, 0x80
-    jnz hash_trailing
-    # 0hhhdddd
-    mov r1, r0
-    and r0, 0xf
-    shr r1, 4
-    jnz hash
-    add [counter], 1
-    # 00000hhh
-    xor r3, r3
-find_free_buffer:
-    cmp [buffers + r3 + htp_buffer_hash], 0
-    jz init_buffer
-    add r3, htp_buffer_size
-    cmp r3, htp_buffer_max
-    jul find_free_buffer
-    xor r3, r3
-find_old_buffer:
-    mov r2, [counter]
-    sub r2, [buffers + r3 + htp_buffer_timestamp]
-    cmp r2, htp_threshold
-    juge init_buffer
-    add r3, htp_buffer_size
-    cmp r3, htp_buffer_max
-    jul find_old_buffer
-    jmp listen
-init_buffer:
-    mov [buffers + r3 + htp_buffer_timestamp], [counter]
-    mov [buffers + r3 + htp_buffer_hash], r0
-    mov [buffers + r3 + htp_buffer_count], 0
-    jmp listen
-hash_trailing:
-    # 1ddddhhh
-    mov r1, r0
-    and r1, 7
-    shr r0, 3
-    and r0, 0xf
-    # check end 1dddd000
-    cmp r1, 0
-    jnz hash
-    or r1, 0x80
 hash:
-    mov r2, [packet]
-    umod r2, 7
-    add r2, 1
+    mov r0, [packet]
+    umod r0, 0x7f
+    add r0, 1
+    mov r1, r0
     xor r3, r3
+    mov r2, 0xff
 find_buffer:
-    cmp r2, [buffers + r3 + htp_buffer_hash]
+    xor r1, [buffers + r3 + htp_buffer_hash]
     jz set_buffer
+    xor r1, r0
+    jnz check_age
+    mov r2, r3
+check_age:
+    mov r1, [counter]
+    sub r1, [buffers + r3 + htp_buffer_timestamp]
+    cmp r1, htp_threshold
+    jul next_buffer
+    mov r2, r3
+next_buffer:
     add r3, htp_buffer_size
     cmp r3, htp_buffer_max
     jul find_buffer
-    jmp listen
+    mov r3, r2
+    not r2
+    jnz listen
+init_buffer:
+    mov [buffers + r3 + htp_buffer_count], 0
 set_buffer:
     mov [buffers + r3 + htp_buffer_timestamp], [counter]
-    mov [buffers + r3 + htp_buffer_hash], r1
-    mov r2, [buffers + r3 + htp_buffer_count]
-    udiv r2, 2
+    mov r0, [packet]
+    mov r1, r0
+    and r1, 1
+    shr r0, 1
+    mov [buffers + r3 + htp_buffer_hash], r0
+    mov r0, [buffers + r3 + htp_buffer_count]
+    mov r2, r0
+    add r0, 1
+    mov [buffers + r3 + htp_buffer_count], r0
+    udiv r2, 8
     add r2, r3
-    shl [buffers + r2 + htp_buffer_data], 4
-    or [buffers + r2 + htp_buffer_data], r0
-    add [buffers + r3 + htp_buffer_count], 1
-    and r1, 0x80
+    shl [buffers + r2 + htp_buffer_payload], 1
+    or [buffers + r2 + htp_buffer_payload], r1
+    mov r2, [buffers + r3 + htp_buffer_payload_data_length]
+    and r2, htp_buffer_payload_data_length_mask
+    and r2, r2
     jz listen
-    sub r2, r3
-    add r2, 1
+    mov r1, r2
+    mul r1, 8
+    add r1, 8
+    cmp r1, [buffers + r3 + htp_buffer_count]
+    jnz listen
+    mov r1, r2
+    or r1, 0x80
+    mov [buffers + r3 + htp_buffer_hash], r1
 send_buffer:
-    send htp_out, r2, [buffers + r3 + htp_buffer_data]
+    add r2, 1
+    send htp_out, r2, [buffers + r3 + htp_buffer_payload]
     jz listen
     mov [buffers + r3 + htp_buffer_hash], 0
     jmp listen
