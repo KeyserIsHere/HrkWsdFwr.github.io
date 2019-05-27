@@ -26,7 +26,7 @@
 # Size: 1 byte
 #    The size of the data
 #
-# Data: 1 to 6 bytes
+# Data: 1 to  bytes
 #    The decoded data (of length Size)
 #
 
@@ -34,12 +34,13 @@
 .define htp_buffer_timestamp, 1
 .define htp_buffer_count, 2
 .define htp_buffer_payload, 3
-.define htp_buffer_payload_size, 7
+.define htp_buffer_payload_size, 4 #htp_buffer_payload_data_length_mask + 1
+.define htp_buffer_payload_bitsize, 32 #htp_buffer_payload_size * 8
 .define htp_buffer_payload_data_length, 3 #htp_buffer_payload
 .define htp_buffer_payload_data_length_mask, 3
 .define htp_buffer_payload_data, 4 #htp_buffer_payload + 1
-.define htp_buffer_size, 10 #htp_buffer_payload_size + 3
-.define htp_buffer_max, 70 #htp_buffer_payload_size * 7
+.define htp_buffer_size, 7 #htp_buffer_payload_size + 3
+.define htp_buffer_max, 60 #(256 - buffers) / htp_buffer_size * htp_buffer_size
 .define htp_threshold, 8 # TODO: play around with value
 
 .entrypoint
@@ -88,15 +89,21 @@ init_buffer:
     mov [buffers + r3 + htp_buffer_count], 0
 set_buffer:
     mov [buffers + r3 + htp_buffer_timestamp], [counter]
-    mov r0, [packet]
-    mov r1, r0
-    and r1, 1
-    shr r0, 1
-    mov [buffers + r3 + htp_buffer_hash], r0
-    mov r0, [buffers + r3 + htp_buffer_count]
-    mov r2, r0
+    mov r1, [packet]
+    mov r2, [buffers + r3 + htp_buffer_count]
+    mov r0, r2
     add r0, 1
     mov [buffers + r3 + htp_buffer_count], r0
+    cmp r0, htp_buffer_payload_bitsize
+    jul payload_within_bounds
+    mov [buffers + r3 + htp_buffer_hash], 0
+    jmp skip_set_hash
+payload_within_bounds:
+    mov r0, r1
+    shr r0, 1
+    mov [buffers + r3 + htp_buffer_hash], r0
+skip_set_hash:
+    and r1, 1
     udiv r2, 8
     add r2, r3
     shl [buffers + r2 + htp_buffer_payload], 1
