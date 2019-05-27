@@ -15,7 +15,7 @@
         (.modified! (if (count .memory-modified) (unquote (flatten flatten (loop "@item" .memory-modified
             (if (= 0 (get 0 @item))
                 ((- (get 1 @item) 1))
-                (if (= 255 (+ (get 0 @item) (get 1 @item)))
+                (if (= 256 (+ (get 0 @item) (get 1 @item)))
                     ((- (get 0 @item) (get 1 @item)))
                     (+ @item (-1 (- (get 0 @item) 1)))
                 )
