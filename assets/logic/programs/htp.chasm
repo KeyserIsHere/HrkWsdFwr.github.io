@@ -18,13 +18,16 @@
 #
 #   0 1 2 3 4 5 6 7
 #  +-+-+-+-+-+-+-+-+
-#  |     Size      |
+#  | Size| Unused  |
 #  +-+-+-+-+-+-+-+-+
 #  |     Data ...
 #  +-+-+-+-+-+-+-+-+
 #
-# Size: 1 byte
+# Size: 3 bits
 #    The size of the data
+#
+# Unused: 5 bits
+#    The 5 high bits that were passed in with the length
 #
 # Data: 1 to 7 bytes
 #    The decoded data (of length Size)
