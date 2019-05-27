@@ -1,0 +1,258 @@
+
+
+
+                        HASHED TRANSFER PROTOCOL
+
+                         PROTOCOL SPECIFICATION
+
+
+                              Month Year
+
+
+
+
+
+
+                                  by
+
+                             Organisation
+                                Address
+
+
+
+
+Month Year
+                                                       Hashed Transfer Protocol
+
+
+TABLE OF CONTENTS
+
+1.  INTRODUCTION ..................................................... 1
+
+1.1  Motivation .................................................... 1
+
+2.  FUNCTIONAL SPECIFICATION ......................................... 2
+
+2.1  Encoding ...................................................... 2
+2.2  Effectiveness ................................................. 3
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            [Page i]
+
+
+
+
+                        HASHED TRANSFER PROTOCOL
+
+                         PROTOCOL SPECIFICATION
+
+
+
+                           1.  INTRODUCTION
+
+    The Hashed Transfer Protocol (HTP) is a data encoding scheme intended
+    for use in unordered data transmission environments (such as a busy
+    wireless channel).
+
+    This document outlines the implementation details of the Hashed Transfer
+    Protocol.
+
+
+    1.1.  Motivation
+
+      In a data transmission environment such as a busy wireless channel,
+      it can be difficult to distinguish packet order or when packets
+      have been corrupted. An example of this is if 3 devices are each
+      trying to send a message around the same time:
+
+        [Device 1:"foo"] ---f---o---o
+        [Device 2:"bar"] --b---a---r
+        [Device 3:"baz"] b-----a-----z
+
+      In the above example the stream of packets broadcast will be:
+        b,b,f,a⊕a,o,r,o,z
+
+      Not only have the messages been scrambled, but the 4th packet has
+      been corrupted. The device receiving these messages will have a hard
+      time distinguishing between what is a valid packet, what packets
+      belong to which message, and where a message begins or ends.
+
+      Under HTP4 the packet sequence would look like this (assuming same
+      sending pattern):
+
+        [Device 1:"foo"] ---1---2---3---4---5---6---7---8
+        [Device 2:"bar"] --1---2---3---4---5---6---7---8
+        [Device 3:"baz"] 1-----2-----3-----4-----5-----6-----7-----8
+
+      Which would produce the following packet stream:
+        3:1,2:1,1:1,2:2⊕3:2,1:2,2:3,1:3,3:3,2:4,1:4,2:5⊕3:4,1:5,2:6,1:6,3:5,2:7,1:7,2:8⊕3:6,1:8,3:7,3:8
+
+      While HTP won't be able to recover the corrupted packets (4th, 11th,
+      18th), it may successfully handle the un-corrupted sequence from
+      device 1 and fail to register a complete message from devices 2 & 3.
+
+
+
+
+
+                                                                    [Page 1]
+
+
+                                                                    Month Year
+
+
+
+
+                       2.  FUNCTIONAL SPECIFICATION
+
+    The following outlines the details of the HTP implementation.
+
+    2.1.  Encoding
+
+      The HTP encoding is a series of 1 byte packets that are linked together
+      by including the hash of the next packet. The hash is used to find
+      which series a packet belongs to. These packets are then decoded into
+      a sequence of bytes.
+
+      The decoded data consists of the length followed by the bytes of data.
+
+         0 1 2 3 4 5 6 7
+        +-+-+-+-+-+-+-+-+
+        |    Length     |
+        +-+-+-+-+-+-+-+-+
+        |     Data ...
+        +-+-+-+-+-+-+-+-+
+
+      Length: 1 byte
+         Specifies the length of the data field in bytes
+
+      Data: n bytes
+         The data field
+
+      The encoding is a series of packets where each packet contains part of
+      the decoded data, and the hash of the next packet. The hash is always
+      stored in the high bits, while the data is stored in the low bits. The
+      actual bit ratio is left up to the implementation.
+
+      The bit ratio of an implementation is referenced by suffixing "HTP"
+      with the number of bits of the data part. An example of some of those
+      ratios are:
+
+        HTP4:
+           7 6 5 4 3 2 1 0
+          +-+-+-+-+-+-+-+-+
+          |  Hash | Data  |
+          +-+-+-+-+-+-+-+-+
+
+        HTP2:
+           7 6 5 4 3 2 1 0
+          +-+-+-+-+-+-+-+-+
+          |   Hash    | D |
+          +-+-+-+-+-+-+-+-+
+
+        HTP1:
+           7 6 5 4 3 2 1 0
+          +-+-+-+-+-+-+-+-+
+          |    Hash     |D|
+          +-+-+-+-+-+-+-+-+
+
+                                                                    [Page 2]
+
+
+                                                                    Month Year
+Hashed Transfer Protocol
+Functional Specification
+
+      The hash is calculated by taking the next packet and hashing it, and
+      storing the resulting hash in the current packet's hash field. The
+      hash algorithm is left up to the decision of the implementation.
+
+      An example encoding under HTP4:
+
+        Original Data:
+          Length = 1 (00000001)
+          Data = 97 (01100001)
+
+        h(x) = hash function
+        Pn = Packet number
+
+        Packet 1:
+           7 6 5 4 3 2 1 0
+          +-+-+-+-+-+-+-+-+
+          | h(P2) |   0   | <--- 0000xxxx of length
+          +-+-+-+-+-+-+-+-+
+
+        Packet 2:
+           7 6 5 4 3 2 1 0
+          +-+-+-+-+-+-+-+-+
+          | h(P3) |   1   | <--- xxxx0001 of length
+          +-+-+-+-+-+-+-+-+
+
+        Packet 3:
+           7 6 5 4 3 2 1 0
+          +-+-+-+-+-+-+-+-+
+          | h(P4) |   6   | <--- 0110xxxx of data
+          +-+-+-+-+-+-+-+-+
+
+        Packet 4:
+           7 6 5 4 3 2 1 0
+          +-+-+-+-+-+-+-+-+
+          |   0   |   1   | <--- xxxx0001 of data
+          +-+-+-+-+-+-+-+-+
+
+
+    2.2.  Effectiveness
+
+      Performance vs Reliability:
+        An implementation must balance the performance cost of decreasing
+        the bit size of the data (e.g. using HTP1), against the number of
+        potential hash collisions. A hash collision can result in the
+        incorrect packet being linked with the wrong series.
+
+      Seeding:
+        As the hash field of the final packet is unused, this field may be
+        seeded with any value. Depending on the hash function this may
+        result in different hashes being produced for the other packets. An
+        example of where this may be useful, is if there is a higher chance
+        of collisions to occur if the packet is not seeded.
+
+                                                                    [Page 3]
+
+
+                                                                    Month Year
+Hashed Transfer Protocol
+Functional Specification
+
+        An example of this in HTP4, with hash function ((packet % 63) + 1):
+          Unseeded:
+            foo: 80, 19, 150, 38, 166, 159, 38, 31
+            bar: 80, 19, 150, 98, 230, 193, 71, 18
+
+          Seeded:
+            bar: 208, 147, 38, 226, 118, 81, 199, 146
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                    [Page 4]
