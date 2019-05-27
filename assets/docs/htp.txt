@@ -236,8 +236,8 @@ Functional Specification
 
         An example of this in HTP4, with hash function ((packet % 63) + 1):
           Unseeded:
-            foo: 80, 19, 150, 38, 166, 159, 38, 31
-            bar: 80, 19, 150, 98, 230, 193, 71, 18
+            foo: 64, 243, 134, 22, 150, 143, 22, 15
+            bar: 64, 243, 134, 82, 214, 177, 55, 2
 
           Seeded:
             bar: 208, 147, 38, 226, 118, 81, 199, 146
