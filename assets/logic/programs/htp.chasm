@@ -30,6 +30,10 @@
 #    The decoded data (of length Size)
 #
 
+.define htp_data_bitsize, 1
+.define htp_packet_data_mask, 1 #0xff >> (8 - htp_data_bitsize)
+.define htp_hash_max, 0x7f #~htp_packet_data_mask >> htp_data_bitsize
+
 .define htp_buffer_hash, 0
 .define htp_buffer_timestamp, 1
 .define htp_buffer_count, 2
@@ -61,7 +65,7 @@ find_complete_buffer:
 hash:
     add [counter], 1
     mov r0, [packet]
-    umod r0, 0x7f
+    umod r0, htp_hash_max
     add r0, 1
     xor r3, r3
     mov r2, 0xff
@@ -92,7 +96,7 @@ set_buffer:
     mov r1, [packet]
     mov r2, [buffers + r3 + htp_buffer_count]
     mov r0, r2
-    add r0, 1
+    add r0, htp_data_bitsize
     mov [buffers + r3 + htp_buffer_count], r0
     cmp r0, htp_buffer_payload_bitsize
     jul payload_within_bounds
@@ -100,13 +104,13 @@ set_buffer:
     jmp skip_set_hash
 payload_within_bounds:
     mov r0, r1
-    shr r0, 1
+    shr r0, htp_data_bitsize
     mov [buffers + r3 + htp_buffer_hash], r0
 skip_set_hash:
-    and r1, 1
+    and r1, htp_packet_data_mask
     udiv r2, 8
     add r2, r3
-    shl [buffers + r2 + htp_buffer_payload], 1
+    shl [buffers + r2 + htp_buffer_payload], htp_data_bitsize
     or [buffers + r2 + htp_buffer_payload], r1
     mov r2, [buffers + r3 + htp_buffer_payload_data_length]
     and r2, htp_buffer_payload_data_length_mask
