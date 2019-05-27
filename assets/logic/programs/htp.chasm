@@ -26,7 +26,7 @@
 # Size: 1 byte
 #    The size of the data
 #
-# Data: 1 to  bytes
+# Data: 1 to 7 bytes
 #    The decoded data (of length Size)
 #
 
@@ -34,13 +34,13 @@
 .define htp_buffer_timestamp, 1
 .define htp_buffer_count, 2
 .define htp_buffer_payload, 3
-.define htp_buffer_payload_size, 4 #htp_buffer_payload_data_length_mask + 1
-.define htp_buffer_payload_bitsize, 32 #htp_buffer_payload_size * 8
+.define htp_buffer_payload_size, 8 #htp_buffer_payload_data_length_mask + 1
+.define htp_buffer_payload_bitsize, 64 #htp_buffer_payload_size * 8
 .define htp_buffer_payload_data_length, 3 #htp_buffer_payload
-.define htp_buffer_payload_data_length_mask, 3
+.define htp_buffer_payload_data_length_mask, 7
 .define htp_buffer_payload_data, 4 #htp_buffer_payload + 1
-.define htp_buffer_size, 7 #htp_buffer_payload_size + 3
-.define htp_buffer_max, 60 #(256 - buffers) / htp_buffer_size * htp_buffer_size
+.define htp_buffer_size, 11 #htp_buffer_payload_size + 3
+.define htp_buffer_max, 55 #(256 - buffers) / htp_buffer_size * htp_buffer_size
 .define htp_threshold, 8 # TODO: play around with value
 
 .entrypoint
