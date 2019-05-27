@@ -3,7 +3,7 @@
 # data to the next device.
 #
 # This is intended to be a standalone program that runs indefinitely. To
-# use it, simply define an 'htp_in' and 'htp_out' for the appropriate ports.
+# use it, simply define a 'htp_in' and 'htp_out' for the appropriate ports.
 #
 # htp_in: Is the port that passes HTP packets to this program.
 # It expects to receive only 1 byte at a time. The byte can be any HTP
