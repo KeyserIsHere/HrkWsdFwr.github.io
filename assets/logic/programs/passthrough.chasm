@@ -1,5 +1,5 @@
 # Passthrough
-# Passes data from one device to the next.
+# Passes 1 byte from one device to the next.
 #
 # This is intended to be a standalone program that runs indefinitely. To
 # use it, simply define 'passthrough_count' as the number of out ports that
