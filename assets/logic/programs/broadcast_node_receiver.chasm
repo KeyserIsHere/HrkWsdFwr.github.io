@@ -1,0 +1,78 @@
+# Broadcast Node Receiver
+# Receives packets from the transceiver and stores them in a buffer for later
+# processing.
+#
+# This is intended to be a standalone program that runs indefinitely. To
+# use it, simply define 'broadcast_node_receiver_packet_processor',
+# 'broadcast_node_receiver_transceiver', 'broadcast_node_receiver_buffer_count',
+# 'broadcast_node_receiver_buffer_start', and 'broadcast_node_receiver_buffer_control_start'
+# for the appropriate ports.
+#
+# broadcast_node_receiver_packet_processor: Is the port to the device that will
+# be reading from the buffers. The device should be connected to the buffers
+# in the same order that this program is. The device will be sent an empty
+# message when it should start reading from the next buffer ((index + 1) % count).
+#
+# broadcast_node_receiver_transceiver: Is the port that gets a packet from a
+# transceiver module. This should be set to the appropriate port/channel it
+# should be using.
+#
+# broadcast_node_receiver_buffer_count: Is the number of buffers that are
+# connected to it.
+#
+# broadcast_node_receiver_buffer_start: Is the port connected to the first
+# buffer's 'buffer_in' port. 'broadcast_node_receiver_buffer_count' ports
+# should be connected to each buffer from this initial port.
+#
+# broadcast_node_receiver_buffer_control_start: Is the port connected to the
+# first buffer's 'buffer_control' port. 'broadcast_node_receiver_buffer_count'
+# ports should be connected to each buffer from this initial port.
+#
+
+.entrypoint
+    mov r0, broadcast_node_receiver_transceiver
+    mov r2, broadcast_node_receiver_buffer_start
+    mov r3, broadcast_node_receiver_buffer_control_start
+listen:
+    mov r1, [processing]
+    or [waiting + r1], 1
+    jz receive
+    recv r3, [r0]
+    jz send
+    mov [waiting + r1], 0
+empty_buffer_notification:
+    send broadcast_node_receiver_packet_processor
+    jz empty_buffer_notification
+    add r1, 1
+    umod r1, broadcast_node_receiver_buffer_count
+    mov [processing], r1
+receive:
+    recv r0, [packet]
+    jz listen
+send:
+    send r2, 1, [packet]
+    jnz listen
+    recv r3, [r0]
+    jz send
+    mov r1, [buffer]
+    xor [waiting + r1], 1
+    jnz next_buffer
+empty_buffer_notification:
+    send broadcast_node_receiver_packet_processor
+    jz empty_buffer_notification
+    add [processing], 1
+    umod [processing], broadcast_node_receiver_buffer_count
+    jmp send
+next_buffer:
+    add r1, 1
+    umod r1, broadcast_node_receiver_buffer_count
+    mov [buffer], r1
+    mov r2, r1
+    mov r3, r1
+    add r2, broadcast_node_receiver_buffer_start
+    add r3, broadcast_node_receiver_buffer_control_start
+    jmp send
+packet: .byte 0
+buffer: .byte 0
+processing: .byte 0
+waiting:
