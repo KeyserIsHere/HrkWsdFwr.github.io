@@ -1,0 +1,98 @@
+# Buffer
+# Stores data from one device while it attempts to pass it to another.
+#
+# This is intended to be a standalone program that runs indefinitely. To
+# use it, simply define a 'buffer_in', 'buffer_out', and 'buffer_control'
+# for the appropriate ports.
+#
+# buffer_in: Is the port that puts data into the buffer. It expects to
+# receive only 1 byte at a time.
+#
+# buffer_out: Is the port that gets data from the buffer. It sends only
+# 1 byte at a time.
+#
+# buffer_control: Is the port that receives the blocked and ready state.
+# It sends an empty message, one for when the buffer is full, and another
+# when the buffer is empty.
+#
+# Program State:
+#   1. During normal behaviour the program will repeatedly read data from
+#   'buffer_in' and storing it in the buffer. While also attempting to send
+#   the oldest (FIFO) data to 'buffer_out'. This cycle repeats until the
+#   buffer is full.
+#
+#   2. When the buffer is full it will no longer attempt to read data from
+#   'buffer_in'. It will instead cycle between attempting to notify
+#   'buffer_control' and sending the oldest data to 'buffer_out'. This cycle
+#   repeats until both the message to 'buffer_control' has been successfully
+#   received, and the buffer is empty (sent all the data that was previously
+#   in it to 'buffer_out').
+#
+#   3. Once a full buffer has been emptied, it will repeatedly try to notify
+#   'buffer_control'. This repeats until the message to 'buffer_control' has
+#   been successfully received, which will return the program state back to
+#   reading, storing, and sending data (step 1).
+#
+
+# .define in_index, r0
+# .define out_index, r1
+# .define count, r2
+# .define state, r3
+
+.define normal, 0
+.define full, 1
+.define cleared, 2
+.define control_flag, 0x80
+.define init_full, 0x81 #full | control_flag
+.define init_cleared, 0x82 #cleared | control_flag
+
+data:
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    .byte 0,0,0,0
+data_size:
+
+.entrypoint
+repeat:
+    and r3, r3
+    jz receive
+    and r3, control_flag
+    jnz control
+    cmp r3, cleared
+    jnz send
+    mov r3, normal
+receive:
+    recv buffer_in, [r0]
+    jz send
+    add r2, 1
+    add r0, 1
+    umod r0, data_size
+    cmp r0, r1
+    jnz send
+    mov r3, init_full
+control:
+    send buffer_control
+    jz send
+    xor r3, control_flag
+send:
+    and r2, r2
+    jz repeat
+    send buffer_out, 1, [r1]
+    jz repeat
+    add r1, 1
+    umod r1, data_size
+    sub r2, 1
+    jnz repeat
+    cmp r3, full
+    jnz repeat
+    mov r3, init_cleared
+    jmp repeat
