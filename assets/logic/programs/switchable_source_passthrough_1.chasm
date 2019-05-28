@@ -1,0 +1,39 @@
+# 1-Byte Switchable Source Passthrough
+# Passes 1 byte from one device to the next. The input source can be switched
+# on request.
+#
+# This is intended to be a standalone program that runs indefinitely. To
+# use it, simply define 'passthrough_source_count' and 'passthrough_switch'.
+#
+# passthrough_source_count: Is the number of in ports that are available.
+#
+# passthrough_switch: Is the port that will receive an empty message when it
+# should switch to the next input source. It will keep attempting to read from
+# the current input source until it successfully receives the message from this
+# port.
+#
+# In: the pool of ports data is read from, starts at port 0 and goes up to port
+# 'passthrough_source_count - 1'.
+# Out: data is sent to port 255.
+#
+
+.define passthrough_out, 255
+.define passthrough_in, 0
+
+.entrypoint
+    mov r1, passthrough_out
+    mov r2, passthrough_switch
+    mov r3, passthrough_count
+receive:
+    recv r2, [r2]
+    jz read
+    add r0, 1
+    umod r0, r3
+read:
+    recv r0, [data]
+    jz receive
+send:
+    send r1, 1, [data]
+    jz send
+    jmp receive
+data:
