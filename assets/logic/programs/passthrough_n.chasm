@@ -1,4 +1,4 @@
-# Passthrough
+# n-Byte Passthrough
 # Passes any length of data from one device to the next.
 #
 # This is intended to be a standalone program that runs indefinitely. To
