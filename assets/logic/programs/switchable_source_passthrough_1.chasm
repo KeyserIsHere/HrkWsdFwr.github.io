@@ -23,7 +23,7 @@
 .entrypoint
     mov r1, passthrough_out
     mov r2, passthrough_switch
-    mov r3, passthrough_count
+    mov r3, passthrough_source_count
 receive:
     recv r2, [r2]
     jz read
