@@ -3,7 +3,7 @@
         {
             "name": "hub",
             "description": "Create a processor hub component.",
-            "examples": ["(hub\n\t(name: \"test\")\n\t(program: \"file.s\")\n)"],
+            "examples": ["(hub\n\t(name: \"test\")\n\t(program: \"file.chasm\")\n)"],
             "return": { "type": "custom:component" },
             "options": [
                 {
@@ -15,6 +15,27 @@
                     "name": "program",
                     "description": "The program source.",
                     "args": [[{ "type": "string", "name": "file" }]]
+                }
+            ]
+        },
+        {
+            "name": "port-connection",
+            "description": "Create a port connection component",
+            "examples": ["(port-connection (ports: (.entity1 0) (.entity2 0)) (disconnectable: #t))"],
+            "return": { "type": "custom:component" },
+            "options": [
+                {
+                    "name": "ports",
+                    "description": "The mapping between two devices",
+                    "args": [[
+                        { "type": "list", "value": [{ "type": "entity" }, { "type": "integer", "name": "port" }] },
+                        { "type": "list", "value": [{ "type": "entity" }, { "type": "integer", "name": "port" }] }
+                    ]]
+                },
+                {
+                    "name": "disconnectable",
+                    "description": "Whether the connection can be disconnected.",
+                    "args": [[{ "type": "bool" }]]
                 }
             ]
         },
