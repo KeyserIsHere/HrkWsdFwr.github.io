@@ -2,22 +2,25 @@
 # Passes 1 byte from one device to the next. The input source can be switched
 # on request.
 #
-# This is intended to be a standalone program that runs indefinitely. To
-# use it, simply define 'passthrough_source_count' and 'passthrough_switch'.
+# This is intended to be a standalone program that runs indefinitely.
+# ----------------------------------Defines----------------------------------
+# Define: passthrough_source_count:
+# As the number of in ports that are available. Maximum this can be is 254.
+# -----------------------------------Ports-----------------------------------
+# Port(0 - 253): in:
+# Is the pool of ports data is read from. Starts at port 0 and goes up to
+# port 'passthrough_source_count - 1'.
 #
-# passthrough_source_count: Is the number of in ports that are available.
+# Port(254): passthrough_switch:
+# Is the port that will receive an empty message when it should switch to the
+# next input source. It will keep attempting to read from the current input
+# source until it successfully receives the message from this port.
 #
-# passthrough_switch: Is the port that will receive an empty message when it
-# should switch to the next input source. It will keep attempting to read from
-# the current input source until it successfully receives the message from this
-# port.
-#
-# In: the pool of ports data is read from, starts at port 0 and goes up to port
-# 'passthrough_source_count - 1'.
-# Out: data is sent to port 255.
+# Port(255): Out: data is sent to port 255.
 #
 
 .define passthrough_out, 255
+.define passthrough_switch, 254
 .define passthrough_in, 0
 
 .entrypoint
