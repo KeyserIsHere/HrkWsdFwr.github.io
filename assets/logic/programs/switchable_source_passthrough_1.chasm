@@ -16,7 +16,7 @@
 # next input source. It will keep attempting to read from the current input
 # source until it successfully receives the message from this port.
 #
-# Port(255): Out: data is sent to port 255.
+# Port(255): out: Is the port that data is sent to.
 #
 
 .define out, 255
