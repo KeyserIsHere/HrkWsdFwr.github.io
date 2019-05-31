@@ -64,56 +64,99 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                 CCString Name = CCExpressionGetAtom(NameExpr);
                 if (CCStringEqual(Name, CC_STRING("program:")))
                 {
-                    if (ArgCount == 2)
+                    CCEnumerator Enumerator;
+                    CCCollectionGetEnumerator(CCExpressionGetList(Arg), &Enumerator);
+                    
+                    CCExpression *File = CCCollectionEnumeratorNext(&Enumerator);
+                    if ((File) && (CCExpressionGetType(*File) == CCExpressionValueTypeString))
                     {
-                        CCExpression File = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 1);
-                        if (CCExpressionGetType(File) == CCExpressionValueTypeString)
+                        CC_STRING_TEMP_BUFFER(Buffer, CCExpressionGetString(*File))
                         {
-                            CC_STRING_TEMP_BUFFER(Buffer, CCExpressionGetString(File))
+                            FSPath Path = FSPathCreate(Buffer);
+                            
+                            FSHandle Handle;
+                            if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
                             {
-                                FSPath Path = FSPathCreate(Buffer);
+                                size_t Size = FSManagerGetSize(Path), DefineSize = 600, Index = 0;
+                                char *Source;
+                                CC_SAFE_Malloc(Source, sizeof(char) * (Size + DefineSize + 1));
                                 
-                                FSHandle Handle;
-                                if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
+                                for (CCExpression *Option; (Option = CCCollectionEnumeratorNext(&Enumerator)); )
                                 {
-                                    size_t Size = FSManagerGetSize(Path);
-                                    char *Source;
-                                    CC_SAFE_Malloc(Source, sizeof(char) * (Size + 1));
-                                    
-                                    FSHandleRead(Handle, &Size, Source, FSBehaviourDefault);
-                                    Source[Size] = 0;
-                                    
-                                    FSHandleClose(Handle);
-                                                                        
-                                    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
-                                    
-                                    CCOrderedCollection Errors = NULL;
-                                    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors);
-                                    CCCollectionDestroy(AST);
-                                    
-                                    if (Binary)
+                                    if (CCExpressionGetType(*Option) == CCExpressionValueTypeList)
                                     {
-                                        HKHubProcessorComponentSetProcessor(Component, HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary));
-                                        HKHubArchBinaryDestroy(Binary); //TODO: Possibly store binary in the component, so the processor can be rebooted
+                                        CCOrderedCollection List = CCExpressionGetList(*Option);
+                                        const size_t OptionCount = CCCollectionGetCount(List);
+                                        
+                                        if (OptionCount >= 2)
+                                        {
+                                            CCExpression NameExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(List, 0);
+                                            
+                                            if (CCExpressionGetType(NameExpr) == CCExpressionValueTypeAtom)
+                                            {
+                                                CCString Name = CCExpressionGetAtom(NameExpr);
+                                                
+                                                if (CCStringEqual(Name, CC_STRING("define:")))
+                                                {
+                                                    if (OptionCount == 3)
+                                                    {
+                                                        CCExpression DefineExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(List, 1);
+                                                        CCExpression ValueExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(List, 2);
+                                                        
+                                                        if ((CCExpressionGetType(DefineExpr) == CCExpressionValueTypeString) && (CCExpressionGetType(ValueExpr) == CCExpressionValueTypeInteger))
+                                                        {
+                                                            CCString Define = CCExpressionGetString(DefineExpr);
+                                                            const size_t Length = 32 + CCStringGetSize(Define);
+                                                            
+                                                            if ((Index + Length) > DefineSize)
+                                                            {
+                                                                DefineSize += ((Length / 600) + 1) * 600;
+                                                                CC_SAFE_Realloc(Source, sizeof(char) * (Size + DefineSize + 1))
+                                                            }
+                                                            
+                                                            CC_STRING_TEMP_BUFFER(Buffer, Define)
+                                                            {
+                                                                Index += sprintf(&Source[Index], ".define %s,%d\n", Buffer, CCExpressionGetInteger(ValueExpr));
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                    
-                                    else if (Errors)
-                                    {
-                                        CC_LOG_ERROR("Unable to assemble program (%s)", Buffer);
-                                        HKHubArchAssemblyPrintError(Errors);
-                                        CCCollectionDestroy(Errors);
-                                    }
-                                    
-                                    CC_SAFE_Free(Source);
                                 }
                                 
-                                else CC_LOG_ERROR("Could not open file (%s) for argument (program:)", Buffer);
+                                FSHandleRead(Handle, &Size, &Source[Index], FSBehaviourDefault);
+                                Source[Index + Size] = 0;
                                 
-                                FSPathDestroy(Path);
+                                FSHandleClose(Handle);
+                                
+                                CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+                                
+                                CCOrderedCollection Errors = NULL;
+                                HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors);
+                                CCCollectionDestroy(AST);
+                                
+                                if (Binary)
+                                {
+                                    HKHubProcessorComponentSetProcessor(Component, HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary));
+                                    HKHubArchBinaryDestroy(Binary); //TODO: Possibly store binary in the component, so the processor can be rebooted
+                                }
+                                
+                                else if (Errors)
+                                {
+                                    CC_LOG_ERROR("Unable to assemble program (%s)", Buffer);
+                                    HKHubArchAssemblyPrintError(Errors);
+                                    CCCollectionDestroy(Errors);
+                                }
+                                
+                                CC_SAFE_Free(Source);
                             }
+                            
+                            else CC_LOG_ERROR("Could not open file (%s) for argument (program:)", Buffer);
+                            
+                            FSPathDestroy(Path);
                         }
-                        
-                        else CC_LOG_ERROR("Expect value for argument (program:) to be a string");
                     }
                     
                     else CC_LOG_ERROR("Expect value for argument (program:) to be a string");
