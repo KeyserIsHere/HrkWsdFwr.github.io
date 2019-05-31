@@ -4,11 +4,11 @@
 #
 # This is intended to be a standalone program that runs indefinitely.
 # -----------------------------------Ports-----------------------------------
-# Port(0): htp_in:
+# Port(0): in:
 # Is the port that passes HTP packets to this program. It expects to receive
 # only 1 byte at a time. The byte can be any HTP packet.
 #
-# Port(1): htp_out:
+# Port(1): out:
 # Is the port this program will send the decoded data to. It will send the
 # full block of data with the structure:
 #
@@ -33,107 +33,107 @@
 # either purge an older one, or it will discard the incoming one.
 #
 
-.define htp_in, 0
-.define htp_out, 1
+.define in, 0
+.define out, 1
 
-.define htp_data_bitsize, 1
-.define htp_packet_data_mask, 1 #0xff >> (8 - htp_data_bitsize)
-.define htp_hash_max, 0x7f #~htp_packet_data_mask >> htp_data_bitsize
+.define data_bitsize, 1
+.define packet_data_mask, 1 #0xff >> (8 - data_bitsize)
+.define hash_max, 0x7f #~packet_data_mask >> data_bitsize
 
-.define htp_buffer_hash, 0
-.define htp_buffer_timestamp, 1
-.define htp_buffer_count, 2
-.define htp_buffer_payload, 3
-.define htp_buffer_payload_size, 8 #htp_buffer_payload_data_length_mask + 1
-.define htp_buffer_payload_bitsize, 64 #htp_buffer_payload_size * 8
-.define htp_buffer_payload_data_length, 3 #htp_buffer_payload
-.define htp_buffer_payload_data_length_mask, 7
-.define htp_buffer_payload_data, 4 #htp_buffer_payload + 1
-.define htp_buffer_size, 11 #htp_buffer_payload_size + 3
-.define htp_buffer_max, 55 #(256 - buffers) / htp_buffer_size * htp_buffer_size
-.define htp_threshold, 8 # TODO: play around with value
+.define buffer_hash, 0
+.define buffer_timestamp, 1
+.define buffer_count, 2
+.define buffer_payload, 3
+.define buffer_payload_size, 8 #buffer_payload_data_length_mask + 1
+.define buffer_payload_bitsize, 64 #buffer_payload_size * 8
+.define buffer_payload_data_length, 3 #buffer_payload
+.define buffer_payload_data_length_mask, 7
+.define buffer_payload_data, 4 #buffer_payload + 1
+.define buffer_size, 11 #buffer_payload_size + 3
+.define buffer_max, 55 #(256 - buffers) / buffer_size * buffer_size
+.define threshold, 8 # TODO: play around with value
 
 .entrypoint
 listen:
-    recv htp_in, [packet]
+    recv in, [packet]
     jnz hash
-    add r3, htp_buffer_size
-    cmp r3, htp_buffer_max
+    add r3, buffer_size
+    cmp r3, buffer_max
     jul find_complete_buffer
     xor r3, r3
 find_complete_buffer:
-    mov r2, [buffers + r3 + htp_buffer_hash]
+    mov r2, [buffers + r3 + buffer_hash]
     mov r1, r2
     and r1, 0x80
     jz listen
-    and r2, htp_buffer_payload_data_length_mask
+    and r2, buffer_payload_data_length_mask
     jmp send_buffer
 hash:
     add [counter], 1
     mov r0, [packet]
-    umod r0, htp_hash_max
+    umod r0, hash_max
     add r0, 1
     xor r3, r3
     mov r2, 0xff
 find_buffer:
     mov r1, r0
-    xor r1, [buffers + r3 + htp_buffer_hash]
+    xor r1, [buffers + r3 + buffer_hash]
     jz set_buffer
     xor r1, r0
     jnz check_age
     mov r2, r3
 check_age:
     mov r1, [counter]
-    sub r1, [buffers + r3 + htp_buffer_timestamp]
-    cmp r1, htp_threshold
+    sub r1, [buffers + r3 + buffer_timestamp]
+    cmp r1, threshold
     jul next_buffer
     mov r2, r3
 next_buffer:
-    add r3, htp_buffer_size
-    cmp r3, htp_buffer_max
+    add r3, buffer_size
+    cmp r3, buffer_max
     jul find_buffer
     mov r3, r2
     not r2
     jz listen
 init_buffer:
-    mov [buffers + r3 + htp_buffer_count], 0
+    mov [buffers + r3 + buffer_count], 0
 set_buffer:
-    mov [buffers + r3 + htp_buffer_timestamp], [counter]
+    mov [buffers + r3 + buffer_timestamp], [counter]
     mov r1, [packet]
-    mov r2, [buffers + r3 + htp_buffer_count]
+    mov r2, [buffers + r3 + buffer_count]
     mov r0, r2
-    add r0, htp_data_bitsize
-    mov [buffers + r3 + htp_buffer_count], r0
-    cmp r0, htp_buffer_payload_bitsize
+    add r0, data_bitsize
+    mov [buffers + r3 + buffer_count], r0
+    cmp r0, buffer_payload_bitsize
     jul payload_within_bounds
-    mov [buffers + r3 + htp_buffer_hash], 0
+    mov [buffers + r3 + buffer_hash], 0
     jmp skip_set_hash
 payload_within_bounds:
     mov r0, r1
-    shr r0, htp_data_bitsize
-    mov [buffers + r3 + htp_buffer_hash], r0
+    shr r0, data_bitsize
+    mov [buffers + r3 + buffer_hash], r0
 skip_set_hash:
-    and r1, htp_packet_data_mask
+    and r1, packet_data_mask
     udiv r2, 8
     add r2, r3
-    shl [buffers + r2 + htp_buffer_payload], htp_data_bitsize
-    or [buffers + r2 + htp_buffer_payload], r1
-    mov r2, [buffers + r3 + htp_buffer_payload_data_length]
-    and r2, htp_buffer_payload_data_length_mask
+    shl [buffers + r2 + buffer_payload], data_bitsize
+    or [buffers + r2 + buffer_payload], r1
+    mov r2, [buffers + r3 + buffer_payload_data_length]
+    and r2, buffer_payload_data_length_mask
     jz listen
     mov r1, r2
     mul r1, 8
     add r1, 8
-    cmp r1, [buffers + r3 + htp_buffer_count]
+    cmp r1, [buffers + r3 + buffer_count]
     jnz listen
     mov r1, r2
     or r1, 0x80
-    mov [buffers + r3 + htp_buffer_hash], r1
+    mov [buffers + r3 + buffer_hash], r1
 send_buffer:
     add r2, 1
-    send htp_out, r2, [buffers + r3 + htp_buffer_payload]
+    send out, r2, [buffers + r3 + buffer_payload]
     jz listen
-    mov [buffers + r3 + htp_buffer_hash], 0
+    mov [buffers + r3 + buffer_hash], 0
     jmp listen
 packet: .byte 0
 counter: .byte 0
