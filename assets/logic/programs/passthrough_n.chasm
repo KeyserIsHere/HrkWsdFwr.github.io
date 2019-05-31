@@ -1,20 +1,24 @@
 # n-Byte Passthrough
 # Passes any length of data from one device to the next.
 #
-# This is intended to be a standalone program that runs indefinitely. To
-# use it, simply define 'passthrough_count' as the number of out ports that
-# are available.
+# This is intended to be a standalone program that runs indefinitely.
+# ----------------------------------Defines----------------------------------
+# Define: passthrough_count:
+# As the number of out ports that are available. Maximum this can be is 255.
+# -----------------------------------Ports-----------------------------------
+# Port(255): passthrough_in:
+# Is the port that data is read from.
 #
+# Port(0 - 254): passthrough_out:
+# Is the pool of ports data is sent to. Starts at port 0 and goes up to port
+# 'passthrough_count - 1'.
+# ----------------------------------Details----------------------------------
 # To guarantee efficient passing of data, the program cycles through the out
 # ports.
 #
-# In: data is read from port 255.
-# Out: the pool of ports data is sent to starts at port 0 and goes up to port
-# 'passthrough_count - 1'.
-#
-# Data should consist of a 1 length byte, followed by the number of bytes.
-# This structure (including the length byte) is sent to the out port too as
-# one single send operation.
+# Data should consist of 1 length byte, followed by the number of bytes. This
+# structure (including the length byte) is sent to the out port too as one
+# single send operation.
 #
 
 .define passthrough_in, 255
