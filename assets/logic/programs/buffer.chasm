@@ -1,20 +1,20 @@
 # Buffer
 # Stores data from one device while it attempts to pass it to another.
 #
-# This is intended to be a standalone program that runs indefinitely. To
-# use it, simply define a 'buffer_in', 'buffer_out', and 'buffer_control'
-# for the appropriate ports.
+# This is intended to be a standalone program that runs indefinitely.
+# -----------------------------------Ports-----------------------------------
+# Port(0): buffer_in:
+# Is the port that puts data into the buffer. It expects to receive only 1
+# byte at a time.
 #
-# buffer_in: Is the port that puts data into the buffer. It expects to
-# receive only 1 byte at a time.
+# Port(1): buffer_out:
+# Is the port that gets data from the buffer. It sends only 1 byte at a time.
 #
-# buffer_out: Is the port that gets data from the buffer. It sends only
-# 1 byte at a time.
-#
-# buffer_control: Is the port that receives the blocked and ready state.
-# It sends an empty message, one for when the buffer is full, and another
-# when the buffer is empty.
-#
+# Port(2): buffer_control:
+# Is the port that receives the blocked and ready state. It sends an empty
+# message, one for when the buffer is full, and another when the buffer is
+# empty.
+# ----------------------------------Details----------------------------------
 # Program State:
 #   1. During normal behaviour the program will repeatedly read data from
 #   'buffer_in' and storing it in the buffer. While also attempting to send
@@ -33,6 +33,10 @@
 #   been successfully received, which will return the program state back to
 #   reading, storing, and sending data (step 1).
 #
+
+.define buffer_in, 0
+.define buffer_out, 1
+.define buffer_control, 2
 
 # .define in_index, r0
 # .define out_index, r1
