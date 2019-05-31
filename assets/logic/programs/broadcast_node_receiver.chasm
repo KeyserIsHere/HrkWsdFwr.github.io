@@ -4,43 +4,42 @@
 #
 # This is intended to be a standalone program that runs indefinitely.
 # ----------------------------------Defines----------------------------------
-# Define: broadcast_node_receiver_buffer_count:
+# Define: buffer_count:
 # As the number of buffers that are connected to it. Maximum this can be is
 # 127.
 # -----------------------------------Ports-----------------------------------
-# Port(0): broadcast_node_receiver_packet_processor:
+# Port(0): packet_processor:
 # Is the port to the device that will be reading from the buffers. The device
 # should be connected to the buffers in the same order that this program is.
 # The device will be sent an empty message when it should start reading from
 # the next buffer ((index + 1) % count).
 #
-# Port(1): broadcast_node_receiver_transceiver:
+# Port(1): transceiver:
 # Is the port that gets a packet from a transceiver module. This should be
 # set to the appropriate port/channel it should be using.
 #
-# Port(2 - 128): broadcast_node_receiver_buffer_start:
-# Is the port connected to the buffer's 'buffer_in' port.
-# 'broadcast_node_receiver_buffer_count - 1' ports should be connected to
-# each buffer from this initial port (starting from 2, up to 128).
+# Port(2 - 128): buffer_start:
+# Is the port connected to the buffer's 'buffer_in' port. 'buffer_count - 1'
+# ports should be connected to each buffer from this initial port (starting
+# from 2, up to 128).
 #
-# Port(129 - 255): broadcast_node_receiver_buffer_control_start:
+# Port(129 - 255): buffer_control_start:
 # Is the port connected to the buffer's 'buffer_control' port.
-# 'broadcast_node_receiver_buffer_count - 1' ports should be connected to
-# each buffer from this initial port (starting from 129, up to 255). The
-# connections should be in the same order as
-# 'broadcast_node_receiver_buffer_start'. A buffer at port 129 should be the
-# same one connected to port 2.
+# 'buffer_count - 1' ports should be connected to each buffer from this
+# initial port (starting from 129, up to 255). The connections should be in
+# the same order as 'buffer_start'. A buffer at port 129 should be the same
+# one connected to port 2.
 #
 
-.define broadcast_node_receiver_packet_processor, 0
-.define broadcast_node_receiver_transceiver, 1
-.define broadcast_node_receiver_buffer_start, 2
-.define broadcast_node_receiver_buffer_control_start, 129
+.define packet_processor, 0
+.define transceiver, 1
+.define buffer_start, 2
+.define buffer_control_start, 129
 
 .entrypoint
-    mov r0, broadcast_node_receiver_transceiver
-    mov r2, broadcast_node_receiver_buffer_start
-    mov r3, broadcast_node_receiver_buffer_control_start
+    mov r0, transceiver
+    mov r2, buffer_start
+    mov r3, buffer_control_start
 listen:
     mov r1, [processing]
     or [waiting + r1], 1
@@ -49,10 +48,10 @@ listen:
     jz send
     mov [waiting + r1], 0
 empty_buffer_notification:
-    send broadcast_node_receiver_packet_processor
+    send packet_processor
     jz empty_buffer_notification
     add r1, 1
-    umod r1, broadcast_node_receiver_buffer_count
+    umod r1, buffer_count
     mov [processing], r1
 receive:
     recv r0, [packet]
@@ -66,19 +65,19 @@ send:
     xor [waiting + r1], 1
     jnz next_buffer
 empty_buffer_notification:
-    send broadcast_node_receiver_packet_processor
+    send packet_processor
     jz empty_buffer_notification
     add [processing], 1
-    umod [processing], broadcast_node_receiver_buffer_count
+    umod [processing], buffer_count
     jmp send
 next_buffer:
     add r1, 1
-    umod r1, broadcast_node_receiver_buffer_count
+    umod r1, buffer_count
     mov [buffer], r1
     mov r2, r1
     mov r3, r1
-    add r2, broadcast_node_receiver_buffer_start
-    add r3, broadcast_node_receiver_buffer_control_start
+    add r2, buffer_start
+    add r3, buffer_control_start
     jmp send
 packet: .byte 0
 buffer: .byte 0
