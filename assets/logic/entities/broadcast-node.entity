@@ -1,0 +1,65 @@
+(entity "broadcast-node"
+    (state! ".transceiver")
+    (state! ".broadcast-receiver")
+    (state! ".packet-buffers")
+    (state! ".packet-scheduler")
+    (state! ".htp-decoder")
+
+    (state! ".listening-channels" (0))
+    (state! ".receiver-buffer-count" 2)
+    (state! ".passthrough-source-count" 2)
+
+    (children:
+        (.transceiver! (eval (cat (@cd "transceiver.entity"))))
+        (loop "@channel" .listening-channels
+            (
+                (.broadcast-receiver! (entity "broadcast-node-receiver"
+                    (hub
+                        (name: "Broadcast Receiver")
+                        (program: (cat (@cd "../programs/broadcast_node_receiver.chasm"))
+                            (define: "buffer_count" .receiver-buffer-count)
+                        )
+                    )
+                ))
+                (.packet-buffers! (repeat "@item" .receiver-buffer-count
+                    (entity "packet-buffer"
+                        (hub
+                            (name: "Packet Buffer")
+                            (program: (cat (@cd "../programs/buffer.chasm")))
+                        )
+                    )
+                ))
+                (.packet-scheduler! (entity "packet-scheduler"
+                    (hub
+                        (name: "Packet Scheduler")
+                        (program: (cat (@cd "../programs/switchable_source_passthrough_1.chasm"))
+                            (define: "source_count" .passthrough-source-count)
+                        )
+                    )
+                ))
+                (.htp-decoder! (entity "htp-decoder"
+                    (hub
+                        (name: "HTP Decoder")
+                        (program: (cat (@cd "../programs/htp_decoder.chasm")))
+                    )
+                ))
+            )
+        )
+    )
+
+    ; TODO: auto create named ports from parsing docs, so can use the named references instead of numbers (which may break if programs are refactored)
+    (loop "@channel" .listening-channels
+        (
+            (port-connection (ports: (.transceiver @channel) (.broadcast-receiver 1)))
+            (port-connection (ports: (.broadcast-receiver 0) (.packet-scheduler 254)))
+            (repeat "@index" .receiver-buffer-count
+                (
+                    (port-connection (ports: (.broadcast-receiver (+ 2 @index)) ((get @index .packet-buffers) 0)))
+                    (port-connection (ports: (.broadcast-receiver (+ 129 @index)) ((get @index .packet-buffers) 2)))
+                    (port-connection (ports: ((get @index .packet-buffers) 1) (.packet-scheduler (+ 0 @index))))
+                )
+            )
+            (port-connection (ports: (.packet-scheduler 255) (.htp-decoder 0)))
+        )
+    )
+)
