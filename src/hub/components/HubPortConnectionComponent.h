@@ -41,6 +41,7 @@ typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
     HKHubArchPortConnection connection;
     HKHubPortConnectionEntityMapping mapping[2];
+    _Bool disconnectable;
 } HKHubPortConnectionComponentClass, *HKHubPortConnectionComponentPrivate;
 
 
@@ -90,6 +91,20 @@ static inline HKHubPortConnectionEntityMapping *HKHubPortConnectionComponentGetE
  */
 static inline void HKHubPortConnectionComponentSetEntityMapping(CCComponent Component, HKHubPortConnectionEntityMapping CC_OWN(Device1), HKHubPortConnectionEntityMapping CC_OWN(Device2));
 
+/*!
+ * @brief Get whether the connection can be disconnected.
+ * @param Component The port connection component.
+ * @return Whether the connection can be disconnected.
+ */
+static inline _Bool HKHubPortConnectionComponentGetDisconnectable(CCComponent Component);
+
+/*!
+ * @brief Set whether the connection can be disconnected.
+ * @param Component The port connection component.
+ * @param Disconnectable Whether the connection can be disconnected (TRUE) or not (FALSE).
+ */
+static inline void HKHubPortConnectionComponentSetDisconnectable(CCComponent Component, _Bool Disconnectable);
+
 
 #pragma mark -
 
@@ -99,6 +114,7 @@ static inline void HKHubPortConnectionComponentInitialize(CCComponent Component,
     ((HKHubPortConnectionComponentPrivate)Component)->connection = NULL;
     ((HKHubPortConnectionComponentPrivate)Component)->mapping[0] = (HKHubPortConnectionEntityMapping){ .entity = NULL };
     ((HKHubPortConnectionComponentPrivate)Component)->mapping[1] = (HKHubPortConnectionEntityMapping){ .entity = NULL };
+    ((HKHubPortConnectionComponentPrivate)Component)->disconnectable = FALSE;
 }
 
 static inline void HKHubPortConnectionComponentDeallocate(CCComponent Component)
@@ -140,6 +156,16 @@ static inline void HKHubPortConnectionComponentSetEntityMapping(CCComponent Comp
     
     ((HKHubPortConnectionComponentPrivate)Component)->mapping[0] = Device1;
     ((HKHubPortConnectionComponentPrivate)Component)->mapping[1] = Device2;
+}
+
+static inline _Bool HKHubPortConnectionComponentGetDisconnectable(CCComponent Component)
+{
+    return ((HKHubPortConnectionComponentPrivate)Component)->disconnectable;
+}
+
+static inline void HKHubPortConnectionComponentSetDisconnectable(CCComponent Component, _Bool Disconnectable)
+{
+    ((HKHubPortConnectionComponentPrivate)Component)->disconnectable = Disconnectable;
 }
 
 #endif
