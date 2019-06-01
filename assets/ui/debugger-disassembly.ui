@@ -1,4 +1,4 @@
-(gui "debugger-disassembly"
+(gui "gui-debugger-disassembly"
     (namespace! :debugger-disassemby)
     (state! ".colour" (0 0 0))
     (state! ".change-colour" (255 0 0))

@@ -1,4 +1,4 @@
-(gui "debugger-register"
+(gui "gui-debugger-register"
     (namespace! :debugger-register)
     (state! ".colour" (0 0 0))
     (state! ".change-colour" (255 0 0))
