@@ -26,6 +26,8 @@
 #include "HubSystem.h"
 #include <threads.h>
 #include "HubProcessorComponent.h"
+#include "HubPortConnectionComponent.h"
+#include "HubModuleComponent.h"
 #include "HubArchScheduler.h"
 #include "HubArchInstruction.h"
 #include "RapServer.h"
@@ -34,7 +36,7 @@ static _Bool HKHubSystemTryLock(CCComponentSystemHandle *Handle);
 static void HKHubSystemLock(CCComponentSystemHandle *Handle);
 static void HKHubSystemUnlock(CCComponentSystemHandle *Handle);
 static _Bool HKHubSystemHandlesComponent(CCComponentSystemHandle *Handle, CCComponentID id);
-static void HKHubSystemUpdate(double DeltaTime, CCCollection Components);
+static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime, CCCollection Components);
 
 static HKHubArchScheduler Scheduler;
 static mtx_t Lock;
@@ -352,39 +354,99 @@ static void HKHubSystemDetachDebugger(CCComponent Debugger)
     CCEntityDetachComponent(Entity, Debugger);
 }
 
+static void HKHubSystemConnectPorts(CCComponent Connection)
+{
+    const HKHubPortConnectionEntityMapping *Mapping = HKHubPortConnectionComponentGetEntityMapping(Connection);
+    if ((Mapping[0].entity) && (Mapping[1].entity))
+    {
+        struct {
+            void (*connect)(HKHubArchPortDevice, HKHubArchPortID, HKHubArchPortConnection);
+            HKHubArchPort port;
+        } Ports[2];
+        
+        for (size_t Loop = 0; Loop < 2; Loop++)
+        {
+            CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(Mapping[Loop].entity))
+            {
+                if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
+                {
+                    HKHubArchProcessor Processor = HKHubProcessorComponentGetProcessor(Component);
+                    HKHubArchPortConnection PortConnection = HKHubArchProcessorGetPortConnection(Processor, Mapping[Loop].port);
+                    
+                    CCAssertLog(!PortConnection, "Cannot create a port connection where one already exists");
+                    
+                    Ports[Loop].connect = (typeof(Ports->connect))HKHubArchProcessorConnect;
+                    Ports[Loop].port = HKHubArchProcessorGetPort(Processor, Mapping[Loop].port);
+                    break;
+                }
+                
+                else if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeModule)
+                {
+                    HKHubModule Module = HKHubModuleComponentGetModule(Component);
+                    HKHubArchPortConnection PortConnection = HKHubModuleGetPortConnection(Module, Mapping[Loop].port);
+                    
+                    CCAssertLog(!PortConnection, "Cannot create a port connection where one already exists");
+                    
+                    Ports[Loop].connect = (typeof(Ports->connect))HKHubModuleConnect;
+                    Ports[Loop].port = HKHubModuleGetPort(Module, Mapping[Loop].port);
+                    break;
+                }
+            }
+        }
+        
+        HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, Ports[0].port, Ports[1].port);
+        Ports[0].connect(Ports[0].port.device, Ports[0].port.id, Conn);
+        Ports[1].connect(Ports[1].port.device, Ports[1].port.id, Conn);
+        HKHubPortConnectionComponentSetConnection(Connection, Conn); //TODO: Maybe store component in a dictionary so it can be looked up by using connection
+        HKHubArchPortConnectionDestroy(Conn);
+    }
+}
+
+static void HKHubSystemDisconnectPorts(CCComponent Connection)
+{
+}
+
 typedef struct {
     void (*processor)(HKHubArchScheduler, HKHubArchProcessor);
     void (*debugger)(CCComponent);
+    void (*connection)(CCComponent);
 } HKHubSystemUpdater;
 
 static void HKHubSystemUpdateScheduler(CCCollection Components, HKHubSystemUpdater Update)
 {
-    CC_COLLECTION_FOREACH(CCComponent, Hub, Components)
+    CC_COLLECTION_FOREACH(CCComponent, Component, Components)
     {
-        const HKHubType Type = CCComponentGetID(Hub) & HKHubTypeMask;
+        const HKHubType Type = CCComponentGetID(Component) & HKHubTypeMask;
         if (Type == HKHubTypeProcessor)
         {
-            Update.processor(Scheduler, HKHubProcessorComponentGetProcessor(Hub));
+            Update.processor(Scheduler, HKHubProcessorComponentGetProcessor(Component));
         }
         
         else if (Type == HKHubTypeDebugger)
         {
-            Update.debugger(Hub);
+            Update.debugger(Component);
+        }
+        
+        else if (Type == HKHubTypePortConnection)
+        {
+            Update.connection(Component);
         }
     }
     
     CCCollectionDestroy(Components);
 }
 
-static void HKHubSystemUpdate(double DeltaTime, CCCollection Components)
+static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime, CCCollection Components)
 {
     HKHubSystemUpdateScheduler(CCComponentSystemGetAddedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
         .processor = HKHubArchSchedulerAddProcessor,
-        .debugger = HKHubSystemAttachDebugger
+        .debugger = HKHubSystemAttachDebugger,
+        .connection = HKHubSystemConnectPorts
     });
     HKHubSystemUpdateScheduler(CCComponentSystemGetRemovedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
         .processor = HKHubArchSchedulerRemoveProcessor,
-        .debugger = HKHubSystemDetachDebugger
+        .debugger = HKHubSystemDetachDebugger,
+        .connection = HKHubSystemDisconnectPorts
     });
     
     HKHubArchSchedulerRun(Scheduler, DeltaTime);
