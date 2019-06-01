@@ -199,10 +199,19 @@ void HKHubArchProcessorDisconnect(HKHubArchProcessor Processor, HKHubArchPortID 
 
 /*!
  * @brief Get an interfaceable port reference from the processor.
- * @param Processor The processor get the port of.
+ * @param Processor The processor to get the port of.
  * @param Port The port of the processor.
+ * @return The port interface.
  */
 HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchPortID Port);
+
+/*!
+ * @brief Get the current connection for the specified port of the processor.
+ * @param Processor The processor to get the connection of.
+ * @param Port The port of the processor.
+ * @return The connection if one exists, otherwise NULL.
+ */
+HKHubArchPortConnection HKHubArchProcessorGetPortConnection(HKHubArchProcessor Processor, HKHubArchPortID Port);
 
 /*!
  * @brief Run the processor.

@@ -274,6 +274,15 @@ HKHubArchPort HKHubArchProcessorGetPort(HKHubArchProcessor Processor, HKHubArchP
     };
 }
 
+HKHubArchPortConnection HKHubArchProcessorGetPortConnection(HKHubArchProcessor Processor, HKHubArchPortID Port)
+{
+    CCAssertLog(Processor, "Processor must not be null");
+    
+    HKHubArchPortConnection *Connection = CCDictionaryGetValue(Processor->ports, &Port);
+    
+    return Connection ? *Connection : NULL;
+}
+
 static inline void HKHubArchProcessorSetConnectionDisconnectCallback(HKHubArchProcessor Processor, HKHubArchPortID Port, HKHubArchPortConnection Connection, HKHubArchPortDisconnect Disconnect)
 {
     for (int Loop = 0; Loop < 2; Loop++)
