@@ -81,7 +81,7 @@ static inline void HKHubPortConnectionComponentSetConnection(CCComponent Compone
  * @param Component The port connection component.
  * @return The two entity mappings.
  */
-static inline HKHubPortConnectionEntityMapping *HKHubPortConnectionComponentGetEntityMapping(CCComponent Component);
+static inline const HKHubPortConnectionEntityMapping *HKHubPortConnectionComponentGetEntityMapping(CCComponent Component);
 
 /*!
  * @brief Set the entity mapping of the port connection.
@@ -143,7 +143,7 @@ static inline void HKHubPortConnectionComponentSetConnection(CCComponent Compone
     ((HKHubPortConnectionComponentPrivate)Component)->connection = Connection;
 }
 
-static inline HKHubPortConnectionEntityMapping *HKHubPortConnectionComponentGetEntityMapping(CCComponent Component)
+static inline const HKHubPortConnectionEntityMapping *HKHubPortConnectionComponentGetEntityMapping(CCComponent Component)
 {
     return ((HKHubPortConnectionComponentPrivate)Component)->mapping;
 }
