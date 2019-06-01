@@ -135,3 +135,12 @@ HKHubArchPort HKHubModuleGetPort(HKHubModule Module, HKHubArchPortID Port)
         .ready = NULL
     };
 }
+
+HKHubArchPortConnection HKHubModuleGetPortConnection(HKHubModule Module, HKHubArchPortID Port)
+{
+    CCAssertLog(Module, "Module must not be null");
+    
+    HKHubArchPortConnection *Connection = CCDictionaryGetValue(Module->ports, &Port);
+    
+    return Connection ? *Connection : NULL;
+}

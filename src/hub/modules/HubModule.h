@@ -85,9 +85,18 @@ void HKHubModuleDisconnect(HKHubModule Module, HKHubArchPortID Port);
 
 /*!
  * @brief Get an interfaceable port reference from the module.
- * @param Internal The module get the port of.
+ * @param Module The module to get the port of.
  * @param Port The port of the module.
+ * @return The port interface.
  */
 HKHubArchPort HKHubModuleGetPort(HKHubModule Module, HKHubArchPortID Port);
+
+/*!
+ * @brief Get the current connection for the specified port of the module.
+ * @param Module The module to get the connection of.
+ * @param Port The port of the module.
+ * @return The connection if one exists, otherwise NULL.
+ */
+HKHubArchPortConnection HKHubModuleGetPortConnection(HKHubModule Module, HKHubArchPortID Port);
 
 #endif
