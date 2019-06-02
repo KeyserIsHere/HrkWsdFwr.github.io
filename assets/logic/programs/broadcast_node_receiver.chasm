@@ -42,7 +42,7 @@
     mov r3, buffer_control_start
 listen:
     mov r1, [processing]
-    or [waiting + r1], 1
+    and [waiting + r1], 1
     jz receive
     recv r3, [r0]
     jz send
