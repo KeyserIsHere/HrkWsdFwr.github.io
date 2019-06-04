@@ -180,7 +180,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     
     if (Device->message.type == HKHubArchProcessorMessageSend)
     {
-        if (Device->message.port != Port) return Device->message.timestamp < Timestamp ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
+        if (Device->message.port != Port) return Device->message.timestamp <= Timestamp ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         *Message = Device->message.data;
@@ -211,7 +211,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     
     if (Device->message.type == HKHubArchProcessorMessageReceive)
     {
-        if (Device->message.port != Port) return Device->message.timestamp < Timestamp ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
+        if (Device->message.port != Port) return Device->message.timestamp <= Timestamp ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         const uint8_t Offset = Device->message.data.offset;
