@@ -214,7 +214,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         if (Device->message.port != Port) return Device->message.timestamp <= Timestamp ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
-        const uint8_t Offset = Device->message.data.offset;
+        const uint8_t Offset = Device->message.offset;
         for (size_t Loop = 0; Loop < Message->size; Loop++)
         {
             Device->memory[Offset + Loop] = Message->memory[Message->offset + Loop];
