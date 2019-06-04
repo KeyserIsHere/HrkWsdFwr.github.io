@@ -7,7 +7,6 @@
 
     (state! ".listening-channels" (0))
     (state! ".receiver-buffer-count" 2)
-    (state! ".passthrough-source-count" 2)
 
     (children:
         (.transceiver! (eval (cat (@cd "transceiver.entity"))))
@@ -33,7 +32,7 @@
                     (hub
                         (name: "Packet Scheduler")
                         (program: (cat (@cd "../programs/switchable_source_passthrough_1.chasm"))
-                            (define: "source_count" .passthrough-source-count)
+                            (define: "source_count" .receiver-buffer-count)
                         )
                     )
                 ))
