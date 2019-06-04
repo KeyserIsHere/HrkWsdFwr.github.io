@@ -255,6 +255,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchPortConnectionDestroy(Conn);
     
     Receiver->state.r[1] = 0;
+    Receiver->state.r[2] = 1;
+    Receiver->state.r[1] = 0;
     Receiver->state.r[0] = 50;
     Receiver->state.r[3] = 51;
     
@@ -264,6 +266,32 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Receiver->cycles, 0, @"Should not have any unused cycles");
     XCTAssertEqual(Receiver->memory[50], 10, @"Should have received value from second send");
     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send");
+    XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
+    
+    
+    Receiver->memory[50] = 0;
+    Receiver->memory[51] = 0;
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 34);
+    HKHubArchProcessorSetCycles(Receiver, 28);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should not have any unused cycles");
+    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send");
+    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send");
+    XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
+    
+    
+    Receiver->memory[50] = 0;
+    Receiver->memory[51] = 0;
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 14);
+    HKHubArchProcessorSetCycles(Receiver, 31);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should not have any unused cycles");
+    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send");
+    XCTAssertEqual(Receiver->memory[51], 5, @"Should not have received value from first send");
     XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
     
     HKHubArchSchedulerDestroy(Scheduler);
