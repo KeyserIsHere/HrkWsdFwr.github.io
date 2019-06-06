@@ -214,16 +214,16 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         if (Device->message.port != Port) return Device->message.timestamp <= Timestamp ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
+        Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
+        *Wait = Device->message.timestamp < Timestamp ? Timestamp - Device->message.timestamp : 0;
+        
+        if ((!HKHubArchPortIsReady(HKHubArchPortConnectionGetPort(Connection, Device, Port))) || (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port)))) return HKHubArchPortResponseDefer;
+        
         const uint8_t Offset = Device->message.offset;
         for (size_t Loop = 0; Loop < Message->size; Loop++)
         {
             Device->memory[Offset + Loop] = Message->memory[Message->offset + Loop];
         }
-        
-        Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
-        *Wait = Device->message.timestamp < Timestamp ? Timestamp - Device->message.timestamp : 0;
-        
-        if ((!HKHubArchPortIsReady(HKHubArchPortConnectionGetPort(Connection, Device, Port))) || (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port)))) return HKHubArchPortResponseDefer;
         
         Device->message.type = HKHubArchProcessorMessageComplete;
         
