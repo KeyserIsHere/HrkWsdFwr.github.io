@@ -120,28 +120,28 @@ static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Proce
     
     CCExpressionSetState(State, CC_STRING(".memory"), Memory, FALSE);
     CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateList(CC_STD_ALLOCATOR), FALSE);
+    CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateFromSource("((0 256))"), FALSE);
     
     
     CCExpressionSetState(State, CC_STRING(".r0"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[0]), FALSE);
     CCExpressionSetState(State, CC_STRING(".r1"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[1]), FALSE);
     CCExpressionSetState(State, CC_STRING(".r2"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[2]), FALSE);
     CCExpressionSetState(State, CC_STRING(".r3"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.r[3]), FALSE);
-    CCExpressionSetState(State, CC_STRING(".r0-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".r1-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".r2-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".r3-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r0-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r1-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r2-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".r3-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     CCExpressionSetState(State, CC_STRING(".r0-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     CCExpressionSetState(State, CC_STRING(".r1-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     CCExpressionSetState(State, CC_STRING(".r2-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     CCExpressionSetState(State, CC_STRING(".r3-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     
     CCExpressionSetState(State, CC_STRING(".flags"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.flags), FALSE);
-    CCExpressionSetState(State, CC_STRING(".flags-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".flags-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     CCExpressionSetState(State, CC_STRING(".flags-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     
     CCExpressionSetState(State, CC_STRING(".pc"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, Processor->state.pc), FALSE);
-    CCExpressionSetState(State, CC_STRING(".pc-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
+    CCExpressionSetState(State, CC_STRING(".pc-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
     CCExpressionSetState(State, CC_STRING(".pc-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     
     
