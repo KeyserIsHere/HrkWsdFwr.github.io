@@ -31,12 +31,18 @@
 #include "HubArchScheduler.h"
 #include "HubArchInstruction.h"
 #include "RapServer.h"
+#include "HubModuleWirelessTransceiver.h"
 
 static _Bool HKHubSystemTryLock(CCComponentSystemHandle *Handle);
 static void HKHubSystemLock(CCComponentSystemHandle *Handle);
 static void HKHubSystemUnlock(CCComponentSystemHandle *Handle);
 static _Bool HKHubSystemHandlesComponent(CCComponentSystemHandle *Handle, CCComponentID id);
 static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime, CCCollection Components);
+
+static HKHubArchScheduler HKHubSystemGetSchedulerForModule(HKHubModule Module)
+{
+    return HKHubSystemGetScheduler();
+}
 
 static HKHubArchScheduler Scheduler;
 static mtx_t Lock;
@@ -52,6 +58,8 @@ void HKHubSystemRegister(void)
     Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
     
     CCComponentSystemRegister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeUpdate, (CCComponentSystemUpdateCallback)HKHubSystemUpdate, NULL, HKHubSystemHandlesComponent, NULL, NULL, HKHubSystemTryLock, HKHubSystemLock, HKHubSystemUnlock);
+    
+    HKHubModuleWirelessTransceiverGetScheduler = HKHubSystemGetSchedulerForModule;
 }
 
 void HKHubSystemDeregister(void)
