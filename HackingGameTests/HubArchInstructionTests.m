@@ -173,6 +173,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 18);
@@ -207,6 +209,10 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
+    Sender->state.pc = 0;
+    Receiver->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 17);
     HKHubArchProcessorSetCycles(Receiver, 17);
     HKHubArchSchedulerRun(Scheduler, 0.0);
@@ -256,10 +262,261 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     Receiver->state.r[1] = 0;
     Receiver->state.r[2] = 1;
-    Receiver->state.r[1] = 0;
     Receiver->state.r[0] = 50;
     Receiver->state.r[3] = 51;
+
+    for (size_t SenderCycles = 0; SenderCycles <= 34; SenderCycles++)
+    {
+        for (size_t ReceiverCycles = 0; ReceiverCycles <= 28; ReceiverCycles++)
+        {
+            Receiver->message.type = HKHubArchProcessorMessageClear;
+            Sender->message.type = HKHubArchProcessorMessageClear;
+            Receiver->memory[50] = 0;
+            Receiver->memory[51] = 0;
+            Receiver->state.pc = 0;
+            Sender->state.pc = 0;
+            
+            HKHubArchProcessorSetCycles(Sender, SenderCycles);
+            HKHubArchProcessorSetCycles(Receiver, ReceiverCycles);
+            HKHubArchSchedulerRun(Scheduler, 0.0);
+            
+            if (SenderCycles < 6)
+            {
+                XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+            }
+            
+            else if ((SenderCycles >= 6) && (SenderCycles < 9))
+            {
+                XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / (14 + SenderCycles - 5)) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / (14 + SenderCycles - 5)) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+            }
+            
+            else if ((SenderCycles >= 9) && (SenderCycles < 14))
+            {
+                XCTAssertEqual(Receiver->cycles, ReceiverCycles == 28 ? 14 : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->state.pc, ReceiverCycles == 28 ? 2 : (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+            }
+            
+            else if ((SenderCycles >= 14) && (SenderCycles < 17))
+            {
+                if (ReceiverCycles >= 25)
+                {
+                    const size_t Max = (SenderCycles - 9) - ((25 - 14) - 6);
+                    const size_t Cycles = ReceiverCycles - 25;
+                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 5, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else
+                {
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+            }
+            
+            else if ((SenderCycles >= 17) && (SenderCycles < 23))
+            {
+                if (ReceiverCycles >= 25)
+                {
+                    const size_t Max = (SenderCycles - 9) - ((25 - 14) - 6);
+                    const size_t Cycles = ReceiverCycles - 25;
+                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 5, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else if (ReceiverCycles >= (20 + (SenderCycles - 17)))
+                {
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else
+                {
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - 17, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+            }
+            
+            else if ((SenderCycles >= 23) && (SenderCycles < 31))
+            {
+                if (ReceiverCycles >= (26 + (SenderCycles - 23)))
+                {
+                    const size_t Max = (SenderCycles - 9) - ((25 - 14) - 6);
+                    const size_t Cycles = ReceiverCycles - 25;
+                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 5, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else if (ReceiverCycles >= (20 + (SenderCycles - 17)))
+                {
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else
+                {
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, ReceiverCycles > (14 + (SenderCycles - 23)) ? (ReceiverCycles / 14) * 2 : 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - 17, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+            }
+            
+            else if ((SenderCycles >= 31) && (SenderCycles < 34))
+            {
+                const size_t CycleDiff = SenderCycles - 31;
+                
+                if (ReceiverCycles >= 28)
+                {
+                    XCTAssertEqual(Receiver->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 14 + CycleDiff, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else if (ReceiverCycles >= (23 + CycleDiff))
+                {
+                    XCTAssertEqual(Receiver->cycles, (ReceiverCycles - 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 14 + CycleDiff, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else if (ReceiverCycles >= 11)
+                {
+                    size_t Cycles = ReceiverCycles - 11;
+                    if (Cycles > CycleDiff) Cycles = CycleDiff;
+                    
+                    XCTAssertEqual(Receiver->cycles, Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 10, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= (20 + CycleDiff) ? 14 : 0) + Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, (ReceiverCycles >= (20 + CycleDiff) ? 5 : 10), @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else
+                {
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, ReceiverCycles > (14 + (SenderCycles - 23)) ? (ReceiverCycles / 14) * 2 : 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - 17, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+            }
+            
+            else
+            {
+                if (ReceiverCycles >= 28)
+                {
+                    XCTAssertEqual(Receiver->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 10, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else if (ReceiverCycles >= 23)
+                {
+                    XCTAssertEqual(Receiver->cycles, (ReceiverCycles - 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 10, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else if (ReceiverCycles >= 12)
+                {
+                    size_t Cycles = ReceiverCycles - 11;
+                    if (Cycles > 3) Cycles = 3;
+                    
+                    XCTAssertEqual(Receiver->cycles, Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 10, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, 10, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else if (ReceiverCycles >= 11)
+                {
+                    XCTAssertEqual(Receiver->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 10, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= 20 ? 14 : 0), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, (ReceiverCycles >= 20 ? 5 : 10), @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+                
+                else
+                {
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->state.pc, ReceiverCycles > (14 + (SenderCycles - 23)) ? (ReceiverCycles / 14) * 2 : 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= 6 ? 17 : 0), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->state.pc, (ReceiverCycles >= 6 ? 5 : 10), @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                }
+            }
+        }
+    }
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
+    Receiver->memory[50] = 0;
+    Receiver->memory[51] = 0;
     HKHubArchProcessorSetCycles(Sender, 31);
     HKHubArchProcessorSetCycles(Receiver, 14);
     HKHubArchSchedulerRun(Scheduler, 0.0);
@@ -269,6 +526,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->memory[50] = 0;
     Receiver->memory[51] = 0;
     Receiver->state.pc = 0;
@@ -282,6 +541,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->memory[50] = 0;
     Receiver->memory[51] = 0;
     Receiver->state.pc = 0;
@@ -312,6 +573,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessorReset(Receiver, Binary);
     HKHubArchBinaryDestroy(Binary);
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 34);
@@ -323,6 +586,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 33);
@@ -399,6 +664,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->state.r[1], 0, @"Should fail this many times");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.pc = 0;
     Receiver->state.r[0] = 0;
@@ -467,6 +734,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -476,6 +745,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -485,6 +756,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -494,6 +767,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -503,6 +778,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -512,6 +789,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -521,6 +800,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -530,6 +811,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -539,6 +822,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -548,6 +833,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -557,6 +844,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -566,6 +855,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -591,6 +882,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchBinaryDestroy(Binary);
     
     
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
     HKHubArchProcessorSetCycles(Sender, 14 * 2);
@@ -599,6 +891,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -608,6 +902,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -617,6 +913,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -626,6 +924,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -635,6 +935,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -644,6 +946,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -653,6 +957,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -662,6 +968,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -671,6 +979,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -680,6 +990,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -689,6 +1001,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -698,6 +1012,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -723,6 +1039,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchBinaryDestroy(Binary);
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
     HKHubArchProcessorSetCycles(Sender, 14 * 2);
@@ -731,6 +1048,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -740,6 +1059,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -749,6 +1070,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -758,6 +1081,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -767,6 +1092,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -776,6 +1103,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -785,6 +1114,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -794,6 +1125,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -803,6 +1136,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -812,6 +1147,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -821,6 +1158,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -830,6 +1169,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -855,6 +1196,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchBinaryDestroy(Binary);
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
     HKHubArchProcessorSetCycles(Sender, 14 * 2);
@@ -863,6 +1205,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -872,6 +1216,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -881,6 +1227,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -890,6 +1238,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -899,6 +1249,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -908,6 +1260,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -917,6 +1271,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -926,6 +1282,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -935,6 +1293,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -944,6 +1304,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -953,6 +1315,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -962,6 +1326,8 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
+    Receiver->message.type = HKHubArchProcessorMessageClear;
+    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
