@@ -449,7 +449,11 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
             else Processor->complete = TRUE;
         }
         
-        else Processor->complete = TRUE;
+        else
+        {
+            Processor->cycles = 0;
+            Processor->complete = TRUE;
+        }
     }
 }
 
