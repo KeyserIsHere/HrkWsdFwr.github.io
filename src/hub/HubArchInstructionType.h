@@ -119,7 +119,8 @@ typedef enum {
     HKHubArchInstructionOperationResultMask = 1,
     
     HKHubArchInstructionOperationResultFlagSkipPC = (1 << 1),
-    HKHubArchInstructionOperationResultFlagPipelineStall = (1 << 2)
+    HKHubArchInstructionOperationResultFlagPipelineStall = (1 << 2),
+    HKHubArchInstructionOperationResultFlagInvalidOp = (1 << 3)
 } HKHubArchInstructionOperationResult;
 
 #endif

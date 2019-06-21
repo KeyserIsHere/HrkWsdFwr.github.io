@@ -815,7 +815,7 @@ HKHubArchInstructionOperationResult HKHubArchInstructionExecute(HKHubArchProcess
     CCAssertLog(Processor, "Processor must not be null");
     CCAssertLog(State, "State must not be null");
     
-    if (State->opcode == -1) return HKHubArchInstructionOperationResultFailure;
+    if (State->opcode == -1) return HKHubArchInstructionOperationResultFailure | HKHubArchInstructionOperationResultFlagInvalidOp;
     
     if (!Instructions[State->opcode].operation) return HKHubArchInstructionOperationResultSuccess;
     
@@ -1236,7 +1236,9 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationNEG(HKHu
 
 static HKHubArchInstructionOperationResult HKHubArchInstructionOperationHLT(HKHubArchProcessor Processor, const HKHubArchInstructionState *State)
 {
-    return HKHubArchInstructionOperationResultFailure;
+    Processor->status = HKHubArchProcessorStatusIdle;
+    
+    return HKHubArchInstructionOperationResultSuccess | HKHubArchInstructionOperationResultFlagSkipPC;
 }
 
 #pragma mark I/O

@@ -32,6 +32,14 @@
 #include "HubArchInstructionType.h"
 
 typedef enum {
+    HKHubArchProcessorStatusRunning = 0,
+    HKHubArchProcessorStatusInsufficientCycles = (1 << 1),
+    HKHubArchProcessorStatusResumable = (1 << 2),
+    HKHubArchProcessorStatusIdle = (1 << 3),
+    HKHubArchProcessorStatusTrap = (1 << 4)
+} HKHubArchProcessorStatus;
+
+typedef enum {
     HKHubArchProcessorDebugModeContinue,
     HKHubArchProcessorDebugModePause
 } HKHubArchProcessorDebugMode;
@@ -105,7 +113,7 @@ typedef struct HKHubArchProcessorInfo {
     } state;
     size_t cycles;
     double unusedTime;
-    _Bool complete;
+    HKHubArchProcessorStatus status;
     uint8_t memory[256];
 } HKHubArchProcessorInfo;
 
@@ -249,5 +257,18 @@ void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProc
  * @param Processor The processor to remove the breakpoints of.
  */
 void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor);
+
+/*!
+ * @brief Whether the processor can continue to be executed or not.
+ * @param Processor The processor to check has finished.
+ */
+static inline _Bool HKHubArchProcessorIsRunning(HKHubArchProcessor Processor);
+
+#pragma mark -
+
+static inline _Bool HKHubArchProcessorIsRunning(HKHubArchProcessor Processor)
+{
+    return (Processor->status == HKHubArchProcessorStatusRunning) && (Processor->cycles) && (((Processor->state.debug.mode != HKHubArchProcessorDebugModePause) || (Processor->state.debug.step)));
+}
 
 #endif

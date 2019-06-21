@@ -84,7 +84,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.context = NULL;
         Processor->cycles = 0;
         Processor->unusedTime = 0.0;
-        Processor->complete = FALSE;
+        Processor->status = HKHubArchProcessorStatusRunning;
         
         memcpy(Processor->memory, Binary->data, sizeof(Processor->memory));
         
@@ -119,7 +119,7 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->state.flags = 0;
     Processor->state.debug.modified.reg = 0;
     Processor->state.debug.modified.size = 0;
-    Processor->complete = FALSE;
+    Processor->status = HKHubArchProcessorStatusRunning;
     
     HKHubArchProcessorDebugReset(Processor);
 }
@@ -151,7 +151,7 @@ void HKHubArchProcessorSetCycles(HKHubArchProcessor Processor, size_t Cycles)
     
     Processor->cycles = Cycles;
     Processor->unusedTime = 0.0;
-    Processor->complete = FALSE;
+    if (Processor->status & HKHubArchProcessorStatusResumable) Processor->status = HKHubArchProcessorStatusRunning;
 }
 
 void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Seconds)
@@ -161,7 +161,7 @@ void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Se
     const double Cycles = (Seconds * HKHubArchProcessorHertz) + Processor->unusedTime;
     Processor->cycles += Cycles;
     Processor->unusedTime = Cycles - (size_t)Cycles;
-    Processor->complete = FALSE;
+    if (Processor->status & HKHubArchProcessorStatusResumable) Processor->status = HKHubArchProcessorStatusRunning;
 }
 
 static void HKHubArchProcessorDisconnectPort(HKHubArchProcessor Processor, HKHubArchPortID Port)
@@ -176,11 +176,11 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
      So if the current cycles is less than (timestamp - 2), then no matter what send/recv it uses, it won't be completed within the
      wait period.
      */
-    if ((intmax_t)Device->cycles < ((intmax_t)Timestamp - 2)) return HKHubArchPortResponseTimeout;
+    if (((intmax_t)Device->cycles < ((intmax_t)Timestamp - 2)) || ((Device->status != HKHubArchProcessorStatusRunning) && !(Device->status & HKHubArchProcessorStatusResumable))) return HKHubArchPortResponseTimeout;
     
     if (Device->message.type == HKHubArchProcessorMessageSend)
     {
-        if (Device->message.port != Port) return (((intmax_t)Device->message.timestamp - 5) <= (intmax_t)Timestamp) ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
+        if (Device->message.port != Port) return (((intmax_t)Device->message.timestamp - 5) <= (intmax_t)Timestamp) ? HKHubArchPortResponseTimeout : (HKHubArchProcessorIsRunning(Device) ? HKHubArchPortResponseRetry : HKHubArchPortResponseDefer);
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         *Message = Device->message.data;
@@ -199,7 +199,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection 
     
     if ((Device->state.debug.mode == HKHubArchProcessorDebugModePause) && !Device->state.debug.step) return HKHubArchPortResponseTimeout;
     
-    return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
+    return HKHubArchProcessorIsRunning(Device) ? HKHubArchPortResponseRetry : HKHubArchPortResponseDefer;
 }
 
 static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp, size_t *Wait)
@@ -209,11 +209,11 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
      So if the current cycles is less than (timestamp - 2), then no matter what send/recv it uses, it won't be completed within the
      wait period.
      */
-    if ((intmax_t)Device->cycles < ((intmax_t)Timestamp - 2)) return HKHubArchPortResponseTimeout;
+    if (((intmax_t)Device->cycles < ((intmax_t)Timestamp - 2)) || ((Device->status != HKHubArchProcessorStatusRunning) && !(Device->status & HKHubArchProcessorStatusResumable))) return HKHubArchPortResponseTimeout;
     
     if (Device->message.type == HKHubArchProcessorMessageReceive)
     {
-        if (Device->message.port != Port) return (((intmax_t)Device->message.timestamp - 5) <= (intmax_t)Timestamp) ? HKHubArchPortResponseTimeout : (Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry);
+        if (Device->message.port != Port) return (((intmax_t)Device->message.timestamp - 5) <= (intmax_t)Timestamp) ? HKHubArchPortResponseTimeout : (HKHubArchProcessorIsRunning(Device) ? HKHubArchPortResponseRetry : HKHubArchPortResponseDefer);
         else if (Device->message.timestamp > (Timestamp + 8)) return HKHubArchPortResponseTimeout;
         
         Device->message.wait = Device->message.timestamp > Timestamp ? Device->message.timestamp - Timestamp : 0;
@@ -239,7 +239,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
     
     if ((Device->state.debug.mode == HKHubArchProcessorDebugModePause) && !Device->state.debug.step) return HKHubArchPortResponseTimeout;
     
-    return Device->complete ? HKHubArchPortResponseDefer : HKHubArchPortResponseRetry;
+    return HKHubArchProcessorIsRunning(Device) ? HKHubArchPortResponseRetry : HKHubArchPortResponseDefer;
 }
 
 _Bool HKHubArchProcessorPortReady(HKHubArchProcessor Device, HKHubArchPortID Port)
@@ -347,7 +347,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
-    while ((!Processor->complete) && !(Processor->complete = !Processor->cycles) && (((Processor->state.debug.mode != HKHubArchProcessorDebugModePause) || (Processor->state.debug.step))))
+    while (HKHubArchProcessorIsRunning(Processor))
     {
         HKHubArchInstructionState Instruction;
         uint8_t NextPC = HKHubArchInstructionDecode(Processor->state.pc, Processor->memory, &Instruction);
@@ -430,7 +430,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                     
                     if (Result & HKHubArchInstructionOperationResultFlagPipelineStall) break;
                     
-                    Processor->complete = TRUE;
+                    Processor->status = Result & HKHubArchInstructionOperationResultFlagInvalidOp ? HKHubArchProcessorStatusTrap : (HKHubArchProcessorStatusInsufficientCycles | HKHubArchProcessorStatusResumable);
                 }
                 
                 else
@@ -446,14 +446,10 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                 }
             }
             
-            else Processor->complete = TRUE;
+            else Processor->status = HKHubArchProcessorStatusInsufficientCycles | HKHubArchProcessorStatusResumable;
         }
         
-        else
-        {
-            Processor->cycles = 0;
-            Processor->complete = TRUE;
-        }
+        else Processor->status = HKHubArchProcessorStatusTrap;
     }
 }
 
