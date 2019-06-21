@@ -284,7 +284,7 @@
     HKHubArchSchedulerRun(Scheduler, 1.0);
     XCTAssertEqual(Processor->state.pc, 15, "Should break at the correct location");
     XCTAssertEqual(Processor->state.debug.mode, HKHubArchProcessorDebugModeContinue, "Should break at the correct location");
-    XCTAssertEqual(Processor->cycles, HKHubArchProcessorHertz - 8, "Should have the correct amount of cycles");
+    XCTAssertEqual(Processor->cycles, HKHubArchProcessorHertz - 8 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), "Should have the correct amount of cycles");
     
     HKHubArchBinaryDestroy(Binary);
     HKHubArchProcessorDestroy(Processor);

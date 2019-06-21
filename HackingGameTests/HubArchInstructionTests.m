@@ -28,6 +28,8 @@
 #import "HubArchAssembly.h"
 #import "HubArchScheduler.h"
 
+#define HKHubArchProcessorSetCycles(p, c) p->status = HKHubArchProcessorStatusRunning; HKHubArchProcessorSetCycles(p, c)
+
 @interface HubArchInstructionTests : XCTestCase
 
 @end
@@ -200,6 +202,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessorReset(Receiver, Binary);
     HKHubArchBinaryDestroy(Binary);
     
+    Sender->message.type = HKHubArchProcessorMessageClear;
     HKHubArchProcessorSetCycles(Sender, 9);
     HKHubArchProcessorSetCycles(Receiver, 9);
     HKHubArchSchedulerRun(Scheduler, 0.0);
@@ -282,31 +285,31 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
             
             if (SenderCycles < 6)
             {
-                XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->cycles, SenderCycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
             }
             
             else if ((SenderCycles >= 6) && (SenderCycles < 9))
             {
-                XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / (14 + SenderCycles - 5)) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / (14 + SenderCycles - 5)) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / (14 + SenderCycles - 5)) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->cycles, SenderCycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
             }
             
             else if ((SenderCycles >= 9) && (SenderCycles < 14))
             {
-                XCTAssertEqual(Receiver->cycles, ReceiverCycles == 28 ? 14 : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Receiver->cycles, ReceiverCycles == 28 ? 14 : ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->state.pc, ReceiverCycles == 28 ? 2 : (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                XCTAssertEqual(Sender->cycles, SenderCycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
             }
             
@@ -316,21 +319,21 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
                 {
                     const size_t Max = (SenderCycles - 9) - ((25 - 14) - 6);
                     const size_t Cycles = ReceiverCycles - 25;
-                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 5, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles) - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else
                 {
-                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
             }
@@ -341,31 +344,31 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
                 {
                     const size_t Max = (SenderCycles - 9) - ((25 - 14) - 6);
                     const size_t Cycles = ReceiverCycles - 25;
-                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 5, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles) - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else if (ReceiverCycles >= (20 + (SenderCycles - 17)))
                 {
-                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else
                 {
-                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, SenderCycles - 17, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - 17 - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
             }
@@ -376,31 +379,31 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
                 {
                     const size_t Max = (SenderCycles - 9) - ((25 - 14) - 6);
                     const size_t Cycles = ReceiverCycles - 25;
-                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, (Cycles > Max ? Max : Cycles) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 5, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (Cycles > Max ? Max : Cycles) - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else if (ReceiverCycles >= (20 + (SenderCycles - 17)))
                 {
-                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, (ReceiverCycles / 14) * 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, SenderCycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else
                 {
-                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, ReceiverCycles > (14 + (SenderCycles - 23)) ? (ReceiverCycles / 14) * 2 : 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, SenderCycles - 17, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - 17 - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
             }
@@ -411,21 +414,21 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
                 
                 if (ReceiverCycles >= 28)
                 {
-                    XCTAssertEqual(Receiver->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, 0 - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, 14 + CycleDiff, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 14 + CycleDiff - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else if (ReceiverCycles >= (23 + CycleDiff))
                 {
-                    XCTAssertEqual(Receiver->cycles, (ReceiverCycles - 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, (ReceiverCycles - 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, 14 + CycleDiff, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 14 + CycleDiff - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
@@ -434,21 +437,21 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
                     size_t Cycles = ReceiverCycles - 11;
                     if (Cycles > CycleDiff) Cycles = CycleDiff;
                     
-                    XCTAssertEqual(Receiver->cycles, Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, Cycles - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 10, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= (20 + CycleDiff) ? 14 : 0) + Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= (20 + CycleDiff) ? 14 : 0) + Cycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, (ReceiverCycles >= (20 + CycleDiff) ? 5 : 10), @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else
                 {
-                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, ReceiverCycles > (14 + (SenderCycles - 23)) ? (ReceiverCycles / 14) * 2 : 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, SenderCycles - 17, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, SenderCycles - 17 - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 5, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
             }
@@ -457,21 +460,21 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
             {
                 if (ReceiverCycles >= 28)
                 {
-                    XCTAssertEqual(Receiver->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, 0 - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 4, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 0 - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 10, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else if (ReceiverCycles >= 23)
                 {
-                    XCTAssertEqual(Receiver->cycles, (ReceiverCycles - 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, (ReceiverCycles - 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, 0 - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 10, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
@@ -480,31 +483,31 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
                     size_t Cycles = ReceiverCycles - 11;
                     if (Cycles > 3) Cycles = 3;
                     
-                    XCTAssertEqual(Receiver->cycles, Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, Cycles - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 10, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, Cycles, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, Cycles - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, 10, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else if (ReceiverCycles >= 11)
                 {
-                    XCTAssertEqual(Receiver->cycles, 0, @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, 0 - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, 2, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 10, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= 20 ? 14 : 0), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= 20 ? 14 : 0) - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, (ReceiverCycles >= 20 ? 5 : 10), @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
                 
                 else
                 {
-                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Receiver->cycles, ReceiverCycles <= (14 + (SenderCycles - 23)) ? ReceiverCycles : ReceiverCycles - ((ReceiverCycles / 14) * 14) - (_Bool)(Receiver->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->state.pc, ReceiverCycles > (14 + (SenderCycles - 23)) ? (ReceiverCycles / 14) * 2 : 0, @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[50], 0, @"Should not have received value from second send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Receiver->memory[51], 0, @"Should not have received value from first send (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
-                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= 6 ? 17 : 0), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
+                    XCTAssertEqual(Sender->cycles, (ReceiverCycles >= 6 ? 17 : 0) - (_Bool)(Sender->status & HKHubArchProcessorStatusIdle), @"Should have the correct amount of cycles left (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                     XCTAssertEqual(Sender->state.pc, (ReceiverCycles >= 6 ? 5 : 10), @"Should have the correct address (iteration: %zu, %zu)", SenderCycles, ReceiverCycles);
                 }
             }
@@ -1521,6 +1524,54 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessorDestroy(Checker);
 }
 
+-(void) testHalting
+{
+    const char *Source = ".byte 0xa8\n"; //invalid opcode
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    XCTAssertEqual(Processor->status, HKHubArchProcessorStatusRunning, @"Should change the status to trap");
+    XCTAssertFalse(HKHubArchProcessorIsRunning(Processor), @"Should not be running");
+    
+    HKHubArchProcessorSetCycles(Processor, 100);
+    XCTAssertTrue(HKHubArchProcessorIsRunning(Processor), @"Should be running");
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->cycles, 100, @"Should clear all cycles");
+    XCTAssertEqual(Processor->state.pc, 0, @"Should not progress");
+    XCTAssertEqual(Processor->status, HKHubArchProcessorStatusTrap, @"Should change the status to trap");
+    XCTAssertFalse(HKHubArchProcessorIsRunning(Processor), @"Should no longer be running");
+    
+    
+    Source = "hlt\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    HKHubArchProcessorSetCycles(Processor, 100);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->cycles, 99, @"Should clear all cycles");
+    XCTAssertEqual(Processor->state.pc, 0, @"Should not progress");
+    XCTAssertEqual(Processor->status, HKHubArchProcessorStatusIdle, @"Should change the status to idle");
+    XCTAssertFalse(HKHubArchProcessorIsRunning(Processor), @"Should no longer be running");
+    
+    
+    HKHubArchProcessorDestroy(Processor);
+}
+
 -(void) testAddition
 {
     const char *Source =
@@ -1544,7 +1595,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 6, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 6 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -1652,7 +1703,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 6, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 6 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -1776,7 +1827,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 6, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 6 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -1941,7 +1992,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 5, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 5 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2087,7 +2138,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 5, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 5 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2237,7 +2288,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 5, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 5 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2383,7 +2434,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 5, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 5 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2533,7 +2584,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 7, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 7 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2643,7 +2694,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 7, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 7 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2753,7 +2804,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 7, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 7 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2831,7 +2882,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 7, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 7 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2909,7 +2960,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 7, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 7 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -2995,7 +3046,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 7, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 7 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 255, @"Should have the correct value");
@@ -3076,7 +3127,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 7, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 7 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -3157,7 +3208,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 6, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 6 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 2, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
@@ -4879,7 +4930,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 100);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 54, @"Should have the unused cycles");
+    XCTAssertEqual(Processor->cycles, 54 - (_Bool)(Processor->status & HKHubArchProcessorStatusIdle), @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 34, @"Should have reached the end");
     XCTAssertEqual(Processor->state.flags, 5, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
