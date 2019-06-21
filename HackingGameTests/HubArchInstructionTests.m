@@ -28,7 +28,7 @@
 #import "HubArchAssembly.h"
 #import "HubArchScheduler.h"
 
-#define HKHubArchProcessorSetCycles(p, c) p->status = HKHubArchProcessorStatusRunning; HKHubArchProcessorSetCycles(p, c)
+#define HKHubArchProcessorSetCycles(p, c) p->status = HKHubArchProcessorStatusRunning; p->message.type = HKHubArchProcessorMessageClear; HKHubArchProcessorSetCycles(p, c)
 
 @interface HubArchInstructionTests : XCTestCase
 
@@ -175,8 +175,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 18);
@@ -202,7 +200,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessorReset(Receiver, Binary);
     HKHubArchBinaryDestroy(Binary);
     
-    Sender->message.type = HKHubArchProcessorMessageClear;
     HKHubArchProcessorSetCycles(Sender, 9);
     HKHubArchProcessorSetCycles(Receiver, 9);
     HKHubArchSchedulerRun(Scheduler, 0.0);
@@ -212,8 +209,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 17);
@@ -272,8 +267,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     {
         for (size_t ReceiverCycles = 0; ReceiverCycles <= 28; ReceiverCycles++)
         {
-            Receiver->message.type = HKHubArchProcessorMessageClear;
-            Sender->message.type = HKHubArchProcessorMessageClear;
             Receiver->memory[50] = 0;
             Receiver->memory[51] = 0;
             Receiver->state.pc = 0;
@@ -514,8 +507,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
         }
     }
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.pc = 0;
     Receiver->memory[50] = 0;
@@ -529,8 +520,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->memory[50] = 0;
     Receiver->memory[51] = 0;
     Receiver->state.pc = 0;
@@ -544,8 +533,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->memory[50] = 0;
     Receiver->memory[51] = 0;
     Receiver->state.pc = 0;
@@ -576,8 +563,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessorReset(Receiver, Binary);
     HKHubArchBinaryDestroy(Binary);
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 34);
@@ -589,8 +574,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.pc = 0;
     HKHubArchProcessorSetCycles(Sender, 33);
@@ -667,8 +650,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->state.r[1], 0, @"Should fail this many times");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.pc = 0;
     Receiver->state.r[0] = 0;
@@ -737,8 +718,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -748,8 +727,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -759,8 +736,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -770,8 +745,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -781,8 +754,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -792,8 +763,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -803,8 +772,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -814,8 +781,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -825,8 +790,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -836,8 +799,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -847,8 +808,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -858,8 +817,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -885,7 +842,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchBinaryDestroy(Binary);
     
     
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
     HKHubArchProcessorSetCycles(Sender, 14 * 2);
@@ -894,8 +850,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -905,8 +859,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -916,8 +868,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -927,8 +877,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -938,8 +886,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -949,8 +895,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -960,8 +904,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -971,8 +913,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -982,8 +922,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -993,8 +931,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1004,8 +940,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1015,8 +949,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1042,7 +974,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchBinaryDestroy(Binary);
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
     HKHubArchProcessorSetCycles(Sender, 14 * 2);
@@ -1051,8 +982,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1062,8 +991,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1073,8 +1000,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1084,8 +1009,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1095,8 +1018,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1106,8 +1027,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1117,8 +1036,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1128,8 +1045,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1139,8 +1054,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1150,8 +1063,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1161,8 +1072,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1172,8 +1081,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1199,7 +1106,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchBinaryDestroy(Binary);
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
     HKHubArchProcessorSetCycles(Sender, 14 * 2);
@@ -1208,8 +1114,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1219,8 +1123,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1230,8 +1132,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1241,8 +1141,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1252,8 +1150,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1263,8 +1159,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1274,8 +1168,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1285,8 +1177,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = HKHubArchProcessorFlagsZero;
@@ -1296,8 +1186,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1307,8 +1195,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertFalse(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should succeed");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1318,8 +1204,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
@@ -1329,8 +1213,6 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertTrue(Sender->state.flags & HKHubArchProcessorFlagsZero, @"Should fail");
     
     
-    Receiver->message.type = HKHubArchProcessorMessageClear;
-    Sender->message.type = HKHubArchProcessorMessageClear;
     Sender->state.pc = 0;
     Receiver->state.pc = 0;
     Sender->state.flags = 0;
