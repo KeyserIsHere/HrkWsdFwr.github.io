@@ -56,7 +56,7 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
     if (CCExpressionGetType(Arg) == CCExpressionValueTypeList)
     {
         const size_t ArgCount = CCCollectionGetCount(CCExpressionGetList(Arg));
-        if (CCCollectionGetCount(CCExpressionGetList(Arg)) >= 2)
+        if (ArgCount >= 2)
         {
             CCExpression NameExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 0);
             if (CCExpressionGetType(NameExpr) == CCExpressionValueTypeAtom)
