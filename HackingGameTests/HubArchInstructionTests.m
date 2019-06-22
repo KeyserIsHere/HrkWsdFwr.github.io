@@ -584,6 +584,110 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Sender->state.pc, 5, @"Should have reached the end");
     XCTAssertEqual(Sender->cycles, 16, @"Should not have unused cycles");
     
+    
+    // Test messaging crashed and halted devices
+    Source = "hlt\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Receiver, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 34);
+    HKHubArchProcessorSetCycles(Receiver, 34);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 33, @"Should not have any unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->state.pc, 10, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
+    
+    
+    Source = ".byte 0xa8\n"; //invalid opcode
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Receiver, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 34);
+    HKHubArchProcessorSetCycles(Receiver, 34);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 34, @"Should not have any unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->state.pc, 10, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 0, @"Should not have any unused cycles");
+    
+    
+    Source =
+        "recv r1,[r0]\n" //cycles(6) = read(2) + instruction(4) + timeout(8)
+        "recv r2,[r3]\n" //cycles(6) = read(2) + instruction(4) + timeout(8)
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Receiver, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Source = "hlt\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Sender, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 28);
+    HKHubArchProcessorSetCycles(Receiver, 28);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should not have any unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 4, @"Should have reached the end");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 27, @"Should not have any unused cycles");
+    
+    
+    Source = ".byte 0xa8\n"; //invalid opcode
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Sender, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    Receiver->state.pc = 0;
+    Sender->state.pc = 0;
+    HKHubArchProcessorSetCycles(Sender, 28);
+    HKHubArchProcessorSetCycles(Receiver, 28);
+    HKHubArchSchedulerRun(Scheduler, 0.0);
+    XCTAssertEqual(Receiver->cycles, 0, @"Should not have any unused cycles");
+    XCTAssertEqual(Receiver->state.pc, 4, @"Should have reached the end");
+    XCTAssertEqual(Sender->state.pc, 0, @"Should have reached the end");
+    XCTAssertEqual(Sender->cycles, 28, @"Should not have any unused cycles");
+    
     HKHubArchSchedulerDestroy(Scheduler);
     HKHubArchProcessorDestroy(Sender);
     HKHubArchProcessorDestroy(Receiver);
