@@ -36,10 +36,10 @@
                         )
                     )
                 ))
-                (.htp-decoder! (entity "htp-decoder"
+                (.htp-decoder! (entity "htp1-decoder"
                     (hub
-                        (name: "HTP Decoder")
-                        (program: (cat (@cd "../programs/htp_decoder.chasm")))
+                        (name: "HTP1 Decoder")
+                        (program: (cat (@cd "../programs/htp1_decoder.chasm")))
                     )
                 ))
             )

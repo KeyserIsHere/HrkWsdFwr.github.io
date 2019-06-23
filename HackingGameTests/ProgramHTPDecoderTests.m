@@ -76,9 +76,18 @@ static HKHubArchPortResponse OutPort(HKHubArchPortConnection Connection, HKHubAr
     return HKHubArchPortResponseSuccess;
 }
 
++(void) setUp
+{
+    if (HKHubArchAssemblyIncludeSearchPaths) CCCollectionDestroy(HKHubArchAssemblyIncludeSearchPaths);
+    
+    HKHubArchAssemblyIncludeSearchPaths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(FSPath), FSPathComponentDestructorForCollection);
+    
+    CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &(FSPath){ FSPathCreate("assets/logic/programs/") });
+}
+
 -(void) setUp
 {
-    FSPath Path = FSPathCreate("assets/logic/programs/htp_decoder.chasm");
+    FSPath Path = FSPathCreate("assets/logic/programs/htp1_decoder.chasm");
     
     FSHandle Handle;
     if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
