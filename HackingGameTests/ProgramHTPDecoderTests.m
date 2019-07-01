@@ -26,22 +26,8 @@
 #import <XCTest/XCTest.h>
 #import "ProgramHTPDecoderTests.h"
 
-@interface ProgramHTPDecoderTests ()
-
-@property HKHubArchProcessor processor;
-@property HKHubArchScheduler scheduler;
-
-@end
-
 
 @implementation ProgramHTPDecoderTests
-@synthesize processor, scheduler;
-
--(const char*) program
-{
-    CCAssertLog(0, "Should be redefined by the subclass");
-    return "";
-}
 
 static uint8_t *EncodedPackets = NULL;
 static size_t EncodedPacketCount = 0, EncodedPacketIndex = 0;
@@ -107,51 +93,9 @@ static HKHubArchPortResponse OutPort(HKHubArchPortConnection Connection, HKHubAr
     return HKHubArchPortResponseSuccess;
 }
 
-+(void) setUp
-{
-    if (HKHubArchAssemblyIncludeSearchPaths) CCCollectionDestroy(HKHubArchAssemblyIncludeSearchPaths);
-    
-    HKHubArchAssemblyIncludeSearchPaths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(FSPath), FSPathComponentDestructorForCollection);
-    
-    CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &(FSPath){ FSPathCreate("assets/logic/programs/") });
-}
-
 -(void) setUp
 {
-    FSPath Path = FSPathCreate(self.program);
-    
-    FSHandle Handle;
-    if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
-    {
-        size_t Size = FSManagerGetSize(Path);
-        char *Source;
-        CC_SAFE_Malloc(Source, sizeof(char) * (Size + 1));
-        
-        FSHandleRead(Handle, &Size, Source, FSBehaviourDefault);
-        Source[Size] = 0;
-        
-        FSHandleClose(Handle);
-        
-        CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
-        
-        CCOrderedCollection Errors = NULL;
-        HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors);
-        CCCollectionDestroy(AST);
-        
-        if (Binary)
-        {
-            processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
-            HKHubArchBinaryDestroy(Binary);
-        }
-        
-        CC_SAFE_Free(Source);
-    }
-    
-    FSPathDestroy(Path);
-    
-    scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
-    HKHubArchSchedulerAddProcessor(scheduler, processor);
-    
+    [super setUp];
     
     EncodedPacketIndex = 0;
     EncodedPacketCount = 0;
@@ -160,7 +104,7 @@ static HKHubArchPortResponse OutPort(HKHubArchPortConnection Connection, HKHubAr
     DecodedPackets = CCQueueCreate(CC_STD_ALLOCATOR);
     
     
-    HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(processor, 0), (HKHubArchPort){
+    HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(self.processor, 0), (HKHubArchPort){
         .sender = InPort,
         .receiver = NULL,
         .device = NULL,
@@ -169,10 +113,10 @@ static HKHubArchPortResponse OutPort(HKHubArchPortConnection Connection, HKHubAr
         .id = 0
     });
     
-    HKHubArchProcessorConnect(processor, 0, Conn);
+    HKHubArchProcessorConnect(self.processor, 0, Conn);
     HKHubArchPortConnectionDestroy(Conn);
     
-    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(processor, 1), (HKHubArchPort){
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(self.processor, 1), (HKHubArchPort){
         .sender = NULL,
         .receiver = OutPort,
         .device = NULL,
@@ -181,16 +125,15 @@ static HKHubArchPortResponse OutPort(HKHubArchPortConnection Connection, HKHubAr
         .id = 0
     });
     
-    HKHubArchProcessorConnect(processor, 1, Conn);
+    HKHubArchProcessorConnect(self.processor, 1, Conn);
     HKHubArchPortConnectionDestroy(Conn);
 }
 
 -(void)tearDown
 {
-    if (processor) HKHubArchProcessorDestroy(processor);
-    if (scheduler) HKHubArchSchedulerDestroy(scheduler);
     if (DecodedPackets) CCQueueDestroy(DecodedPackets);
+    
+    [super tearDown];
 }
 
 @end
-

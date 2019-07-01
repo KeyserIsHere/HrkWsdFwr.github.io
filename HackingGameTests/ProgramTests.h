@@ -24,18 +24,14 @@
  */
 
 #import <XCTest/XCTest.h>
-#import "ProgramTests.h"
+#import "HubArchProcessor.h"
+#import "HubArchAssembly.h"
+#import "HubArchScheduler.h"
 
-typedef struct {
-    uint8_t size;
-    uint8_t data[];
-} Packet;
+@interface ProgramTests : XCTestCase
 
-@interface ProgramHTPDecoderTests : ProgramTests
-
-@property uint8_t *encodedPackets;
-@property (readonly) size_t encodedPacketIndex;
-@property size_t encodedPacketCount;
-@property (readonly) CCQueue decodedPackets;
+@property (readonly) HKHubArchProcessor processor;
+@property (readonly) HKHubArchScheduler scheduler;
+@property (readonly) const char *program;
 
 @end
