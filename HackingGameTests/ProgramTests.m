@@ -43,6 +43,11 @@
     return "";
 }
 
+-(const char*) defines
+{
+    return "";
+}
+
 +(void) setUp
 {
     if (HKHubArchAssemblyIncludeSearchPaths) CCCollectionDestroy(HKHubArchAssemblyIncludeSearchPaths);
@@ -61,12 +66,14 @@
     FSHandle Handle;
     if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
     {
-        size_t Size = FSManagerGetSize(Path);
+        size_t Size = FSManagerGetSize(Path), DefineSize = strlen(self.defines);
         char *Source;
-        CC_SAFE_Malloc(Source, sizeof(char) * (Size + 1));
+        CC_SAFE_Malloc(Source, sizeof(char) * (Size + DefineSize + 1));
         
-        FSHandleRead(Handle, &Size, Source, FSBehaviourDefault);
-        Source[Size] = 0;
+        strcpy(Source, self.defines);
+        
+        FSHandleRead(Handle, &Size, Source + DefineSize, FSBehaviourDefault);
+        Source[Size + DefineSize] = 0;
         
         FSHandleClose(Handle);
         

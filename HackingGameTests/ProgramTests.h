@@ -33,5 +33,6 @@
 @property (readonly) HKHubArchProcessor processor;
 @property (readonly) HKHubArchScheduler scheduler;
 @property (readonly) const char *program;
+@property (readonly) const char *defines;
 
 @end
