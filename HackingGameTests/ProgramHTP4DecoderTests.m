@@ -59,6 +59,7 @@
         XCTAssertEqual(P->data[0], 2, @"Should have the correct data");
         XCTAssertEqual(P->data[1], 1, @"Should have the correct data");
         XCTAssertEqual(P->data[2], 0xff, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
     }
     
     Node = CCQueuePop(self.decodedPackets);
@@ -97,6 +98,7 @@
             XCTAssertEqual(P->data[0], 2, @"Should have the correct data");
             XCTAssertEqual(P->data[1], 1, @"Should have the correct data");
             XCTAssertEqual(P->data[2], 0xff, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
         }
     }
     
@@ -129,6 +131,7 @@
             XCTAssertEqual(P->data[0], 2, @"Should have the correct data");
             XCTAssertEqual(P->data[1], 1, @"Should have the correct data");
             XCTAssertEqual(P->data[2], 0xff, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
         }
     }
     
@@ -161,6 +164,7 @@
             Packet *P = CCQueueGetNodeData(Node);
             XCTAssertEqual(P->size, 1, @"Should have the correct size");
             XCTAssertEqual(P->data[0], Loop + 1, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
         }
     }
     
@@ -195,6 +199,7 @@
             Packet *P = CCQueueGetNodeData(Node);
             XCTAssertEqual(P->size, 1, @"Should have the correct size");
             XCTAssertEqual(P->data[0], 2, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
         }
     }
     
@@ -228,6 +233,7 @@
         Packet *P = CCQueueGetNodeData(Node);
         XCTAssertEqual(P->size, 1, @"Should have the correct size");
         XCTAssertEqual(P->data[0], 1, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
     }
     
     for (size_t Loop = 0; Loop < 2; Loop++)
@@ -239,6 +245,7 @@
             Packet *P = CCQueueGetNodeData(Node);
             XCTAssertEqual(P->size, 1, @"Should have the correct size");
             XCTAssertEqual(P->data[0], 2, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
         }
     }
     
@@ -287,6 +294,7 @@
         Packet *P = CCQueueGetNodeData(Node);
         XCTAssertEqual(P->size, 1, @"Should have the correct size");
         XCTAssertEqual(P->data[0], 1, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
     }
     
     Node = CCQueuePop(self.decodedPackets);
@@ -339,6 +347,7 @@
             Packet *P = CCQueueGetNodeData(Node);
             XCTAssertEqual(P->size, 1, @"Should have the correct size");
             XCTAssertEqual(P->data[0], 1, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
         }
     }
     
@@ -383,6 +392,7 @@
         Packet *P = CCQueueGetNodeData(Node);
         XCTAssertEqual(P->size, 0xf8 | 1, @"Should have the correct size");
         XCTAssertEqual(P->data[0], 1, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
     }
     
     Node = CCQueuePop(self.decodedPackets);
@@ -415,6 +425,7 @@
         XCTAssertEqual(P->data[4], 5, @"Should have the correct data");
         XCTAssertEqual(P->data[5], 6, @"Should have the correct data");
         XCTAssertEqual(P->data[6], 7, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
     }
     
     Node = CCQueuePop(self.decodedPackets);
