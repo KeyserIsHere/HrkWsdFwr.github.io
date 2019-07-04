@@ -33,6 +33,7 @@
 		F34967FD1E219DC300801704 /* HubModuleComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F34967FB1E219DC300801704 /* HubModuleComponent.c */; };
 		F34BB7DC1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F34BB7DB1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m */; };
 		F363AF8322C9DAB900C243E4 /* ProgramTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F363AF8222C9DAB900C243E4 /* ProgramTests.m */; };
+		F363AF8622C9E57200C243E4 /* ProgramPassthrough1Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = F363AF8522C9E57200C243E4 /* ProgramPassthrough1Tests.m */; };
 		F3653F881E5A963E002AB66D /* HubModuleDisplay.c in Sources */ = {isa = PBXBuildFile; fileRef = F3653F861E5A963E002AB66D /* HubModuleDisplay.c */; };
 		F3653F971E600A51002AB66D /* HubModuleDisplayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3653F961E600A51002AB66D /* HubModuleDisplayTests.m */; };
 		F36955011E48A6A000135AF0 /* HubModuleKeyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = F36954FF1E48A6A000135AF0 /* HubModuleKeyboard.c */; };
@@ -148,6 +149,7 @@
 		F34BB7DB1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubModuleKeyboardTests.m; sourceTree = "<group>"; };
 		F363AF8222C9DAB900C243E4 /* ProgramTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgramTests.m; sourceTree = "<group>"; };
 		F363AF8422C9DBC300C243E4 /* ProgramTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProgramTests.h; sourceTree = "<group>"; };
+		F363AF8522C9E57200C243E4 /* ProgramPassthrough1Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgramPassthrough1Tests.m; sourceTree = "<group>"; };
 		F3653F861E5A963E002AB66D /* HubModuleDisplay.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleDisplay.c; sourceTree = "<group>"; };
 		F3653F871E5A963E002AB66D /* HubModuleDisplay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleDisplay.h; sourceTree = "<group>"; };
 		F3653F961E600A51002AB66D /* HubModuleDisplayTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubModuleDisplayTests.m; sourceTree = "<group>"; };
@@ -374,6 +376,7 @@
 				F39D746922BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m */,
 				F312921822C251940063D046 /* ProgramHTP2DecoderTests.m */,
 				F312921A22C720C80063D046 /* ProgramHTP4DecoderTests.m */,
+				F363AF8522C9E57200C243E4 /* ProgramPassthrough1Tests.m */,
 			);
 			name = Programs;
 			sourceTree = "<group>";
@@ -628,6 +631,7 @@
 				F3653F971E600A51002AB66D /* HubModuleDisplayTests.m in Sources */,
 				F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */,
 				F312921B22C720C80063D046 /* ProgramHTP4DecoderTests.m in Sources */,
+				F363AF8622C9E57200C243E4 /* ProgramPassthrough1Tests.m in Sources */,
 				F39D746A22BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m in Sources */,
 				F34BB7DC1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m in Sources */,
 				F32039A11E845BDA00280DC9 /* HubModuleWirelessTransceiver.m in Sources */,
