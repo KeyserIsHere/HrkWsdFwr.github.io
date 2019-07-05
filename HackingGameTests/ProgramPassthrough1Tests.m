@@ -152,4 +152,38 @@ static HKHubArchPortResponse OutPort(HKHubArchPortConnection Connection, HKHubAr
     }
 }
 
+-(void) testPassingToSinglePool
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    PoolIndex = 0;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, DataCount, @"Should consume all the input data");
+    
+    for (size_t Loop = 0; Loop < DataCount; Loop++)
+    {
+        CCQueueNode *Node = CCQueuePop(Pool[0]);
+        XCTAssertNotEqual(Node, NULL, @"Should have data");
+        if (Node)
+        {
+            XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), Loop + 1, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
+        }
+    }
+    
+    for (size_t Loop = 1; Loop < sizeof(Pool) / sizeof(typeof(*Pool)); Loop++)
+    {
+        CCQueueNode *Node = CCQueuePop(Pool[Loop]);
+        XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    }
+}
+
 @end
