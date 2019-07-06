@@ -60,15 +60,14 @@ data:
     .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    .byte 0,0,0,0
+    .byte 0,0,0,0,0,0,0
 data_size:
 
 .entrypoint
 repeat:
     and r3, r3
     jz receive
-    and r3, control_flag
-    jnz control
+    js control
     cmp r3, cleared
     jnz send
     mov r3, normal
