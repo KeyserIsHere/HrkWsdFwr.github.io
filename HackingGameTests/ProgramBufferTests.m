@@ -80,21 +80,23 @@ static HKHubArchPortResponse OutPort(HKHubArchPortConnection Connection, HKHubAr
 
 static _Bool (*ControlPortSend)(void) = NULL;
 static _Bool CheckSend = TRUE;
+static int BufferState = 0;
 static HKHubArchPortResponse ControlPort(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
 {
     if ((CheckSend) && (ControlPortSend) && (CheckSend = !ControlPortSend())) return HKHubArchPortResponseTimeout;
     
-    *Message = (HKHubArchPortMessage){
-        .memory = NULL,
-        .offset = 0,
-        .size = 0
-    };
+    const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Connection, Device, Port);
     
-    if (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port))) return HKHubArchPortResponseDefer;
+    if (HKHubArchPortIsReady(OppositePort))
+    {
+        BufferState++;
+        
+        CheckSend = TRUE;
+        
+        return HKHubArchPortResponseSuccess;
+    }
     
-    CheckSend = TRUE;
-    
-    return HKHubArchPortResponseSuccess;
+    return HKHubArchPortResponseDefer;
 }
 
 -(void) setUp
@@ -111,6 +113,7 @@ static HKHubArchPortResponse ControlPort(HKHubArchPortConnection Connection, HKH
     
     ControlPortSend = NULL;
     CheckSend = TRUE;
+    BufferState = 0;
     
     HKHubArchPortConnection Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(self.processor, 0), (HKHubArchPort){
         .sender = InPort,
@@ -156,8 +159,21 @@ static HKHubArchPortResponse ControlPort(HKHubArchPortConnection Connection, HKH
     [super tearDown];
 }
 
+static _Bool RetTrue(void)
+{
+    return TRUE;
+}
+
+static _Bool RetFalse(void)
+{
+    return FALSE;
+}
+
 -(void) testNoData
 {
+    OutPortBusy = RetFalse;
+    ControlPortSend = RetTrue;
+    
     HKHubArchProcessorSetCycles(self.processor, 100000);
     HKHubArchSchedulerRun(self.scheduler, 0.0);
     
@@ -165,6 +181,163 @@ static HKHubArchPortResponse ControlPort(HKHubArchPortConnection Connection, HKH
     
     CCQueueNode *Node = CCQueuePop(ReadData);
     XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(BufferState, 0, @"Should not have change state");
+}
+
+-(void) testBufferingData
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    OutPortBusy = RetTrue;
+    ControlPortSend = RetTrue;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, DataCount, @"Should consume all data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(BufferState, 0, @"Should not have change state");
+}
+
+-(void) testBufferingDataLimit
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+        43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,
+        63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+        83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101,
+        102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149,
+        150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165,
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    OutPortBusy = RetTrue;
+    ControlPortSend = RetTrue;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, DataCount, @"Should consume all data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(BufferState, 1, @"Should be full");
+}
+
+-(void) testBufferingDataLimitWithBusyControlPort
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+        43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,
+        63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+        83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101,
+        102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149,
+        150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165,
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    OutPortBusy = RetTrue;
+    ControlPortSend = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, DataCount, @"Should consume all data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(BufferState, 0, @"Should not change state");
+}
+
+-(void) testBufferingDataLimitBlocked
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+        43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,
+        63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+        83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101,
+        102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149,
+        150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165,
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183, 184
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    OutPortBusy = RetTrue;
+    ControlPortSend = RetTrue;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, DataCount - 1, @"Should not consume data once blocked");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(BufferState, 1, @"Should be full");
+}
+
+-(void) testBufferingDataLimitBlockedWithBusyControlPort
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
+        23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+        43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,
+        63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82,
+        83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101,
+        102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117,
+        118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133,
+        134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149,
+        150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165,
+        166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+        182, 183, 184
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    OutPortBusy = RetTrue;
+    ControlPortSend = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, DataCount - 1, @"Should not consume data once blocked");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(BufferState, 0, @"Should not change state");
 }
 
 @end
