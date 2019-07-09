@@ -28,6 +28,8 @@
 #import "HubArchAssembly.h"
 #import "HubModuleDisplay.h"
 
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+
 @interface HubModuleDisplayTests : XCTestCase
 
 @end

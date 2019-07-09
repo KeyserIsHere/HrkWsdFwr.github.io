@@ -27,6 +27,8 @@
 #import "HubArchAssembly.h"
 #import "HubArchInstruction.h"
 
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+
 @interface HubArchAssemblyTests : XCTestCase
 
 @end

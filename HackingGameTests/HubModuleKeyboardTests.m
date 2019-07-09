@@ -28,6 +28,8 @@
 #import "HubArchAssembly.h"
 #import "HubModuleKeyboard.h"
 
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+
 @interface HubModuleKeyboardTests : XCTestCase
 
 @end

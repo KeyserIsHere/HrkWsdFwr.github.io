@@ -26,6 +26,8 @@
 #import <XCTest/XCTest.h>
 #import "ProgramTests.h"
 
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+
 @interface ProgramTests ()
 
 @property HKHubArchProcessor processor;
@@ -80,7 +82,7 @@
         CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
         
         CCOrderedCollection Errors = NULL;
-        HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors);
+        HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
         CCCollectionDestroy(AST);
         
         if (Binary)

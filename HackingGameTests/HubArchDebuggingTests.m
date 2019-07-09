@@ -28,6 +28,8 @@
 #import "HubArchAssembly.h"
 #import "HubArchScheduler.h"
 
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+
 @interface HubArchDebuggingTests : XCTestCase
 
 @end
