@@ -418,7 +418,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                 if (TriggeredBP) continue;
             }
             
-            size_t Cycles = (NextPC - Processor->state.pc) * HKHubArchProcessorSpeedMemoryRead;
+            size_t Cycles = (NextPC >= Processor->state.pc ? (NextPC - Processor->state.pc) : (NextPC + (256 - Processor->state.pc))) * HKHubArchProcessorSpeedMemoryRead;
             if (Cycles < Processor->cycles)
             {
                 Processor->cycles -= Cycles;
