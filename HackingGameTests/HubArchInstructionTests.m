@@ -106,6 +106,74 @@ static void PortAllocEvent(CCCallbackAllocatorEvent Event, void *Ptr, size_t *Si
     HKHubArchProcessorDestroy(P2);
 }
 
+-(void) testPCRollover
+{
+    const char *Source =
+        "add r0, 1\n"
+        ".byte                0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+        ".byte 0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8,0xf8\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    XCTAssertEqual(Processor->status, HKHubArchProcessorStatusRunning, @"Should change the status to trap");
+    XCTAssertFalse(HKHubArchProcessorIsRunning(Processor), @"Should not be running");
+    
+    HKHubArchProcessorSetCycles(Processor, (256 * HKHubArchProcessorSpeedMemoryRead) + 3);
+    XCTAssertTrue(HKHubArchProcessorIsRunning(Processor), @"Should be running");
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->cycles, 1, @"Should have one unused cycle");
+    XCTAssertEqual(Processor->state.pc, 0, @"Should return to beginning");
+    XCTAssertEqual(Processor->state.r[0], 1, @"Should have the correct value");
+    
+    
+    Processor->state.r[0] = 0;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, (((256 * HKHubArchProcessorSpeedMemoryRead) + 2) * 3) + 1);
+    XCTAssertTrue(HKHubArchProcessorIsRunning(Processor), @"Should be running");
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->cycles, 1, @"Should have one unused cycle");
+    XCTAssertEqual(Processor->state.pc, 0, @"Should return to beginning");
+    XCTAssertEqual(Processor->state.r[0], 3, @"Should have the correct value");
+    
+    
+    
+    Processor->memory[255] = Processor->memory[0];
+    Processor->memory[0] = Processor->memory[1];
+    Processor->memory[1] = Processor->memory[2];
+    Processor->memory[2] = 0xf8;
+    
+    Processor->state.r[0] = 0;
+    Processor->state.pc = 2;
+    HKHubArchProcessorSetCycles(Processor, (((256 * HKHubArchProcessorSpeedMemoryRead) + 2) * 3) + 1);
+    XCTAssertTrue(HKHubArchProcessorIsRunning(Processor), @"Should be running");
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->cycles, 1, @"Should have one unused cycle");
+    XCTAssertEqual(Processor->state.pc, 2, @"Should return to beginning");
+    XCTAssertEqual(Processor->state.r[0], 3, @"Should have the correct value");
+}
+
 static int TestAccumulationFailedSequences = 0;
 static uint8_t TestAccumulationSequenceSum = 0;
 static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Connection, HKHubArchPortDevice Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
@@ -1529,7 +1597,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessorSetCycles(Processor, 100);
     XCTAssertTrue(HKHubArchProcessorIsRunning(Processor), @"Should be running");
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 100, @"Should clear all cycles");
+    XCTAssertEqual(Processor->cycles, 100, @"Should not clear any cycles");
     XCTAssertEqual(Processor->state.pc, 0, @"Should not progress");
     XCTAssertEqual(Processor->status, HKHubArchProcessorStatusTrap, @"Should change the status to trap");
     XCTAssertFalse(HKHubArchProcessorIsRunning(Processor), @"Should no longer be running");
@@ -1549,7 +1617,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     
     HKHubArchProcessorSetCycles(Processor, 100);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->cycles, 99, @"Should clear all cycles");
+    XCTAssertEqual(Processor->cycles, 99, @"Should have the unused cycles");
     XCTAssertEqual(Processor->state.pc, 0, @"Should not progress");
     XCTAssertEqual(Processor->status, HKHubArchProcessorStatusIdle, @"Should change the status to idle");
     XCTAssertFalse(HKHubArchProcessorIsRunning(Processor), @"Should no longer be running");
