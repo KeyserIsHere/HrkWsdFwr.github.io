@@ -67,7 +67,7 @@ data_size:
 repeat:
     and r3, r3
     jz receive
-    js control
+    js notify
     cmp r3, cleared
     jnz send
     mov r3, normal
@@ -80,7 +80,7 @@ receive:
     cmp r0, r1
     jnz send
     mov r3, init_full
-control:
+notify:
     send control
     jz send
     xor r3, control_flag
