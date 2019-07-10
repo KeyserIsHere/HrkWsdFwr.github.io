@@ -667,8 +667,6 @@
     
     XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
     
-    CCCollectionDestroy(Errors); Errors = NULL;
-    
     
     
     Source =
