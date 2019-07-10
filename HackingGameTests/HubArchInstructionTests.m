@@ -29,7 +29,7 @@
 #import "HubArchScheduler.h"
 
 #define HKHubArchProcessorSetCycles(p, c) p->status = HKHubArchProcessorStatusRunning; p->message.type = HKHubArchProcessorMessageClear; HKHubArchProcessorSetCycles(p, c)
-#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); err = NULL; }
 
 @interface HubArchInstructionTests : XCTestCase
 

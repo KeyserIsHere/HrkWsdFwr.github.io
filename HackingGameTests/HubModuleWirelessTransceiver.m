@@ -29,7 +29,7 @@
 #import "HubArchScheduler.h"
 #import "HubModuleWirelessTransceiver.h"
 
-#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); err = NULL; }
 
 @interface HubModuleWirelessTransceiver : XCTestCase
 

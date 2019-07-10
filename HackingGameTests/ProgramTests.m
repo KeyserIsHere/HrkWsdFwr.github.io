@@ -26,7 +26,7 @@
 #import <XCTest/XCTest.h>
 #import "ProgramTests.h"
 
-#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); }
+#define HKHubArchAssemblyPrintError(err) if (Errors) { HKHubArchAssemblyPrintError(err); CCCollectionDestroy(err); err = NULL; }
 
 @interface ProgramTests ()
 
