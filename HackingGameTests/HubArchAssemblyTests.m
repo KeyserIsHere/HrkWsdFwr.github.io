@@ -533,6 +533,19 @@
     
     
     
+    Source = ".define foo, 1\nfoo:\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
     Source = ".define test, 15\n.byte test, ., ., . + test\n";
     
     AST = HKHubArchAssemblyParse(Source);
