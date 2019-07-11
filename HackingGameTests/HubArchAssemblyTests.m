@@ -533,7 +533,7 @@
     
     
     
-    Source = ".define foo, 1\nfoo:\n";
+    Source = ".byte foo\n.define foo, 10\nfoo:\n";
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -541,6 +541,50 @@
     CCCollectionDestroy(AST);
     
     XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertEqual(Binary->data[0], 1);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".byte foo\nfoo:\n.define foo, 10\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertEqual(Binary->data[0], 1);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".define foo, 1\n.define foo, 2\n.byte foo\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertEqual(Binary->data[0], 2);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".byte foo\nfoo: .byte 0\nfoo: .byte 0\n.byte foo\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertEqual(Binary->data[0], 2);
+    XCTAssertEqual(Binary->data[3], 2);
     
     HKHubArchBinaryDestroy(Binary);
     
