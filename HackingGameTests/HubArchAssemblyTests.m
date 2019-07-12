@@ -533,7 +533,7 @@
     
     
     
-    Source = ".byte foo\n.define foo, 10\nfoo:\n";
+    Source = ".byte foo\n.define foo, 10\nfoo:\nmov r0, [foo]\n";
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -542,12 +542,15 @@
     
     XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
     XCTAssertEqual(Binary->data[0], 1);
+    XCTAssertEqual(Binary->data[1], 10);
+    XCTAssertEqual(Binary->data[2], 0);
+    XCTAssertEqual(Binary->data[3], 10 << 3);
     
     HKHubArchBinaryDestroy(Binary);
     
     
     
-    Source = ".byte foo\nfoo:\n.define foo, 10\n";
+    Source = ".byte foo\nfoo:\n.define foo, 10\nmov r0, [foo]\n";
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -556,12 +559,15 @@
     
     XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
     XCTAssertEqual(Binary->data[0], 1);
+    XCTAssertEqual(Binary->data[1], 10);
+    XCTAssertEqual(Binary->data[2], 0);
+    XCTAssertEqual(Binary->data[3], 10 << 3);
     
     HKHubArchBinaryDestroy(Binary);
     
     
     
-    Source = ".define foo, 1\n.define foo, 2\n.byte foo\n";
+    Source = ".define foo, 1\n.define foo, 2\n.byte foo\nmov r0, [foo]\n";
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -570,12 +576,15 @@
     
     XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
     XCTAssertEqual(Binary->data[0], 2);
+    XCTAssertEqual(Binary->data[1], 10);
+    XCTAssertEqual(Binary->data[2], 0);
+    XCTAssertEqual(Binary->data[3], 2 << 3);
     
     HKHubArchBinaryDestroy(Binary);
     
     
     
-    Source = ".byte foo\nfoo: .byte 0\nfoo: .byte 0\n.byte foo\n";
+    Source = ".byte foo\nfoo: .byte 0\nfoo: .byte 0\n.byte foo\nmov r0, [foo]\n";
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -585,6 +594,9 @@
     XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
     XCTAssertEqual(Binary->data[0], 2);
     XCTAssertEqual(Binary->data[3], 2);
+    XCTAssertEqual(Binary->data[4], 10);
+    XCTAssertEqual(Binary->data[5], 0);
+    XCTAssertEqual(Binary->data[6], 2 << 3);
     
     HKHubArchBinaryDestroy(Binary);
     
