@@ -567,6 +567,40 @@
     
     
     
+    Source = ".define foo, 10\n.byte foo\nfoo:\nmov r0, [foo]\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertEqual(Binary->data[0], 10);
+    XCTAssertEqual(Binary->data[1], 10);
+    XCTAssertEqual(Binary->data[2], 0);
+    XCTAssertEqual(Binary->data[3], 10 << 3);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".define foo, 10\n.byte foo\n.define foo, 15\nmov r0, [foo]\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertEqual(Binary->data[0], 10);
+    XCTAssertEqual(Binary->data[1], 10);
+    XCTAssertEqual(Binary->data[2], 0);
+    XCTAssertEqual(Binary->data[3], 15 << 3);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
     Source = ".define foo, 1\n.define foo, 2\n.byte foo\nmov r0, [foo]\n";
     
     AST = HKHubArchAssemblyParse(Source);
