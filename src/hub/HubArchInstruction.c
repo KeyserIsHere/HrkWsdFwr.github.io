@@ -297,17 +297,20 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                 
                                 CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Op->childNodes)
                                 {
-                                    for (size_t Loop = 0; Loop < sizeof(Registers) / sizeof(typeof(*Registers)); Loop++) //TODO: make dictionary
+                                    if (Value->type == HKHubArchAssemblyASTTypeSymbol)
                                     {
-                                        if (CCStringEqual(Registers[Loop].mnemonic, Value->string))
+                                        for (size_t Loop = 0; Loop < sizeof(Registers) / sizeof(typeof(*Registers)); Loop++) //TODO: make dictionary
                                         {
-                                            if (RegIndex < 2)
+                                            if (CCStringEqual(Registers[Loop].mnemonic, Value->string))
                                             {
-                                                Regs[RegIndex] = Registers[Loop].encoding;
+                                                if (RegIndex < 2)
+                                                {
+                                                    Regs[RegIndex] = Registers[Loop].encoding;
+                                                }
+                                                
+                                                RegIndex++;
+                                                break;
                                             }
-                                            
-                                            RegIndex++;
-                                            break;
                                         }
                                     }
                                 }
