@@ -194,9 +194,44 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
     return HKHubArchInstructionOperandNA;
 }
 
+static _Atomic(int) InitStatus = ATOMIC_VAR_INIT(0);
+static CCDictionary RegularRegisters = NULL, MemoryRegisters = NULL;
 size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     CCAssertLog(Command, "Command must not be null");
+    
+    switch (atomic_load_explicit(&InitStatus, memory_order_relaxed))
+    {
+        case 0:
+            if (atomic_compare_exchange_strong_explicit(&InitStatus, &(int){ 0 }, 1, memory_order_relaxed, memory_order_relaxed))
+            {
+                const CCDictionaryCallbacks Callbacks = {
+                    .getHash = CCStringHasherForDictionary,
+                    .compareKeys = CCStringComparatorForDictionary
+                };
+                const CCDictionaryHint ConstantHint = CCDictionaryHintConstantElements | CCDictionaryHintConstantLength;
+                RegularRegisters = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall | ConstantHint, sizeof(CCString), sizeof(uint8_t), &Callbacks);
+                MemoryRegisters = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall | ConstantHint, sizeof(CCString), sizeof(uint8_t), &Callbacks);
+                
+                for (size_t Loop = 0; Loop < 4; Loop++)
+                {
+                    CCDictionarySetValue(RegularRegisters, (void*)&Registers[Loop].mnemonic, &Registers[Loop].encoding);
+                    CCDictionarySetValue(MemoryRegisters, (void*)&Registers[Loop].mnemonic, &Registers[Loop].encoding);
+                }
+                
+                CCDictionarySetValue(RegularRegisters, (void*)&Registers[4].mnemonic, &Registers[4].encoding);
+                CCDictionarySetValue(RegularRegisters, (void*)&Registers[5].mnemonic, &Registers[5].encoding);
+                
+                atomic_store_explicit(&InitStatus, 2, memory_order_release);
+                break;
+            }
+        case 1:
+            while (atomic_load_explicit(&InitStatus, memory_order_acquire) != 2) CC_SPIN_WAIT();
+            break;
+            
+        default:
+            break;
+    }
     
     HKHubArchInstructionOperand Operands[3] = { HKHubArchInstructionOperandNA, HKHubArchInstructionOperandNA, HKHubArchInstructionOperandNA };
     if (Command->childNodes)
@@ -262,18 +297,18 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                         if ((Op->childNodes) && (CCCollectionGetCount(Op->childNodes) == 1))
                         {
                             HKHubArchAssemblyASTNode *Value = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 0);
-                            for (size_t Loop = 0; Loop < sizeof(Registers) / sizeof(typeof(*Registers)); Loop++) //TODO: make dictionary
+                            if (Value->type == HKHubArchAssemblyASTTypeSymbol)
                             {
-                                if (CCStringEqual(Registers[Loop].mnemonic, Value->string))
+                                const uint8_t *Encoding = CCDictionaryGetValue(RegularRegisters, &Value->string);
+                                if (Encoding)
                                 {
                                     if (FreeBits <= 3)
                                     {
-                                        Bytes[Count++] |= Registers[Loop].encoding >> (3 - FreeBits);
-                                        Bytes[Count] = (Registers[Loop].encoding & CCBitSet(3 - FreeBits)) << (8 - (3 - FreeBits));
+                                        Bytes[Count++] |= *Encoding >> (3 - FreeBits);
+                                        Bytes[Count] = (*Encoding & CCBitSet(3 - FreeBits)) << (8 - (3 - FreeBits));
                                     }
                                     
-                                    else Bytes[Count] |= (Registers[Loop].encoding & CCBitSet(FreeBits)) << (FreeBits - 3);
-                                    break;
+                                    else Bytes[Count] |= (*Encoding & CCBitSet(FreeBits)) << (FreeBits - 3);
                                 }
                             }
                         }
@@ -299,18 +334,15 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                 {
                                     if (Value->type == HKHubArchAssemblyASTTypeSymbol)
                                     {
-                                        for (size_t Loop = 0; Loop < sizeof(Registers) / sizeof(typeof(*Registers)); Loop++) //TODO: make dictionary
+                                        const uint8_t *Encoding = CCDictionaryGetValue(RegularRegisters, &Value->string);
+                                        if (Encoding)
                                         {
-                                            if (CCStringEqual(Registers[Loop].mnemonic, Value->string))
+                                            if (RegIndex < 2)
                                             {
-                                                if (RegIndex < 2)
-                                                {
-                                                    Regs[RegIndex] = Registers[Loop].encoding;
-                                                }
-                                                
-                                                RegIndex++;
-                                                break;
+                                                Regs[RegIndex] = *Encoding;
                                             }
+                                            
+                                            RegIndex++;
                                         }
                                     }
                                 }
@@ -383,26 +415,14 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                                 BitCount += 4;
                                                 FreeBits = 8 - (BitCount % 8);
                                                 
-                                                CCDictionary Variables = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
-                                                    .getHash = CCStringHasherForDictionary,
-                                                    .compareKeys = CCStringComparatorForDictionary
-                                                });
-                                                
-                                                CCDictionarySetValue(Variables, (void*)&Registers[0].mnemonic, &(uint8_t){ 0 });
-                                                CCDictionarySetValue(Variables, (void*)&Registers[1].mnemonic, &(uint8_t){ 0 });
-                                                CCDictionarySetValue(Variables, (void*)&Registers[2].mnemonic, &(uint8_t){ 0 });
-                                                CCDictionarySetValue(Variables, (void*)&Registers[3].mnemonic, &(uint8_t){ 0 });
-                                                
                                                 uint8_t Result;
-                                                if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, Variables))
+                                                if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, MemoryRegisters))
                                                 {
                                                     Bytes[Count++] |= Result >> (8 - FreeBits);
                                                     Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
                                                 }
                                                 
                                                 else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
-                                                
-                                                CCDictionaryDestroy(Variables);
                                                 
                                                 BitCount += 8;
                                                 
