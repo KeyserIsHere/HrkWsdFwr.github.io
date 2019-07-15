@@ -240,7 +240,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                         if (Op->childNodes)
                         {
                             uint8_t Result;
-                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines))
+                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
                             {
                                 if (Instructions[Loop].operands[Index] == HKHubArchInstructionOperandRel) Result -= Offset;
                                 
@@ -340,7 +340,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                             FreeBits = 8 - (BitCount % 8);
                                             
                                             uint8_t Result;
-                                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines))
+                                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
                                             {
                                                 Bytes[Count++] |= Result >> (8 - FreeBits);
                                                 Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
@@ -383,13 +383,18 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                                 BitCount += 4;
                                                 FreeBits = 8 - (BitCount % 8);
                                                 
-                                                CCDictionarySetValue(Labels, (void*)&Registers[0].mnemonic, &(uint8_t){ 0 });
-                                                CCDictionarySetValue(Labels, (void*)&Registers[1].mnemonic, &(uint8_t){ 0 });
-                                                CCDictionarySetValue(Labels, (void*)&Registers[2].mnemonic, &(uint8_t){ 0 });
-                                                CCDictionarySetValue(Labels, (void*)&Registers[3].mnemonic, &(uint8_t){ 0 });
+                                                CCDictionary Variables = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
+                                                    .getHash = CCStringHasherForDictionary,
+                                                    .compareKeys = CCStringComparatorForDictionary
+                                                });
+                                                
+                                                CCDictionarySetValue(Variables, (void*)&Registers[0].mnemonic, &(uint8_t){ 0 });
+                                                CCDictionarySetValue(Variables, (void*)&Registers[1].mnemonic, &(uint8_t){ 0 });
+                                                CCDictionarySetValue(Variables, (void*)&Registers[2].mnemonic, &(uint8_t){ 0 });
+                                                CCDictionarySetValue(Variables, (void*)&Registers[3].mnemonic, &(uint8_t){ 0 });
                                                 
                                                 uint8_t Result;
-                                                if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines))
+                                                if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, Variables))
                                                 {
                                                     Bytes[Count++] |= Result >> (8 - FreeBits);
                                                     Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
@@ -397,10 +402,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                                 
                                                 else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
                                                 
-                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[0].mnemonic);
-                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[1].mnemonic);
-                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[2].mnemonic);
-                                                CCDictionaryRemoveValue(Labels, (void*)&Registers[3].mnemonic);
+                                                CCDictionaryDestroy(Variables);
                                                 
                                                 BitCount += 8;
                                                 

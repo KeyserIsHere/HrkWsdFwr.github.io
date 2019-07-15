@@ -125,9 +125,10 @@ _Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *R
  * @param Operand The operand to resolve as an integer.
  * @param Labels The labels.
  * @param Defines The defines.
+ * @param Variables The optional unknown variable names.
  * @return TRUE if it was resolved to a literal value otherwise FALSE.
  */
-_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines);
+_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, CCDictionary Variables);
 
 /*!
  * @brief Convenience function for adding error messages.

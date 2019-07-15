@@ -313,6 +313,7 @@ static const CCString HKHubArchAssemblyErrorMessageOperand1SymbolOrInteger = CC_
 static const CCString HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger = CC_STRING("operand 2 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("operand should be an integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
+static const CCString HKHubArchAssemblyErrorMessageOperandResolveIntegerMinusRegister = CC_STRING("cannot resolve the equation when register is to the right of the minus sign");
 static const CCString HKHubArchAssemblyErrorMessageMin0Max0Operands = CC_STRING("expects no operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1Max1Operands = CC_STRING("expects one operand");
@@ -497,7 +498,7 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
         {
             if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes))
             {
-                HKHubArchAssemblyResolveInteger(Offset, &Binary->data[Offset], Command, Operand, Errors, Labels, Defines);
+                HKHubArchAssemblyResolveInteger(Offset, &Binary->data[Offset], Command, Operand, Errors, Labels, Defines, NULL);
             }
             
             else
@@ -541,7 +542,7 @@ static const struct {
     { CC_STRING(".include"), HKHubArchAssemblyCompileDirectiveInclude }
 };
 
-_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, CCDictionary Variables)
 {
     uint8_t Byte = 0;
     _Bool Minus = FALSE, Success = TRUE;
@@ -572,6 +573,15 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
                 if (HKHubArchAssemblyResolveSymbol(Value, &ResolvedValue, Labels, Defines))
                 {
                     Byte += (Minus ? -1 : 1) * ResolvedValue;
+                }
+                
+                else if ((Variables) && (CCDictionaryFindKey(Variables, &Value->string)))
+                {
+                    if (Minus)
+                    {
+                        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveIntegerMinusRegister, Command, Operand, Value);
+                        Success = FALSE;
+                    }
                 }
                 
                 else
