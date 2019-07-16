@@ -163,6 +163,8 @@ static const CCString HKHubArchInstructionErrorMessageMemoryAdditionOnly = CC_ST
 
 #pragma mark -
 
+static CCDictionary RegularRegisters = NULL, MemoryRegisters = NULL, InstructionTable = NULL;
+
 static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     if (Operand->type == HKHubArchAssemblyASTTypeMemory) return HKHubArchInstructionOperandM;
@@ -194,8 +196,26 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
     return HKHubArchInstructionOperandNA;
 }
 
+typedef struct {
+    CCString mnemonic;
+    HKHubArchInstructionOperand operands[3];
+} HKHubArchInstructionKey;
+
+static uintmax_t HKHubArchInstructionKeyHasher(const HKHubArchInstructionKey *Key)
+{
+    return CCStringGetHash(Key->mnemonic);
+}
+
+static _Thread_local _Bool MatchedMnemonic = FALSE;
+static CCComparisonResult HKHubArchInstructionKeyComparator(const HKHubArchInstructionKey *left, const HKHubArchInstructionKey *right)
+{
+    const _Bool Match = CCStringEqual(left->mnemonic, right->mnemonic);
+    if (!MatchedMnemonic) MatchedMnemonic = Match;
+    
+    return (Match && (left->operands[0] & right->operands[0]) && (left->operands[1] & right->operands[1]) && (left->operands[2] & right->operands[2])) ? CCComparisonResultEqual : CCComparisonResultInvalid;
+}
+
 static _Atomic(int) InitStatus = ATOMIC_VAR_INIT(0);
-static CCDictionary RegularRegisters = NULL, MemoryRegisters = NULL;
 size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     CCAssertLog(Command, "Command must not be null");
@@ -221,6 +241,23 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                 
                 CCDictionarySetValue(RegularRegisters, (void*)&Registers[4].mnemonic, &Registers[4].encoding);
                 CCDictionarySetValue(RegularRegisters, (void*)&Registers[5].mnemonic, &Registers[5].encoding);
+                
+                
+                InstructionTable = CCDictionaryCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeMedium | ConstantHint, sizeof(HKHubArchInstructionKey), sizeof(size_t), &(CCDictionaryCallbacks){
+                    .getHash = (CCDictionaryKeyHasher)HKHubArchInstructionKeyHasher,
+                    .compareKeys = (CCComparator)HKHubArchInstructionKeyComparator
+                });
+                
+                for (size_t Loop = 0; Loop < sizeof(Instructions) / sizeof(typeof(*Instructions)); Loop++)
+                {
+                    if (Instructions[Loop].mnemonic)
+                    {
+                        CCDictionarySetValue(InstructionTable, &(HKHubArchInstructionKey){
+                            .mnemonic = Instructions[Loop].mnemonic,
+                            .operands = { Instructions[Loop].operands[0], Instructions[Loop].operands[1], Instructions[Loop].operands[2] }
+                        }, &Loop);
+                    }
+                }
                 
                 atomic_store_explicit(&InitStatus, 2, memory_order_release);
                 break;
@@ -254,242 +291,239 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
         }
     }
     
-    CCString FoundErr = HKHubArchInstructionErrorMessageUnknownMnemonic;
-    for (size_t Loop = 0; Loop < sizeof(Instructions) / sizeof(typeof(*Instructions)); Loop++) //TODO: make dictionary
+    MatchedMnemonic = FALSE;
+    size_t *InstructionIndex = CCDictionaryGetValue(InstructionTable, &(HKHubArchInstructionKey){
+        .mnemonic = Command->string,
+        .operands = { Operands[0], Operands[1], Operands[2] }
+    });
+    
+    if (InstructionIndex)
     {
-        if ((Instructions[Loop].mnemonic) && (CCStringEqual(Instructions[Loop].mnemonic, Command->string)))
+        size_t Count = 0, BitCount = 6;
+        uint8_t Bytes[5] = { *InstructionIndex << 2, 0, 0, 0, 0 };
+        
+        for (size_t Index = 0; Index < 3; Index++)
         {
-            FoundErr = HKHubArchInstructionErrorMessageUnknownOperands;
-            
-            if ((Instructions[Loop].operands[0] & Operands[0]) && (Instructions[Loop].operands[1] & Operands[1]) && (Instructions[Loop].operands[2] & Operands[2]))
+            size_t FreeBits = 8 - (BitCount % 8);
+            if (Operands[Index] & HKHubArchInstructionOperandI)
             {
-                size_t Count = 0, BitCount = 6;
-                uint8_t Bytes[5] = { Loop << 2, 0, 0, 0, 0 };
-                
-                for (size_t Index = 0; Index < 3; Index++)
+                HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
+                if (Op->childNodes)
                 {
-                    size_t FreeBits = 8 - (BitCount % 8);
-                    if (Operands[Index] & HKHubArchInstructionOperandI)
+                    uint8_t Result;
+                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
                     {
-                        HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
-                        if (Op->childNodes)
-                        {
-                            uint8_t Result;
-                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
-                            {
-                                if (Instructions[Loop].operands[Index] == HKHubArchInstructionOperandRel) Result -= Offset;
-                                
-                                Bytes[Count++] |= Result >> (8 - FreeBits);
-                                Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
-                            }
-                            
-                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
-                        }
+                        if (Instructions[*InstructionIndex].operands[Index] == HKHubArchInstructionOperandRel) Result -= Offset;
                         
-                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
-                        
-                        BitCount += 8;
+                        Bytes[Count++] |= Result >> (8 - FreeBits);
+                        Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
                     }
                     
-                    else if (Operands[Index] & HKHubArchInstructionOperandR)
+                    else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                }
+                
+                else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                
+                BitCount += 8;
+            }
+            
+            else if (Operands[Index] & HKHubArchInstructionOperandR)
+            {
+                HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
+                if ((Op->childNodes) && (CCCollectionGetCount(Op->childNodes) == 1))
+                {
+                    HKHubArchAssemblyASTNode *Value = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 0);
+                    if (Value->type == HKHubArchAssemblyASTTypeSymbol)
                     {
-                        HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
-                        if ((Op->childNodes) && (CCCollectionGetCount(Op->childNodes) == 1))
+                        const uint8_t *Encoding = CCDictionaryGetValue(RegularRegisters, &Value->string);
+                        if (Encoding)
                         {
-                            HKHubArchAssemblyASTNode *Value = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 0);
+                            if (FreeBits <= 3)
+                            {
+                                Bytes[Count++] |= *Encoding >> (3 - FreeBits);
+                                Bytes[Count] = (*Encoding & CCBitSet(3 - FreeBits)) << (8 - (3 - FreeBits));
+                            }
+                            
+                            else Bytes[Count] |= (*Encoding & CCBitSet(FreeBits)) << (FreeBits - 3);
+                        }
+                    }
+                }
+                
+                else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                
+                BitCount += 3;
+            }
+            
+            else if (Operands[Index] & HKHubArchInstructionOperandM)
+            {
+                HKHubArchAssemblyASTNode *Memory = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
+                if ((Memory->childNodes) && (CCCollectionGetCount(Memory->childNodes) == 1))
+                {
+                    HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Memory->childNodes, 0);
+                    
+                    if (Op->childNodes)
+                    {
+                        size_t RegIndex = 0;
+                        uint8_t Regs[2] = { HKHubArchInstructionRegisterGeneralPurpose, HKHubArchInstructionRegisterGeneralPurpose };
+                        
+                        CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Op->childNodes)
+                        {
                             if (Value->type == HKHubArchAssemblyASTTypeSymbol)
                             {
                                 const uint8_t *Encoding = CCDictionaryGetValue(RegularRegisters, &Value->string);
                                 if (Encoding)
                                 {
-                                    if (FreeBits <= 3)
+                                    if (RegIndex < 2)
                                     {
-                                        Bytes[Count++] |= *Encoding >> (3 - FreeBits);
-                                        Bytes[Count] = (*Encoding & CCBitSet(3 - FreeBits)) << (8 - (3 - FreeBits));
+                                        Regs[RegIndex] = *Encoding;
                                     }
                                     
-                                    else Bytes[Count] |= (*Encoding & CCBitSet(FreeBits)) << (FreeBits - 3);
+                                    RegIndex++;
                                 }
                             }
                         }
                         
-                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
-                        
-                        BitCount += 3;
-                    }
-                    
-                    else if (Operands[Index] & HKHubArchInstructionOperandM)
-                    {
-                        HKHubArchAssemblyASTNode *Memory = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
-                        if ((Memory->childNodes) && (CCCollectionGetCount(Memory->childNodes) == 1))
+                        if ((Regs[0] & HKHubArchInstructionRegisterGeneralPurpose) && (Regs[1] & HKHubArchInstructionRegisterGeneralPurpose))
                         {
-                            HKHubArchAssemblyASTNode *Op = CCOrderedCollectionGetElementAtIndex(Memory->childNodes, 0);
-                            
-                            if (Op->childNodes)
+                            /*
+                             0000 iiiiiiii - Immediate address
+                             0001 rr - Register address (r0 - r3)
+                             0010 iiiiiiii rr - Immediate + Register address (r0 - r3)
+                             0011 rr rr - Register + Register address (r0 - r3)
+                             */
+                            switch (RegIndex)
                             {
-                                size_t RegIndex = 0;
-                                uint8_t Regs[2] = { HKHubArchInstructionRegisterGeneralPurpose, HKHubArchInstructionRegisterGeneralPurpose };
-                                
-                                CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Op->childNodes)
+                                case 0: //integer
                                 {
-                                    if (Value->type == HKHubArchAssemblyASTTypeSymbol)
+                                    uint8_t MemoryType = HKHubArchInstructionMemoryOffset;
+                                    if (FreeBits <= 4)
                                     {
-                                        const uint8_t *Encoding = CCDictionaryGetValue(RegularRegisters, &Value->string);
-                                        if (Encoding)
-                                        {
-                                            if (RegIndex < 2)
-                                            {
-                                                Regs[RegIndex] = *Encoding;
-                                            }
-                                            
-                                            RegIndex++;
-                                        }
+                                        Bytes[Count++] |= MemoryType >> (4 - FreeBits);
+                                        Bytes[Count] = (MemoryType & CCBitSet(4 - FreeBits)) << (8 - (4 - FreeBits));
                                     }
-                                }
-                                
-                                if ((Regs[0] & HKHubArchInstructionRegisterGeneralPurpose) && (Regs[1] & HKHubArchInstructionRegisterGeneralPurpose))
-                                {
-                                    /*
-                                     0000 iiiiiiii - Immediate address
-                                     0001 rr - Register address (r0 - r3)
-                                     0010 iiiiiiii rr - Immediate + Register address (r0 - r3)
-                                     0011 rr rr - Register + Register address (r0 - r3)
-                                     */
-                                    switch (RegIndex)
+                                    
+                                    else Bytes[Count] |= (MemoryType & CCBitSet(FreeBits)) << (FreeBits - 4);
+                                    
+                                    BitCount += 4;
+                                    FreeBits = 8 - (BitCount % 8);
+                                    
+                                    uint8_t Result;
+                                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
                                     {
-                                        case 0: //integer
+                                        Bytes[Count++] |= Result >> (8 - FreeBits);
+                                        Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
+                                    }
+                                    
+                                    else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                                    
+                                    BitCount += 8;
+                                    break;
+                                }
+                                    
+                                case 1: //reg or reg+integer/reg-integer
+                                {
+                                    const size_t OpCount = CCCollectionGetCount(Op->childNodes);
+                                    if (OpCount == 1) //reg
+                                    {
+                                        uint8_t Memory = (HKHubArchInstructionMemoryRegister << 2) | (Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask);
+                                        if (FreeBits <= 6)
                                         {
-                                            uint8_t MemoryType = HKHubArchInstructionMemoryOffset;
-                                            if (FreeBits <= 4)
-                                            {
-                                                Bytes[Count++] |= MemoryType >> (4 - FreeBits);
-                                                Bytes[Count] = (MemoryType & CCBitSet(4 - FreeBits)) << (8 - (4 - FreeBits));
-                                            }
-                                            
-                                            else Bytes[Count] |= (MemoryType & CCBitSet(FreeBits)) << (FreeBits - 4);
-                                            
-                                            BitCount += 4;
-                                            FreeBits = 8 - (BitCount % 8);
-                                            
-                                            uint8_t Result;
-                                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
-                                            {
-                                                Bytes[Count++] |= Result >> (8 - FreeBits);
-                                                Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
-                                            }
-                                            
-                                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                                            Bytes[Count++] |= Memory >> (6 - FreeBits);
+                                            Bytes[Count] = (Memory & CCBitSet(6 - FreeBits)) << (8 - (6 - FreeBits));
+                                        }
+                                        
+                                        else Bytes[Count] |= (Memory & CCBitSet(FreeBits)) << (FreeBits - 6);
+                                        
+                                        BitCount += 6;
+                                    }
+                                    
+                                    else if (OpCount >= 3) //reg+integer/reg-integer
+                                    {
+                                        uint8_t MemoryType = HKHubArchInstructionMemoryRelativeOffset;
+                                        if (FreeBits <= 4)
+                                        {
+                                            Bytes[Count++] |= MemoryType >> (4 - FreeBits);
+                                            Bytes[Count] = (MemoryType & CCBitSet(4 - FreeBits)) << (8 - (4 - FreeBits));
+                                        }
+                                        
+                                        else Bytes[Count] |= (MemoryType & CCBitSet(FreeBits)) << (FreeBits - 4);
+                                        
+                                        BitCount += 4;
+                                        FreeBits = 8 - (BitCount % 8);
+                                        
+                                        uint8_t Result;
+                                        if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, MemoryRegisters))
+                                        {
+                                            Bytes[Count++] |= Result >> (8 - FreeBits);
+                                            Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
+                                        }
+                                        
+                                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
+                                        
+                                        BitCount += 8;
+                                        
+                                        uint8_t Memory = Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask;
+                                        if (FreeBits <= 2)
+                                        {
+                                            Bytes[Count++] |= Memory >> (2 - FreeBits);
+                                            Bytes[Count] = (Memory & CCBitSet(2 - FreeBits)) << (8 - (2 - FreeBits));
+                                        }
+                                        
+                                        else Bytes[Count] |= (Memory & CCBitSet(FreeBits)) << (FreeBits - 2);
+                                        
+                                        BitCount += 2;
+                                    }
+                                    
+                                    else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
+                                    
+                                    break;
+                                }
+                                    
+                                case 2: //reg+reg
+                                {
+                                    if (CCCollectionGetCount(Op->childNodes) == 3)
+                                    {
+                                        HKHubArchAssemblyASTNode *Operation = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 1);
+                                        if (Operation->type == HKHubArchAssemblyASTTypePlus)
+                                        {
+                                            uint8_t Memory = (HKHubArchInstructionMemoryRelativeRegister << 4) | ((Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask) << 2) | (Regs[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask); //type|reg1|reg2
+                                            Bytes[Count++] |= Memory >> (8 - FreeBits);
+                                            Bytes[Count] = (Memory & CCBitSet(8 - FreeBits)) << FreeBits;
                                             
                                             BitCount += 8;
-                                            break;
                                         }
-                                            
-                                        case 1: //reg or reg+integer/reg-integer
-                                        {
-                                            const size_t OpCount = CCCollectionGetCount(Op->childNodes);
-                                            if (OpCount == 1) //reg
-                                            {
-                                                uint8_t Memory = (HKHubArchInstructionMemoryRegister << 2) | (Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask);
-                                                if (FreeBits <= 6)
-                                                {
-                                                    Bytes[Count++] |= Memory >> (6 - FreeBits);
-                                                    Bytes[Count] = (Memory & CCBitSet(6 - FreeBits)) << (8 - (6 - FreeBits));
-                                                }
-                                                
-                                                else Bytes[Count] |= (Memory & CCBitSet(FreeBits)) << (FreeBits - 6);
-                                                
-                                                BitCount += 6;
-                                            }
-                                            
-                                            else if (OpCount >= 3) //reg+integer/reg-integer
-                                            {
-                                                uint8_t MemoryType = HKHubArchInstructionMemoryRelativeOffset;
-                                                if (FreeBits <= 4)
-                                                {
-                                                    Bytes[Count++] |= MemoryType >> (4 - FreeBits);
-                                                    Bytes[Count] = (MemoryType & CCBitSet(4 - FreeBits)) << (8 - (4 - FreeBits));
-                                                }
-                                                
-                                                else Bytes[Count] |= (MemoryType & CCBitSet(FreeBits)) << (FreeBits - 4);
-                                                
-                                                BitCount += 4;
-                                                FreeBits = 8 - (BitCount % 8);
-                                                
-                                                uint8_t Result;
-                                                if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, MemoryRegisters))
-                                                {
-                                                    Bytes[Count++] |= Result >> (8 - FreeBits);
-                                                    Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
-                                                }
-                                                
-                                                else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Op, NULL);
-                                                
-                                                BitCount += 8;
-                                                
-                                                uint8_t Memory = Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask;
-                                                if (FreeBits <= 2)
-                                                {
-                                                    Bytes[Count++] |= Memory >> (2 - FreeBits);
-                                                    Bytes[Count] = (Memory & CCBitSet(2 - FreeBits)) << (8 - (2 - FreeBits));
-                                                }
-                                                
-                                                else Bytes[Count] |= (Memory & CCBitSet(FreeBits)) << (FreeBits - 2);
-                                                
-                                                BitCount += 2;
-                                            }
-                                            
-                                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
-                                            
-                                            break;
-                                        }
-                                            
-                                        case 2: //reg+reg
-                                        {
-                                            if (CCCollectionGetCount(Op->childNodes) == 3)
-                                            {
-                                                HKHubArchAssemblyASTNode *Operation = CCOrderedCollectionGetElementAtIndex(Op->childNodes, 1);
-                                                if (Operation->type == HKHubArchAssemblyASTTypePlus)
-                                                {
-                                                    uint8_t Memory = (HKHubArchInstructionMemoryRelativeRegister << 4) | ((Regs[0] & HKHubArchInstructionRegisterGeneralPurposeIndexMask) << 2) | (Regs[1] & HKHubArchInstructionRegisterGeneralPurposeIndexMask); //type|reg1|reg2
-                                                    Bytes[Count++] |= Memory >> (8 - FreeBits);
-                                                    Bytes[Count] = (Memory & CCBitSet(8 - FreeBits)) << FreeBits;
-                                                    
-                                                    BitCount += 8;
-                                                }
-                                                
-                                                else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageMemoryAdditionOnly, Command, Op, Operation);
-                                            }
-                                            
-                                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
-                                            
-                                            break;
-                                        }
-                                            
-                                        default:
-                                            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageMin0Max2MemoryRegister, Command, Memory, NULL);
-                                            break;
+                                        
+                                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageMemoryAdditionOnly, Command, Op, Operation);
                                     }
+                                    
+                                    else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
+                                    
+                                    break;
                                 }
-                                
-                                else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageMemoryRegister, Command, Memory, NULL);
+                                    
+                                default:
+                                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageMin0Max2MemoryRegister, Command, Memory, NULL);
+                                    break;
                             }
-                            
-                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
                         }
                         
-                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
+                        else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageMemoryRegister, Command, Memory, NULL);
                     }
+                    
+                    else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
                 }
                 
-                const size_t ByteCount = (BitCount / 8) + (_Bool)(BitCount % 8);
-                if (Data) memcpy(&Data[Offset], Bytes, ByteCount);
-                
-                return Offset + ByteCount;
+                else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchInstructionErrorMessageResolveOperand, Command, Memory, NULL);
             }
         }
+        
+        const size_t ByteCount = (BitCount / 8) + (_Bool)(BitCount % 8);
+        if (Data) memcpy(&Data[Offset], Bytes, ByteCount);
+        
+        return Offset + ByteCount;
     }
     
-    HKHubArchAssemblyErrorAddMessage(Errors, FoundErr, Command, NULL, NULL);
+    HKHubArchAssemblyErrorAddMessage(Errors, (MatchedMnemonic ? HKHubArchInstructionErrorMessageUnknownOperands : HKHubArchInstructionErrorMessageUnknownMnemonic), Command, NULL, NULL);
     
     return Offset;
 }
