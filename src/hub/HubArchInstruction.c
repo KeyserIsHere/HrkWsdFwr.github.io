@@ -181,10 +181,7 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
                 HKHubArchAssemblyASTNode **Symbol = CCDictionaryGetValue(Defines, &Value->string);
                 if (Symbol) Value = *Symbol;
                 
-                for (size_t Loop = 0; Loop < sizeof(Registers) / sizeof(typeof(*Registers)); Loop++) //TODO: make dictionary
-                {
-                    if (CCStringEqual(Registers[Loop].mnemonic, Value->string)) return HKHubArchInstructionOperandR;
-                }
+                if (CCDictionaryFindKey(RegularRegisters, &Value->string)) return HKHubArchInstructionOperandR;
                 
                 if ((Value->type == HKHubArchAssemblyASTTypeInteger) || (Value->type == HKHubArchAssemblyASTTypeSymbol)) return HKHubArchInstructionOperandI; //assume is label or literal value
             }
