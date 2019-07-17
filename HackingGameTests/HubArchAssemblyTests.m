@@ -438,7 +438,7 @@
     
     Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 0);
     XCTAssertEqual(Node->line, 10, @"Should be on the correct line");
-    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeUnknown, @"Should be the correct type");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeModulo, @"Should be the correct type");
     XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("%")), @"Should capture the correct string");
     XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
     
@@ -474,7 +474,7 @@
     
     Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 1);
     XCTAssertEqual(Node->line, 10, @"Should be on the correct line");
-    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeUnknown, @"Should be the correct type");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeLessThan, @"Should be the correct type");
     XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("<")), @"Should capture the correct string");
     XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
     
@@ -938,7 +938,31 @@
     
     
     
-    Source = ".byte (1 + 2) + 3\n";
+    Source =
+        ".byte (1 + 2) + 3\n"
+        ".byte 2 * 3\n"
+        ".byte 2 * 3 + 4 * 2\n"
+        ".byte 2 * 3 + (4 * 2)\n"
+        ".byte 3 < 4\n"
+        ".byte 4 < 3\n"
+        ".byte . == 6\n"
+        ".byte . != 6\n"
+        ".byte 1 << 1\n"
+        ".byte 2 >> 1\n"
+        ".byte 1 <= 1\n"
+        ".byte 1 >= 1\n"
+        ".byte 9 % 4\n"
+        ".byte 9 / 4\n"
+        ".byte 3 ^ 6\n"
+        ".byte 3 | 6\n"
+        ".byte !6\n"
+        ".byte -6\n"
+        ".byte ~6\n"
+        ".byte 1 && 1\n"
+        ".byte 1 && 1 && 0\n"
+        ".byte 0 || 1\n"
+        ".byte 0 || 0\n"
+    ;
     
     AST = HKHubArchAssemblyParse(Source);
     
@@ -947,6 +971,28 @@
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 6);
+    XCTAssertEqual(Binary->data[1], 6);
+    XCTAssertEqual(Binary->data[2], 20);
+    XCTAssertEqual(Binary->data[3], 14);
+    XCTAssertEqual(Binary->data[4], 1);
+    XCTAssertEqual(Binary->data[5], 0);
+    XCTAssertEqual(Binary->data[6], 1);
+    XCTAssertEqual(Binary->data[7], 1);
+    XCTAssertEqual(Binary->data[8], 2);
+    XCTAssertEqual(Binary->data[9], 1);
+    XCTAssertEqual(Binary->data[10], 1);
+    XCTAssertEqual(Binary->data[11], 1);
+    XCTAssertEqual(Binary->data[12], 1);
+    XCTAssertEqual(Binary->data[13], 2);
+    XCTAssertEqual(Binary->data[14], 5);
+    XCTAssertEqual(Binary->data[15], 7);
+    XCTAssertEqual(Binary->data[16], 0);
+    XCTAssertEqual(Binary->data[17], 250);
+    XCTAssertEqual(Binary->data[18], 249);
+    XCTAssertEqual(Binary->data[19], 1);
+    XCTAssertEqual(Binary->data[20], 0);
+    XCTAssertEqual(Binary->data[21], 1);
+    XCTAssertEqual(Binary->data[22], 0);
     
     HKHubArchBinaryDestroy(Binary);
     
