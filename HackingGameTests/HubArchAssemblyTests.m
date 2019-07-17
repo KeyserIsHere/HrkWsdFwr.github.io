@@ -47,14 +47,15 @@
         " ,, ,, ,,   ,, , , , , ,add r0, r0\n" //instruction<add>(operand< r0>(symbol<r0>()), operand< r0>(symbol<r0>()))
         "nop#goood\n" //instruction<nop>()
         "nop\n" //instruction<nop>()
-        "nop $43, 54k(4)\n" //instruction<nop>(operand< $43>(unknown<$>(), integer<43>()), operand< 54k(4)>(symbol<54k>(), unknown<(>(), integer<4>(), unknown<)>()))
+        "nop $43, 54k{4}\n" //instruction<nop>(operand< $43>(unknown<$>(), integer<43>()), operand< 54k(4)>(symbol<54k>(), unknown<{>(), integer<4>(), unknown<}>()))
         "l: %%,%,,5,,54<,,5,[,,\n" //label<l>(), instruction<%%>(operand<%>(unknown<%>()), operand<5>(integer<5>()), operand<54<>(integer<54>(), unknown<<>()), operand<5>(integer<5>()), memory())
+        ".byte ((1 + 2) + 3) + (4 - 5)\n" //directive<.byte>(operand< ((1 + 2) + 3) + (4 - 5)>(expression(expression(integer<1>(), plus<+>(), integer<2>()), plus<+>(), integer<3>()), plus<+>(), expression(integer<4>(), minus<->(), integer<5>())))
         "nop" //instruction<nop>()
     ;
     
     CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
     
-    XCTAssertEqual(CCCollectionGetCount(AST), 14, @"Should have the correct number of command nodes");
+    XCTAssertEqual(CCCollectionGetCount(AST), 15, @"Should have the correct number of command nodes");
     
     //label<label>()
     HKHubArchAssemblyASTNode *Command = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(AST, 0);
@@ -348,7 +349,7 @@
     XCTAssertTrue(CCStringEqual(Command->string, CC_STRING("nop")), @"Should capture the correct string");
     XCTAssertEqual(Command->childNodes, NULL, @"Should not have child nodes because it detects end of line (and so cannot have any)");
     
-    //instruction<nop>(operand< $43>(unknown<$>(), integer<43>()), operand< 54k(4)>(symbol<54k>(), unknown<(>(), integer<4>(), unknown<)>()))
+    //instruction<nop>(operand< $43>(unknown<$>(), integer<43>()), operand< 54k(4)>(symbol<54k>(), unknown<{>(), integer<4>(), unknown<}>()))
     Command = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(AST, 10);
     XCTAssertEqual(Command->line, 9, @"Should be on the correct line");
     XCTAssertEqual(Command->type, HKHubArchAssemblyASTTypeInstruction, @"Should be the correct type");
@@ -378,7 +379,7 @@
     XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
     XCTAssertEqual(Node->integer.value, 43, @"Should be the correct value");
     
-    //operand< 54k(4)>(symbol<54k>(), unknown<(>(), integer<4>(), unknown<)>())
+    //operand< 54k(4)>(symbol<54k>(), unknown<{>(), integer<4>(), unknown<}>())
     Operand = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
     XCTAssertEqual(Operand->line, 9, @"Should be on the correct line");
     XCTAssertEqual(Operand->type, HKHubArchAssemblyASTTypeOperand, @"Should be the correct type");
@@ -395,7 +396,7 @@
     Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 1);
     XCTAssertEqual(Node->line, 9, @"Should be on the correct line");
     XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeUnknown, @"Should be the correct type");
-    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("(")), @"Should capture the correct string");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("{")), @"Should capture the correct string");
     XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
     
     Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 2);
@@ -408,7 +409,7 @@
     Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 3);
     XCTAssertEqual(Node->line, 9, @"Should be on the correct line");
     XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeUnknown, @"Should be the correct type");
-    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING(")")), @"Should capture the correct string");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("}")), @"Should capture the correct string");
     XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
     
     //label<l>()
@@ -500,9 +501,107 @@
     
     XCTAssertEqual(CCCollectionGetCount(Operand->childNodes), 0, @"Should have the correct number of sub nodes");
     
-    //instruction<nop>()
+    //directive<.byte>(operand< ((1 + 2) + 3) + (4 - 5)>(expression(expression(integer<1>(), plus<+>(), integer<2>()), plus<+>(), integer<3>()), plus<+>(), expression(integer<4>(), minus<->(), integer<5>())))
     Command = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(AST, 13);
     XCTAssertEqual(Command->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Command->type, HKHubArchAssemblyASTTypeDirective, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Command->string, CC_STRING(".byte")), @"Should capture the correct string");
+    XCTAssertNotEqual(Command->childNodes, NULL, @"Should have child nodes");
+    
+    //operand< ((1 + 2) + 3) + (4 - 5)>(expression(expression(integer<1>(), plus<+>(), integer<2>()), plus<+>(), integer<3>()), plus<+>(), expression(integer<4>(), minus<->(), integer<5>()))
+    Operand = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+    XCTAssertEqual(Operand->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Operand->type, HKHubArchAssemblyASTTypeOperand, @"Should be the correct type");
+    XCTAssertNotEqual(Operand->childNodes, NULL, @"Should have child nodes");
+    
+    XCTAssertEqual(CCCollectionGetCount(Operand->childNodes), 3, @"Should have the correct number of sub nodes");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 1);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypePlus, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("+")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    
+    //expression(expression(integer<1>(), plus<+>(), integer<2>()), plus<+>(), integer<3>())
+    HKHubArchAssemblyASTNode *Expression = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 0);
+    XCTAssertEqual(Expression->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Expression->type, HKHubArchAssemblyASTTypeExpression, @"Should be the correct type");
+    XCTAssertNotEqual(Expression->childNodes, NULL, @"Should have child nodes");
+    
+    XCTAssertEqual(CCCollectionGetCount(Expression->childNodes), 3, @"Should have the correct number of sub nodes");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Expression->childNodes, 1);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypePlus, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("+")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Expression->childNodes, 2);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeInteger, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("3")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    XCTAssertEqual(Node->integer.value, 3, @"Should be the correct value");
+    
+    //expression(integer<1>(), plus<+>(), integer<2>())
+    HKHubArchAssemblyASTNode *SubExpression = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Expression->childNodes, 0);
+    XCTAssertEqual(SubExpression->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(SubExpression->type, HKHubArchAssemblyASTTypeExpression, @"Should be the correct type");
+    XCTAssertNotEqual(SubExpression->childNodes, NULL, @"Should have child nodes");
+    
+    XCTAssertEqual(CCCollectionGetCount(SubExpression->childNodes), 3, @"Should have the correct number of sub nodes");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(SubExpression->childNodes, 0);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeInteger, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("1")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    XCTAssertEqual(Node->integer.value, 1, @"Should be the correct value");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(SubExpression->childNodes, 1);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypePlus, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("+")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(SubExpression->childNodes, 2);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeInteger, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("2")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    XCTAssertEqual(Node->integer.value, 2, @"Should be the correct value");
+    
+    //expression(integer<4>(), minus<->(), integer<5>())
+    Expression = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 2);
+    XCTAssertEqual(Expression->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Expression->type, HKHubArchAssemblyASTTypeExpression, @"Should be the correct type");
+    XCTAssertNotEqual(Expression->childNodes, NULL, @"Should have child nodes");
+    
+    XCTAssertEqual(CCCollectionGetCount(Expression->childNodes), 3, @"Should have the correct number of sub nodes");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Expression->childNodes, 0);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeInteger, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("4")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    XCTAssertEqual(Node->integer.value, 4, @"Should be the correct value");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Expression->childNodes, 1);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeMinus, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("-")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    
+    Node = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(Expression->childNodes, 2);
+    XCTAssertEqual(Node->line, 11, @"Should be on the correct line");
+    XCTAssertEqual(Node->type, HKHubArchAssemblyASTTypeInteger, @"Should be the correct type");
+    XCTAssertTrue(CCStringEqual(Node->string, CC_STRING("5")), @"Should capture the correct string");
+    XCTAssertEqual(Node->childNodes, NULL, @"Should not have child nodes");
+    XCTAssertEqual(Node->integer.value, 5, @"Should be the correct value");
+    
+    //instruction<nop>()
+    Command = (HKHubArchAssemblyASTNode*)CCOrderedCollectionGetElementAtIndex(AST, 14);
+    XCTAssertEqual(Command->line, 12, @"Should be on the correct line");
     XCTAssertEqual(Command->type, HKHubArchAssemblyASTTypeInstruction, @"Should be the correct type");
     XCTAssertTrue(CCStringEqual(Command->string, CC_STRING("nop")), @"Should capture the correct string");
     XCTAssertEqual(Command->childNodes, NULL, @"Should not have child nodes because it detects end of file (and so cannot have any)");
@@ -834,6 +933,20 @@
     
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->entrypoint, 2, @"Should use custom entrypoint");
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".byte (1 + 2) + 3\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 6);
     
     HKHubArchBinaryDestroy(Binary);
     
