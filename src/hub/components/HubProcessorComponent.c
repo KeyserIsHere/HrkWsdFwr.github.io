@@ -79,7 +79,7 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                             {
                                 size_t Size = FSManagerGetSize(Path), DefineSize = 600, Index = 0;
                                 char *Source;
-                                CC_SAFE_Malloc(Source, sizeof(char) * (Size + DefineSize + 1));
+                                CC_SAFE_Malloc(Source, sizeof(char) * (Size + DefineSize + 2));
                                 
                                 for (CCExpression *Option; (Option = CCCollectionEnumeratorNext(&Enumerator)); )
                                 {
@@ -127,7 +127,8 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                                 }
                                 
                                 FSHandleRead(Handle, &Size, &Source[Index], FSBehaviourDefault);
-                                Source[Index + Size] = 0;
+                                Source[Index + Size] = '\n';
+                                Source[Index + Size + 1] = 0;
                                 
                                 FSHandleClose(Handle);
                                 

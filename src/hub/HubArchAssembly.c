@@ -357,10 +357,11 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
                             {
                                 size_t Size = FSManagerGetSize(Path);
                                 char *Source;
-                                CC_SAFE_Malloc(Source, sizeof(char) * (Size + 1));
+                                CC_SAFE_Malloc(Source, sizeof(char) * (Size + 2));
                                 
                                 FSHandleRead(Handle, &Size, Source, FSBehaviourDefault);
-                                Source[Size] = 0;
+                                Source[Size] = '\n';
+                                Source[Size + 1] = 0;
                                 
                                 FSHandleClose(Handle);
                                 
