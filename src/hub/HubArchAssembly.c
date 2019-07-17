@@ -34,13 +34,13 @@ static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssembl
     if (Node->childNodes) CCCollectionDestroy(Node->childNodes);
 }
 
-static void HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *String, size_t Length, _Bool Hex, _Bool Sym, _Bool Dec, char Operator)
+static size_t HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *String, size_t Length, _Bool Hex, _Bool Sym, _Bool Dec, char Operator)
 {
     const size_t Index = CCArrayGetCount(Parents) - 1;
     if ((Operator == ')') && (Index))
     {
         CCArrayRemoveElementAtIndex(Parents, Index);
-        return;
+        return 0;
     }
     
     HKHubArchAssemblyASTNode *Parent = *(HKHubArchAssemblyASTNode**)CCArrayGetElementAtIndex(Parents, Index);
@@ -48,9 +48,10 @@ static void HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *St
     HKHubArchAssemblyASTNode Node = {
         .type = HKHubArchAssemblyASTTypeUnknown,
         .line = Parent->line,
-        .string = CCStringCreateWithSize(CC_STD_ALLOCATOR, CCStringHintCopy | CCStringEncodingASCII, String, Length),
         .childNodes = NULL
     };
+    
+    size_t Skip = 0;
     
     if ((Hex) || (Dec))
     {
@@ -79,16 +80,134 @@ static void HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *St
                 Node.type = HKHubArchAssemblyASTTypeMinus;
                 break;
                 
+            case '*':
+                Node.type = HKHubArchAssemblyASTTypeMultiply;
+                break;
+                
+            case '/':
+                Node.type = HKHubArchAssemblyASTTypeDivide;
+                break;
+                
+            case '%':
+                Node.type = HKHubArchAssemblyASTTypeModulo;
+                break;
+                
+            case '!':
+            {
+                switch (String[1])
+                {
+                    case '=':
+                        Skip = 1;
+                        Node.type = HKHubArchAssemblyASTTypeNotEqual;
+                        break;
+                        
+                    default:
+                        Node.type = HKHubArchAssemblyASTTypeNot;
+                        break;
+                }
+                break;
+            }
+                
+            case '~':
+                Node.type = HKHubArchAssemblyASTTypeOnesComplement;
+                break;
+                
+            case '=':
+                if (String[1])
+                {
+                    Skip = 1;
+                    Node.type = HKHubArchAssemblyASTTypeEqual;
+                }
+                break;
+                
+            case '<':
+            {
+                switch (String[1])
+                {
+                    case '<':
+                        Skip = 1;
+                        Node.type = HKHubArchAssemblyASTTypeShiftLeft;
+                        break;
+                        
+                    case '=':
+                        Skip = 1;
+                        Node.type = HKHubArchAssemblyASTTypeLessThanOrEqual;
+                        break;
+                        
+                    default:
+                        Node.type = HKHubArchAssemblyASTTypeLessThan;
+                        break;
+                }
+                break;
+            }
+                
+            case '>':
+            {
+                switch (String[1])
+                {
+                    case '>':
+                        Skip = 1;
+                        Node.type = HKHubArchAssemblyASTTypeShiftRight;
+                        break;
+                        
+                    case '=':
+                        Skip = 1;
+                        Node.type = HKHubArchAssemblyASTTypeGreaterThanOrEqual;
+                        break;
+                        
+                    default:
+                        Node.type = HKHubArchAssemblyASTTypeGreaterThan;
+                        break;
+                }
+                break;
+            }
+                
+            case '&':
+            {
+                switch (String[1])
+                {
+                    case '&':
+                        Skip = 1;
+                        Node.type = HKHubArchAssemblyASTTypeLogicalAnd;
+                        break;
+                        
+                    default:
+                        Node.type = HKHubArchAssemblyASTTypeBitwiseAnd;
+                        break;
+                }
+                break;
+            }
+                
+            case '|':
+            {
+                switch (String[1])
+                {
+                    case '|':
+                        Skip = 1;
+                        Node.type = HKHubArchAssemblyASTTypeLogicalOr;
+                        break;
+                        
+                    default:
+                        Node.type = HKHubArchAssemblyASTTypeBitwiseOr;
+                        break;
+                }
+                break;
+            }
+                
+            case '^':
+                Node.type = HKHubArchAssemblyASTTypeBitwiseXor;
+                break;
+                
             case '(':
                 Node.type = HKHubArchAssemblyASTTypeExpression;
                 Node.childNodes = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
-                CCStringDestroy(Node.string);
-                Node.string = 0;
                 break;
         }
     }
     
     if (!Parent->childNodes) Parent->childNodes = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
+    
+    if (Node.type != HKHubArchAssemblyASTTypeExpression) Node.string = CCStringCreateWithSize(CC_STD_ALLOCATOR, CCStringHintCopy | CCStringEncodingASCII, String, Length + Skip);
     
     CCCollectionEntry Entry = CCOrderedCollectionAppendElement(Parent->childNodes, &Node);
     
@@ -97,6 +216,8 @@ static void HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *St
         HKHubArchAssemblyASTNode *ExpressionNode = CCCollectionGetElement(Parent->childNodes, Entry);
         CCArrayAppendElement(Parents, &ExpressionNode);
     }
+    
+    return Skip;
 }
 
 static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
@@ -145,16 +266,16 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                     
                     else
                     {
-                        if (CreateNode) HKHubArchAssemblyResolveLiteralValue(Parents, Start, (Buffer - Start) - 1, Hex, Sym, Dec, 0);
+                        if (CreateNode) Buffer += HKHubArchAssemblyResolveLiteralValue(Parents, Start, (Buffer - Start) - 1, Hex, Sym, Dec, 0);
                         
-                        Start = Buffer;
                         Hex = FALSE;
                         Sym = FALSE;
                         Dec = FALSE;
                         CreateNode = FALSE;
                         Index = 0;
                         
-                        HKHubArchAssemblyResolveLiteralValue(Parents, Buffer - 1, 1, Hex, Sym, Dec, c);
+                        Buffer += HKHubArchAssemblyResolveLiteralValue(Parents, Buffer - 1, 1, Hex, Sym, Dec, c);
+                        Start = Buffer;
                     }
                 }
                 
@@ -569,42 +690,163 @@ static const struct {
     { CC_STRING(".include"), HKHubArchAssemblyCompileDirectiveInclude }
 };
 
+static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray Modifiers, HKHubArchAssemblyASTType Operation)
+{
+    for (size_t Loop = 0, Count = CCArrayGetCount(Modifiers); Loop < Count; Loop++)
+    {
+        switch (*(HKHubArchAssemblyASTType*)CCArrayGetElementAtIndex(Modifiers, Loop))
+        {
+            case HKHubArchAssemblyASTTypeMinus:
+                Right = -Right;
+                break;
+                
+            case HKHubArchAssemblyASTTypeNot:
+                Right = !Right;
+                break;
+                
+            case HKHubArchAssemblyASTTypeOnesComplement:
+                Right = ~Right;
+                break;
+                
+            default:
+                break;
+        }
+    }
+    
+    switch (Operation)
+    {
+        case HKHubArchAssemblyASTTypeMultiply:
+            return Left * Right;
+            
+        case HKHubArchAssemblyASTTypeDivide:
+            return Left / Right;
+            
+        case HKHubArchAssemblyASTTypeModulo:
+            return Left % Right;
+            
+        case HKHubArchAssemblyASTTypeShiftLeft:
+            return Left << Right;
+            
+        case HKHubArchAssemblyASTTypeShiftRight:
+            return Left >> Right;
+            
+        case HKHubArchAssemblyASTTypeBitwiseAnd:
+            return Left & Right;
+            
+        case HKHubArchAssemblyASTTypeBitwiseOr:
+            return Left | Right;
+            
+        case HKHubArchAssemblyASTTypeBitwiseXor:
+            return Left ^ Right;
+            
+        case HKHubArchAssemblyASTTypeLogicalAnd:
+            return Left && Right;
+            
+        case HKHubArchAssemblyASTTypeLogicalOr:
+            return Left || Right;
+            
+        case HKHubArchAssemblyASTTypeEqual:
+            return Left == Right;
+            
+        case HKHubArchAssemblyASTTypeNotEqual:
+            return Left != Right;
+            
+        case HKHubArchAssemblyASTTypeLessThan:
+            return Left < Right;
+            
+        case HKHubArchAssemblyASTTypeLessThanOrEqual:
+            return Left <= Right;
+            
+        case HKHubArchAssemblyASTTypeGreaterThan:
+            return Left > Right;
+            
+        case HKHubArchAssemblyASTTypeGreaterThanOrEqual:
+            return Left >= Right;
+            
+        default:
+            return Left + Right;
+    }
+}
+
 _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, CCDictionary Variables)
 {
     uint8_t Byte = 0;
-    _Bool Minus = FALSE, Success = TRUE;
+    _Bool ConstantOnly = FALSE, Success = TRUE;
+    HKHubArchAssemblyASTType Operation = HKHubArchAssemblyASTTypeUnknown;
+    CCArray Modifiers = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyASTType), 16);
     
     CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Operand->childNodes)
     {
         switch (Value->type)
         {
             case HKHubArchAssemblyASTTypeInteger:
-                Byte += (Minus ? -1 : 1) * Value->integer.value;
+                Byte = HKHubArchAssemblyResolveEquation(Byte, Value->integer.value, Modifiers, Operation);
+                CCArrayRemoveAllElements(Modifiers);
+                ConstantOnly = FALSE;
+                Operation = HKHubArchAssemblyASTTypeUnknown;
                 break;
                 
             case HKHubArchAssemblyASTTypeOffset:
-                Byte += (Minus ? -1 : 1) * Offset;
-                break;
-                
-            case HKHubArchAssemblyASTTypePlus:
-                Minus = FALSE;
+                Byte = HKHubArchAssemblyResolveEquation(Byte, Offset, Modifiers, Operation);
+                CCArrayRemoveAllElements(Modifiers);
+                ConstantOnly = FALSE;
+                Operation = HKHubArchAssemblyASTTypeUnknown;
                 break;
                 
             case HKHubArchAssemblyASTTypeMinus:
-                Minus = TRUE;
+            case HKHubArchAssemblyASTTypeNot:
+            case HKHubArchAssemblyASTTypeOnesComplement:
+                ConstantOnly = TRUE;
+            case HKHubArchAssemblyASTTypePlus:
+                CCArrayAppendElement(Modifiers, &Value->type);
                 break;
+                
+            case HKHubArchAssemblyASTTypeMultiply:
+            case HKHubArchAssemblyASTTypeDivide:
+            case HKHubArchAssemblyASTTypeModulo:
+            case HKHubArchAssemblyASTTypeShiftLeft:
+            case HKHubArchAssemblyASTTypeShiftRight:
+            case HKHubArchAssemblyASTTypeBitwiseAnd:
+            case HKHubArchAssemblyASTTypeBitwiseOr:
+            case HKHubArchAssemblyASTTypeBitwiseXor:
+            case HKHubArchAssemblyASTTypeLogicalAnd:
+            case HKHubArchAssemblyASTTypeLogicalOr:
+            case HKHubArchAssemblyASTTypeEqual:
+            case HKHubArchAssemblyASTTypeNotEqual:
+            case HKHubArchAssemblyASTTypeLessThan:
+            case HKHubArchAssemblyASTTypeLessThanOrEqual:
+            case HKHubArchAssemblyASTTypeGreaterThan:
+            case HKHubArchAssemblyASTTypeGreaterThanOrEqual:
+            {
+                ConstantOnly = TRUE;
+                
+                if (Operation == HKHubArchAssemblyASTTypeUnknown)
+                {
+                    Operation = Value->type;
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
+                    Success = FALSE;
+                }
+                break;
+            }
                 
             case HKHubArchAssemblyASTTypeSymbol:
             {
                 uint8_t ResolvedValue;
                 if (HKHubArchAssemblyResolveSymbol(Value, &ResolvedValue, Labels, Defines))
                 {
-                    Byte += (Minus ? -1 : 1) * ResolvedValue;
+                    Byte = HKHubArchAssemblyResolveEquation(Byte, ResolvedValue, Modifiers, Operation);
+                    CCArrayRemoveAllElements(Modifiers);
+                    ConstantOnly = FALSE;
+                    Operation = HKHubArchAssemblyASTTypeUnknown;
                 }
                 
                 else if ((Variables) && (CCDictionaryFindKey(Variables, &Value->string)))
                 {
-                    if (Minus)
+                    if (ConstantOnly)
                     {
                         HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveIntegerMinusRegister, Command, Operand, Value);
                         Success = FALSE;
@@ -624,7 +866,10 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
                 uint8_t ResolvedValue;
                 if (HKHubArchAssemblyResolveInteger(Offset, &ResolvedValue, Command, Value, Errors, Labels, Defines, Variables))
                 {
-                    Byte += (Minus ? -1 : 1) * ResolvedValue;
+                    Byte = HKHubArchAssemblyResolveEquation(Byte, ResolvedValue, Modifiers, Operation);
+                    CCArrayRemoveAllElements(Modifiers);
+                    ConstantOnly = FALSE;
+                    Operation = HKHubArchAssemblyASTTypeUnknown;
                 }
                 
                 else
@@ -641,6 +886,8 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
                 break;
         }
     }
+    
+    CCArrayDestroy(Modifiers);
     
     if (Result) *Result = Byte;
     
@@ -769,6 +1016,24 @@ static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)
             "symbol",
             "plus",
             "minus",
+            "multiply",
+            "divide",
+            "modulo",
+            "not",
+            "ones_complement",
+            "shift_left",
+            "shift_right",
+            "bitwise_and",
+            "bitwise_or",
+            "bitwise_xor",
+            "logical_and",
+            "logical_or",
+            "equal",
+            "not_equal",
+            "less_than",
+            "less_than_or_equal",
+            "greater_than",
+            "greater_than_or_equal",
             "offset"
         };
         
