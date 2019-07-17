@@ -34,8 +34,17 @@ static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssembl
     if (Node->childNodes) CCCollectionDestroy(Node->childNodes);
 }
 
-static void HKHubArchAssemblyResolveLiteralValue(HKHubArchAssemblyASTNode *Parent, const char *String, size_t Length, _Bool Hex, _Bool Sym, _Bool Dec, char Operator)
+static void HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *String, size_t Length, _Bool Hex, _Bool Sym, _Bool Dec, char Operator)
 {
+    const size_t Index = CCArrayGetCount(Parents) - 1;
+    if ((Operator == ')') && (Index))
+    {
+        CCArrayRemoveElementAtIndex(Parents, Index);
+        return;
+    }
+    
+    HKHubArchAssemblyASTNode *Parent = *(HKHubArchAssemblyASTNode**)CCArrayGetElementAtIndex(Parents, Index);
+    
     HKHubArchAssemblyASTNode Node = {
         .type = HKHubArchAssemblyASTTypeUnknown,
         .line = Parent->line,
@@ -69,16 +78,32 @@ static void HKHubArchAssemblyResolveLiteralValue(HKHubArchAssemblyASTNode *Paren
             case '-':
                 Node.type = HKHubArchAssemblyASTTypeMinus;
                 break;
+                
+            case '(':
+                Node.type = HKHubArchAssemblyASTTypeExpression;
+                Node.childNodes = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
+                CCStringDestroy(Node.string);
+                Node.string = 0;
+                break;
         }
     }
     
     if (!Parent->childNodes) Parent->childNodes = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
     
-    CCOrderedCollectionAppendElement(Parent->childNodes, &Node);
+    CCCollectionEntry Entry = CCOrderedCollectionAppendElement(Parent->childNodes, &Node);
+    
+    if (Node.type == HKHubArchAssemblyASTTypeExpression)
+    {
+        HKHubArchAssemblyASTNode *ExpressionNode = CCCollectionGetElement(Parent->childNodes, Entry);
+        CCArrayAppendElement(Parents, &ExpressionNode);
+    }
 }
 
 static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
 {
+    CCArray Parents = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyASTNode**), 16);
+    CCArrayAppendElement(Parents, &Node);
+    
     CCOrderedCollection Strings = CCStringCreateBySeparatingOccurrencesOfGroupedStrings(Node->string, (CCString[2]){ CC_STRING(" "), CC_STRING("\t") }, 2);
     
     CC_COLLECTION_FOREACH(CCString, String, Strings)
@@ -120,7 +145,7 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                     
                     else
                     {
-                        if (CreateNode) HKHubArchAssemblyResolveLiteralValue(Node, Start, (Buffer - Start) - 1, Hex, Sym, Dec, 0);
+                        if (CreateNode) HKHubArchAssemblyResolveLiteralValue(Parents, Start, (Buffer - Start) - 1, Hex, Sym, Dec, 0);
                         
                         Start = Buffer;
                         Hex = FALSE;
@@ -129,16 +154,17 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                         CreateNode = FALSE;
                         Index = 0;
                         
-                        HKHubArchAssemblyResolveLiteralValue(Node, Buffer - 1, 1, Hex, Sym, Dec, c);
+                        HKHubArchAssemblyResolveLiteralValue(Parents, Buffer - 1, 1, Hex, Sym, Dec, c);
                     }
                 }
                 
-                if (CreateNode) HKHubArchAssemblyResolveLiteralValue(Node, Start, (Buffer - Start) - 1, Hex, Sym, Dec, 0);
+                if (CreateNode) HKHubArchAssemblyResolveLiteralValue(Parents, Start, (Buffer - Start) - 1, Hex, Sym, Dec, 0);
             }
         }
     }
     
     CCCollectionDestroy(Strings);
+    CCArrayDestroy(Parents);
 }
 
 static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKHubArchAssemblyASTType ParentType, CCOrderedCollection AST)
@@ -593,6 +619,22 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
                 break;
             }
                 
+            case HKHubArchAssemblyASTTypeExpression:
+            {
+                uint8_t ResolvedValue;
+                if (HKHubArchAssemblyResolveInteger(Offset, &ResolvedValue, Command, Value, Errors, Labels, Defines, Variables))
+                {
+                    Byte += (Minus ? -1 : 1) * ResolvedValue;
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
+                    Success = FALSE;
+                }
+                break;
+            }
+                
             default:
                 HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, Value);
                 Success = FALSE;
@@ -722,6 +764,7 @@ static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)
             "integer",
             "register",
             "memory",
+            "expression",
             "operand",
             "symbol",
             "plus",

@@ -39,6 +39,7 @@ typedef enum {
     HKHubArchAssemblyASTTypeInteger,
     HKHubArchAssemblyASTTypeRegister,
     HKHubArchAssemblyASTTypeMemory,
+    HKHubArchAssemblyASTTypeExpression,
     HKHubArchAssemblyASTTypeOperand,
     HKHubArchAssemblyASTTypeSymbol,
     HKHubArchAssemblyASTTypePlus,
