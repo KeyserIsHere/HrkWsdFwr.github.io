@@ -460,6 +460,7 @@ static _Bool Reader1(void)
         182, 183, 184
     };
     
+    StartRead = FALSE;
     InData = Data;
     DataCount = sizeof(Data) / sizeof(typeof(*Data));
     DataIndex = 0;
@@ -510,6 +511,7 @@ static _Bool Reader(void)
         182, 183, 184
     };
     
+    StartRead = FALSE;
     InData = Data;
     DataCount = sizeof(Data) / sizeof(typeof(*Data));
     DataIndex = 0;
@@ -574,6 +576,7 @@ static _Bool Reader(void)
         246, 247, 248, 249, 250, 251, 252, 253, 254, 255,
     };
     
+    StartRead = FALSE;
     InData = Data;
     DataCount = sizeof(Data) / sizeof(typeof(*Data));
     DataIndex = 0;
@@ -637,6 +640,7 @@ static _Bool HandleControlSwitch(void)
         1,
     };
     
+    StartRead = FALSE;
     InData = Data;
     DataCount = sizeof(Data) / sizeof(typeof(*Data));
     DataIndex = 0;
