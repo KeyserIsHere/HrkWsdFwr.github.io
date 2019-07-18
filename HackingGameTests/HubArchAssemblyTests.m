@@ -1689,4 +1689,59 @@
     HKHubArchBinaryDestroy(Binary);
 }
 
+-(void) testAssertions
+{
+    const char *Source =
+        ".assert 1 == 1\n"
+        ".assert 1\n"
+        ".assert . == 0\n"
+        ".assert foo == 1\n"
+        ".assert bar == 3\n"
+        ".assert (bar - foo) == 2\n"
+        ".define baz, 5\n"
+        ".assert baz == 5\n"
+        ".byte 1\n"
+        ".assert . == 1\n"
+        "foo: .byte 1\n"
+        ".byte 1\n"
+        "bar: .byte 1\n"
+        ".define bar, 6\n"
+        ".assert bar == 6, \"should compare against the defined value\"\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".assert 1 != 1\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
+    
+    
+    
+    Source = ".assert 1 != 1, \"my message\"\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
+}
+
 @end
