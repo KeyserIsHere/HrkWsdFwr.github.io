@@ -48,6 +48,8 @@
 .define init_full, 0x81 #full | control_flag
 .define init_cleared, 0x82 #cleared | control_flag
 
+.assert . == 0, "program should start at 0"
+
 data:
     .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
     .byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
@@ -97,3 +99,4 @@ send:
     jnz repeat
     mov r3, init_cleared
     jmp repeat
+.assert . == 0, "program should utilise all remaining space"
