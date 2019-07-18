@@ -36,6 +36,7 @@ typedef enum {
     HKHubArchAssemblyASTTypeInstruction,
     HKHubArchAssemblyASTTypeDirective,
     HKHubArchAssemblyASTTypeLabel,
+    HKHubArchAssemblyASTTypeString,
     HKHubArchAssemblyASTTypeInteger,
     HKHubArchAssemblyASTTypeRegister,
     HKHubArchAssemblyASTTypeMemory,

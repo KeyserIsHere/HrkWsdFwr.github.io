@@ -291,7 +291,7 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
 static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKHubArchAssemblyASTType ParentType, CCOrderedCollection AST)
 {
     HKHubArchAssemblyASTType Type = HKHubArchAssemblyASTTypeInstruction;
-    const char *Symbol = NULL;
+    const char *Symbol = NULL, *String = NULL;
     _Bool IsStr = FALSE, IsComment = FALSE, IsEscape = FALSE, IsCommand = ParentType == HKHubArchAssemblyASTTypeSource;
     for (char c = 0; (c = **Source); (*Source)++)
     {
@@ -326,6 +326,28 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
             if (**Source == '\n') return;
         }
         
+        else if ((!IsComment) && (!IsEscape) && (!IsCommand) && (c == '"'))
+        {
+            if (!(IsStr = !IsStr))
+            {
+                const size_t Length = *Source - String - 1;
+                
+                HKHubArchAssemblyASTNode Node = {
+                    .type = HKHubArchAssemblyASTTypeString,
+                    .string = CCStringCreateWithSize(CC_STD_ALLOCATOR, CCStringHintCopy | CCStringEncodingUTF8, String + 1, Length),
+                    .line = *Line,
+                    .childNodes = NULL
+                };
+                
+                CCOrderedCollectionAppendElement(AST, &Node);
+                
+                String = NULL;
+                Symbol = NULL;
+            }
+            
+            else String = *Source;
+        }
+        
         else if ((!IsComment) && (!IsStr) && (((IsCommand) && (isspace(c))) || (c == '\n') || (c == ',') || ((c == '#') && (IsComment = TRUE)) || (c == ']')))
         {
             if (*Source != Symbol)
@@ -358,11 +380,6 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
             
             Symbol = NULL;
             Type = HKHubArchAssemblyASTTypeInstruction;
-        }
-        
-        else if ((!IsComment) && (!IsEscape) && (c == '"'))
-        {
-            IsStr = !IsStr;
         }
         
         else if ((!IsStr) && (c == '#'))
@@ -459,11 +476,13 @@ static const CCString HKHubArchAssemblyErrorMessageOperand2Symbol = CC_STRING("o
 static const CCString HKHubArchAssemblyErrorMessageOperand1SymbolOrInteger = CC_STRING("operand 1 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger = CC_STRING("operand 2 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("operand should be an integer");
+static const CCString HKHubArchAssemblyErrorMessageOperandString = CC_STRING("operand should be a string");
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveIntegerMinusRegister = CC_STRING("cannot resolve the equation when register is to the right of the minus sign");
 static const CCString HKHubArchAssemblyErrorMessageMin0Max0Operands = CC_STRING("expects no operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
-static const CCString HKHubArchAssemblyErrorMessageMin1Max1Operands = CC_STRING("expects one operand");
+static const CCString HKHubArchAssemblyErrorMessageMin1Max2Operands = CC_STRING("expects 1 to 2 operands");
+static const CCString HKHubArchAssemblyErrorMessageMin1Max1Operands = CC_STRING("expects 1 operand");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
 static const CCString HKHubArchAssemblyErrorMessageUnknownCommand = CC_STRING("unknown command");
@@ -581,6 +600,59 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
     return Offset;
 }
 
+static const CCString HKHubArchAssemblyErrorAssertion = CC_STRING("assertion failed");
+
+static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+{
+    const size_t Count = CCCollectionGetCount(Command->childNodes);
+    if ((Command->childNodes) && (Count >= 1) && (Count <= 2))
+    {
+        HKHubArchAssemblyASTNode *ExpressionOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+        
+        if ((ExpressionOp->type == HKHubArchAssemblyASTTypeOperand) && (ExpressionOp->childNodes))
+        {
+            HKHubArchAssemblyASTNode *ExpressionOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+            
+            uint8_t Result;
+            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Errors, Labels, Defines, NULL))
+            {
+                if (!Result)
+                {
+                    CCString Message = HKHubArchAssemblyErrorAssertion;
+                    if (Count == 2)
+                    {
+                        HKHubArchAssemblyASTNode *MessageOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
+                        
+                        if (MessageOp->type == HKHubArchAssemblyASTTypeString)
+                        {
+                            Message = CCStringCreateByJoiningStrings((CCString[2]){ HKHubArchAssemblyErrorAssertion, MessageOp->string }, 2, CC_STRING(": "));
+                        }
+                        
+                        else
+                        {
+                            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandString, Command, MessageOp, NULL);
+                        }
+                    }
+                    
+                    HKHubArchAssemblyErrorAddMessage(Errors, Message, Command, ExpressionOp, NULL);
+                }
+            }
+        }
+        
+        else
+        {
+            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandInteger, Command, ExpressionOp, NULL);
+        }
+    }
+    
+    else
+    {
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin1Max2Operands, Command, NULL, NULL);
+    }
+    
+    return Offset;
+}
+
 static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
@@ -687,7 +759,8 @@ static const struct {
     { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine },
     { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte },
     { CC_STRING(".entrypoint"), HKHubArchAssemblyCompileDirectiveEntrypoint },
-    { CC_STRING(".include"), HKHubArchAssemblyCompileDirectiveInclude }
+    { CC_STRING(".include"), HKHubArchAssemblyCompileDirectiveInclude },
+    { CC_STRING(".assert"), HKHubArchAssemblyCompileDirectiveAssert }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray Modifiers, HKHubArchAssemblyASTType Operation)
@@ -1008,6 +1081,7 @@ static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)
             "instruction",
             "directive",
             "label",
+            "string",
             "integer",
             "register",
             "memory",
