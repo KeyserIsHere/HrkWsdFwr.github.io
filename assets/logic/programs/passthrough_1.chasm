@@ -20,6 +20,8 @@
 .define in, 255
 .define out, 0
 
+.assert (count >= 1) && (count <= 255), "the number of 'out' ports must be between 1 and 255"
+
 .entrypoint
     mov r0, in
     mov r2, 1

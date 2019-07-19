@@ -23,6 +23,8 @@
 .define switch, 254
 .define in, 0
 
+.assert (source_count >= 1) && (source_count <= 254), "the number of 'in' ports must be between 1 and 254"
+
 .entrypoint
     mov r1, out
     mov r2, switch
