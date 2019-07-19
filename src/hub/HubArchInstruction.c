@@ -178,12 +178,9 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
             if (Value->type == HKHubArchAssemblyASTTypeInteger) return HKHubArchInstructionOperandI;
             else if (Value->type == HKHubArchAssemblyASTTypeSymbol)
             {
-                HKHubArchAssemblyASTNode **Symbol = CCDictionaryGetValue(Defines, &Value->string);
-                if (Symbol) Value = *Symbol;
-                
                 if (CCDictionaryFindKey(RegularRegisters, &Value->string)) return HKHubArchInstructionOperandR;
                 
-                if ((Value->type == HKHubArchAssemblyASTTypeInteger) || (Value->type == HKHubArchAssemblyASTTypeSymbol)) return HKHubArchInstructionOperandI; //assume is label or literal value
+                return HKHubArchInstructionOperandI;
             }
         }
         

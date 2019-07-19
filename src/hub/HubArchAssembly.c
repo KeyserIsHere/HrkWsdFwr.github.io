@@ -441,28 +441,10 @@ CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
 
 _Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines)
 {
-    HKHubArchAssemblyASTNode **Node = CCDictionaryGetValue(Defines, &Value->string);
-    if (Node)
+    uint8_t *Data;
+    if ((Data = CCDictionaryGetValue(Defines, &Value->string)) || (Data = CCDictionaryGetValue(Labels, &Value->string)))
     {
-        switch ((*Node)->type)
-        {
-            case HKHubArchAssemblyASTTypeInteger:
-                *Result = (*Node)->integer.value;
-                return TRUE;
-                
-            case HKHubArchAssemblyASTTypeSymbol:
-                Value = *Node;
-                break;
-                
-            default:
-                return FALSE;
-        }
-    }
-    
-    uint8_t *Address = CCDictionaryGetValue(Labels, &Value->string);
-    if (Address)
-    {
-        *Result = *Address;
+        *Result = *Data;
         return TRUE;
     }
     
@@ -663,22 +645,21 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
         {
             HKHubArchAssemblyASTNode *AliasOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
             
-            if ((AliasOp->type == HKHubArchAssemblyASTTypeOperand) && (AliasOp->childNodes) && (CCCollectionGetCount(AliasOp->childNodes) == 1))
+            if ((AliasOp->type == HKHubArchAssemblyASTTypeOperand) && (AliasOp->childNodes) && (CCCollectionGetCount(AliasOp->childNodes) >= 1))
             {
                 HKHubArchAssemblyASTNode *Name = CCOrderedCollectionGetElementAtIndex(NameOp->childNodes, 0);
                 
                 if (Name->type == HKHubArchAssemblyASTTypeSymbol)
                 {
-                    HKHubArchAssemblyASTNode *Alias = CCOrderedCollectionGetElementAtIndex(AliasOp->childNodes, 0);
-                    
-                    if ((Alias->type == HKHubArchAssemblyASTTypeSymbol) || (Alias->type == HKHubArchAssemblyASTTypeInteger))
+                    uint8_t Result;
+                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, AliasOp, Errors, Labels, Defines, NULL))
                     {
-                        CCDictionarySetValue(Defines, &Name->string, &Alias);
+                        CCDictionarySetValue(Defines, &Name->string, &Result);
                     }
                     
                     else
                     {
-                        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, AliasOp, Alias);
+                        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, AliasOp, NULL);
                     }
                 }
                 
@@ -909,21 +890,21 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
             case HKHubArchAssemblyASTTypeSymbol:
             {
                 uint8_t ResolvedValue;
-                if (HKHubArchAssemblyResolveSymbol(Value, &ResolvedValue, Labels, Defines))
-                {
-                    Byte = HKHubArchAssemblyResolveEquation(Byte, ResolvedValue, Modifiers, Operation);
-                    CCArrayRemoveAllElements(Modifiers);
-                    ConstantOnly = FALSE;
-                    Operation = HKHubArchAssemblyASTTypeUnknown;
-                }
-                
-                else if ((Variables) && (CCDictionaryFindKey(Variables, &Value->string)))
+                if ((Variables) && (CCDictionaryFindKey(Variables, &Value->string)))
                 {
                     if (ConstantOnly)
                     {
                         HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveIntegerMinusRegister, Command, Operand, Value);
                         Success = FALSE;
                     }
+                }
+                
+                else if (HKHubArchAssemblyResolveSymbol(Value, &ResolvedValue, Labels, Defines))
+                {
+                    Byte = HKHubArchAssemblyResolveEquation(Byte, ResolvedValue, Modifiers, Operation);
+                    CCArrayRemoveAllElements(Modifiers);
+                    ConstantOnly = FALSE;
+                    Operation = HKHubArchAssemblyASTTypeUnknown;
                 }
                 
                 else
@@ -1032,7 +1013,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
     
     for (int Pass = 1; Pass >= 0; Pass--)
     {
-        CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblyASTNode*), &(CCDictionaryCallbacks){
+        CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
             .getHash = CCStringHasherForDictionary,
             .compareKeys = CCStringComparatorForDictionary
         });
