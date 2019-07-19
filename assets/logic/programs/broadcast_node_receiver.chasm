@@ -36,6 +36,8 @@
 .define buffer_start, 2
 .define buffer_control_start, 129
 
+.assert (buffer_count >= 1) && (buffer_count <= 127), "the number of 'buffers' connected must be between 1 and 127"
+
 .entrypoint
     mov r0, transceiver
     mov r2, buffer_start
