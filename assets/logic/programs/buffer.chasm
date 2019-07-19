@@ -36,17 +36,17 @@
 .define out, 1
 .define control, 2
 
-# .define in_index, r0
-# .define out_index, r1
-# .define count, r2
-# .define state, r3
+# in_index: r0
+# out_index: r1
+# count: r2
+# state: r3
 
 .define normal, 0
 .define full, 1
 .define cleared, 2
 .define control_flag, 0x80
-.define init_full, 0x81 #full | control_flag
-.define init_cleared, 0x82 #cleared | control_flag
+.define init_full, full | control_flag
+.define init_cleared, cleared | control_flag
 
 .assert . == 0, "program should start at 0"
 
