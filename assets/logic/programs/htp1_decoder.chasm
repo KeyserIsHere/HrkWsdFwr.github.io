@@ -34,7 +34,5 @@
 #
 
 .define data_bitsize, 1
-.define packet_data_mask, 1 #0xff >> (8 - data_bitsize)
-.define hash_max, 0x7f #~packet_data_mask >> data_bitsize
 
 .include htp_decoder

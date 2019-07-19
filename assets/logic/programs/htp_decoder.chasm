@@ -5,17 +5,8 @@
 # This is intended to be a standalone program that runs indefinitely.
 # ----------------------------------Defines----------------------------------
 # Define: data_bitsize:
-# As the number of data bits each HTP packet will contain. Maximum this can be
-# is 7.
-#
-# Define: packet_data_mask:
-# As the mask for the data bits. These bits should be in the low-end of the
-# packet, as outline in the HTP specification. This should be equal to:
-# 0xff >> (8 - data_bitsize)
-#
-# Define: hash_max:
-# As the maximum value for the hash. This should be equal to:
-# ~packet_data_mask >> data_bitsize
+# As the number of data bits each HTP packet will contain. Must align to a
+# 1-byte boundary.
 # -----------------------------------Ports-----------------------------------
 # Port(0): in:
 # Is the port that passes HTP packets to this program. It expects to receive
@@ -49,22 +40,25 @@
 .define in, 0
 .define out, 1
 
-# .define data_bitsize, 1
-# .define packet_data_mask, 1 #0xff >> (8 - data_bitsize)
-# .define hash_max, 0x7f #~packet_data_mask >> data_bitsize
+.assert 8 % data_bitsize == 0, "data_bitsize must align to 1-byte"
+
+.define packet_data_mask, 0xff >> (8 - data_bitsize)
+.define hash_max, ~packet_data_mask >> data_bitsize
 
 .define buffer_hash, 0
 .define buffer_timestamp, 1
 .define buffer_count, 2
 .define buffer_payload, 3
-.define buffer_payload_size, 8 #buffer_payload_data_length_mask + 1
-.define buffer_payload_bitsize, 64 #buffer_payload_size * 8
-.define buffer_payload_data_length, 3 #buffer_payload
+.define buffer_payload_data_length, buffer_payload
 .define buffer_payload_data_length_mask, 7
-.define buffer_payload_data, 4 #buffer_payload + 1
-.define buffer_size, 11 #buffer_payload_size + 3
-.define buffer_max, 55 #(256 - buffers) / buffer_size * buffer_size
+.define buffer_payload_data, buffer_payload + 1
+.define buffer_payload_size, buffer_payload_data_length_mask + 1
+.define buffer_payload_bitsize, buffer_payload_size * 8
+.define buffer_size, buffer_payload_size + 3
+.define buffer_max, (256 - buffers) / buffer_size * buffer_size
 .define threshold, 8 # TODO: play around with value
+
+.assert buffer_max / buffer_size == 5, "the total number of unique HTP packet sequences has changed"
 
 .entrypoint
 listen:
