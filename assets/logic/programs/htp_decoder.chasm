@@ -37,8 +37,8 @@
 # either purge an older one, or it will discard the incoming one.
 #
 
-.define in, 0
-.define out, 1
+.port in, 0
+.port out, 1
 
 .assert 8 % data_bitsize == 0, "data_bitsize must align to 1-byte"
 

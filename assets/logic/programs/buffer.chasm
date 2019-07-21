@@ -32,9 +32,9 @@
 #   reading, storing, and sending data (step 1).
 #
 
-.define in, 0
-.define out, 1
-.define control, 2
+.port in, 0
+.port out, 1
+.port control, 2
 
 # in_index: r0
 # out_index: r1

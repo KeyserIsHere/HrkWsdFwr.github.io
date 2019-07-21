@@ -22,8 +22,8 @@
 # that can safely be sent using this program is 230.
 #
 
-.define in, 255
-.define out, 0
+.port in, 255
+.port out, 0, count
 
 .assert (count >= 1) && (count <= 255), "the number of 'out' ports must be between 1 and 255"
 .assert 256 - data == 230, "the data size limit has changed"
