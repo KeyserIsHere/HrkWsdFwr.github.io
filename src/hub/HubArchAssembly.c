@@ -457,6 +457,7 @@ static const CCString HKHubArchAssemblyErrorMessageOperand1Symbol = CC_STRING("o
 static const CCString HKHubArchAssemblyErrorMessageOperand2Symbol = CC_STRING("operand 2 should be a symbol");
 static const CCString HKHubArchAssemblyErrorMessageOperand1SymbolOrInteger = CC_STRING("operand 1 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger = CC_STRING("operand 2 should be a symbol or integer");
+static const CCString HKHubArchAssemblyErrorMessageOperand3SymbolOrInteger = CC_STRING("operand 3 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("operand should be an integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandString = CC_STRING("operand should be a string");
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
@@ -464,6 +465,7 @@ static const CCString HKHubArchAssemblyErrorMessageOperandResolveIntegerMinusReg
 static const CCString HKHubArchAssemblyErrorMessageMin0Max0Operands = CC_STRING("expects no operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1Max2Operands = CC_STRING("expects 1 to 2 operands");
+static const CCString HKHubArchAssemblyErrorMessageMin2Max3Operands = CC_STRING("expects 2 to 3 operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1Max1Operands = CC_STRING("expects 1 operand");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
@@ -635,6 +637,124 @@ static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBi
     return Offset;
 }
 
+static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+{
+    const size_t Count = CCCollectionGetCount(Command->childNodes);
+    if ((Command->childNodes) && (Count >= 2) && (Count <= 3))
+    {
+        HKHubArchAssemblyASTNode *NameOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+        
+        if ((NameOp->type == HKHubArchAssemblyASTTypeOperand) && (NameOp->childNodes) && (CCCollectionGetCount(NameOp->childNodes) == 1))
+        {
+            HKHubArchAssemblyASTNode *PortOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
+            
+            if ((PortOp->type == HKHubArchAssemblyASTTypeOperand) && (PortOp->childNodes) && (CCCollectionGetCount(PortOp->childNodes) >= 1))
+            {
+                HKHubArchAssemblyASTNode *Name = CCOrderedCollectionGetElementAtIndex(NameOp->childNodes, 0);
+                
+                if (Name->type == HKHubArchAssemblyASTTypeSymbol)
+                {
+                    uint8_t Port;
+                    if (HKHubArchAssemblyResolveInteger(Offset, &Port, Command, PortOp, Errors, Labels, Defines, NULL))
+                    {
+                        CCDictionarySetValue(Defines, &Name->string, &Port);
+                        
+                        uint8_t PortCount = 1;
+                        
+                        if (Count == 3)
+                        {
+                            HKHubArchAssemblyASTNode *PortCountOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 2);
+                            
+                            if ((PortCountOp->type == HKHubArchAssemblyASTTypeOperand) && (PortCountOp->childNodes) && (CCCollectionGetCount(PortCountOp->childNodes) >= 1))
+                            {
+                                if (!HKHubArchAssemblyResolveInteger(Offset, &PortCount, Command, PortCountOp, Errors, Labels, Defines, NULL))
+                                {
+                                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, PortCountOp, NULL);
+                                    PortCount = 0;
+                                }
+                            }
+                            
+                            else
+                            {
+                                HKHubArchAssemblyErrorAddMessage(Errors,HKHubArchAssemblyErrorMessageOperand3SymbolOrInteger, Command, PortCountOp, NULL);
+                            }
+                        }
+                        
+                        if ((PortCount) && (Binary))
+                        {
+                            _Bool RegisterPort = TRUE;
+                            const uint8_t LastPort = Port + PortCount - 1;
+                            CC_COLLECTION_FOREACH_PTR(HKHubArchBinaryNamedPort, NamedPort, Binary->namedPorts)
+                            {
+                                const uint8_t LastNamedPort = NamedPort->start + NamedPort->count - 1;
+                                if (((Port >= NamedPort->start) || (LastPort >= NamedPort->start)) && ((Port <= LastNamedPort) || (LastPort <= LastNamedPort)))
+                                {
+                                    RegisterPort = FALSE;
+                                    
+                                    if (CCStringEqual(Name->string, NamedPort->name))
+                                    {
+                                        NamedPort->start = Port;
+                                        NamedPort->count = PortCount;
+                                    }
+                                    
+                                    else
+                                    {
+                                        CCString Message = CCStringCreateByJoiningStrings((CCString[5]){
+                                            CC_STRING("mapping for port '"),
+                                            Name->string,
+                                            CC_STRING("' overlaps pre-existing mapping on port '"),
+                                            NamedPort->name,
+                                            CC_STRING("'")
+                                        }, 5, 0);
+                                        
+                                        HKHubArchAssemblyErrorAddMessage(Errors, Message, Command, NULL, NULL);
+                                    }
+                                }
+                            }
+                            
+                            if (RegisterPort)
+                            {
+                                CCCollectionInsertElement(Binary->namedPorts, &(HKHubArchBinaryNamedPort){
+                                    .name = CCStringCopy(Name->string),
+                                    .start = Port,
+                                    .count = PortCount
+                                });
+                            }
+                        }
+                    }
+                    
+                    else
+                    {
+                        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, PortOp, NULL);
+                    }
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, NameOp, Name);
+                }
+            }
+            
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Errors,HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, PortOp, NULL);
+            }
+        }
+        
+        else
+        {
+            HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, NameOp, NULL);
+        }
+    }
+    
+    else
+    {
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin2Max3Operands, Command, NULL, NULL);
+    }
+    
+    return Offset;
+}
+
 static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
@@ -741,7 +861,8 @@ static const struct {
     { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte },
     { CC_STRING(".entrypoint"), HKHubArchAssemblyCompileDirectiveEntrypoint },
     { CC_STRING(".include"), HKHubArchAssemblyCompileDirectiveInclude },
-    { CC_STRING(".assert"), HKHubArchAssemblyCompileDirectiveAssert }
+    { CC_STRING(".assert"), HKHubArchAssemblyCompileDirectiveAssert },
+    { CC_STRING(".port"), HKHubArchAssemblyCompileDirectivePort }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray Modifiers, HKHubArchAssemblyASTType Operation)

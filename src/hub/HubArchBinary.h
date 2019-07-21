@@ -29,9 +29,16 @@
 #include <Blob2D/Blob2D.h>
 
 typedef struct {
+    CCCollection namedPorts;
     uint8_t entrypoint;
     uint8_t data[256];
 } HKHubArchBinaryInfo;
+
+typedef struct {
+    CCString name;
+    uint8_t start;
+    uint8_t count;
+} HKHubArchBinaryNamedPort;
 
 /*!
  * @brief The binary object.

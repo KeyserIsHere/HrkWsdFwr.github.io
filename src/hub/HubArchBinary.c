@@ -25,6 +25,16 @@
 
 #include "HubArchBinary.h"
 
+static void HKHubArchBinaryNamedPortElementDestructor(CCCollection Collection, HKHubArchBinaryNamedPort *Element)
+{
+    CCStringDestroy(Element->name);
+}
+
+static void HKHubArchBinaryDestructor(HKHubArchBinary Binary)
+{
+    CCCollectionDestroy(Binary->namedPorts);
+}
+
 HKHubArchBinary HKHubArchBinaryCreate(CCAllocatorType Allocator)
 {
     HKHubArchBinary Binary = CCMalloc(Allocator, sizeof(HKHubArchBinaryInfo), NULL, CC_DEFAULT_ERROR_CALLBACK);
@@ -32,6 +42,10 @@ HKHubArchBinary HKHubArchBinaryCreate(CCAllocatorType Allocator)
     if (Binary)
     {
         memset(Binary, 0, sizeof(HKHubArchBinaryInfo));
+        
+        Binary->namedPorts = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeSmall, sizeof(HKHubArchBinaryNamedPort), (CCCollectionElementDestructor)HKHubArchBinaryNamedPortElementDestructor);
+        
+        CCMemorySetDestructor(Binary, (CCMemoryDestructorCallback)HKHubArchBinaryDestructor);
     }
     
     else CC_LOG_ERROR("Failed to create binary object, due to allocation failure (%zu)", sizeof(HKHubArchBinaryInfo));
