@@ -639,7 +639,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 1);
     XCTAssertEqual(Binary->data[1], 10);
     XCTAssertEqual(Binary->data[2], 0);
@@ -656,7 +656,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 1);
     XCTAssertEqual(Binary->data[1], 10);
     XCTAssertEqual(Binary->data[2], 0);
@@ -673,7 +673,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 10);
     XCTAssertEqual(Binary->data[1], 10);
     XCTAssertEqual(Binary->data[2], 0);
@@ -690,7 +690,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 10);
     XCTAssertEqual(Binary->data[1], 10);
     XCTAssertEqual(Binary->data[2], 0);
@@ -707,7 +707,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 2);
     XCTAssertEqual(Binary->data[1], 10);
     XCTAssertEqual(Binary->data[2], 0);
@@ -724,7 +724,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 2);
     XCTAssertEqual(Binary->data[3], 2);
     XCTAssertEqual(Binary->data[4], 10);
@@ -792,6 +792,31 @@
     
     
     
+    Source = ".port foo, 10\n.byte foo\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 10);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    
+    Source = ".port foo, 10\n.port bar, 0, 20\n";
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
+    
+    
+    
     Source = ".byte .-2,.-3,0-.,here\nhere:\n";
     
     AST = HKHubArchAssemblyParse(Source);
@@ -818,7 +843,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 10);
     XCTAssertEqual(Binary->data[1], 0);
     XCTAssertEqual(Binary->data[2], 30 << 3);
@@ -834,7 +859,7 @@
     Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
     CCCollectionDestroy(AST);
     
-    XCTAssertNotEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 10);
     XCTAssertEqual(Binary->data[1], 0);
     XCTAssertEqual(Binary->data[2], 25 << 3);
