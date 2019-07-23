@@ -191,10 +191,6 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     
     CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
     
-    CCExpressionSetState(State, CC_STRING(".r0-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".r1-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".r2-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
-    CCExpressionSetState(State, CC_STRING(".r3-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     CCExpressionSetState(State, CC_STRING(".r0-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     CCExpressionSetState(State, CC_STRING(".r1-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
     CCExpressionSetState(State, CC_STRING(".r2-modified"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
@@ -231,7 +227,6 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     
     else
     {
-        CCExpressionSetState(State, CC_STRING(".memory-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, FALSE), FALSE);
         CCExpressionSetState(State, CC_STRING(".memory-modified"), CCExpressionCreateList(CC_STD_ALLOCATOR), FALSE);
     }
     
