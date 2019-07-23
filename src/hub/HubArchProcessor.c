@@ -228,6 +228,7 @@ static HKHubArchPortResponse HKHubArchProcessorPortReceive(HKHubArchPortConnecti
         }
         
         Device->message.type = HKHubArchProcessorMessageComplete;
+        Device->message.data.size = Message->size;
         
         Device->state.debug.modified.offset = Offset;
         Device->state.debug.modified.size = Message->size;

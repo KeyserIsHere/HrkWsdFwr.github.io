@@ -1386,6 +1386,8 @@ static HKHubArchInstructionOperationResult HKHubArchInstructionOperationRECV(HKH
         
         if (Processor->cycles < Cycles) return HKHubArchInstructionOperationResultFailure;
         
+        Processor->state.debug.modified.size = Processor->message.data.size;
+        
         Success = TRUE;
     }
     
