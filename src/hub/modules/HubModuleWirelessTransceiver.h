@@ -72,10 +72,9 @@ extern HKHubModuleWirelessTransceiverGetSchedulerCallback HKHubModuleWirelessTra
 CC_NEW HKHubModule HKHubModuleWirelessTransceiverCreate(CCAllocatorType Allocator);
 
 /*!
- * @brief Enter a character using the keyboard.
- * @description Appends the character to the keyboard's input buffer.
+ * @brief Add a packet to the transceiver.
  * @param Module The wireless transceiver.
- * @param Key The key to be entered.
+ * @param Packet The packet that should be received by the transceiver.
  */
 void HKHubModuleWirelessTransceiverReceivePacket(HKHubModule Module, HKHubModuleWirelessTransceiverPacket Packet);
 
