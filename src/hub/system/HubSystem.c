@@ -44,6 +44,19 @@ static HKHubArchScheduler HKHubSystemGetSchedulerForModule(HKHubModule Module)
     return HKHubSystemGetScheduler();
 }
 
+static CCCollection Transceivers = NULL;
+static void HKHubSystemPacketBroadcaster(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPacket Packet)
+{
+    CC_COLLECTION_FOREACH(CCComponent, Transceiver, Transceivers)
+    {
+        HKHubModule Receiver = HKHubModuleComponentGetModule(Transceiver);
+        if (Receiver != Transmitter)
+        {
+            HKHubModuleWirelessTransceiverReceivePacket(Receiver, Packet);
+        }
+    }
+}
+
 static HKHubArchScheduler Scheduler;
 static mtx_t Lock;
 void HKHubSystemRegister(void)
@@ -60,6 +73,9 @@ void HKHubSystemRegister(void)
     CCComponentSystemRegister(HK_HUB_SYSTEM_ID, CCComponentSystemExecutionTypeUpdate, (CCComponentSystemUpdateCallback)HKHubSystemUpdate, NULL, HKHubSystemHandlesComponent, NULL, NULL, HKHubSystemTryLock, HKHubSystemLock, HKHubSystemUnlock);
     
     HKHubModuleWirelessTransceiverGetScheduler = HKHubSystemGetSchedulerForModule;
+    HKHubModuleWirelessTransceiverBroadcast = HKHubSystemPacketBroadcaster;
+    
+    Transceivers = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeMedium, sizeof(CCComponent), NULL);
 }
 
 void HKHubSystemDeregister(void)
@@ -409,10 +425,21 @@ static void HKHubSystemDisconnectPorts(CCComponent Connection)
 {
 }
 
+static void HKHubSystemAddTransceiver(CCComponent Transceiver)
+{
+    CCCollectionInsertElement(Transceivers, &Transceiver);
+}
+
+static void HKHubSystemRemoveTransceiver(CCComponent Transceiver)
+{
+    CCAssertLog(0, "not implemented");
+}
+
 typedef struct {
     void (*processor)(HKHubArchScheduler, HKHubArchProcessor);
     void (*debugger)(CCComponent);
     void (*connection)(CCComponent);
+    void (*transceiver)(CCComponent);
 } HKHubSystemUpdater;
 
 static void HKHubSystemUpdateScheduler(CCCollection Components, HKHubSystemUpdater Update)
@@ -434,6 +461,14 @@ static void HKHubSystemUpdateScheduler(CCCollection Components, HKHubSystemUpdat
         {
             Update.connection(Component);
         }
+        
+        else if (Type == HKHubTypeModule)
+        {
+            if (CCComponentGetID(Component) & HKHubTypeModuleWirelessTransceiver)
+            {
+                Update.transceiver(Component);
+            }
+        }
     }
     
     CCCollectionDestroy(Components);
@@ -444,12 +479,14 @@ static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime,
     HKHubSystemUpdateScheduler(CCComponentSystemGetAddedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
         .processor = HKHubArchSchedulerAddProcessor,
         .debugger = HKHubSystemAttachDebugger,
-        .connection = HKHubSystemConnectPorts
+        .connection = HKHubSystemConnectPorts,
+        .transceiver = HKHubSystemAddTransceiver
     });
     HKHubSystemUpdateScheduler(CCComponentSystemGetRemovedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
         .processor = HKHubArchSchedulerRemoveProcessor,
         .debugger = HKHubSystemDetachDebugger,
-        .connection = HKHubSystemDisconnectPorts
+        .connection = HKHubSystemDisconnectPorts,
+        .transceiver = HKHubSystemRemoveTransceiver
     });
     
     HKHubArchSchedulerRun(Scheduler, DeltaTime);
