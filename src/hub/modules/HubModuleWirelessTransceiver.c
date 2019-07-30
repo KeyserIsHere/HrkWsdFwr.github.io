@@ -63,7 +63,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPort
     if ((Timestamp + 8) < GlobalTimestamp)
     {
         if (((HKHubModuleWirelessTransceiverState*)Device->internal)->prevGlobalTimestamp == GlobalTimestamp) return  HKHubArchPortResponseDefer;
-        
+
         ((HKHubModuleWirelessTransceiverState*)Device->internal)->prevGlobalTimestamp = GlobalTimestamp;
         return HKHubArchPortResponseRetry;
     }
@@ -87,14 +87,19 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPort
     return HKHubArchPortResponseTimeout;
 }
 
+static CC_FORCE_INLINE CC_CONSTANT_FUNCTION size_t HKHubModuleWirelessTransceiverPacketSignatureTimestampLifetime(size_t Timestamp)
+{
+    return Timestamp / 1;
+}
+
 static uintmax_t HKHubModuleWirelessTransceiverPacketSignatureHasher(const HKHubModuleWirelessTransceiverPacketSignature *Sig)
 {
-    return Sig->timestamp ^ ((uintmax_t)Sig->channel << ((sizeof(uintmax_t) * 8) - 8));
+    return HKHubModuleWirelessTransceiverPacketSignatureTimestampLifetime(Sig->timestamp) ^ ((uintmax_t)Sig->channel << ((sizeof(uintmax_t) * 8) - 8));
 }
 
 static CCComparisonResult HKHubModuleWirelessTransceiverPacketSignatureComparator(const HKHubModuleWirelessTransceiverPacketSignature *left, const HKHubModuleWirelessTransceiverPacketSignature *right)
 {
-    return (left->channel == right->channel) && (left->timestamp == right->timestamp) ? CCComparisonResultEqual : CCComparisonResultInvalid;
+    return (left->channel == right->channel) && (HKHubModuleWirelessTransceiverPacketSignatureTimestampLifetime(left->timestamp) == HKHubModuleWirelessTransceiverPacketSignatureTimestampLifetime(right->timestamp)) ? CCComparisonResultEqual : CCComparisonResultInvalid;
 }
 
 static void HKHubModuleWirelessTransceiverStateDestructor(HKHubModuleWirelessTransceiverState *State)
@@ -162,6 +167,31 @@ void HKHubModuleWirelessTransceiverPacketPurge(HKHubModule Module, size_t Timest
     
     CC_COLLECTION_FOREACH_PTR(HKHubModuleWirelessTransceiverPacketSignature, Sig, Keys)
     {
-        if (Sig->timestamp >= Timestamp) CCDictionaryRemoveValue(Packets, Sig);
+        if (HKHubModuleWirelessTransceiverPacketSignatureTimestampLifetime(Sig->timestamp) >= HKHubModuleWirelessTransceiverPacketSignatureTimestampLifetime(Timestamp)) CCDictionaryRemoveValue(Packets, Sig);
     }
+    
+    CCCollectionDestroy(Keys);
+}
+
+void HKHubModuleWirelessTransceiverShiftTimestamps(HKHubModule Module, size_t Shift)
+{
+    CCAssertLog(Module, "Module must not be null");
+    
+    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
+    CCDictionary ShiftedPackets = CCDictionaryCreate(Packets->allocator, CCDictionaryHintHeavyFinding | CCDictionaryHintHeavyInserting | CCDictionaryHintHeavyDeleting, Packets->keySize, Packets->valueSize, &Packets->callbacks);
+    
+    CCOrderedCollection Keys = CCDictionaryGetKeys(Packets);
+    
+    CC_COLLECTION_FOREACH(HKHubModuleWirelessTransceiverPacketSignature, Sig, Keys)
+    {
+        uint8_t *Value = CCDictionaryGetValue(Packets, &Sig);
+        Sig.timestamp += Shift;
+        CCDictionarySetValue(ShiftedPackets, &Sig, Value);
+    }
+    
+    CCCollectionDestroy(Keys);
+    
+    CCDictionaryDestroy(Packets);
+    
+    ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets = ShiftedPackets;
 }
