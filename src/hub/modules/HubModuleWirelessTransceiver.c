@@ -25,6 +25,9 @@
 
 #include "HubModuleWirelessTransceiver.h"
 
+#define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_RECEIVE_WAIT 8
+#define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME 1
+
 typedef struct {
     CCDictionary packets;
     size_t prevGlobalTimestamp;
@@ -69,7 +72,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPort
     }
     
     CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Device->internal)->packets;
-    for (size_t Loop = 0; Loop < 1; Loop++)
+    for (size_t Loop = 0; Loop < HK_HUB_MODULE_WIRELESS_TRANSCEIVER_RECEIVE_WAIT; Loop++)
     {
         uint8_t *Data = CCDictionaryGetValue(Packets, &(HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = Timestamp - Loop, .channel = Port });
         
@@ -92,7 +95,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPort
 
 static CC_FORCE_INLINE CC_CONSTANT_FUNCTION size_t HKHubModuleWirelessTransceiverPacketSignatureTimestampLifetime(size_t Timestamp)
 {
-    return Timestamp / 1;
+    return Timestamp / HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME;
 }
 
 static uintmax_t HKHubModuleWirelessTransceiverPacketSignatureHasher(const HKHubModuleWirelessTransceiverPacketSignature *Sig)
