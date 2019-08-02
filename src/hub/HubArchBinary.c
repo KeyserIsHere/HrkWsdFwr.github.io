@@ -33,6 +33,7 @@ static void HKHubArchBinaryNamedPortElementDestructor(CCCollection Collection, H
 static void HKHubArchBinaryDestructor(HKHubArchBinary Binary)
 {
     CCCollectionDestroy(Binary->namedPorts);
+    CCArrayDestroy(Binary->presetBreakpoints);
 }
 
 HKHubArchBinary HKHubArchBinaryCreate(CCAllocatorType Allocator)
@@ -44,6 +45,7 @@ HKHubArchBinary HKHubArchBinaryCreate(CCAllocatorType Allocator)
         memset(Binary, 0, sizeof(HKHubArchBinaryInfo));
         
         Binary->namedPorts = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeSmall, sizeof(HKHubArchBinaryNamedPort), (CCCollectionElementDestructor)HKHubArchBinaryNamedPortElementDestructor);
+        Binary->presetBreakpoints = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(uint8_t), 4);
         
         CCMemorySetDestructor(Binary, (CCMemoryDestructorCallback)HKHubArchBinaryDestructor);
     }

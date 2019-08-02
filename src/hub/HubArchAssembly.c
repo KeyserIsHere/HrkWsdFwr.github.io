@@ -463,6 +463,7 @@ static const CCString HKHubArchAssemblyErrorMessageOperandString = CC_STRING("op
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveInteger = CC_STRING("could not resolve operand to integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandResolveIntegerMinusRegister = CC_STRING("cannot resolve the equation when register is to the right of the minus sign");
 static const CCString HKHubArchAssemblyErrorMessageMin0Max0Operands = CC_STRING("expects no operands");
+static const CCString HKHubArchAssemblyErrorMessageMin0Max2Operands = CC_STRING("expects 0 to 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1MaxNOperands = CC_STRING("expects 1 or more operands");
 static const CCString HKHubArchAssemblyErrorMessageMin1Max2Operands = CC_STRING("expects 1 to 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max3Operands = CC_STRING("expects 2 to 3 operands");
@@ -851,6 +852,44 @@ static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubAr
     return Offset;
 }
 
+static size_t HKHubArchAssemblyCompileDirectiveBreakRW(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+{
+    size_t Count = 0;
+    if ((Command->childNodes) && ((Count = CCCollectionGetCount(Command->childNodes)) > 2))
+    {
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageMin0Max2Operands, Command, NULL, NULL);
+    }
+    
+    else if (Binary)
+    {
+        uint8_t Args[2] = { Offset, 1 };
+        
+        if (Count)
+        {
+            size_t Index = 0;
+            CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
+            {
+                if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes))
+                {
+                    HKHubArchAssemblyResolveInteger(Offset, &Args[Index++], Command, Operand, Errors, Labels, Defines, NULL);
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandInteger, Command, Operand, NULL);
+                }
+            }
+        }
+        
+        for (size_t Loop = 0; Loop < Args[1]; Loop++)
+        {
+            CCArrayAppendElement(Binary->presetBreakpoints, &(uint8_t){ Args[0] + Loop });
+        }
+    }
+    
+    return Offset;
+}
+
 #pragma mark -
 
 static const struct {
@@ -862,7 +901,8 @@ static const struct {
     { CC_STRING(".entrypoint"), HKHubArchAssemblyCompileDirectiveEntrypoint },
     { CC_STRING(".include"), HKHubArchAssemblyCompileDirectiveInclude },
     { CC_STRING(".assert"), HKHubArchAssemblyCompileDirectiveAssert },
-    { CC_STRING(".port"), HKHubArchAssemblyCompileDirectivePort }
+    { CC_STRING(".port"), HKHubArchAssemblyCompileDirectivePort },
+    { CC_STRING(".break"), HKHubArchAssemblyCompileDirectiveBreakRW }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray Modifiers, HKHubArchAssemblyASTType Operation)

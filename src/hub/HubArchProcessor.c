@@ -86,6 +86,12 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->unusedTime = 0.0;
         Processor->status = HKHubArchProcessorStatusRunning;
         
+        for (size_t Loop = 0, Count = CCArrayGetCount(Binary->presetBreakpoints); Loop < Count; Loop++)
+        {
+            uint8_t *Offset = CCArrayGetElementAtIndex(Binary->presetBreakpoints, Loop);
+            HKHubArchProcessorSetBreakpoint(Processor, HKHubArchProcessorDebugBreakpointRead | HKHubArchProcessorDebugBreakpointWrite, *Offset);
+        }
+        
         memcpy(Processor->memory, Binary->data, sizeof(Processor->memory));
         
         CCMemorySetDestructor(Processor, (CCMemoryDestructorCallback)HKHubArchProcessorDestructor);
@@ -122,6 +128,12 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
     Processor->status = HKHubArchProcessorStatusRunning;
     
     HKHubArchProcessorDebugReset(Processor);
+    
+    for (size_t Loop = 0, Count = CCArrayGetCount(Binary->presetBreakpoints); Loop < Count; Loop++)
+    {
+        uint8_t *Offset = CCArrayGetElementAtIndex(Binary->presetBreakpoints, Loop);
+        HKHubArchProcessorSetBreakpoint(Processor, HKHubArchProcessorDebugBreakpointRead | HKHubArchProcessorDebugBreakpointWrite, *Offset);
+    }
 }
 
 void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)

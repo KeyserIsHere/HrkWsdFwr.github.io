@@ -30,6 +30,7 @@
 
 typedef struct {
     CCCollection namedPorts;
+    CCArray presetBreakpoints;
     uint8_t entrypoint;
     uint8_t data[256];
 } HKHubArchBinaryInfo;
