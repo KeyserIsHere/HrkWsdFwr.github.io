@@ -95,4 +95,11 @@ _Bool HKHubModuleWirelessTransceiverInspectPacket(HKHubModule Module, HKHubModul
  */
 void HKHubModuleWirelessTransceiverPacketPurge(HKHubModule Module, size_t Timestamp);
 
+/*!
+ * @brief Shift the current timestamps of the received packets by a certain amount.
+ * @param Module The wireless transceiver.
+ * @param Shift The amount to shift the timestamps by.
+ */
+void HKHubModuleWirelessTransceiverShiftTimestamps(HKHubModule Module, size_t Shift);
+
 #endif
