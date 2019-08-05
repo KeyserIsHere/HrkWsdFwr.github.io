@@ -46,8 +46,10 @@ listen:
     mov r1, [processing]
     and [waiting + r1], 1
     jz receive
-    recv r3, [r0]
-    jz send
+    add r1, buffer_control_start
+    recv r1, [r0]
+    jz receive
+    sub r1, buffer_control_start
     mov [waiting + r1], 0
 empty_buffer_notification:
     send packet_processor
