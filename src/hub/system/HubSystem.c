@@ -489,7 +489,19 @@ static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime,
         .transceiver = HKHubSystemRemoveTransceiver
     });
     
+    const size_t TimestampShift = DeltaTime * HKHubArchProcessorHertz;
+    CC_COLLECTION_FOREACH(CCComponent, Transceiver, Transceivers)
+    {
+        HKHubModuleWirelessTransceiverShiftTimestamps(HKHubModuleComponentGetModule(Transceiver), TimestampShift);
+    }
+    
     HKHubArchSchedulerRun(Scheduler, DeltaTime);
+    
+    const size_t Timestamp = HKHubArchSchedulerGetTimestamp(Scheduler);
+    CC_COLLECTION_FOREACH(CCComponent, Transceiver, Transceivers)
+    {
+        HKHubModuleWirelessTransceiverPacketPurge(HKHubModuleComponentGetModule(Transceiver), Timestamp);
+    }
 }
 
 HKHubArchScheduler HKHubSystemGetScheduler(void)
