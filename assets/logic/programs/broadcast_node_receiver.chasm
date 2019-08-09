@@ -37,6 +37,7 @@
 .port buffer_control_start, 129, buffer_count
 
 .assert (buffer_count >= 1) && (buffer_count <= 127), "the number of 'buffers' connected must be between 1 and 127"
+.assert (processing + 127 <= 255) && (processing + 127 >= processing), "the buffer_count limit has changed"
 
 .entrypoint
     mov r0, transceiver
