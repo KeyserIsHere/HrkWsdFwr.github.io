@@ -367,6 +367,68 @@ static _Bool RetFalse(void)
     XCTAssertEqual(ProcessorState, 0, @"Should not have changed state");
 }
 
+-(void) testDataSwitchingWithProcessor
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    
+    OutPortBusy[0] = RetDataIndexNot1;
+    OutPortBusy[1] = RetDataIndexNot2;
+    OutPortBusy[2] = RetFalse;
+    ControlPortSend[0] = RetOnceDataIndex2;
+    ControlPortSend[1] = RetOnceDataIndex3;
+    ControlPortSend[2] = RetFalse;
+    ProcessorPortSend = RetTrue;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, DataCount, @"Should consume all data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData[0]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 1, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[0]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    Node = CCQueuePop(ReadData[1]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 2, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[1]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    for (size_t Loop = 0; Loop < 3; Loop++)
+    {
+        Node = CCQueuePop(ReadData[2]);
+        XCTAssertNotEqual(Node, NULL, @"Should have received data");
+        if (Node)
+        {
+            XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), Loop + 3, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
+        }
+    }
+    
+    Node = CCQueuePop(ReadData[2]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(ProcessorState, 0, @"Should not have changed state");
+}
+
 -(void) testDataSwitchingAll
 {
     uint8_t Data[] = {
@@ -426,6 +488,65 @@ static _Bool RetFalse(void)
     XCTAssertEqual(ProcessorState, 0, @"Should not have changed state");
 }
 
+-(void) testDataSwitchingAllWithProcessor
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    
+    OutPortBusy[0] = RetDataIndexNot1;
+    OutPortBusy[1] = RetDataIndexNot2;
+    OutPortBusy[2] = RetDataIndexNot3;
+    ControlPortSend[0] = RetOnceDataIndex2;
+    ControlPortSend[1] = RetOnceDataIndex3;
+    ControlPortSend[2] = RetOnceDataIndex4;
+    ProcessorPortSend = RetTrue;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 4, @"Should not consume all data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData[0]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 1, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[0]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    Node = CCQueuePop(ReadData[1]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 2, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[1]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    Node = CCQueuePop(ReadData[2]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 3, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[2]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(ProcessorState, 0, @"Should not have changed state");
+}
+
 static _Bool ClearedBuffer = TRUE;
 static _Bool RetBusy(void)
 {
@@ -439,16 +560,18 @@ static _Bool RetBusy(void)
     return TRUE;
 }
 
-static int SentBufferFree = 0;
+static _Bool SentBufferFree = FALSE;
 static _Bool RetBufferStatus(void)
 {
     if (!ClearedBuffer)
     {
-        if (SentBufferFree++)
+        if (SentBufferFree)
         {
             ClearedBuffer = TRUE;
             return TRUE;
         }
+        
+        SentBufferFree = TRUE;
     }
     
     return FALSE;
@@ -463,6 +586,9 @@ static _Bool RetBufferStatus(void)
     InData = Data;
     DataCount = sizeof(Data) / sizeof(typeof(*Data));
     DataIndex = 0;
+    
+    ClearedBuffer = TRUE;
+    SentBufferFree = FALSE;
     
     OutPortBusy[0] = RetBusy;
     OutPortBusy[1] = RetDataIndexNot2;
@@ -519,6 +645,76 @@ static _Bool RetBufferStatus(void)
     XCTAssertEqual(Node, NULL, @"Should not receive any data");
     
     XCTAssertEqual(ProcessorState, 0, @"Should not have changed state");
+}
+
+-(void) testDataSwitchingAllClearingFirstProcessing
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    
+    ClearedBuffer = TRUE;
+    SentBufferFree = FALSE;
+    
+    OutPortBusy[0] = RetBusy;
+    OutPortBusy[1] = RetDataIndexNot2;
+    OutPortBusy[2] = RetDataIndexNot3;
+    ControlPortSend[0] = RetBufferStatus;
+    ControlPortSend[1] = RetOnceDataIndex3;
+    ControlPortSend[2] = RetOnceDataIndex4;
+    ProcessorPortSend = RetTrue;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 5, @"Should not consume all data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData[0]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 1, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[0]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 4, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[0]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    Node = CCQueuePop(ReadData[1]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 2, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[1]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    Node = CCQueuePop(ReadData[2]);
+    XCTAssertNotEqual(Node, NULL, @"Should have received data");
+    if (Node)
+    {
+        XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), 3, @"Should have the correct data");
+        CCQueueDestroyNode(Node);
+    }
+    
+    Node = CCQueuePop(ReadData[2]);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(ProcessorState, 1, @"Should not have changed state");
 }
 
 @end
