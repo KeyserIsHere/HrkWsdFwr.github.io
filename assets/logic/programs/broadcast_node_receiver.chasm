@@ -39,7 +39,7 @@
 .assert (buffer_count >= 1) && (buffer_count <= 127), "the number of 'buffers' connected must be between 1 and 127"
 .assert (processing + 127 <= 255) && (processing + 127 >= processing), "the buffer_count limit has changed"
 
-.assert transceiver == packet, "optimisation expects r0 (transceiver) to address of packet"
+.assert transceiver == packet, "optimisation expects r0 (transceiver) to equal address of packet"
 
 buffer: .byte 0
 packet: .byte 0
