@@ -39,6 +39,12 @@
 .assert (buffer_count >= 1) && (buffer_count <= 127), "the number of 'buffers' connected must be between 1 and 127"
 .assert (processing + 127 <= 255) && (processing + 127 >= processing), "the buffer_count limit has changed"
 
+.assert transceiver == packet, "optimisation expects r0 (transceiver) to address of packet"
+
+buffer: .byte 0
+packet: .byte 0
+processing: .byte 0
+
 .entrypoint
     mov r0, transceiver
     mov r2, buffer_start
@@ -59,10 +65,10 @@ empty_buffer_notification:
     umod r1, buffer_count
     mov [processing], r1
 receive:
-    recv r0, [packet]
+    recv r0, [r0]
     jz listen
 send:
-    send r2, 1, [packet]
+    send r2, r0, [r0]
     jnz listen
     recv r3, [r0]
     jz send
@@ -84,7 +90,4 @@ next_buffer:
     add r2, buffer_start
     add r3, buffer_control_start
     jmp send
-packet: .byte 0
-buffer: .byte 0
-processing: .byte 0
 waiting:
