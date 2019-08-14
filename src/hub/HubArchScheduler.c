@@ -105,7 +105,7 @@ void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds)
         if ((Processor->state.debug.mode != HKHubArchProcessorDebugModePause) || (Processor->state.debug.step)) HKHubArchProcessorAddProcessingTime(Processor, Seconds);
         else HKHubArchProcessorSetCycles(Processor, 0);
         
-        if (PrevTimestamp < Processor->cycles) PrevTimestamp = Processor->cycles;
+        if ((PrevTimestamp < Processor->cycles) && (Processor->status == HKHubArchProcessorStatusRunning)) PrevTimestamp = Processor->cycles;
     }
     
     Scheduler->timestamp = PrevTimestamp;
@@ -130,7 +130,7 @@ void HKHubArchSchedulerRun(HKHubArchScheduler Scheduler, double Seconds)
             Complete &= !HKHubArchProcessorIsRunning(Processor);
             
             if (Processor->state.debug.mode == HKHubArchProcessorDebugModePause) HKHubArchProcessorSetCycles(Processor, 0);
-            if (PrevTimestamp < Processor->cycles) PrevTimestamp = Processor->cycles;
+            if ((PrevTimestamp < Processor->cycles) && (Processor->status & HKHubArchProcessorStatusResumable)) PrevTimestamp = Processor->cycles;
         }
         
         Scheduler->timestamp = PrevTimestamp;
