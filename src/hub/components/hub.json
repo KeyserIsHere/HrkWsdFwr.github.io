@@ -47,6 +47,12 @@
             ]
         },
         {
+            "name": "debugger",
+            "description": "Create a debugger component",
+            "examples": ["(debugger)"],
+            "return": { "type": "custom:component" }
+        },
+        {
             "name": "keyboard-module",
             "description": "Create a keyboard module component.",
             "examples": ["(keyboard-module)"],
