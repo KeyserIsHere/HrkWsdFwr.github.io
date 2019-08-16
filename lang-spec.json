@@ -2,6 +2,7 @@
     "includes": [
         "src/hub/components/hub.json",
         "src/hub/hub_arch.json",
-        "src/item/components/item.json"
+        "src/item/components/item.json",
+        "assets/ui/ui.json"
     ]
 }

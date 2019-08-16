@@ -1,0 +1,416 @@
+{
+    "functions": [
+        {
+            "name": "gui-debugger",
+            "description": "Create a debugger UI.",
+            "states": [
+                {
+                    "name": "debug-mode",
+                    "description": "The debugger mode.",
+                    "return": { "type": "atom" },
+                    "args": [
+                        [{ "type": "atom", "value": "continue" }],
+                        [{ "type": "atom", "value": "pause" }],
+                        [{ "type": "atom" }]
+                    ]
+                },
+                {
+                    "name": "memory",
+                    "description": "The memory of the debugged processor.",
+                    "return": { "type": "list" },
+                    "args": [[{ "type": "list" }]]
+                },
+                {
+                    "name": "memory-changed",
+                    "description": "Whether the memory has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "memory-modified",
+                    "description": "The range of bytes that have been modified.",
+                    "return": { "type": "list" },
+                    "args": [[{ "type": "list" }]]
+                },
+                {
+                    "name": "breakpoints",
+                    "description": "The breakpoints.",
+                    "return": { "type": "list" },
+                    "args": [[{ "type": "list" }]]
+                },
+                {
+                    "name": "breakpoints-changed",
+                    "description": "Whether the breakpoints have changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r0",
+                    "description": "The value currently stored in the r0 register.",
+                    "return": { "type": "number" },
+                    "args": [[{ "type": "number" }]]
+                },
+                {
+                    "name": "r1",
+                    "description": "The value currently stored in the r1 register.",
+                    "return": { "type": "number" },
+                    "args": [[{ "type": "number" }]]
+                },
+                {
+                    "name": "r2",
+                    "description": "The value currently stored in the r2 register.",
+                    "return": { "type": "number" },
+                    "args": [[{ "type": "number" }]]
+                },
+                {
+                    "name": "r3",
+                    "description": "The value currently stored in the r3 register.",
+                    "return": { "type": "number" },
+                    "args": [[{ "type": "number" }]]
+                },
+                {
+                    "name": "r0-changed",
+                    "description": "Whether the r0 register has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r1-changed",
+                    "description": "Whether the r1 register has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r2-changed",
+                    "description": "Whether the r2 register has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r3-changed",
+                    "description": "Whether the r3 register has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r0-modified",
+                    "description": "Whether the r0 register has been modified.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r1-modified",
+                    "description": "Whether the r1 register has been modified.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r2-modified",
+                    "description": "Whether the r2 register has been modified.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "r3-modified",
+                    "description": "Whether the r3 register has been modified.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "flags",
+                    "description": "The value currently stored in the flags register.",
+                    "return": { "type": "number" },
+                    "args": [[{ "type": "number" }]]
+                },
+                {
+                    "name": "flags-changed",
+                    "description": "Whether the flags register has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "flags-modified",
+                    "description": "Whether the flags register has been modified.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "overflow-flag",
+                    "description": "The value currently stored in the overflow flag bit.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "sign-flag",
+                    "description": "The value currently stored in the sign flag bit.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "carry-flag",
+                    "description": "The value currently stored in the carry flag bit.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "zero-flag",
+                    "description": "The value currently stored in the zero flag bit.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "pc",
+                    "description": "The value currently stored in the pc register.",
+                    "return": { "type": "number" },
+                    "args": [[{ "type": "number" }]]
+                },
+                {
+                    "name": "pc-changed",
+                    "description": "Whether the pc register has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "pc-modified",
+                    "description": "Whether the pc register has been modified.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "ports",
+                    "description": "The ports of the debugged processor.",
+                    "return": { "type": "list" },
+                    "args": [[{ "type": "list" }]]
+                },
+                {
+                    "name": "ports-changed",
+                    "description": "Whether the ports has changed since the last render.",
+                    "return": { "type": "boolean" },
+                    "args": [[{ "type": "boolean" }]]
+                },
+                {
+                    "name": "background-colour",
+                    "description": "The colour to be used for the background.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "text-colour",
+                    "description": "The colour to be used for the text.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "text-change-colour",
+                    "description": "The colour to be used for the change text.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "highlight-read-breakpoint-colour",
+                    "description": "The colour to be used for the read breakpoint highlight.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "highlight-write-breakpoint-colour",
+                    "description": "The colour to be used for the write breakpoint highlight.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "highlight-breakpoint-colour",
+                    "description": "The colour to be used for the breakpoint highlight.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "highlight-instruction-colour",
+                    "description": "The colour to be used for the instruction highlight.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "button-focus-colour",
+                    "description": "The colour to be used for the button focus.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "button-fill-colour",
+                    "description": "The colour to be used for the button fill.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "palette",
+                    "description": "The palette profile to be used.",
+                    "return": { "type": "string" },
+                    "args": [[{ "type": "string" }]]
+                }
+            ]
+        }
+    ]
+}
