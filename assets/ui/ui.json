@@ -411,6 +411,60 @@
                     "args": [[{ "type": "string" }]]
                 }
             ]
+        },
+        {
+            "name": "gui-control",
+            "description": "Create the debugger control panel.",
+            "states": [
+                {
+                    "name": "colour",
+                    "description": "The colour to be used as the focus fill colour.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "secondary-colour",
+                    "description": "The colour to be used as the feature colour.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                }
+            ]
         }
     ]
 }
