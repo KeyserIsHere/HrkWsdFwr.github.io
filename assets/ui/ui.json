@@ -413,7 +413,7 @@
             ]
         },
         {
-            "name": "gui-control",
+            "name": "gui-debugger-control",
             "description": "Create the debugger control panel.",
             "states": [
                 {
