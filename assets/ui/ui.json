@@ -530,6 +530,71 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "gui-debugger-register",
+            "description": "Create the debugger register list.",
+            "states": [
+                {
+                    "name": "colour",
+                    "description": "The colour to be used as the text colour.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "change-colour",
+                    "description": "The colour to be used to highlight register value changes.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "text-alignment",
+                    "description": "The text alignment.",
+                    "return": { "type": "atom" },
+                    "args": [
+                        [{ "type": "atom", "value": "center" }],
+                        [{ "type": "atom", "value": "left" }],
+                        [{ "type": "atom", "value": "right" }],
+                        [{ "type": "atom" }]
+                    ]
+                }
+            ]
         }
     ]
 }
