@@ -520,7 +520,7 @@
                 },
                 {
                     "name": "text-alignment",
-                    "description": "The debugger mode.",
+                    "description": "The text alignment.",
                     "return": { "type": "atom" },
                     "args": [
                         [{ "type": "atom", "value": "center" }],
