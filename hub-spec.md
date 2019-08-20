@@ -160,16 +160,16 @@ Instructions
 | 1      | 100101  | shr      | r/m       | i         |           | Logical shift right by immediate value (operand 2) into register or memory (operand 1)                       |
 |        | 100110  |          |           |           |           |                                                                                                              |
 | 4 - 12 | 100111  | recv     | r         | m         |           | Store message (operand 2) received from port (operand 1)                                                     |
-| 1      | 101000  | xor      | r/m       | r/m       |           | Logical exclusive OR the register or memory value (operand 2) into register or memory (operand 1)            |
-| 1      | 101001  | xor      | r/m       | i         |           | Logical exclusive OR the immediate value (operand 2) into register or memory (operand 1)                     |
+| 1      | 101000  | xor      | r/m       | r/m       |           | Bitwise exclusive OR the register or memory value (operand 2) into register or memory (operand 1)            |
+| 1      | 101001  | xor      | r/m       | i         |           | Bitwise exclusive OR the immediate value (operand 2) into register or memory (operand 1)                     |
 |        | 101010  |          |           |           |           |                                                                                                              |
 | 4 - 12 | 101011  | send     | r         | i         | m         | Send message (operand 3) of size (operand 2) device interfacing with port (operand 1)                        |
-| 1      | 101100  | or       | r/m       | r/m       |           | Logical inclusive OR the register or memory value (operand 2) into register or memory (operand 1)            |
-| 1      | 101101  | or       | r/m       | i         |           | Logical inclusive OR the immediate value (operand 2) into register or memory (operand 1)                     |
+| 1      | 101100  | or       | r/m       | r/m       |           | Bitwise inclusive OR the register or memory value (operand 2) into register or memory (operand 1)            |
+| 1      | 101101  | or       | r/m       | i         |           | Bitwise inclusive OR the immediate value (operand 2) into register or memory (operand 1)                     |
 | 1      | 101110  | neg      | r/m       |           |           | Two's complement negation of the register or memory value (operand 1)                                        |
 | 4 - 12 | 101111  | send     | i         |           |           | Send empty message to device interfacing with port (operand 1)                                               |
-| 1      | 110000  | and      | r/m       | r/m       |           | Logical AND the register or memory value (operand 2) into register or memory (operand 1)                     |
-| 1      | 110001  | and      | r/m       | i         |           | Logical AND the immediate value (operand 2) into register or memory (operand 1)                              |
+| 1      | 110000  | and      | r/m       | r/m       |           | Bitwise AND the register or memory value (operand 2) into register or memory (operand 1)                     |
+| 1      | 110001  | and      | r/m       | i         |           | Bitwise AND the immediate value (operand 2) into register or memory (operand 1)                              |
 | 1      | 110010  | not      | r/m       |           |           | One's complement negation of the register or memory value (operand 1)                                        |
 | 0      | 110011  | hlt      |           |           |           | Halt the program                                                                                             |
 | 1      | 110100  | jsl      | rel       |           |           | Jump if (signed) less (SF!=OF)                                                                               |
