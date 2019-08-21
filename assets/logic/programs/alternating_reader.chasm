@@ -1,0 +1,34 @@
+.port reader, 0
+.port in, 1
+.port out, 2
+
+.define active, 1
+.define read_attempts, 64
+
+.entrypoint
+    mov r3, out
+    mov r2, data
+    mov r1, read_attempts
+    xor r0, active
+    jnz read
+idle:
+    recv r0, [r0]
+    jz idle
+    mov r0, in
+read:
+    sub r1, 1
+    jz send
+    recv r0, [r2]
+    jz read
+    add r2, 1
+    jmp read
+send:
+    send r3, r0, [r1 + data]
+    add r1, 1
+    cmp r1, r2
+    jnz send
+    xor r0, r0
+    xor r2, r2
+    mov r1, read_attempts
+    jmp idle
+data:
