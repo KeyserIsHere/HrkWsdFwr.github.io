@@ -1,7 +1,6 @@
 (gui "gui-debugger-disassembly"
     (namespace! :debugger-disassemby)
     (state! ".colour" (0 0 0))
-    (state! ".change-colour" (255 0 0))
     (state! ".instruction-colour" (50 50 50))
     (state! ".read-breakpoint-colour" (0 255 0))
     (state! ".write-breakpoint-colour" (0 0 255))
