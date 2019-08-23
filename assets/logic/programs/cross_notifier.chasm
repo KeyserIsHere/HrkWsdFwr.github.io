@@ -1,0 +1,14 @@
+.port a, 0
+.port b, 255
+
+.define initial_port, 0
+
+.entrypoint
+    mov r0, initial_port
+receive:
+    recv r0, [r0]
+    jz receive
+    not r0
+notify:
+    send r0
+    jz notify
