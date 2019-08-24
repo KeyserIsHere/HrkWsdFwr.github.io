@@ -12,3 +12,4 @@ receive:
 notify:
     send r0
     jz notify
+    jmp receive
