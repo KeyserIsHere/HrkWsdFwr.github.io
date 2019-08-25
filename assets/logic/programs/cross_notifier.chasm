@@ -2,8 +2,14 @@
 .port b, 255
 
 .define initial_port, 0
+.define preset, 0
 
 .entrypoint
+    xor r0, preset
+    jz normal
+    mov r0, ~initial_port
+    jmp notify
+normal:
     mov r0, initial_port
 receive:
     recv r0, [r0]
