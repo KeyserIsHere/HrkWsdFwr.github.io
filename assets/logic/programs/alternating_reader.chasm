@@ -1,4 +1,4 @@
-.port reader, 0
+.port notifier, 0
 .port in, 1
 .port out, 2
 
@@ -11,24 +11,35 @@
     mov r1, read_attempts
     xor r0, active
     jnz read
-idle:
+wait_read:
     recv r0, [r0]
-    jz idle
+    jz wait_read
     mov r0, in
 read:
     sub r1, 1
-    jz send
+    jz notify
     recv r0, [r2]
     jz read
     add r2, 1
     jmp read
+wait_send:
+    xor r0, r0
+    recv r0, [r0]
+    jz wait_send
+notify_read:
+    send r0
+    jz notify_read
+    mov r0, in
 send:
     send r3, r0, [r1 + data]
     add r1, 1
     cmp r1, r2
     jnz send
     xor r0, r0
+notify_send:
+    send r0
+    jz notify_send
     xor r2, r2
     mov r1, read_attempts
-    jmp idle
+    jmp wait_read
 data:
