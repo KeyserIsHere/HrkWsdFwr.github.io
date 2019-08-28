@@ -1,6 +1,7 @@
 .port notifier, 0
 .port in, 1
 .port out, 2
+.port switch, 3
 
 .define active, 1
 .define read_attempts, 64
@@ -35,6 +36,10 @@ send:
     add r1, 1
     cmp r1, r2
     jnz send
+    mov r0, switch
+notify_switch:
+    send r0
+    jz notify_switch
     xor r0, r0
 notify_send:
     send r0
