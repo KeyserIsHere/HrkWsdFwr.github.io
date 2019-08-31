@@ -1,0 +1,37 @@
+# 0-Byte Passthrough
+# Passes an empty message from one device to the next.
+#
+# This is intended to be a standalone program that runs indefinitely.
+# ----------------------------------Defines----------------------------------
+# Define: count:
+# As the number of out ports that are available. Maximum this can be is 255.
+# -----------------------------------Ports-----------------------------------
+# Port(255): in:
+# Is the port that data is read from.
+#
+# Port(0 - 254): out:
+# Is the pool of ports data is sent to. Starts at port 0 and goes up to port
+# 'count - 1'.
+# ----------------------------------Details----------------------------------
+# To guarantee efficient passing of data, the program cycles through the out
+# ports.
+#
+
+.port in, 255
+.port out, 0, count
+
+.assert (count >= 1) && (count <= 255), "the number of 'out' ports must be between 1 and 255"
+
+.entrypoint
+    mov r0, in
+    mov r2, 1
+    mov r3, count
+receive:
+    recv r0, [r0]
+    jz receive
+send:
+    add r1, r2
+    umod r1, r3
+    send r1
+    jz send
+    jmp receive
