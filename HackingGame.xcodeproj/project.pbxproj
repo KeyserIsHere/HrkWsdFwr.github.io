@@ -18,6 +18,7 @@
 		F32039A11E845BDA00280DC9 /* HubModuleWirelessTransceiver.m in Sources */ = {isa = PBXBuildFile; fileRef = F32039A01E845BDA00280DC9 /* HubModuleWirelessTransceiver.m */; };
 		F32039A41E87BE4500280DC9 /* HubArchDebuggingTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */; };
 		F32039A71E8A788300280DC9 /* HubModuleDisplayComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F32039A51E8A788300280DC9 /* HubModuleDisplayComponent.c */; };
+		F330184A231BF75300653A0B /* ProgramPassthrough0Tests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3301849231BF75300653A0B /* ProgramPassthrough0Tests.m */; };
 		F341E9341E04454000581CF8 /* HubArchScheduler.c in Sources */ = {isa = PBXBuildFile; fileRef = F341E9321E04454000581CF8 /* HubArchScheduler.c */; };
 		F34877021DDC2E500068844D /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = F34877011DDC2E500068844D /* main.c */; };
 		F34877041DDC2E500068844D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F34877031DDC2E500068844D /* Assets.xcassets */; };
@@ -126,6 +127,7 @@
 		F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchDebuggingTests.m; sourceTree = "<group>"; };
 		F32039A51E8A788300280DC9 /* HubModuleDisplayComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleDisplayComponent.c; sourceTree = "<group>"; };
 		F32039A61E8A788300280DC9 /* HubModuleDisplayComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleDisplayComponent.h; sourceTree = "<group>"; };
+		F3301849231BF75300653A0B /* ProgramPassthrough0Tests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgramPassthrough0Tests.m; sourceTree = "<group>"; };
 		F341E9321E04454000581CF8 /* HubArchScheduler.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchScheduler.c; sourceTree = "<group>"; };
 		F341E9331E04454000581CF8 /* HubArchScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchScheduler.h; sourceTree = "<group>"; };
 		F34876FA1DDC2E500068844D /* HackingGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HackingGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -380,6 +382,7 @@
 				F39D746922BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m */,
 				F312921822C251940063D046 /* ProgramHTP2DecoderTests.m */,
 				F312921A22C720C80063D046 /* ProgramHTP4DecoderTests.m */,
+				F3301849231BF75300653A0B /* ProgramPassthrough0Tests.m */,
 				F363AF8522C9E57200C243E4 /* ProgramPassthrough1Tests.m */,
 				F39B85F022D032800025C629 /* ProgramBufferTests.m */,
 				F37151FC22F73E5B00FDD59A /* ProgramBroadcastNodeReceiverTests.m */,
@@ -638,6 +641,7 @@
 				F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */,
 				F312921B22C720C80063D046 /* ProgramHTP4DecoderTests.m in Sources */,
 				F37151FD22F73E5B00FDD59A /* ProgramBroadcastNodeReceiverTests.m in Sources */,
+				F330184A231BF75300653A0B /* ProgramPassthrough0Tests.m in Sources */,
 				F39B85F122D032800025C629 /* ProgramBufferTests.m in Sources */,
 				F363AF8622C9E57200C243E4 /* ProgramPassthrough1Tests.m in Sources */,
 				F39D746A22BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m in Sources */,
