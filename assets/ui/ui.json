@@ -660,6 +660,167 @@
                     ]
                 }
             ]
+        },
+        {
+            "name": "gui-debugger-memory",
+            "description": "Create the debugger memory view.",
+            "states": [
+                {
+                    "name": "colour",
+                    "description": "The colour to be used as the text colour.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "change-colour",
+                    "description": "The colour to be used to highlight memory value changes.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "instruction-colour",
+                    "description": "The colour to be used to highlight the current instruction.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "read-breakpoint-colour",
+                    "description": "The colour to be used to highlight a read breakpoint.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "write-breakpoint-colour",
+                    "description": "The colour to be used to highlight a write breakpoint.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "breakpoint-colour",
+                    "description": "The colour to be used to highlight a read/write breakpoint.",
+                    "return": { "type": "list" },
+                    "args": [
+                        [
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number" },
+                            { "type": "number", "optional": true }
+                        ],
+                        [
+                            {
+                                "type": "list",
+                                "value": [
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number" },
+                                    { "type": "number", "optional": true }
+                                ]
+                            }
+                        ]
+                    ]
+                },
+                {
+                    "name": "text-alignment",
+                    "description": "The text alignment.",
+                    "return": { "type": "atom" },
+                    "args": [
+                        [{ "type": "atom", "value": "center" }],
+                        [{ "type": "atom", "value": "left" }],
+                        [{ "type": "atom", "value": "right" }],
+                        [{ "type": "atom" }]
+                    ]
+                }
+            ]
         }
     ]
 }
