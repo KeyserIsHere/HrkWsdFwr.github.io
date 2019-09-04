@@ -1,8 +1,26 @@
+# Cross Notifier
+# Alternates between passing an empty message from one device to another, and
+# back.
+#
+# This is intended to be a standalone program that runs indefinitely.
+# ----------------------------------Defines----------------------------------
+# Define: initial_port:
+# As the initial port that will send the first message. This should either be
+# 0 or 255.
+#
+# Define: preset:
+# As a boolean number indicating whether the program should start off expecting
+# to receive a message or sending one.
+# -----------------------------------Ports-----------------------------------
+# Port(0): a:
+# Is the port to a device that will send and receive messages.
+#
+# Port(255): b:
+# Is the port to a device that will send and receive messages.
+#
+
 .port a, 0
 .port b, 255
-
-.define initial_port, 0
-.define preset, 0
 
 .entrypoint
     xor r0, preset
