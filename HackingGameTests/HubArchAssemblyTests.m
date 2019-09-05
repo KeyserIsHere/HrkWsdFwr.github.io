@@ -987,6 +987,7 @@
         ".byte 1 && 1 && 0\n"
         ".byte 0 || 1\n"
         ".byte 0 || 0\n"
+        ".byte !!3\n"
     ;
     
     AST = HKHubArchAssemblyParse(Source);
@@ -1018,6 +1019,7 @@
     XCTAssertEqual(Binary->data[20], 0);
     XCTAssertEqual(Binary->data[21], 1);
     XCTAssertEqual(Binary->data[22], 0);
+    XCTAssertEqual(Binary->data[23], 1);
     
     HKHubArchBinaryDestroy(Binary);
     
