@@ -64,6 +64,13 @@ typedef struct HKHubArchProcessorInfo *HKHubArchProcessor;
 typedef void (*HKHubArchProcessorDebugOperationCallback)(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction);
 
 /*!
+ * @brief Callback to hook any port connection changes.
+ * @param Processor The processor that was executed.
+ * @param Port The port of the processor that was changed.
+ */
+typedef void (*HKHubArchProcessorDebugPortConnectionChangeCallback)(HKHubArchProcessor Processor, HKHubArchPortID Port);
+
+/*!
  * @brief Callback to hook any breakpoint changes.
  * @param Processor The processor that had a breakpoint changed.
  */
@@ -106,6 +113,7 @@ typedef struct HKHubArchProcessorInfo {
             struct {
                 void *context;
                 HKHubArchProcessorDebugOperationCallback operation;
+                HKHubArchProcessorDebugPortConnectionChangeCallback portConnectionChange;
                 HKHubArchProcessorDebugBreakpointChangeCallback breakpointChange;
                 HKHubArchProcessorDebugModeChangeCallback debugModeChange;
             };

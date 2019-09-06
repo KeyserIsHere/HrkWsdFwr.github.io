@@ -79,6 +79,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.modified.reg = 0;
         Processor->state.debug.modified.size = 0;
         Processor->state.debug.operation = NULL;
+        Processor->state.debug.portConnectionChange = NULL;
         Processor->state.debug.breakpointChange = NULL;
         Processor->state.debug.debugModeChange = NULL;
         Processor->state.debug.context = NULL;
@@ -179,6 +180,8 @@ void HKHubArchProcessorAddProcessingTime(HKHubArchProcessor Processor, double Se
 static void HKHubArchProcessorDisconnectPort(HKHubArchProcessor Processor, HKHubArchPortID Port)
 {
     CCDictionaryRemoveValue(Processor->ports, &Port);
+    
+    if (Processor->state.debug.portConnectionChange) Processor->state.debug.portConnectionChange(Processor, Port);
 }
 
 static HKHubArchPortResponse HKHubArchProcessorPortSend(HKHubArchPortConnection Connection, HKHubArchProcessor Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, size_t Timestamp, size_t *Wait)
@@ -328,6 +331,8 @@ void HKHubArchProcessorConnect(HKHubArchProcessor Processor, HKHubArchPortID Por
     HKHubArchProcessorSetConnectionDisconnectCallback(Processor, Port, Connection, (HKHubArchPortDisconnect)HKHubArchProcessorDisconnectPort);
     
     CCDictionarySetEntry(Processor->ports, Entry, &(HKHubArchPortConnection){ CCRetain(Connection) });
+    
+    if (Processor->state.debug.portConnectionChange) Processor->state.debug.portConnectionChange(Processor, Port);
 }
 
 void HKHubArchProcessorDisconnect(HKHubArchProcessor Processor, HKHubArchPortID Port)
