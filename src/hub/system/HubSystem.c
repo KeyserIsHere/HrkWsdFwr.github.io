@@ -192,7 +192,17 @@ static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Proce
     
     
     CCExpression Ports = CCExpressionCreateList(CC_STD_ALLOCATOR);
-    //TODO: Get list of open ports (so it can display connected/disconnected)
+    
+    CC_DICTIONARY_FOREACH_VALUE(HKHubArchPortConnection, Connection, Processor->ports)
+    {
+        HKHubArchPortID PortID = (Connection->port[0].device == Processor ? &Connection->port[0] : &Connection->port[1])->id;
+        
+        CCExpression Port = CCExpressionCreateList(CC_STD_ALLOCATOR);
+        CCOrderedCollectionAppendElement(CCExpressionGetList(Port), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, PortID) });
+        CCOrderedCollectionAppendElement(CCExpressionGetList(Port), &(CCExpression){ CCExpressionCreateAtom(CC_STD_ALLOCATOR, CC_STRING(":connected"), TRUE) });
+        
+        CCOrderedCollectionAppendElement(CCExpressionGetList(Ports), &Port);
+    }
     
     CCExpressionSetState(State, CC_STRING(".ports"), Ports, FALSE);
     CCExpressionSetState(State, CC_STRING(".ports-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
@@ -278,6 +288,33 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
     HKRapServerUpdate(Processor);
 }
 
+static void HKHubSystemDebuggerPortConnectionChangeHook(HKHubArchProcessor Processor, HKHubArchPortID Port)
+{
+    GUIManagerLock();
+    
+    CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
+    
+    CCExpression Ports = CCExpressionCreateList(CC_STD_ALLOCATOR);
+    
+    CC_DICTIONARY_FOREACH_VALUE(HKHubArchPortConnection, Connection, Processor->ports)
+    {
+        HKHubArchPortID PortID = (Connection->port[0].device == Processor ? &Connection->port[0] : &Connection->port[1])->id;
+        
+        CCExpression Port = CCExpressionCreateList(CC_STD_ALLOCATOR);
+        CCOrderedCollectionAppendElement(CCExpressionGetList(Port), &(CCExpression){ CCExpressionCreateInteger(CC_STD_ALLOCATOR, PortID) });
+        CCOrderedCollectionAppendElement(CCExpressionGetList(Port), &(CCExpression){ CCExpressionCreateAtom(CC_STD_ALLOCATOR, CC_STRING(":connected"), TRUE) });
+        
+        CCOrderedCollectionAppendElement(CCExpressionGetList(Ports), &Port);
+    }
+    
+    CCExpressionSetState(State, CC_STRING(".ports"), Ports, FALSE);
+    CCExpressionSetState(State, CC_STRING(".ports-changed"), CCExpressionCreateInteger(CC_STD_ALLOCATOR, TRUE), FALSE);
+    
+    GUIManagerUnlock();
+    
+    HKRapServerUpdate(Processor);
+}
+
 static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor)
 {
     //TODO: Send update message (instead of update here/avoid locking UI)
@@ -336,6 +373,7 @@ static void HKHubSystemAttachDebugger(CCComponent Debugger)
             HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModePause);
             
             Target->state.debug.operation = HKHubSystemDebuggerInstructionHook;
+            Target->state.debug.portConnectionChange = HKHubSystemDebuggerPortConnectionChangeHook;
             Target->state.debug.breakpointChange = HKHubSystemDebuggerBreakpointChangeHook;
             Target->state.debug.debugModeChange = HKHubSystemDebuggerDebugModeChangeHook;
             
