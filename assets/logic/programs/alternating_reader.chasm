@@ -1,16 +1,17 @@
-.port notifier, 0
+.port read_notifier, 0
 .port in, 1
 .port out, 2
 .port switch, 3
+.port send_notifier, 255
 
-.define active, 1
+# .define active, 1
 .define read_attempts, 64
 
 .entrypoint
     mov r3, out
     mov r2, data
     mov r1, read_attempts
-    xor r0, active
+    xor r0, !!active * in
     jnz read
 wait_read:
     recv r0, [r0]
@@ -18,33 +19,40 @@ wait_read:
     mov r0, in
 read:
     sub r1, 1
-    jz notify
+    jz wait
     recv r0, [r2]
     jz read
     add r2, 1
     jmp read
-wait_send:
+wait:
     xor r0, r0
-    recv r0, [r0]
-    jz wait_send
 notify_read:
     send r0
     jz notify_read
-    mov r0, in
+    not r0
+wait_send:
+    recv r0, [r0]
+    jz wait_send
+    mov r0, 1
+    mov r1, data
+    jmp requires_send
 send:
-    send r3, r0, [r1 + data]
+    send r3, r0, [r1]
+    jz send
+requires_send:
     add r1, 1
     cmp r1, r2
-    jnz send
+    jule send
     mov r0, switch
 notify_switch:
     send r0
     jz notify_switch
-    xor r0, r0
+    mov r0, send_notifier
 notify_send:
     send r0
     jz notify_send
-    xor r2, r2
+    not r0
+    mov r2, data
     mov r1, read_attempts
     jmp wait_read
 data:
