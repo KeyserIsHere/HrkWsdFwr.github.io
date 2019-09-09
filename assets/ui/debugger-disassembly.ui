@@ -52,7 +52,7 @@
         (length: :max)
     )) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .memory-changed .rect-changed) #f))))
 
-    (state! ".instruction-marker" (quote (render-rect (- (flatten (text-cursor-position .text (+ 1 (get 0 .current-instruction))) (get 0 (text-cursor-position .text (- (get 1 .current-instruction) 2))) 20) (10 5)) .instruction-colour)) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .memory-changed .rect-changed) #f)))) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
+    (state! ".instruction-marker" (quote (render-rect (- (flatten (text-cursor-position .text (+ 1 (get 0 .current-instruction))) (get 0 (text-cursor-position .text (- (get 1 .current-instruction) 2))) 20) (10 5 .x)) .instruction-colour)) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .memory-changed .rect-changed) #f)))) ;TODO: add text-selection-bounds to retrieve actual bounds for the given glyph range (likely return a list of rects)
 
     (render:
         .instruction-marker
