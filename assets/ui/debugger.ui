@@ -59,19 +59,19 @@
 
             (children:
                 (gui-debugger-register
-                    (.rect! (quote (max (- (super .width) 370) (/ (super .width) 2))) (quote (+ (/ (super .height) 2) (/ (super .height) 4))) (quote (- (/ (super .width) 2) 20)) (quote (- (/ (super .height) 4) 10)))
+                    (.rect! (quote (+ (super .x) (max (- (super .width) 370) (/ (super .width) 2)))) (quote (+ (super .y) (/ (super .height) 2) (/ (super .height) 4))) (quote (- (/ (super .width) 2) 20)) (quote (- (/ (super .height) 4) 10)))
                     (.colour! (quote .text-colour))
                     (.change-colour! (quote .text-change-colour))
                     (.text-alignment! :left)
                 )
                 (gui-debugger-port
-                    (.rect! (quote (max (- (super .width) 370) (/ (super .width) 2))) (quote (/ (super .height) 2)) (quote (- (/ (super .width) 2) 20)) (quote (- (/ (super .height) 4) 10)))
+                    (.rect! (quote (+ (super .x) (max (- (super .width) 370) (/ (super .width) 2)))) (quote (+ (super .y) (/ (super .height) 2))) (quote (- (/ (super .width) 2) 20)) (quote (- (/ (super .height) 4) 10)))
                     (.colour! (quote .text-colour))
                     (.change-colour! (quote .text-change-colour))
                     (.text-alignment! :left)
                 )
                 (gui-debugger-memory
-                    (.rect! (quote (/ (super .width) 2)) 0 (quote (- (/ (super .width) 2) 20)) (quote (/ (super .height) 2)))
+                    (.rect! (quote (+ (super .x) (/ (super .width) 2))) (quote (super .y)) (quote (- (/ (super .width) 2) 20)) (quote (/ (super .height) 2)))
                     (.colour! (quote .text-colour))
                     (.change-colour! (quote .text-change-colour))
                     (.read-breakpoint-colour! (quote .highlight-read-breakpoint-colour))
@@ -81,7 +81,7 @@
                     (.text-alignment! :right)
                 )
                 (gui-debugger-disassembly
-                    (.rect! 20 80 (quote (- (/ (super .width) 2) 20)) (quote (- (super .height) 90)))
+                    (.rect! (quote (+ (super .x) 20)) (quote (+ (super .y) 80)) (quote (- (/ (super .width) 2) 20)) (quote (- (super .height) 90)))
                     (.colour! (quote .text-colour))
                     (.change-colour! (quote .text-change-colour))
                     (.read-breakpoint-colour! (quote .highlight-read-breakpoint-colour))
@@ -91,7 +91,7 @@
                     (.text-alignment! :left)
                 )
                 (gui-debugger-control
-                    (.rect! 20 20 (quote (- (/ (super .width) 2) 20)) 40)
+                    (.rect! (quote (+ (super .x) 20)) (quote (+ (super .y) 20)) (quote (- (/ (super .width) 2) 20)) 40)
                     (.colour! (quote .button-fill-colour))
                     (.secondary-colour! (quote .button-focus-colour))
                 )
