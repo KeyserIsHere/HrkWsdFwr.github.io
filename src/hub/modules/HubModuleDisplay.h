@@ -28,6 +28,8 @@
 
 #include "HubModule.h"
 
+#undef CCData
+
 /*!
  * @brief Convert the display buffer to a given format.
  * @param Allocator The allocator to be used for the data.
@@ -137,5 +139,7 @@ CC_NEW HKHubModule HKHubModuleDisplayCreate(CCAllocatorType Allocator);
  * @return The data with the applied conversion. Must be destroyed to free memory.
  */
 CC_NEW CCData HKHubModuleDisplayConvertBuffer(CCAllocatorType Allocator, HKHubModule Module, HKHubModuleDisplayBufferConverter Converter);
+
+#define CCData(data) CC_DATA(data)
 
 #endif
