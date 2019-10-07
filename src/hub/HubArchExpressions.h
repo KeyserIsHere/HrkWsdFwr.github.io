@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubArchExpressions_h
 #define HackingGame_HubArchExpressions_h
 
-#include <CommonGameKit/CommonGameKit.h>
+#include "Base.h"
 
 CC_EXPRESSION_EVALUATOR(disassemble) CCExpression HKHubArchExpressionDisassemble(CCExpression Expression);
 

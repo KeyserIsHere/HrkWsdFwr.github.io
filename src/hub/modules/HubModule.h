@@ -35,7 +35,7 @@ typedef void (*HKHubModuleDataDestructor)(void *Internal);
 
 typedef struct {
     void *internal;
-    CCDictionary ports;
+    CCDictionary(HKHubArchPortID, HKHubArchPortConnection) ports;
     HKHubArchPortTransmit send;
     HKHubArchPortTransmit receive;
     HKHubModuleDataDestructor destructor;

@@ -26,7 +26,7 @@
 #include "HubModuleKeyboard.h"
 
 typedef struct {
-    CCQueue input;
+    CCQueue(uint8_t) input;
     uint8_t key;
     _Bool cleared;
 } HKHubModuleKeyboardState;

@@ -37,7 +37,7 @@ const CCComponentExpressionDescriptor HKHubModuleDisplayComponentDescriptor = {
     .serialize = NULL
 };
 
-static CCDictionary Encoders = NULL;
+static CCDictionary(CCString, HKHubModuleDisplayBufferConverter) Encoders = NULL;
 
 void HKHubModuleDisplayComponentRegister(void)
 {

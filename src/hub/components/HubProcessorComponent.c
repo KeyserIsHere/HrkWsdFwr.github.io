@@ -85,7 +85,7 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                                 {
                                     if (CCExpressionGetType(*Option) == CCExpressionValueTypeList)
                                     {
-                                        CCOrderedCollection List = CCExpressionGetList(*Option);
+                                        CCOrderedCollection(CCExpression) List = CCExpressionGetList(*Option);
                                         const size_t OptionCount = CCCollectionGetCount(List);
                                         
                                         if (OptionCount >= 2)
@@ -132,9 +132,9 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                                 
                                 FSHandleClose(Handle);
                                 
-                                CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+                                CCOrderedCollection(HKHubArchAssemblyASTNode) AST = HKHubArchAssemblyParse(Source);
                                 
-                                CCOrderedCollection Errors = NULL;
+                                CCOrderedCollection(HKHubArchAssemblyASTError) Errors = NULL;
                                 HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors);
                                 CCCollectionDestroy(AST);
                                 

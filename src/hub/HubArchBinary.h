@@ -29,8 +29,8 @@
 #include "Base.h"
 
 typedef struct {
-    CCCollection namedPorts;
-    CCArray presetBreakpoints;
+    CCCollection(HKHubArchBinaryNamedPort) namedPorts;
+    CCArray(uint8_t) presetBreakpoints;
     uint8_t entrypoint;
     uint8_t data[256];
 } HKHubArchBinaryInfo;

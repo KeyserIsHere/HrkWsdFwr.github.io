@@ -74,7 +74,7 @@ typedef struct {
             uint8_t value;
         } integer;
     };
-    CCOrderedCollection childNodes;
+    CCOrderedCollection(HKHubArchAssemblyASTNode) childNodes;
     size_t line;
 } HKHubArchAssemblyASTNode;
 
@@ -93,7 +93,7 @@ typedef struct {
  *              When including a file that can be found in multiple paths, the first path
  *              in the list will take precedence.
  */
-extern CCOrderedCollection HKHubArchAssemblyIncludeSearchPaths;
+extern CCOrderedCollection(FSPath) HKHubArchAssemblyIncludeSearchPaths;
 
 /*!
  * @brief Parse the source and produce the AST for the given assembly.
@@ -101,7 +101,7 @@ extern CCOrderedCollection HKHubArchAssemblyIncludeSearchPaths;
  * @return The AST (collection of @b HKHubArchAssemblyASTNode nodes), must be destroyed
  *         to free up memory.
  */
-CC_NEW CCOrderedCollection HKHubArchAssemblyParse(const char *Source);
+CC_NEW CCOrderedCollection(HKHubArchAssemblyASTNode) HKHubArchAssemblyParse(const char *Source);
 
 /*!
  * @brief Create a binary for the given AST.
@@ -113,19 +113,19 @@ CC_NEW CCOrderedCollection HKHubArchAssemblyParse(const char *Source);
  *
  * @return The executable binary or null on failure. Must be destroyed to free memory.
  */
-CC_NEW HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrderedCollection AST, CC_NEW CCOrderedCollection *Errors);
+CC_NEW HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CC_NEW CCOrderedCollection(HKHubArchAssemblyASTError) *Errors);
 
 /*!
  * @brief Print the AST for debugging purposes.
  * @param AST The AST to be printed.
  */
-void HKHubArchAssemblyPrintAST(CCOrderedCollection AST);
+void HKHubArchAssemblyPrintAST(CCOrderedCollection(HKHubArchAssemblyASTNode) AST);
 
 /*!
  * @brief Print the errors for debugging purposes.
  * @param Errors The errors to be printed.
  */
-void HKHubArchAssemblyPrintError(CCOrderedCollection Errors);
+void HKHubArchAssemblyPrintError(CCOrderedCollection(HKHubArchAssemblyASTError) Errors);
 
 /*!
  * @brief Convenience function for resolving symbols to literal values.
@@ -135,7 +135,7 @@ void HKHubArchAssemblyPrintError(CCOrderedCollection Errors);
  * @param Defines The defines.
  * @return TRUE if it was resolved to a literal value otherwise FALSE.
  */
-_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines);
+_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines);
 
 /*!
  * @brief Convenience function for resolving integers from arithmetic operations.
@@ -148,7 +148,7 @@ _Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *R
  * @param Variables The optional unknown variable names.
  * @return TRUE if it was resolved to a literal value otherwise FALSE.
  */
-_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, CCDictionary Variables);
+_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCDictionary(CCString, uint8_t) Variables);
 
 /*!
  * @brief Convenience function for adding error messages.
@@ -158,11 +158,11 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
  * @param Operand The operand the error is referencing.
  * @param Value The value the error is referencing.
  */
-static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString CC_OWN(Message), HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value);
+static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCString CC_OWN(Message), HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value);
 
 #pragma mark -
 
-static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value)
+static inline void HKHubArchAssemblyErrorAddMessage(CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCString Message, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, HKHubArchAssemblyASTNode *Value)
 {
     if (Errors)
     {

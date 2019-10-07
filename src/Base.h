@@ -34,6 +34,7 @@ func(__VA_ARGS__, HKHubType); \
 func(__VA_ARGS__, HKHubModule); \
 func(__VA_ARGS__, HKHubModuleWirelessTransceiverPacketSignature); \
 func(__VA_ARGS__, HKHubModuleWirelessTransceiverPacket); \
+func(__VA_ARGS__, HKHubModuleDisplayBufferConverter); \
 func(__VA_ARGS__, HKHubArchInstructionOperand); \
 func(__VA_ARGS__, HKHubArchInstructionMemoryOperation); \
 func(__VA_ARGS__, HKHubArchInstructionRegister); \
@@ -67,6 +68,7 @@ func(__VA_ARGS__, HKHubType); \
 func(__VA_ARGS__, HKHubModule); \
 func(__VA_ARGS__, HKHubModuleWirelessTransceiverPacketSignature); \
 func(__VA_ARGS__, HKHubModuleWirelessTransceiverPacket); \
+func(__VA_ARGS__, HKHubModuleDisplayBufferConverter); \
 func(__VA_ARGS__, HKHubArchInstructionOperand); \
 func(__VA_ARGS__, HKHubArchInstructionMemoryOperation); \
 func(__VA_ARGS__, HKHubArchInstructionRegister); \
@@ -100,6 +102,7 @@ func(__VA_ARGS__, HKHubArchScheduler);
 #define CC_CUSTOM_TYPES_ HK_TYPES_
 #endif
 
+#define CC_QUICK_COMPILE
 #include <Blob2D/Blob2D.h>
 
 #endif

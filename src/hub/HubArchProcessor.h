@@ -83,7 +83,7 @@ typedef void (*HKHubArchProcessorDebugBreakpointChangeCallback)(HKHubArchProcess
 typedef void (*HKHubArchProcessorDebugModeChangeCallback)(HKHubArchProcessor Processor);
 
 typedef struct HKHubArchProcessorInfo {
-    CCDictionary ports;
+    CCDictionary(HKHubArchPortID, HKHubArchPortConnection) ports;
     struct {
         HKHubArchPortID port;
         HKHubArchPortMessage data;
@@ -104,7 +104,7 @@ typedef struct HKHubArchProcessorInfo {
         struct {
             HKHubArchProcessorDebugMode mode;
             size_t step;
-            CCDictionary breakpoints;
+            CCDictionary(uint8_t, HKHubArchProcessorDebugBreakpoint) breakpoints;
             struct {
                 HKHubArchInstructionRegister reg;
                 uint8_t offset;

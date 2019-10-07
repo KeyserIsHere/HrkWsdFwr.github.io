@@ -37,14 +37,14 @@ static _Bool HKHubSystemTryLock(CCComponentSystemHandle *Handle);
 static void HKHubSystemLock(CCComponentSystemHandle *Handle);
 static void HKHubSystemUnlock(CCComponentSystemHandle *Handle);
 static _Bool HKHubSystemHandlesComponent(CCComponentSystemHandle *Handle, CCComponentID id);
-static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime, CCCollection Components);
+static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime, CCCollection(CCComponent) Components);
 
 static HKHubArchScheduler HKHubSystemGetSchedulerForModule(HKHubModule Module)
 {
     return HKHubSystemGetScheduler();
 }
 
-static CCCollection Transceivers = NULL;
+static CCCollection(CCComponent) Transceivers = NULL;
 static void HKHubSystemPacketBroadcaster(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPacket Packet)
 {
     CC_COLLECTION_FOREACH(CCComponent, Transceiver, Transceivers)
@@ -480,7 +480,7 @@ typedef struct {
     void (*transceiver)(CCComponent);
 } HKHubSystemUpdater;
 
-static void HKHubSystemUpdateScheduler(CCCollection Components, HKHubSystemUpdater Update)
+static void HKHubSystemUpdateScheduler(CCCollection(CCComponent) Components, HKHubSystemUpdater Update)
 {
     CC_COLLECTION_FOREACH(CCComponent, Component, Components)
     {
@@ -512,7 +512,7 @@ static void HKHubSystemUpdateScheduler(CCCollection Components, HKHubSystemUpdat
     CCCollectionDestroy(Components);
 }
 
-static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime, CCCollection Components)
+static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime, CCCollection(CCComponent) Components)
 {
     HKHubSystemUpdateScheduler(CCComponentSystemGetAddedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
         .processor = HKHubArchSchedulerAddProcessor,

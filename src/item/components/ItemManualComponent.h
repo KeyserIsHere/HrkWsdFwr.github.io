@@ -33,9 +33,9 @@
 
 typedef struct {
     CC_COMPONENT_INHERIT(CCComponentClass);
-    CCOrderedCollection name;
-    CCOrderedCollection brief;
-    CCOrderedCollection description;
+    CCOrderedCollection(CCTextAttribute) name;
+    CCOrderedCollection(CCTextAttribute) brief;
+    CCOrderedCollection(CCTextAttribute) description;
 } HKItemManualComponentClass, *HKItemManualComponentPrivate;
 
 void HKItemManualComponentRegister(void);
@@ -60,42 +60,42 @@ static inline void HKItemManualComponentDeallocate(CCComponent Component);
  * @param Component The item manual component.
  * @return The name text attributes.
  */
-static inline CCOrderedCollection HKItemManualComponentGetName(CCComponent Component);
+static inline CCOrderedCollection(CCTextAttribute) HKItemManualComponentGetName(CCComponent Component);
 
 /*!
  * @brief Set the text attributes for name of the item.
  * @param Component The item manual component.
  * @param Name The text attributes for the item name. Ownership is transferred to the component.
  */
-static inline void HKItemManualComponentSetName(CCComponent Component, CCOrderedCollection CC_OWN(Name));
+static inline void HKItemManualComponentSetName(CCComponent Component, CCOrderedCollection(CCTextAttribute) CC_OWN(Name));
 
 /*!
  * @brief Get the text attributes for the brief of the item.
  * @param Component The item manual component.
  * @return The brief text attributes.
  */
-static inline CCOrderedCollection HKItemManualComponentGetBrief(CCComponent Component);
+static inline CCOrderedCollection(CCTextAttribute) HKItemManualComponentGetBrief(CCComponent Component);
 
 /*!
  * @brief Set the text attributes for brief of the item.
  * @param Component The item manual component.
  * @param Brief The text attributes for the item brief. Ownership is transferred to the component.
  */
-static inline void HKItemManualComponentSetBrief(CCComponent Component, CCOrderedCollection CC_OWN(Brief));
+static inline void HKItemManualComponentSetBrief(CCComponent Component, CCOrderedCollection(CCTextAttribute) CC_OWN(Brief));
 
 /*!
  * @brief Get the text attributes for the description of the item.
  * @param Component The item manual component.
  * @return The description text attributes.
  */
-static inline CCOrderedCollection HKItemManualComponentGetDescription(CCComponent Component);
+static inline CCOrderedCollection(CCTextAttribute) HKItemManualComponentGetDescription(CCComponent Component);
 
 /*!
  * @brief Set the text attributes for description of the item.
  * @param Component The item manual component.
  * @param Description The text attributes for the item description. Ownership is transferred to the component.
  */
-static inline void HKItemManualComponentSetDescription(CCComponent Component, CCOrderedCollection CC_OWN(Description));
+static inline void HKItemManualComponentSetDescription(CCComponent Component, CCOrderedCollection(CCTextAttribute) CC_OWN(Description));
 
 
 #pragma mark -
@@ -116,36 +116,36 @@ static inline void HKItemManualComponentDeallocate(CCComponent Component)
     CCComponentDeallocate(Component);
 }
 
-static inline CCOrderedCollection HKItemManualComponentGetName(CCComponent Component)
+static inline CCOrderedCollection(CCTextAttribute) HKItemManualComponentGetName(CCComponent Component)
 {
     return ((HKItemManualComponentPrivate)Component)->name;
 }
 
-static inline void HKItemManualComponentSetName(CCComponent Component, CCOrderedCollection Name)
+static inline void HKItemManualComponentSetName(CCComponent Component, CCOrderedCollection(CCTextAttribute) Name)
 {
     if (((HKItemManualComponentPrivate)Component)->name) CCCollectionDestroy(((HKItemManualComponentPrivate)Component)->name);
 
     ((HKItemManualComponentPrivate)Component)->name = Name;
 }
 
-static inline CCOrderedCollection HKItemManualComponentGetBrief(CCComponent Component)
+static inline CCOrderedCollection(CCTextAttribute) HKItemManualComponentGetBrief(CCComponent Component)
 {
     return ((HKItemManualComponentPrivate)Component)->brief;
 }
 
-static inline void HKItemManualComponentSetBrief(CCComponent Component, CCOrderedCollection Brief)
+static inline void HKItemManualComponentSetBrief(CCComponent Component, CCOrderedCollection(CCTextAttribute) Brief)
 {
     if (((HKItemManualComponentPrivate)Component)->brief) CCCollectionDestroy(((HKItemManualComponentPrivate)Component)->brief);
     
     ((HKItemManualComponentPrivate)Component)->brief = Brief;
 }
 
-static inline CCOrderedCollection HKItemManualComponentGetDescription(CCComponent Component)
+static inline CCOrderedCollection(CCTextAttribute) HKItemManualComponentGetDescription(CCComponent Component)
 {
     return ((HKItemManualComponentPrivate)Component)->description;
 }
 
-static inline void HKItemManualComponentSetDescription(CCComponent Component, CCOrderedCollection Description)
+static inline void HKItemManualComponentSetDescription(CCComponent Component, CCOrderedCollection(CCTextAttribute) Description)
 {
     if (((HKItemManualComponentPrivate)Component)->description) CCCollectionDestroy(((HKItemManualComponentPrivate)Component)->description);
     

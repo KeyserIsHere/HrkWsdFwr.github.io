@@ -163,9 +163,10 @@ static const CCString HKHubArchInstructionErrorMessageMemoryAdditionOnly = CC_ST
 
 #pragma mark -
 
-static CCDictionary RegularRegisters = NULL, MemoryRegisters = NULL, InstructionTable = NULL;
+static CCDictionary(CCString, uint8_t) RegularRegisters = NULL, MemoryRegisters = NULL;
+static CCDictionary(HKHubArchInstructionKey, size_t) InstructionTable = NULL;
 
-static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchAssemblyASTNode *Operand, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     if (Operand->type == HKHubArchAssemblyASTTypeMemory) return HKHubArchInstructionOperandM;
     
@@ -210,7 +211,7 @@ static CCComparisonResult HKHubArchInstructionKeyComparator(const HKHubArchInstr
 }
 
 static _Atomic(int) InitStatus = ATOMIC_VAR_INIT(0);
-size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     CCAssertLog(Command, "Command must not be null");
     

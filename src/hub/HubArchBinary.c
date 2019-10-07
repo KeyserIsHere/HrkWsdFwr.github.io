@@ -25,7 +25,7 @@
 
 #include "HubArchBinary.h"
 
-static void HKHubArchBinaryNamedPortElementDestructor(CCCollection Collection, HKHubArchBinaryNamedPort *Element)
+static void HKHubArchBinaryNamedPortElementDestructor(CCCollection(HKHubArchBinaryNamedPort) Collection, HKHubArchBinaryNamedPort *Element)
 {
     CCStringDestroy(Element->name);
 }

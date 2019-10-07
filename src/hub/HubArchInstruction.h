@@ -53,7 +53,7 @@ typedef HKHubArchInstructionOperationResult (*HKHubArchInstructionOperation)(HKH
  * @param Defines The defined symbols.
  * @return The offset after the instruction.
  */
-size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines);
+size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines);
 
 /*!
  * @brief Decode an instruction from binary.

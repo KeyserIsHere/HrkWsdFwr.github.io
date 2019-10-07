@@ -29,7 +29,7 @@
 #define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME 1
 
 typedef struct {
-    CCDictionary packets;
+    CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) packets;
     size_t prevGlobalTimestamp;
 } HKHubModuleWirelessTransceiverState;
 
@@ -71,7 +71,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPort
         return HKHubArchPortResponseRetry;
     }
     
-    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Device->internal)->packets;
+    CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) Packets = ((HKHubModuleWirelessTransceiverState*)Device->internal)->packets;
     for (size_t Loop = 0; Loop < HK_HUB_MODULE_WIRELESS_TRANSCEIVER_RECEIVE_WAIT; Loop++)
     {
         uint8_t *Data = CCDictionaryGetValue(Packets, &(HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = Timestamp - Loop, .channel = Port });
@@ -139,7 +139,7 @@ void HKHubModuleWirelessTransceiverReceivePacket(HKHubModule Module, HKHubModule
 {
     CCAssertLog(Module, "Module must not be null");
     
-    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
+    CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
     CCDictionaryEntry Entry = CCDictionaryEntryForKey(Packets, &Packet.sig);
     
     if (CCDictionaryEntryIsInitialized(Packets, Entry))
@@ -154,7 +154,7 @@ _Bool HKHubModuleWirelessTransceiverInspectPacket(HKHubModule Module, HKHubModul
 {
     CCAssertLog(Module, "Module must not be null");
     
-    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
+    CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
     CCDictionaryEntry Entry = CCDictionaryFindKey(Packets, &Sig);
     
     if ((Entry) && (Data)) *Data = *(uint8_t*)CCDictionaryGetEntry(Packets, Entry);
@@ -168,8 +168,8 @@ void HKHubModuleWirelessTransceiverPacketPurge(HKHubModule Module, size_t Timest
     
     ((HKHubModuleWirelessTransceiverState*)Module->internal)->prevGlobalTimestamp = 0;
     
-    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
-    CCOrderedCollection Keys = CCDictionaryGetKeys(Packets);
+    CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
+    CCOrderedCollection(HKHubModuleWirelessTransceiverPacketSignature) Keys = CCDictionaryGetKeys(Packets);
     
     CC_COLLECTION_FOREACH_PTR(HKHubModuleWirelessTransceiverPacketSignature, Sig, Keys)
     {
@@ -183,10 +183,10 @@ void HKHubModuleWirelessTransceiverShiftTimestamps(HKHubModule Module, size_t Sh
 {
     CCAssertLog(Module, "Module must not be null");
     
-    CCDictionary Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
-    CCDictionary ShiftedPackets = CCDictionaryCreate(Packets->allocator, CCDictionaryHintHeavyFinding | CCDictionaryHintHeavyInserting | CCDictionaryHintHeavyDeleting, Packets->keySize, Packets->valueSize, &Packets->callbacks);
+    CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) Packets = ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets;
+    CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) ShiftedPackets = CCDictionaryCreate(Packets->allocator, CCDictionaryHintHeavyFinding | CCDictionaryHintHeavyInserting | CCDictionaryHintHeavyDeleting, Packets->keySize, Packets->valueSize, &Packets->callbacks);
     
-    CCOrderedCollection Keys = CCDictionaryGetKeys(Packets);
+    CCOrderedCollection(HKHubModuleWirelessTransceiverPacketSignature) Keys = CCDictionaryGetKeys(Packets);
     
     CC_COLLECTION_FOREACH(HKHubModuleWirelessTransceiverPacketSignature, Sig, Keys)
     {

@@ -26,12 +26,12 @@
 #include "HubArchScheduler.h"
 
 typedef struct HKHubArchSchedulerInfo {
-    CCCollection hubs;
+    CCCollection(HKHubArchProcessor) hubs;
     size_t timestamp;
 } HKHubArchSchedulerInfo;
 
 
-static void HKHubArchSchedulerProcessorElementDestructor(CCCollection Collection, HKHubArchProcessor *Element)
+static void HKHubArchSchedulerProcessorElementDestructor(CCCollection(HKHubArchProcessor) Collection, HKHubArchProcessor *Element)
 {
     HKHubArchProcessorDestroy(*Element);
 }

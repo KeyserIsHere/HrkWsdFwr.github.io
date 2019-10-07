@@ -26,7 +26,7 @@
 #include "HubArchAssembly.h"
 #include "HubArchInstruction.h"
 
-static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection AST, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, int Pass);
+static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, int Pass);
 
 static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssemblyASTNode *Node)
 {
@@ -34,8 +34,10 @@ static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssembl
     if (Node->childNodes) CCCollectionDestroy(Node->childNodes);
 }
 
-static size_t HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *String, size_t Length, _Bool Hex, _Bool Sym, _Bool Dec, char Operator)
+#define CC_CONTAINER_TYPE_DISABLE
+static size_t HKHubArchAssemblyResolveLiteralValue(CCArray(HKHubArchAssemblyASTNode *) Parents, const char *String, size_t Length, _Bool Hex, _Bool Sym, _Bool Dec, char Operator)
 {
+#undef CC_CONTAINER_TYPE_DISABLE
     const size_t Index = CCArrayGetCount(Parents) - 1;
     if ((Operator == ')') && (Index))
     {
@@ -222,10 +224,12 @@ static size_t HKHubArchAssemblyResolveLiteralValue(CCArray Parents, const char *
 
 static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
 {
-    CCArray Parents = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyASTNode**), 16);
+#define CC_CONTAINER_TYPE_DISABLE
+    CCArray(HKHubArchAssemblyASTNode *) Parents = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyASTNode*), 16);
+#undef CC_CONTAINER_TYPE_DISABLE
     CCArrayAppendElement(Parents, &Node);
     
-    CCOrderedCollection Strings = CCStringCreateBySeparatingOccurrencesOfGroupedStrings(Node->string, (CCString[2]){ CC_STRING(" "), CC_STRING("\t") }, 2);
+    CCOrderedCollection(CCString) Strings = CCStringCreateBySeparatingOccurrencesOfGroupedStrings(Node->string, (CCString[2]){ CC_STRING(" "), CC_STRING("\t") }, 2);
     
     CC_COLLECTION_FOREACH(CCString, String, Strings)
     {
@@ -288,7 +292,7 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
     CCArrayDestroy(Parents);
 }
 
-static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKHubArchAssemblyASTType ParentType, CCOrderedCollection AST)
+static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKHubArchAssemblyASTType ParentType, CCOrderedCollection(HKHubArchAssemblyASTNode) AST)
 {
     HKHubArchAssemblyASTType Type = HKHubArchAssemblyASTTypeInstruction;
     const char *Symbol = NULL, *String = NULL;
@@ -428,18 +432,18 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
     }
 }
 
-CCOrderedCollection HKHubArchAssemblyParse(const char *Source)
+CCOrderedCollection(HKHubArchAssemblyASTNode) HKHubArchAssemblyParse(const char *Source)
 {
     CCAssertLog(Source, "Source must not be null");
     
-    CCOrderedCollection AST = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
+    CCOrderedCollection(HKHubArchAssemblyASTNode) AST = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
     
     HKHubArchAssemblyParseCommand(&Source, &(size_t){ 0 }, HKHubArchAssemblyASTTypeSource, AST);
     
     return AST;
 }
 
-_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary Labels, CCDictionary Defines)
+_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     uint8_t *Data;
     if ((Data = CCDictionaryGetValue(Defines, &Value->string)) || (Data = CCDictionaryGetValue(Labels, &Value->string)))
@@ -473,11 +477,11 @@ static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceed
 static const CCString HKHubArchAssemblyErrorMessageUnknownCommand = CC_STRING("unknown command");
 
 #pragma mark - Directives
-CCOrderedCollection HKHubArchAssemblyIncludeSearchPaths = NULL;
+CCOrderedCollection(FSPath) HKHubArchAssemblyIncludeSearchPaths = NULL;
 static const CCString HKHubArchAssemblyErrorMessageFile = CC_STRING("could not find file");
 static const CCString HKHubArchAssemblyErrorMessageSearchPaths = CC_STRING("no include search paths specified");
 
-static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 1))
     {
@@ -516,7 +520,7 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
                                 
                                 FSHandleClose(Handle);
                                 
-                                CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+                                CCOrderedCollection(HKHubArchAssemblyASTNode) AST = HKHubArchAssemblyParse(Source);
                                 CC_SAFE_Free(Source);
                                 
                                 Offset = HKHubArchAssemblyCompile(Offset, Binary, AST, Errors, Labels, Defines, !Binary);
@@ -587,7 +591,7 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
 
 static const CCString HKHubArchAssemblyErrorAssertion = CC_STRING("assertion failed");
 
-static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     const size_t Count = CCCollectionGetCount(Command->childNodes);
     if ((Command->childNodes) && (Count >= 1) && (Count <= 2))
@@ -638,7 +642,7 @@ static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBi
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     const size_t Count = CCCollectionGetCount(Command->childNodes);
     if ((Command->childNodes) && (Count >= 2) && (Count <= 3))
@@ -756,7 +760,7 @@ static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBina
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 2))
     {
@@ -810,7 +814,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     if (Command->childNodes)
     {
@@ -840,7 +844,7 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes)))
     {
@@ -852,7 +856,7 @@ static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubAr
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveBreakRW(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines)
+static size_t HKHubArchAssemblyCompileDirectiveBreakRW(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
 {
     size_t Count = 0;
     if ((Command->childNodes) && ((Count = CCCollectionGetCount(Command->childNodes)) > 2))
@@ -905,7 +909,7 @@ static const struct {
     { CC_STRING(".break"), HKHubArchAssemblyCompileDirectiveBreakRW }
 };
 
-static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray Modifiers, HKHubArchAssemblyASTType Operation)
+static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray(HKHubArchAssemblyASTType) Modifiers, HKHubArchAssemblyASTType Operation)
 {
     for (size_t Loop = 0, Count = CCArrayGetCount(Modifiers); Loop < Count; Loop++)
     {
@@ -983,12 +987,12 @@ static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCA
     }
 }
 
-_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, CCDictionary Variables)
+_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCDictionary(CCString, uint8_t) Variables)
 {
     uint8_t Byte = 0;
     _Bool ConstantOnly = FALSE, Success = TRUE;
     HKHubArchAssemblyASTType Operation = HKHubArchAssemblyASTTypeUnknown;
-    CCArray Modifiers = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyASTType), 16);
+    CCArray(HKHubArchAssemblyASTType) Modifiers = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyASTType), 16);
     
     CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Value, Operand->childNodes)
     {
@@ -1109,7 +1113,7 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
     return Success;
 }
 
-static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection AST, CCOrderedCollection Errors, CCDictionary Labels, CCDictionary Defines, int Pass)
+static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, int Pass)
 {
     CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
     {
@@ -1159,22 +1163,22 @@ static void HKHubArchAssemblyASTErrorDestructor(void *Container, HKHubArchAssemb
     if (Error->message) CCStringDestroy(Error->message);
 }
 
-HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrderedCollection AST, CCOrderedCollection *Errors)
+HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) *Errors)
 {
     CCAssertLog(AST, "AST must not be null");
     
     HKHubArchBinary Binary = HKHubArchBinaryCreate(Allocator);
     
-    CCDictionary Labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+    CCDictionary(CCString, uint8_t) Labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
         .getHash = CCStringHasherForDictionary,
         .compareKeys = CCStringComparatorForDictionary
     });
     
-    CCOrderedCollection Err = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor);
+    CCOrderedCollection(HKHubArchAssemblyASTError) Err = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor);
     
     for (int Pass = 1; Pass >= 0; Pass--)
     {
-        CCDictionary Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+        CCDictionary(CCString, uint8_t) Defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
             .getHash = CCStringHasherForDictionary,
             .compareKeys = CCStringComparatorForDictionary
         });
@@ -1200,7 +1204,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
     return Binary;
 }
 
-static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)
+static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection(HKHubArchAssemblyASTNode) AST)
 {
     if (!AST) return;
     
@@ -1275,13 +1279,13 @@ static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection AST)
     }
 }
 
-void HKHubArchAssemblyPrintAST(CCOrderedCollection AST)
+void HKHubArchAssemblyPrintAST(CCOrderedCollection(HKHubArchAssemblyASTNode) AST)
 {
     HKHubArchAssemblyPrintASTNodes(AST);
     printf("\n");
 }
 
-void HKHubArchAssemblyPrintError(CCOrderedCollection Errors)
+void HKHubArchAssemblyPrintError(CCOrderedCollection(HKHubArchAssemblyASTError) Errors)
 {
     if (!Errors) return;
     
