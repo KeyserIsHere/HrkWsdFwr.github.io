@@ -26,8 +26,10 @@
 #include "Base.h"
 #include "HubArchExpressions.h"
 #include "HubArchAssembly.h"
+#include "RapServer.h"
 #include "HubSystem.h"
 #include "HubProcessorComponent.h"
+#include "HubPortConnectionComponent.h"
 #include "HubDebuggerComponent.h"
 #include "HubModuleComponent.h"
 #include "HubModuleKeyboardComponent.h"
@@ -49,6 +51,7 @@ static void PreSetup(void)
     
     HKHubSystemRegister();
     HKHubProcessorComponentRegister();
+    HKHubPortConnectionComponentRegister();
     HKHubDebuggerComponentRegister();
     HKHubModuleComponentRegister();
     HKHubModuleKeyboardComponentRegister();
@@ -56,6 +59,8 @@ static void PreSetup(void)
     HKHubModuleWirelessTransceiverComponentRegister();
     
     HKItemManualComponentRegister();
+    
+    HKRapServerStart();
 }
 
 static void Setup(void)
