@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubArchPort_h
 #define HackingGame_HubArchPort_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 
 /*!
  * @brief The port connection.

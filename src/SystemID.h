@@ -26,7 +26,7 @@
 #ifndef HackingGame_SystemID_h
 #define HackingGame_SystemID_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 
 enum {
     HKHubSystemID = CCSystemIDAvailable,

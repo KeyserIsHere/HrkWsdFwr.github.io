@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2016, Stefan Johnson
+ *  Copyright (c) 2019, Stefan Johnson
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without modification,
@@ -23,36 +23,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef HackingGame_HubSystem_h
-#define HackingGame_HubSystem_h
+#ifndef HackingGame_HubSchematicComponent_h
+#define HackingGame_HubSchematicComponent_h
 
-#include "Base.h"
-#include "HubArchScheduler.h"
-#include "SystemID.h"
-
-typedef enum {
-    HKHubTypeMask = 0xff,
-    HKHubTypeProcessor = 0,
-    HKHubTypeModule,
-    HKHubTypeDebugger,
-    HKHubTypePortConnection,
-    
-    HKHubTypeModuleMask = (0xff << 8),
-    HKHubTypeModuleKeyboard = (1 << 8),
-    HKHubTypeModuleDisplay = (2 << 8),
-    HKHubTypeModuleWirelessTransceiver = (3 << 8)
-} HKHubType;
-
-_Static_assert(!(CC_COMPONENT_SYSTEM_FLAG_MASK & HKHubTypeMask), "Type mask conflicts with component flag");
-_Static_assert(!(CC_COMPONENT_SYSTEM_FLAG_MASK & HKHubTypeModuleMask), "Module mask conflicts with component flag");
-
-void HKHubSystemRegister(void);
-void HKHubSystemDeregister(void);
-
-/*!
- * @brief Retrieve the internal scheduler being used.
- * @return The scheduler used internally by the system.
- */
-HKHubArchScheduler HKHubSystemGetScheduler(void);
+#include <stdio.h>
 
 #endif

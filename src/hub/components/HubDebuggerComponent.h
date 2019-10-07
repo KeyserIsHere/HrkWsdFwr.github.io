@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubDebuggerComponent_h
 #define HackingGame_HubDebuggerComponent_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "HubSystem.h"
 
 #define HK_HUB_DEBUGGER_COMPONENT_ID (HKHubTypeDebugger | HK_HUB_COMPONENT_FLAG)

@@ -26,8 +26,7 @@
 #ifndef HackingGame_HubModuleDisplayComponent_h
 #define HackingGame_HubModuleDisplayComponent_h
 
-#include <Blob2D/Blob2D.h>
-
+#include "Base.h"
 #include "HubModuleComponent.h"
 #include "HubModuleDisplay.h"
 

@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubArchBinary_h
 #define HackingGame_HubArchBinary_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 
 typedef struct {
     CCCollection namedPorts;

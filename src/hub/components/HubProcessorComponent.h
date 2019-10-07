@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubProcessorComponent_h
 #define HackingGame_HubProcessorComponent_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "HubArchProcessor.h"
 #include "HubSystem.h"
 

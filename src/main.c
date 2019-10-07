@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "HubArchExpressions.h"
 #include "HubArchAssembly.h"
 #include "HubSystem.h"

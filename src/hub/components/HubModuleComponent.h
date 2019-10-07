@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubModuleComponent_h
 #define HackingGame_HubModuleComponent_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "HubSystem.h"
 #include "HubModule.h"
 

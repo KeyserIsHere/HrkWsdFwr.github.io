@@ -26,7 +26,7 @@
 #ifndef HackingGame_RapServer_h
 #define HackingGame_RapServer_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "HubArchProcessor.h"
 
 void HKRapServerStart(void);

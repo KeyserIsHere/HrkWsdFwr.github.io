@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubArchAssembly_h
 #define HackingGame_HubArchAssembly_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "HubArchBinary.h"
 
 typedef enum {

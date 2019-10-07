@@ -26,7 +26,7 @@
 #ifndef HackingGame_ItemManualComponent_h
 #define HackingGame_ItemManualComponent_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "SystemID.h"
 
 #define HK_ITEM_MANUAL_COMPONENT_ID (0 | HK_ITEM_COMPONENT_FLAG) //TODO: Change ID

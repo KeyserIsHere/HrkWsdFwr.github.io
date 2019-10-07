@@ -26,8 +26,7 @@
 #ifndef HackingGame_HubModuleWirelessTransceiverComponent_h
 #define HackingGame_HubModuleWirelessTransceiverComponent_h
 
-#include <Blob2D/Blob2D.h>
-
+#include "Base.h"
 #include "HubModuleComponent.h"
 #include "HubModuleWirelessTransceiver.h"
 

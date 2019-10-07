@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubArchInstructionType_h
 #define HackingGame_HubArchInstructionType_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 
 typedef enum {
     HKHubArchInstructionOperandNA = (1 << 0),

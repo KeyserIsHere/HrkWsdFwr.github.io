@@ -26,7 +26,7 @@
 #ifndef HackingGame_HubPortConnectionComponent_h
 #define HackingGame_HubPortConnectionComponent_h
 
-#include <Blob2D/Blob2D.h>
+#include "Base.h"
 #include "HubArchPort.h"
 #include "HubSystem.h"
 
