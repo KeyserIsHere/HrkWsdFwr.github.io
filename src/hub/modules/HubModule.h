@@ -39,6 +39,7 @@ typedef struct {
     HKHubArchPortTransmit send;
     HKHubArchPortTransmit receive;
     HKHubModuleDataDestructor destructor;
+    CCData memory;
 } HKHubModuleInfo;
 
 
@@ -56,9 +57,10 @@ typedef HKHubModuleInfo *HKHubModule;
  * @param Receive The receiver.
  * @param Internal The internal data.
  * @param Destructor The destructor for the internal data.
+ * @param Memory The addressable memory of the module. Ownership is passed to the module.
  * @return The module. Must be destroyed to free memory.
  */
-CC_NEW HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit Send, HKHubArchPortTransmit Receive, void *Internal, HKHubModuleDataDestructor Destructor);
+CC_NEW HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit Send, HKHubArchPortTransmit Receive, void *Internal, HKHubModuleDataDestructor Destructor, CCData CC_OWN(Memory));
 
 /*!
  * @brief Destroy a module.
@@ -98,5 +100,21 @@ HKHubArchPort HKHubModuleGetPort(HKHubModule Module, HKHubArchPortID Port);
  * @return The connection if one exists, otherwise NULL.
  */
 HKHubArchPortConnection HKHubModuleGetPortConnection(HKHubModule Module, HKHubArchPortID Port);
+
+/*!
+ * @brief Get the memory for the module.
+ * @param Module The module to get the memory of.
+ * @return The memory if any exists, otherwise NULL.
+ */
+static CC_FORCE_INLINE CCData HKHubModuleGetMemory(HKHubModule Module);
+
+#pragma mark -
+
+static CC_FORCE_INLINE CCData HKHubModuleGetMemory(HKHubModule Module)
+{
+    CCAssertLog(Module, "Module must not be null");
+    
+    return Module->memory;
+}
 
 #endif

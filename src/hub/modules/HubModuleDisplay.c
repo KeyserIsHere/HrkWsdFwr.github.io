@@ -73,7 +73,7 @@ HKHubModule HKHubModuleDisplayCreate(CCAllocatorType Allocator)
     {
         memset(State->buffer, 0, sizeof(State->buffer));
         
-        return HKHubModuleCreate(Allocator, NULL, (HKHubArchPortTransmit)HKHubModuleDisplaySetBuffer, State, CCFree);
+        return HKHubModuleCreate(Allocator, NULL, (HKHubArchPortTransmit)HKHubModuleDisplaySetBuffer, State, CCFree, CCDataBufferCreate(Allocator, CCDataHintReadWrite, sizeof(State->buffer), State->buffer, NULL, NULL));
     }
     
     else CC_LOG_ERROR("Failed to create display module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleDisplayState));

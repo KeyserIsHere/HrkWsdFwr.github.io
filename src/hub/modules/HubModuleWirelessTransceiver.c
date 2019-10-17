@@ -127,7 +127,7 @@ HKHubModule HKHubModuleWirelessTransceiverCreate(CCAllocatorType Allocator)
             .prevGlobalTimestamp = 0
         };
         
-        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverReceive, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverTransmit, State, (HKHubModuleDataDestructor)HKHubModuleWirelessTransceiverStateDestructor);
+        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverReceive, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverTransmit, State, (HKHubModuleDataDestructor)HKHubModuleWirelessTransceiverStateDestructor, NULL);
     }
     
     else CC_LOG_ERROR("Failed to create wireless transceiver module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleWirelessTransceiverState));

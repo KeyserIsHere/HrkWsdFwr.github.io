@@ -33,6 +33,7 @@ static uintmax_t HKHubModulePortHasher(HKHubArchPortID *Key)
 static void HKHubModuleDestructor(HKHubModule Module)
 {
     if (Module->destructor) Module->destructor(Module->internal);
+    if (Module->memory) CCDataDestroy(Module->memory);
     
     CC_DICTIONARY_FOREACH_VALUE(HKHubArchPortConnection, Connection, Module->ports)
     {
@@ -47,7 +48,7 @@ static void HKHubModuleDestructor(HKHubModule Module)
     CCDictionaryDestroy(Module->ports);
 }
 
-HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit Send, HKHubArchPortTransmit Receive, void *Internal, HKHubModuleDataDestructor Destructor)
+HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit Send, HKHubArchPortTransmit Receive, void *Internal, HKHubModuleDataDestructor Destructor, CCData Memory)
 {
     HKHubModule Module = CCMalloc(Allocator, sizeof(HKHubModuleInfo), NULL, CC_DEFAULT_ERROR_CALLBACK);
     
@@ -62,6 +63,7 @@ HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit S
         Module->receive = Receive;
         Module->internal = Internal;
         Module->destructor = Destructor;
+        Module->memory = Memory;
         
         CCMemorySetDestructor(Module, (CCMemoryDestructorCallback)HKHubModuleDestructor);
     }

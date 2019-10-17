@@ -90,7 +90,7 @@ HKHubModule HKHubModuleKeyboardCreate(CCAllocatorType Allocator)
             .cleared = TRUE
         };
         
-        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleKeyboardGetKey, NULL, State, (HKHubModuleDataDestructor)HKHubModuleKeyboardStateDestructor);
+        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleKeyboardGetKey, NULL, State, (HKHubModuleDataDestructor)HKHubModuleKeyboardStateDestructor, NULL);
     }
     
     else CC_LOG_ERROR("Failed to create keyboard module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleKeyboardState));
