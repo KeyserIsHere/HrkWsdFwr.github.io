@@ -247,6 +247,65 @@
     
     CCPixelDataDestroy(Pixels);
     
+    
+    
+    CCData Memory = HKHubModuleGetMemory(Display);
+    XCTAssertEqual(CCDataGetSize(Memory), 256, @"Should be the correct size");
+    
+    uint8_t RawPixels[256];
+    CCDataReadBuffer(Memory, 0, sizeof(RawPixels), RawPixels);
+    XCTAssertEqual(RawPixels[0], 0, @"Should be the correct raw pixel");
+    XCTAssertEqual(RawPixels[1], 0xe0, @"Should be the correct raw pixel");
+    XCTAssertEqual(RawPixels[2], 3, @"Should be the correct raw pixel");
+    for (size_t Loop = 3; Loop < sizeof(RawPixels); Loop++)
+    {
+        XCTAssertEqual(RawPixels[Loop], 0, @"Should be the correct raw pixel");
+    }
+    
+    CCDataWriteBuffer(Memory, 0, 1, &(uint8_t){ 0x0a }); //r = 0, g = 2, b = 2
+    
+    Buffer = HKHubModuleDisplayConvertBuffer(CC_STD_ALLOCATOR, Display, HKHubModuleDisplayBuffer_DirectColourRGB888);
+    Pixels = CCPixelDataStaticCreate(CC_STD_ALLOCATOR, Buffer, CCColourFormatRGB8Uint, 16, 16, 1);
+    
+    
+    Colour = CCPixelDataGetColour(Pixels, 0, 0, 0);
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelRed);
+    XCTAssertEqual(Component.u8, 0, @"Should contain the correct colour");
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelGreen);
+    XCTAssertEqual(Component.u8, 73, @"Should contain the correct colour");
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelBlue);
+    XCTAssertEqual(Component.u8, 170, @"Should contain the correct colour");
+    
+    
+    Colour = CCPixelDataGetColour(Pixels, 1, 0, 0);
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelRed);
+    XCTAssertEqual(Component.u8, 255, @"Should contain the correct colour");
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelGreen);
+    XCTAssertEqual(Component.u8, 0, @"Should contain the correct colour");
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelBlue);
+    XCTAssertEqual(Component.u8, 0, @"Should contain the correct colour");
+    
+    
+    Colour = CCPixelDataGetColour(Pixels, 2, 0, 0);
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelRed);
+    XCTAssertEqual(Component.u8, 0, @"Should contain the correct colour");
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelGreen);
+    XCTAssertEqual(Component.u8, 0, @"Should contain the correct colour");
+    
+    Component = CCColourGetComponent(Colour, CCColourFormatChannelBlue);
+    XCTAssertEqual(Component.u8, 255, @"Should contain the correct colour");
+    
+    
+    CCPixelDataDestroy(Pixels);
+    
     HKHubModuleDestroy(Display);
 }
 
