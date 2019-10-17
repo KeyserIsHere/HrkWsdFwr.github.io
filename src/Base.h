@@ -102,7 +102,13 @@ func(__VA_ARGS__, HKHubArchScheduler);
 #define CC_CUSTOM_TYPES_ HK_TYPES_
 #endif
 
+#ifndef CC_QUICK_COMPILE
 #define CC_QUICK_COMPILE
+#endif
+
+#define CC_CONTAINER_ENABLE
+#define CC_CONTAINER_DISABLE_PRESETS
+#include "ContainerTypes.h"
 #include <Blob2D/Blob2D.h>
 
 #endif
