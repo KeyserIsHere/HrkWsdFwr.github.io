@@ -163,6 +163,8 @@ static const CCString HKHubArchInstructionErrorMessageMemoryAdditionOnly = CC_ST
 
 #pragma mark -
 
+CC_DICTIONARY_DECLARE(HKHubArchInstructionKey, size_t);
+
 static CCDictionary(CCString, uint8_t) RegularRegisters = NULL, MemoryRegisters = NULL;
 static CCDictionary(HKHubArchInstructionKey, size_t) InstructionTable = NULL;
 
