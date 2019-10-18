@@ -5,7 +5,7 @@
 .port send_notifier, 255
 
 # .define active, 1
-.define read_attempts, 64
+# .define read_attempts, 64
 
 .entrypoint
     mov r3, out
@@ -19,7 +19,7 @@ wait_read:
     mov r0, in
 read:
     sub r1, 1
-    jz wait
+    jul wait
     recv r0, [r2]
     jz read
     add r2, 1
@@ -39,10 +39,10 @@ wait_send:
 send:
     send r3, r0, [r1]
     jz send
-requires_send:
     add r1, 1
+requires_send:
     cmp r1, r2
-    jule send
+    jul send
     mov r0, switch
 notify_switch:
     send r0
