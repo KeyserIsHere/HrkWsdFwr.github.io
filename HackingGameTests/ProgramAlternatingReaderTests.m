@@ -595,7 +595,6 @@ RET(5);
     XCTAssertEqual(WriteNotifierState, 3, @"Should not have change state");
 }
 
-/////////////
 -(void) testExcessDataWaitingToRead
 {
     uint8_t Data[] = {
@@ -773,6 +772,214 @@ RET(5);
     XCTAssertEqual(SwitchState, 3, @"Should not have change state");
     XCTAssertEqual(ReadNotifierState, 3, @"Should not have change state");
     XCTAssertEqual(WriteNotifierState, 3, @"Should not have change state");
+}
+
+@end
+
+
+@interface ProgramAlternatingReaderActiveTests : ProgramAlternatingReaderTests
+
+@end
+
+@implementation ProgramAlternatingReaderActiveTests
+
+-(const char*) defines
+{
+    return ".define active, 1\n.define read_attempts, 4\n";
+}
+
+-(void) testNoDataWaitingToRead
+{
+    OutPortBusy = RetFalse;
+    SwitchPortBusy = RetFalse;
+    ReadNotifierPortSend = RetFalse;
+    ReadNotifierPortBusy = RetFalse;
+    WriteNotifierPortSend = RetFalse;
+    WriteNotifierPortBusy = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 0, @"Should not consume any data");
+    XCTAssertEqual(ReadAttempts, 4, @"Should not make any attempts to consume data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(SwitchState, 0, @"Should not have change state");
+    XCTAssertEqual(ReadNotifierState, 1, @"Should not have change state");
+    XCTAssertEqual(WriteNotifierState, 0, @"Should not have change state");
+}
+
+-(void) testNoDataReadyToReadAlertAfterReadReadyToWriteAlertAfterWrite
+{
+    OutPortBusy = RetFalse;
+    SwitchPortBusy = RetFalse;
+    ReadNotifierPortSend = RetCallCountLessThan3;
+    ReadNotifierPortBusy = RetFalse;
+    WriteNotifierPortSend = RetTrue;
+    WriteNotifierPortBusy = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 0, @"Should not consume any data");
+    XCTAssertEqual(ReadAttempts, 16, @"Should attempt to consume data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(SwitchState, 4, @"Should not have change state");
+    XCTAssertEqual(ReadNotifierState, 4, @"Should not have change state");
+    XCTAssertEqual(WriteNotifierState, 4, @"Should not have change state");
+}
+
+-(void) testDataWaitingToRead
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    
+    OutPortBusy = RetFalse;
+    SwitchPortBusy = RetFalse;
+    ReadNotifierPortSend = RetFalse;
+    ReadNotifierPortBusy = RetFalse;
+    WriteNotifierPortSend = RetFalse;
+    WriteNotifierPortBusy = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 4, @"Should not consume any data");
+    XCTAssertEqual(ReadAttempts, 4, @"Should not make any attempts to consume data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(SwitchState, 0, @"Should not have change state");
+    XCTAssertEqual(ReadNotifierState, 1, @"Should not have change state");
+    XCTAssertEqual(WriteNotifierState, 0, @"Should not have change state");
+}
+
+-(void) testDataReadyToReadAlertAfterReadReadyToWriteAlertAfterWrite
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    
+    OutPortBusy = RetFalse;
+    SwitchPortBusy = RetFalse;
+    ReadNotifierPortSend = RetCallCountLessThan3;
+    ReadNotifierPortBusy = RetFalse;
+    WriteNotifierPortSend = RetTrue;
+    WriteNotifierPortBusy = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 5, @"Should consume some data");
+    XCTAssertEqual(ReadAttempts, 16, @"Should attempt to consume data");
+    
+    CCQueueNode *Node;
+    for (size_t Loop = 0; Loop < 5; Loop++)
+    {
+        Node = CCQueuePop(ReadData);
+        XCTAssertNotEqual(Node, NULL, @"Should have received data");
+        if (Node)
+        {
+            XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), Loop + 1, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
+        }
+    }
+    
+    Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive anymore data");
+    
+    XCTAssertEqual(SwitchState, 4, @"Should not have change state");
+    XCTAssertEqual(ReadNotifierState, 4, @"Should not have change state");
+    XCTAssertEqual(WriteNotifierState, 4, @"Should not have change state");
+}
+
+-(void) testExcessDataWaitingToRead
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    
+    OutPortBusy = RetFalse;
+    SwitchPortBusy = RetFalse;
+    ReadNotifierPortSend = RetFalse;
+    ReadNotifierPortBusy = RetFalse;
+    WriteNotifierPortSend = RetFalse;
+    WriteNotifierPortBusy = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 4, @"Should not consume any data");
+    XCTAssertEqual(ReadAttempts, 4, @"Should not make any attempts to consume data");
+    
+    CCQueueNode *Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive any data");
+    
+    XCTAssertEqual(SwitchState, 0, @"Should not have change state");
+    XCTAssertEqual(ReadNotifierState, 1, @"Should not have change state");
+    XCTAssertEqual(WriteNotifierState, 0, @"Should not have change state");
+}
+
+-(void) testExcessDataReadyToReadAlertAfterReadReadyToWriteAlertAfterWrite
+{
+    uint8_t Data[] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+    };
+    
+    InData = Data;
+    DataCount = sizeof(Data) / sizeof(typeof(*Data));
+    DataIndex = 0;
+    
+    OutPortBusy = RetFalse;
+    SwitchPortBusy = RetFalse;
+    ReadNotifierPortSend = RetCallCountLessThan3;
+    ReadNotifierPortBusy = RetFalse;
+    WriteNotifierPortSend = RetTrue;
+    WriteNotifierPortBusy = RetFalse;
+    
+    HKHubArchProcessorSetCycles(self.processor, 100000);
+    HKHubArchSchedulerRun(self.scheduler, 0.0);
+    
+    XCTAssertEqual(DataIndex, 16, @"Should consume some data");
+    XCTAssertEqual(ReadAttempts, 16, @"Should attempt to consume data");
+    
+    CCQueueNode *Node;
+    for (size_t Loop = 0; Loop < 16; Loop++)
+    {
+        Node = CCQueuePop(ReadData);
+        XCTAssertNotEqual(Node, NULL, @"Should have received data");
+        if (Node)
+        {
+            XCTAssertEqual(*(uint8_t*)CCQueueGetNodeData(Node), Loop + 1, @"Should have the correct data");
+            CCQueueDestroyNode(Node);
+        }
+    }
+    
+    Node = CCQueuePop(ReadData);
+    XCTAssertEqual(Node, NULL, @"Should not receive anymore data");
+    
+    XCTAssertEqual(SwitchState, 4, @"Should not have change state");
+    XCTAssertEqual(ReadNotifierState, 4, @"Should not have change state");
+    XCTAssertEqual(WriteNotifierState, 4, @"Should not have change state");
 }
 
 @end
