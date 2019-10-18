@@ -41,7 +41,7 @@
 {
     const char *Source =
         ".define keyboard, 0\n"
-        "data: .byte 0, 0, 0, 0\n"
+        "data: .byte 0, 0, 0, 0, 0\n"
         ".entrypoint\n"
         "repeat:\n"
         "recv keyboard, [data+r0]\n"
@@ -77,6 +77,7 @@
     XCTAssertEqual(Processor->memory[1], 0, @"Should not receive any input");
     XCTAssertEqual(Processor->memory[2], 0, @"Should not receive any input");
     XCTAssertEqual(Processor->memory[3], 0, @"Should not receive any input");
+    XCTAssertEqual(Processor->memory[4], 0, @"Should not receive any input");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should not receive any input");
     
     HKHubModuleKeyboardEnterKey(Keyboard, 1);
@@ -88,6 +89,7 @@
     XCTAssertEqual(Processor->memory[1], 2, @"Should receive input");
     XCTAssertEqual(Processor->memory[2], 0, @"Should not receive any input");
     XCTAssertEqual(Processor->memory[3], 0, @"Should not receive any input");
+    XCTAssertEqual(Processor->memory[4], 0, @"Should not receive any input");
     XCTAssertEqual(Processor->state.r[0], 2, @"Should receive 2 inputs");
     
     HKHubModuleKeyboardEnterKey(Keyboard, 3);
@@ -98,7 +100,31 @@
     XCTAssertEqual(Processor->memory[1], 2, @"Should receive input");
     XCTAssertEqual(Processor->memory[2], 3, @"Should not receive any input");
     XCTAssertEqual(Processor->memory[3], 0, @"Should not receive any input");
+    XCTAssertEqual(Processor->memory[4], 0, @"Should not receive any input");
     XCTAssertEqual(Processor->state.r[0], 3, @"Should receive 1 more inputs");
+    
+    
+    HKHubModuleKeyboardEnterKey(Keyboard, 4);
+    HKHubModuleKeyboardEnterKey(Keyboard, 5);
+    
+    CCData Memory = HKHubModuleGetMemory(Keyboard);
+    XCTAssertEqual(CCDataGetSize(Memory), 2, @"Should be the correct size");
+    
+    uint8_t RawKeys[2];
+    CCDataReadBuffer(Memory, 0, sizeof(RawKeys), RawKeys);
+    XCTAssertEqual(RawKeys[0], 4, @"Should be the correct raw pixel");
+    XCTAssertEqual(RawKeys[1], 5, @"Should be the correct raw pixel");
+    CCDataWriteBuffer(Memory, 0, 2, (uint8_t[2]){ 0xff, 0xfe });
+    
+    HKHubArchProcessorSetCycles(Processor, 50);
+    HKHubArchProcessorRun(Processor);
+    
+    XCTAssertEqual(Processor->memory[0], 1, @"Should receive input");
+    XCTAssertEqual(Processor->memory[1], 2, @"Should receive input");
+    XCTAssertEqual(Processor->memory[2], 3, @"Should not receive any input");
+    XCTAssertEqual(Processor->memory[3], 0xff, @"Should not receive any input");
+    XCTAssertEqual(Processor->memory[4], 0xfe, @"Should not receive any input");
+    XCTAssertEqual(Processor->state.r[0], 5, @"Should receive 2 more inputs");
     
     
     HKHubModuleDestroy(Keyboard);
