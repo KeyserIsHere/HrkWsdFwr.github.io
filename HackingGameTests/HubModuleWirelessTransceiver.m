@@ -90,6 +90,36 @@
     XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceiver, (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 22, .channel = 12 }, &Data), @"Should contain a packet");
     XCTAssertEqual(Data, 0x10, @"Packet should contain the expected data");
     
+    
+    HKHubModuleWirelessTransceiverPacketPurge(Transceiver, 0);
+    
+    HKHubModuleWirelessTransceiverReceivePacket(Transceiver, (HKHubModuleWirelessTransceiverPacket){
+        .sig = { .timestamp = 10, .channel = 12 },
+        .data = 1
+    });
+    
+    HKHubModuleWirelessTransceiverReceivePacket(Transceiver, (HKHubModuleWirelessTransceiverPacket){
+        .sig = { .timestamp = 11, .channel = 12 },
+        .data = 2
+    });
+    
+    CCData Memory = HKHubModuleGetMemory(Transceiver);
+    XCTAssertEqual(CCDataGetSize(Memory), 2, @"Should be the correct size");
+    
+    uint8_t RawPackets[2];
+    CCDataReadBuffer(Memory, 0, sizeof(RawPackets), RawPackets);
+    XCTAssertEqual(RawPackets[0], 1, @"Should be the correct raw pixel");
+    XCTAssertEqual(RawPackets[1], 2, @"Should be the correct raw pixel");
+    CCDataWriteBuffer(Memory, 0, 2, (uint8_t[2]){ 0xff, 0xfe });
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceiver, (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 10, .channel = 12 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 0xff, @"Packet should contain the expected data");
+    
+    Data = 0;
+    XCTAssertTrue(HKHubModuleWirelessTransceiverInspectPacket(Transceiver, (HKHubModuleWirelessTransceiverPacketSignature){ .timestamp = 11, .channel = 12 }, &Data), @"Should contain a packet");
+    XCTAssertEqual(Data, 0xfe, @"Packet should contain the expected data");
+    
     HKHubModuleDestroy(Transceiver);
 }
 
