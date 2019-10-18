@@ -119,21 +119,14 @@ static HKHubArchPortResponse ProcessorPort(HKHubArchPortConnection Connection, H
     return HKHubArchPortResponseDefer;
 }
 
-#define RET(x) \
-static _Bool RetDataIndex##x(void){ return DataIndex == x; } \
-static _Bool RetDataIndexNot##x(void){ return !RetDataIndex##x(); } \
-static _Bool RetOnceCalledDataIndex##x = FALSE; \
-static _Bool RetOnceDataIndex##x(void) \
-{ \
-    const _Bool Prev = RetOnceCalledDataIndex##x; \
-    return (RetDataIndex##x()) && (RetOnceCalledDataIndex##x = TRUE) && (!Prev); \
-}
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused"
 RET(1);
 RET(2);
 RET(3);
 RET(4);
 RET(5);
+#pragma clang diagnostic pop
 
 -(void) setUp
 {
@@ -219,16 +212,6 @@ RET(5);
     }
     
     [super tearDown];
-}
-
-static _Bool RetTrue(void)
-{
-    return TRUE;
-}
-
-static _Bool RetFalse(void)
-{
-    return FALSE;
 }
 
 -(void) testNoData

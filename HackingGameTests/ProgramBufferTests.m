@@ -159,16 +159,6 @@ static HKHubArchPortResponse ControlPort(HKHubArchPortConnection Connection, HKH
     [super tearDown];
 }
 
-static _Bool RetTrue(void)
-{
-    return TRUE;
-}
-
-static _Bool RetFalse(void)
-{
-    return FALSE;
-}
-
 -(void) testNoData
 {
     OutPortBusy = RetFalse;

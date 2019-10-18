@@ -28,6 +28,24 @@
 #import "HubArchAssembly.h"
 #import "HubArchScheduler.h"
 
+extern size_t RetCallCount;
+
+#define RET(x) \
+static _Bool RetDataIndex##x(void){ return DataIndex == x; } \
+static _Bool RetDataIndexNot##x(void){ return !RetDataIndex##x(); } \
+static _Bool RetOnceCalledDataIndex##x = FALSE; \
+static _Bool RetOnceDataIndex##x(void) \
+{ \
+const _Bool Prev = RetOnceCalledDataIndex##x; \
+return (RetDataIndex##x()) && (RetOnceCalledDataIndex##x = TRUE) && (!Prev); \
+} \
+static _Bool RetCallCount##x(void){ return RetCallCount++ == x; } \
+static _Bool RetCallCountNot##x(void){ return !RetCallCount##x(); } \
+static _Bool RetCallCountLessThan##x(void){ return RetCallCount++ < x; }
+
+_Bool RetTrue(void);
+_Bool RetFalse(void);
+
 @interface ProgramTests : XCTestCase
 
 @property (readonly) HKHubArchProcessor processor;

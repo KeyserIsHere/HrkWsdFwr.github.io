@@ -36,6 +36,18 @@
 @end
 
 
+size_t RetCallCount = 0;
+
+_Bool RetTrue(void)
+{
+    return TRUE;
+}
+
+_Bool RetFalse(void)
+{
+    return FALSE;
+}
+
 @implementation ProgramTests
 @synthesize processor, scheduler;
 
@@ -98,6 +110,8 @@
     
     scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
     HKHubArchSchedulerAddProcessor(scheduler, processor);
+    
+    RetCallCount = 0;
 }
 
 -(void)tearDown
