@@ -39,6 +39,8 @@
 
 -(void) testSendingPackets
 {
+    HKHubModuleWirelessTransceiverPacketLifetime = 1;
+    
     HKHubModule Transceiver = HKHubModuleWirelessTransceiverCreate(CC_STD_ALLOCATOR);
     
     HKHubModuleWirelessTransceiverReceivePacket(Transceiver, (HKHubModuleWirelessTransceiverPacket){
@@ -142,6 +144,8 @@ static void Broadcast(HKHubModule Transmitter, HKHubModuleWirelessTransceiverPac
 
 -(void) testHubCommunication
 {
+    HKHubModuleWirelessTransceiverPacketLifetime = 1;
+    
     Scheduler = HKHubArchSchedulerCreate(CC_STD_ALLOCATOR);
     HKHubModuleWirelessTransceiverGetScheduler = GetScheduler;
     HKHubModuleWirelessTransceiverBroadcast = Broadcast;

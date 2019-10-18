@@ -26,7 +26,16 @@
 #include "HubModuleWirelessTransceiver.h"
 
 #define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_RECEIVE_WAIT 8
-#define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME 1
+#define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME 4
+
+#if DEBUG
+size_t HKHubModuleWirelessTransceiverReceiveWait = HK_HUB_MODULE_WIRELESS_TRANSCEIVER_RECEIVE_WAIT;
+size_t HKHubModuleWirelessTransceiverPacketLifetime = HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME;
+#undef HK_HUB_MODULE_WIRELESS_TRANSCEIVER_RECEIVE_WAIT
+#undef HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME
+#define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_RECEIVE_WAIT HKHubModuleWirelessTransceiverReceiveWait
+#define HK_HUB_MODULE_WIRELESS_TRANSCEIVER_PACKET_LIFETIME HKHubModuleWirelessTransceiverPacketLifetime
+#endif
 
 typedef struct {
     CCDictionary(HKHubModuleWirelessTransceiverPacketSignature, uint8_t) packets;

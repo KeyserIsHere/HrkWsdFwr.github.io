@@ -64,6 +64,11 @@ extern HKHubModuleWirelessTransceiverBroadcastCallback HKHubModuleWirelessTransc
  */
 extern HKHubModuleWirelessTransceiverGetSchedulerCallback HKHubModuleWirelessTransceiverGetScheduler;
 
+#if DEBUG
+extern size_t HKHubModuleWirelessTransceiverReceiveWait;
+extern size_t HKHubModuleWirelessTransceiverPacketLifetime;
+#endif
+
 /*!
  * @brief Create a wireless transceiver module.
  * @param Allocator The allocator to be used.
