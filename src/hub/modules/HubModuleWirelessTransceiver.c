@@ -127,7 +127,7 @@ HKHubModule HKHubModuleWirelessTransceiverCreate(CCAllocatorType Allocator)
             .prevGlobalTimestamp = 0
         };
         
-        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverReceive, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverTransmit, State, (HKHubModuleDataDestructor)HKHubModuleWirelessTransceiverStateDestructor, NULL);
+        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverReceive, (HKHubArchPortTransmit)HKHubModuleWirelessTransceiverTransmit, State, (HKHubModuleDataDestructor)HKHubModuleWirelessTransceiverStateDestructor, CCDataContainerCreate(Allocator, CCDataHintReadWrite, sizeof(uint8_t), (CCDataContainerCount)CCDictionaryGetCount, (CCDataContainerEnumerable)CCDictionaryGetValueEnumerable, State->packets, NULL, NULL));
     }
     
     else CC_LOG_ERROR("Failed to create wireless transceiver module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleWirelessTransceiverState));
@@ -200,4 +200,8 @@ void HKHubModuleWirelessTransceiverShiftTimestamps(HKHubModule Module, size_t Sh
     CCDictionaryDestroy(Packets);
     
     ((HKHubModuleWirelessTransceiverState*)Module->internal)->packets = ShiftedPackets;
+    
+    CCData Memory = HKHubModuleGetMemory(Module);
+    Module->memory = CCDataContainerCreate(Memory->allocator, CCDataGetHints(Memory), sizeof(uint8_t), (CCDataContainerCount)CCDictionaryGetCount, (CCDataContainerEnumerable)CCDictionaryGetValueEnumerable, ShiftedPackets, NULL, NULL);
+    CCDataDestroy(Memory);
 }
