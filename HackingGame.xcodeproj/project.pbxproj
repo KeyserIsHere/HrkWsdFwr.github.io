@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		F305A5F11E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F305A5EF1E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c */; };
+		F30646F82359523000DFD780 /* ProgramAlternatingReaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F30646F72359523000DFD780 /* ProgramAlternatingReaderTests.m */; };
 		F308E5BB1E7E61360011F892 /* HubModuleKeyboardComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */; };
 		F30DE0591EBB4B5100C6F845 /* HubDebuggerComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F30DE0571EBB4B5100C6F845 /* HubDebuggerComponent.c */; };
 		F312921622C0ED190063D046 /* ProgramHTPDecoderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F312921522C0ED190063D046 /* ProgramHTPDecoderTests.m */; };
@@ -112,6 +113,7 @@
 /* Begin PBXFileReference section */
 		F305A5EF1E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleWirelessTransceiverComponent.c; sourceTree = "<group>"; };
 		F305A5F01E8CFAAC00890EED /* HubModuleWirelessTransceiverComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleWirelessTransceiverComponent.h; sourceTree = "<group>"; };
+		F30646F72359523000DFD780 /* ProgramAlternatingReaderTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgramAlternatingReaderTests.m; sourceTree = "<group>"; };
 		F308E5B91E7E61360011F892 /* HubModuleKeyboardComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubModuleKeyboardComponent.c; sourceTree = "<group>"; };
 		F308E5BA1E7E61360011F892 /* HubModuleKeyboardComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModuleKeyboardComponent.h; sourceTree = "<group>"; };
 		F30DE0571EBB4B5100C6F845 /* HubDebuggerComponent.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubDebuggerComponent.c; sourceTree = "<group>"; };
@@ -393,6 +395,7 @@
 				F363AF8522C9E57200C243E4 /* ProgramPassthrough1Tests.m */,
 				F39B85F022D032800025C629 /* ProgramBufferTests.m */,
 				F37151FC22F73E5B00FDD59A /* ProgramBroadcastNodeReceiverTests.m */,
+				F30646F72359523000DFD780 /* ProgramAlternatingReaderTests.m */,
 			);
 			name = Programs;
 			sourceTree = "<group>";
@@ -654,6 +657,7 @@
 				F330184A231BF75300653A0B /* ProgramPassthrough0Tests.m in Sources */,
 				F39B85F122D032800025C629 /* ProgramBufferTests.m in Sources */,
 				F363AF8622C9E57200C243E4 /* ProgramPassthrough1Tests.m in Sources */,
+				F30646F82359523000DFD780 /* ProgramAlternatingReaderTests.m in Sources */,
 				F39D746A22BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m in Sources */,
 				F34BB7DC1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m in Sources */,
 				F32039A11E845BDA00280DC9 /* HubModuleWirelessTransceiver.m in Sources */,
