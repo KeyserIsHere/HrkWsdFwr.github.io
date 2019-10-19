@@ -1,5 +1,10 @@
 (entity "broadcast-node"
-    (state! ".transceiver")
+    (state! ".transceivers")
+    (state! ".listeners")
+    (state! ".listener-switch")
+    (state! ".listener-read-notifier")
+    (state! ".listener-send-notifier")
+    (state! ".listener-passthrough")
     (state! ".broadcast-receiver")
     (state! ".packet-buffers")
     (state! ".packet-scheduler")
@@ -9,9 +14,54 @@
     (state! ".receiver-buffer-count" 2)
 
     (children:
-        (.transceiver! (eval (cat (@cd "transceiver.entity"))))
+        (.transceivers! (repeat "@item" 2 (eval (cat (@cd "transceiver.entity")))))
         (loop "@channel" .listening-channels
             (
+                (.listeners! (repeat "@item" 2
+                    (entity "listener"
+                        (hub
+                            (name: "Listener")
+                            (program: (cat (@cd "../programs/alternating_reader.chasm"))
+                                (define: "active"  @item)
+                                (define: "read_attempts" 64)
+                            )
+                        )
+                    )
+                ))
+                (.listener-switch! (entity "listener-switch"
+                    (hub
+                        (name: "Listener Switch")
+                        (program: (cat (@cd "../programs/alternating_source_passthrough_0.chasm"))
+                            (define: "source_count" 2)
+                        )
+                    )
+                ))
+                (.listener-read-notifier! (entity "listener-read-notifier"
+                    (hub
+                        (name: "Listener Read Notifier")
+                        (program: (cat (@cd "../programs/cross_notifier.chasm"))
+                            (define: "initial_port" 255)
+                            (define: "preset" 0)
+                        )
+                    )
+                ))
+                (.listener-send-notifier! (entity "listener-send-notifier"
+                    (hub
+                        (name: "Listener Send Notifier")
+                        (program: (cat (@cd "../programs/cross_notifier.chasm"))
+                            (define: "initial_port" 0)
+                            (define: "preset" 1)
+                        )
+                    )
+                ))
+                (.listener-passthrough! (entity "listener-passthrough"
+                    (hub
+                        (name: "Listener Passthrough")
+                        (program: (cat (@cd "../programs/switchable_source_passthrough_1.chasm"))
+                            (define: "source_count" 2)
+                        )
+                    )
+                ))
                 (.broadcast-receiver! (entity "broadcast-node-receiver"
                     (hub
                         (name: "Broadcast Receiver")
@@ -39,17 +89,34 @@
                 (.htp-decoder! (entity "htp1-decoder"
                     (hub
                         (name: "HTP1 Decoder")
-                        (program: (cat (@cd "../programs/htp1_decoder.chasm")))
+                        (program: (cat (@cd "../programs/htp4_decoder.chasm")))
                     )
                 ))
             )
         )
     )
 
-    ; TODO: auto create named ports from parsing docs, so can use the named references instead of numbers (which may break if programs are refactored)
     (loop "@channel" .listening-channels
         (
-            (port-connection (ports: (.transceiver @channel) (.broadcast-receiver 1)))
+            (port-connection (ports: ((get 0 .transceivers) @channel) ((get 0 .listeners) 1)))
+            (port-connection (ports: ((get 1 .transceivers) @channel) ((get 1 .listeners) 1)))
+
+            (port-connection (ports: ((get 0 .listeners) 0) (.listener-read-notifier 0)))
+            (port-connection (ports: ((get 1 .listeners) 0) (.listener-read-notifier 255)))
+
+            (port-connection (ports: ((get 0 .listeners) 255) (.listener-send-notifier 0)))
+            (port-connection (ports: ((get 1 .listeners) 255) (.listener-send-notifier 255)))
+
+            (port-connection (ports: ((get 0 .listeners) 3) (.listener-switch 1)))
+            (port-connection (ports: ((get 1 .listeners) 3) (.listener-switch 0)))
+
+            (port-connection (ports: (.listener-switch 255) (.listener-passthrough 254)))
+
+            (port-connection (ports: (.listener-passthrough 255) (.broadcast-receiver 1)))
+
+            (port-connection (ports: ((get 0 .listeners) 2) (.listener-passthrough 1)))
+            (port-connection (ports: ((get 1 .listeners) 2) (.listener-passthrough 0)))
+
             (port-connection (ports: (.broadcast-receiver 0) (.packet-scheduler 254)))
             (repeat "@index" .receiver-buffer-count
                 (
@@ -59,6 +126,7 @@
                 )
             )
             (port-connection (ports: (.packet-scheduler 255) (.htp-decoder 0)))
+            (port-connection (ports: (.getter 0) (.htp-decoder 1)))
         )
     )
 )
