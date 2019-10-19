@@ -86,9 +86,9 @@
                         )
                     )
                 ))
-                (.htp-decoder! (entity "htp1-decoder"
+                (.htp-decoder! (entity "htp4-decoder"
                     (hub
-                        (name: "HTP1 Decoder")
+                        (name: "HTP4 Decoder")
                         (program: (cat (@cd "../programs/htp4_decoder.chasm")))
                     )
                 ))
@@ -126,7 +126,6 @@
                 )
             )
             (port-connection (ports: (.packet-scheduler 255) (.htp-decoder 0)))
-            (port-connection (ports: (.getter 0) (.htp-decoder 1)))
         )
     )
 )
