@@ -22,6 +22,58 @@
                             "args": [[{ "type": "string", "name": "name" }, { "type": "integer", "name": "value" }]]
                         }
                     ]
+                },
+                {
+                    "name": "state",
+                    "description": "The processor state.",
+                    "args": [[{ "type": "list", "name": "memory" }]],
+                    "options": [
+                        {
+                            "name": "pc",
+                            "description": "The PC register state.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "r0",
+                            "description": "The R0 register state.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "r1",
+                            "description": "The R1 register state.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "r2",
+                            "description": "The R2 register state.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "r3",
+                            "description": "The R3 register state.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "flags",
+                            "description": "The FLAGS register state.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "cycles",
+                            "description": "The processor cycle count.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "status",
+                            "description": "The processor operating status.",
+                            "args": [[{ "type": "integer", "name": "value" }]]
+                        },
+                        {
+                            "name": "unused-time",
+                            "description": "The unused processor time.",
+                            "args": [[{ "type": "float", "name": "value" }]]
+                        }
+                    ]
                 }
             ]
         },
