@@ -42,6 +42,7 @@ extern const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescrip
 
 void HKHubModuleKeyboardComponentRegister(void);
 void HKHubModuleKeyboardComponentDeregister(void);
+void HKHubModuleKeyboardComponenDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred);
 void HKHubModuleKeyboardComponentKeyboardCallback(CCComponent Component, CCKeyboardMap State);
 
 /*!

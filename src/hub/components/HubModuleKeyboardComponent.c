@@ -33,7 +33,7 @@ const CCString HKHubModuleKeyboardComponentName = CC_STRING("keyboard_module");
 const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor = {
     .id = HK_HUB_MODULE_KEYBOARD_COMPONENT_ID,
     .initialize = NULL,
-    .deserialize = NULL,
+    .deserialize = HKHubModuleKeyboardComponenDeserializer,
     .serialize = NULL
 };
 
@@ -64,4 +64,54 @@ void HKHubModuleKeyboardComponentRegister(void)
 void HKHubModuleKeyboardComponentDeregister(void)
 {
     CCComponentDeregister(HK_HUB_MODULE_KEYBOARD_COMPONENT_ID);
+}
+
+void HKHubModuleKeyboardComponenDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred)
+{
+    if (CCExpressionGetType(Arg) == CCExpressionValueTypeList)
+    {
+        const size_t ArgCount = CCCollectionGetCount(CCExpressionGetList(Arg));
+        if (ArgCount >= 2)
+        {
+            CCExpression NameExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 0);
+            if (CCExpressionGetType(NameExpr) == CCExpressionValueTypeAtom)
+            {
+                CCString Name = CCExpressionGetAtom(NameExpr);
+                if (CCStringEqual(Name, CC_STRING("buffer:")))
+                {
+                    if (ArgCount == 2)
+                    {
+                        CCExpression BufferExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 1);
+                        if (CCExpressionGetType(BufferExpr) == CCExpressionValueTypeList)
+                        {
+                            HKHubModule Module = HKHubModuleComponentGetModule(Component);
+                            CCOrderedCollection(CCExpression) Buffer = CCExpressionGetList(BufferExpr);
+                            
+                            CC_COLLECTION_FOREACH(CCExpression, Key, Buffer)
+                            {
+                                if (CCExpressionGetType(Key) == CCExpressionValueTypeInteger)
+                                {
+                                    HKHubModuleKeyboardEnterKey(Module, (uint8_t)CCExpressionGetInteger(Key));
+                                }
+                                
+                                else
+                                {
+                                    CC_LOG_ERROR("Expect value for argument (buffer:) to be a list of integers");
+                                    
+                                    return;
+                                }
+                            }
+
+                        }
+
+                        else CC_LOG_ERROR("Expect value for argument (buffer:) to be a list");
+                    }
+
+                    else CC_LOG_ERROR("Expect value for argument (buffer:) to be a list");
+
+                    return;
+                }
+            }
+        }
+    }
 }
