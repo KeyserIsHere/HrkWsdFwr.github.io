@@ -108,7 +108,14 @@
             "name": "keyboard-module",
             "description": "Create a keyboard module component.",
             "examples": ["(keyboard-module)"],
-            "return": { "type": "custom:component" }
+            "return": { "type": "custom:component" },
+            "options": [
+                {
+                    "name": "buffer",
+                    "description": "The buffered keys.",
+                    "args": [[{ "type": "list", "name": "keys" }]]
+                }
+            ]
         },
         {
             "name": "display-module",
