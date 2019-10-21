@@ -75,7 +75,7 @@ static HKHubArchPortResponse HKHubModuleWirelessTransceiverReceive(HKHubArchPort
     if ((Timestamp + 8) < GlobalTimestamp)
     {
         if (((HKHubModuleWirelessTransceiverState*)Device->internal)->prevGlobalTimestamp == GlobalTimestamp) return  HKHubArchPortResponseDefer;
-
+        
         ((HKHubModuleWirelessTransceiverState*)Device->internal)->prevGlobalTimestamp = GlobalTimestamp;
         return HKHubArchPortResponseRetry;
     }
