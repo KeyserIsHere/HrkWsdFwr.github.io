@@ -103,6 +103,51 @@ void HKHubModuleDisplayComponenDeserializer(CCComponent Component, CCExpression 
                     
                     return;
                 }
+                
+                else if (CCStringEqual(Name, CC_STRING("framebuffer:")))
+                {
+                    if (ArgCount == 2)
+                    {
+                        CCExpression FramebufferExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 1);
+                        if (CCExpressionGetType(FramebufferExpr) == CCExpressionValueTypeList)
+                        {
+                            CCOrderedCollection(CCExpression) Framebuffer = CCExpressionGetList(FramebufferExpr);
+                            HKHubModule Module = HKHubModuleComponentGetModule(Component);
+                            CCData Data = HKHubModuleGetMemory(Module);
+                            const size_t Size = CCDataGetSize(Data);
+                            
+                            if (CCCollectionGetCount(Framebuffer) < Size)
+                            {
+                                CCBufferMap Map = CCDataMapBuffer(Data, 0, Size, CCDataHintReadWrite);
+                                
+                                size_t Index = 0;
+                                CC_COLLECTION_FOREACH(CCExpression, Pixel, Framebuffer)
+                                {
+                                    if (CCExpressionGetType(Pixel) == CCExpressionValueTypeInteger)
+                                    {
+                                        ((uint8_t*)Map.ptr)[Index] = (uint8_t)CCExpressionGetInteger(Pixel);
+                                    }
+                                    
+                                    else
+                                    {
+                                        CC_LOG_ERROR("Expect value for argument (framebuffer:) to be a list of integers");
+                                        break;
+                                    }
+                                }
+                                
+                                CCDataUnmapBuffer(Data, Map);
+                            }
+                            
+                            else CC_LOG_ERROR("Expect value for argument (framebuffer:) to be a list of up to %zu integers", Size);
+                        }
+                        
+                        else CC_LOG_ERROR("Expect value for argument (framebuffer:) to be a list");
+                    }
+                    
+                    else CC_LOG_ERROR("Expect value for argument (framebuffer:) to be a list");
+                    
+                    return;
+                }
             }
         }
     }
