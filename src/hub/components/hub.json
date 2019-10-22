@@ -141,6 +141,11 @@
                         [{ "type": "atom", "value": "gradient" }],
                         [{ "type": "atom", "value": "yuv" }]
                     ]
+                },
+                {
+                    "name": "framebuffer",
+                    "description": "The framebuffer.",
+                    "args": [[{ "type": "list", "name": "pixels" }]]
                 }
             ]
         },
