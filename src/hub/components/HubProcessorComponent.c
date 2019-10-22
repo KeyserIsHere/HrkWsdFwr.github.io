@@ -182,21 +182,26 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                         {
                             CCOrderedCollection(CCExpression) Memory = CCExpressionGetList(*Data);
                             
-                            size_t Index = 0;
-                            CC_COLLECTION_FOREACH(CCExpression, Byte, Memory)
+                            if (CCCollectionGetCount(Memory) < sizeof(Processor->memory))
                             {
-                                if (CCExpressionGetType(Byte) == CCExpressionValueTypeInteger)
+                                size_t Index = 0;
+                                CC_COLLECTION_FOREACH(CCExpression, Byte, Memory)
                                 {
-                                    Processor->memory[Index++] = (uint8_t)CCExpressionGetInteger(Byte);
-                                }
-                                
-                                else
-                                {
-                                    CC_LOG_ERROR("Expect value for argument (state:) to be a list of integers");
+                                    if (CCExpressionGetType(Byte) == CCExpressionValueTypeInteger)
+                                    {
+                                        Processor->memory[Index++] = (uint8_t)CCExpressionGetInteger(Byte);
+                                    }
                                     
-                                    return;
+                                    else
+                                    {
+                                        CC_LOG_ERROR("Expect value for argument (state:) to be a list of integers");
+                                        
+                                        return;
+                                    }
                                 }
                             }
+                            
+                            else CC_LOG_ERROR("Expect value for argument (state:) to be a list of up to 256 integers");
                             
                             for (CCExpression *Option; (Option = CCCollectionEnumeratorNext(&Enumerator)); )
                             {
