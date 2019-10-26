@@ -54,6 +54,8 @@
 		F3ECD0041E0B4236007343C2 /* CommonGameKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F348774B1DDC53190068844D /* CommonGameKit.framework */; };
 		F3ECD0051E0B423B007343C2 /* CommonC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877491DDC53150068844D /* CommonC.framework */; };
 		F3EEE60F20357031006A09DA /* ItemManualComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F3EEE60E20357031006A09DA /* ItemManualComponent.c */; };
+		F3F2267A2363847B0052AD3D /* ProcedureModPowTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F226792363847B0052AD3D /* ProcedureModPowTests.m */; };
+		F3F2267C2363858C0052AD3D /* ProcedureTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F2267B2363858C0052AD3D /* ProcedureTests.m */; };
 		F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */; };
 		F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */; };
 /* End PBXBuildFile section */
@@ -188,6 +190,9 @@
 		F3E8BDFB1E33D670002523DF /* HubModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubModule.h; sourceTree = "<group>"; };
 		F3EEE60D20357031006A09DA /* ItemManualComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ItemManualComponent.h; sourceTree = "<group>"; };
 		F3EEE60E20357031006A09DA /* ItemManualComponent.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ItemManualComponent.c; sourceTree = "<group>"; };
+		F3F226792363847B0052AD3D /* ProcedureModPowTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureModPowTests.m; sourceTree = "<group>"; };
+		F3F2267B2363858C0052AD3D /* ProcedureTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureTests.m; sourceTree = "<group>"; };
+		F3F2267D236385990052AD3D /* ProcedureTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProcedureTests.h; sourceTree = "<group>"; };
 		F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchProcessor.c; sourceTree = "<group>"; };
 		F3F4922E1DE6E5B30046A391 /* HubArchProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchProcessor.h; sourceTree = "<group>"; };
 		F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchInstructionTests.m; sourceTree = "<group>"; };
@@ -344,6 +349,7 @@
 		F34877F71DDC73BA0068844D /* Hub */ = {
 			isa = PBXGroup;
 			children = (
+				F3F22677236384460052AD3D /* Procedures */,
 				F39D746722BE4C34000BDA62 /* Programs */,
 				F34877F31DDC73A40068844D /* HubArchAssemblyTests.m */,
 				F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */,
@@ -461,6 +467,16 @@
 			);
 			name = Components;
 			path = components;
+			sourceTree = "<group>";
+		};
+		F3F22677236384460052AD3D /* Procedures */ = {
+			isa = PBXGroup;
+			children = (
+				F3F2267B2363858C0052AD3D /* ProcedureTests.m */,
+				F3F2267D236385990052AD3D /* ProcedureTests.h */,
+				F3F226792363847B0052AD3D /* ProcedureModPowTests.m */,
+			);
+			name = Procedures;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -649,7 +665,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F312921622C0ED190063D046 /* ProgramHTPDecoderTests.m in Sources */,
+				F3F2267A2363847B0052AD3D /* ProcedureModPowTests.m in Sources */,
 				F32039A41E87BE4500280DC9 /* HubArchDebuggingTests.m in Sources */,
+				F3F2267C2363858C0052AD3D /* ProcedureTests.m in Sources */,
 				F3653F971E600A51002AB66D /* HubModuleDisplayTests.m in Sources */,
 				F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */,
 				F312921B22C720C80063D046 /* ProgramHTP4DecoderTests.m in Sources */,
