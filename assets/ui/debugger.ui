@@ -50,6 +50,18 @@
     (state! ".button-focus-colour" (quote .highlight-instruction-colour))
     (state! ".button-fill-colour" (quote .background-colour))
 
+    (state! ".font" (
+        ; (font "Andale Mono")
+        ; (thickness: 0.45)
+        ; (space: 0)
+        ; (scale: -0.712 -0.712)
+
+        (font "Courier New")
+        (thickness: 0.5)
+        (space: 0)
+        (scale: -0.712 -0.712)
+    ))
+
     (state! ".palette" "basic/red")
     (eval (cat (@cd "assets/palettes/" .palette "/debugger.blob")))
 

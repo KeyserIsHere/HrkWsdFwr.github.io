@@ -5,11 +5,14 @@
     (state! ".text-alignment" :center)
 
     (state! ".text" (quote (render-text .rect
-        (text:
-            (cat (loop "@port" .ports
-                (cat ("port" (format :dec (get 0 @port)) ":" (if (= :connected (get 1 @port)) "connected" "disconnected")) " ")
-            ) "\n")
-            (colour: .colour)
+        (flatten
+            (text:
+                (cat (loop "@port" .ports
+                    (cat ("port" (format :dec (get 0 @port)) ":" (if (= :connected (get 1 @port)) "connected" "disconnected")) " ")
+                ) "\n")
+                (colour: .colour)
+            )
+            .font
         )
         (align: .text-alignment)
         (wrap: :word :multi)
