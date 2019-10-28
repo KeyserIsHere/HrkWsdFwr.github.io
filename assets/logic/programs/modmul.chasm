@@ -1,0 +1,35 @@
+# Modular Multiplication Procedure
+# Calculates an 8-bit modular multiply: a * b (mod m)
+#
+# Input
+# r0: a
+# r1: b
+# r2: m (modulus)
+#
+# Output
+# r0: a (mod m)
+# r1: 0 or b (if: a (mod m) = 0)
+# r2: m
+# r3: result
+
+modmul:
+    xor r3, r3
+    umod r0, r2
+    jz modmul_ret
+    umod r1, r2
+    jz modmul_ret
+    umod [modmul_carry], r2
+    add [modmul_carry], 1
+modmul_loop:
+    add r3, r0
+    juge modmul_next
+    add r3, [modmul_carry]
+modmul_next:
+    sub r1, 1
+    jnz modmul_loop
+    umod r3, r2
+    mov [modmul_carry], 0xff
+    jmp modmul_ret
+modmul_carry:
+    .byte 0xff
+modmul_ret:
