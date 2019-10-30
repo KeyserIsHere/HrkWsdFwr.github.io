@@ -45,8 +45,8 @@
     HKHubArchProcessorSetCycles(self.processor, 100000);
     HKHubArchSchedulerRun(self.scheduler, 0.0);
     
-    XCTAssertEqual(self.processor->state.r[0], (a % m), @"Should have the correct value");
-    XCTAssertEqual(self.processor->state.r[1], (a % m) == 0 ? b : 0, @"Should have the correct value");
+    XCTAssertEqual(self.processor->state.r[0], m == 0 ? 0 : (a % m), @"Should have the correct value");
+    XCTAssertEqual(self.processor->state.r[1], m == 0 ? b : ((a % m) == 0 ? b : 0), @"Should have the correct value");
     XCTAssertEqual(self.processor->state.r[2], m, @"Should have the correct value");
 }
 
@@ -56,7 +56,7 @@
     {
         for (uint32_t b = 0; b < 256; b++)
         {
-            for (uint32_t m = 1; m < 256; m++)
+            for (uint32_t m = 0; m < 256; m++)
             {
                 self.processor->state.r[0] = 0;
                 self.processor->state.r[1] = 0;
@@ -68,7 +68,7 @@
                 
                 [self runForA: a B: b Modulus: m];
                 
-                const uint32_t Result = (a * b) % m;
+                const uint32_t Result = m == 0 ? 0 : ((a * b) % m);
                 XCTAssertEqual(self.processor->state.r[3], Result, @"Should have the correct value: %u (%u * %u %% %u)", Result, a, b, m);
             }
         }
