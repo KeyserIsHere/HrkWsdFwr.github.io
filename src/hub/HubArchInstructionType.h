@@ -67,6 +67,18 @@ typedef enum {
 } HKHubArchInstructionMemoryOperation;
 
 typedef enum {
+    HKHubArchInstructionControlFlowEvaluationMask = 1,
+    HKHubArchInstructionControlFlowEvaluationUnconditional = (0 << 0),
+    HKHubArchInstructionControlFlowEvaluationConditional = (1 << 0),
+    
+    HKHubArchInstructionControlFlowEffectMask = (3 << 1),
+    HKHubArchInstructionControlFlowEffectNone = (0 << 1),
+    HKHubArchInstructionControlFlowEffectBranch = (1 << 1),
+    HKHubArchInstructionControlFlowEffectPause = (2 << 1),
+    HKHubArchInstructionControlFlowEffectIO = (3 << 1)
+} HKHubArchInstructionControlFlow;
+
+typedef enum {
     HKHubArchInstructionRegisterSpecialPurpose = (1 << 1),
     HKHubArchInstructionRegisterGeneralPurpose = (1 << 2),
     HKHubArchInstructionRegisterGeneralPurposeIndexMask = 3,
