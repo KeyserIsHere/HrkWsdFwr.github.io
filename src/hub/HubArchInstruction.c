@@ -746,6 +746,36 @@ size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State
     return (InstructionBits / 8) + 1;
 }
 
+_Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State)
+{
+    CCAssertLog(State, "State must not be null");
+    
+    if ((State->opcode != -1) && (Instructions[State->opcode].mnemonic))
+    {
+        if (Instructions[State->opcode].control & HKHubArchInstructionControlFlowEffectMask) return FALSE;
+        
+        _Static_assert(HKHubArchInstructionMemoryOperationOp1 == 0 &&
+                       HKHubArchInstructionMemoryOperationOp2 == 2 &&
+                       HKHubArchInstructionMemoryOperationOp3 == 4, "Expects the following operand mask layout");
+        
+        const HKHubArchInstructionMemoryOperation Memory = Instructions[State->opcode].memory;
+        for (size_t Loop = 0; Loop < 3; Loop++)
+        {
+            if ((Memory >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)
+            {
+                if (State->operand[Loop].type & HKHubArchInstructionOperandR)
+                {
+                    if (State->operand[Loop].reg == HKHubArchInstructionRegisterPC) return FALSE;
+                }
+            }
+        }
+        
+        return TRUE;
+    }
+            
+    return FALSE;
+}
+
 HKHubArchInstructionMemoryOperation HKHubArchInstructionGetMemoryOperation(const HKHubArchInstructionState *State)
 {
     CCAssertLog(State, "State must not be null");

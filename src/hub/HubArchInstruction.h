@@ -72,6 +72,20 @@ uint8_t HKHubArchInstructionDecode(uint8_t Offset, uint8_t Data[256], HKHubArchI
 size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State);
 
 /*!
+ * @brief Check whether a given instruction has predictable flow.
+ * @description A predictable flow refers to an instruction that when executed will move immediately to the
+ *              instruction below it. Instructions that may stall (temporarily or persistently), branch,
+ *              or modify the PC register are all examples of unpredictable flow.
+ *
+ * @note This should only be used as a hint. A true result means the the flow is guaranteed to be predictable,
+ *       while a false result means it cannot be sure.
+ *
+ * @param State The state for the instruction.
+ * @return Whether the instruction has predictable flow.
+ */
+_Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State);
+
+/*!
  * @brief Get the memory operation of the instruction.
  * @param State The state for the instruction.
  * @return The memory operation.
