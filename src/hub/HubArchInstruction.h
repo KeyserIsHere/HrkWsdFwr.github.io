@@ -86,6 +86,13 @@ size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State
 _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State);
 
 /*!
+ * @brief Get the control flow of the instruction.
+ * @param State The state for the instruction.
+ * @return The control flow.
+ */
+HKHubArchInstructionControlFlow HKHubArchInstructionGetControlFlow(const HKHubArchInstructionState *State);
+
+/*!
  * @brief Get the memory operation of the instruction.
  * @param State The state for the instruction.
  * @return The memory operation.

@@ -776,6 +776,19 @@ _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State
     return FALSE;
 }
 
+HKHubArchInstructionControlFlow HKHubArchInstructionGetControlFlow(const HKHubArchInstructionState *State)
+{
+    CCAssertLog(State, "State must not be null");
+    
+    HKHubArchInstructionControlFlow Flow = HKHubArchInstructionControlFlowEffectPause;
+    if ((State->opcode != -1) && (Instructions[State->opcode].mnemonic))
+    {
+        Flow = Instructions[State->opcode].control;
+    }
+    
+    return Flow;
+}
+
 HKHubArchInstructionMemoryOperation HKHubArchInstructionGetMemoryOperation(const HKHubArchInstructionState *State)
 {
     CCAssertLog(State, "State must not be null");
