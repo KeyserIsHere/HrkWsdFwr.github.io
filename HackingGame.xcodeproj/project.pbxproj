@@ -57,6 +57,7 @@
 		F3F2267A2363847B0052AD3D /* ProcedureModPowTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F226792363847B0052AD3D /* ProcedureModPowTests.m */; };
 		F3F2267C2363858C0052AD3D /* ProcedureTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F2267B2363858C0052AD3D /* ProcedureTests.m */; };
 		F3F2267F23675F7C0052AD3D /* ProcedureModMulTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F2267E23675F7C0052AD3D /* ProcedureModMulTests.m */; };
+		F3F2268A236B86870052AD3D /* HubArchCacheTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F22689236B86870052AD3D /* HubArchCacheTests.m */; };
 		F3F4922F1DE6E5B30046A391 /* HubArchProcessor.c in Sources */ = {isa = PBXBuildFile; fileRef = F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */; };
 		F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */; };
 /* End PBXBuildFile section */
@@ -195,6 +196,7 @@
 		F3F2267B2363858C0052AD3D /* ProcedureTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureTests.m; sourceTree = "<group>"; };
 		F3F2267D236385990052AD3D /* ProcedureTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProcedureTests.h; sourceTree = "<group>"; };
 		F3F2267E23675F7C0052AD3D /* ProcedureModMulTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureModMulTests.m; sourceTree = "<group>"; };
+		F3F22689236B86870052AD3D /* HubArchCacheTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HubArchCacheTests.m; sourceTree = "<group>"; };
 		F3F4922D1DE6E5B30046A391 /* HubArchProcessor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchProcessor.c; sourceTree = "<group>"; };
 		F3F4922E1DE6E5B30046A391 /* HubArchProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchProcessor.h; sourceTree = "<group>"; };
 		F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HubArchInstructionTests.m; sourceTree = "<group>"; };
@@ -356,6 +358,7 @@
 				F34877F31DDC73A40068844D /* HubArchAssemblyTests.m */,
 				F3F492311DE79C5F0046A391 /* HubArchInstructionTests.m */,
 				F32039A31E87BE4500280DC9 /* HubArchDebuggingTests.m */,
+				F3F22689236B86870052AD3D /* HubArchCacheTests.m */,
 				F34BB7DB1E4BE0DF00DEE072 /* HubModuleKeyboardTests.m */,
 				F3653F961E600A51002AB66D /* HubModuleDisplayTests.m */,
 				F32039A01E845BDA00280DC9 /* HubModuleWirelessTransceiver.m */,
@@ -673,6 +676,7 @@
 				F3F2267C2363858C0052AD3D /* ProcedureTests.m in Sources */,
 				F3653F971E600A51002AB66D /* HubModuleDisplayTests.m in Sources */,
 				F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */,
+				F3F2268A236B86870052AD3D /* HubArchCacheTests.m in Sources */,
 				F312921B22C720C80063D046 /* ProgramHTP4DecoderTests.m in Sources */,
 				F37151FD22F73E5B00FDD59A /* ProgramBroadcastNodeReceiverTests.m in Sources */,
 				F330184A231BF75300653A0B /* ProgramPassthrough0Tests.m in Sources */,
