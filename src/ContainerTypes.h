@@ -2,7 +2,9 @@
 #define CC_CONTAINER_DECLARE_PRESET_CCArray() \
 CC_CONTAINER_DECLARE(CCArray, CCChar); \
 CC_CONTAINER_DECLARE(CCArray, CCFontGlyph); \
+CC_CONTAINER_DECLARE(CCArray, CC_CONTAINER(CCLinkedList, HKHubArchProcessorInstructionGraphNode)); \
 CC_CONTAINER_DECLARE(CCArray, HKHubArchAssemblyASTType); \
+CC_CONTAINER_DECLARE(CCArray, HKHubArchProcessorInstructionGraphRange); \
 CC_CONTAINER_DECLARE(CCArray, uint8_t);
 
 #define CC_CONTAINER_DECLARE_PRESET_CCCollection() \
@@ -40,7 +42,8 @@ CC_CONTAINER_DECLARE(CCDictionary, uint8_t, HKHubArchProcessorDebugBreakpoint);
 #define CC_CONTAINER_DECLARE_PRESET_CCHashMap()
 
 #define CC_CONTAINER_DECLARE_PRESET_CCLinkedList() \
-CC_CONTAINER_DECLARE(CCLinkedList, CCArray);
+CC_CONTAINER_DECLARE(CCLinkedList, CCArray); \
+CC_CONTAINER_DECLARE(CCLinkedList, HKHubArchProcessorInstructionGraphNode);
 
 #define CC_CONTAINER_DECLARE_PRESET_CCList() \
 CC_CONTAINER_DECLARE(CCList, uint64_t);

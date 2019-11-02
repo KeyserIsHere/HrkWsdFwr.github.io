@@ -50,6 +50,17 @@ typedef enum {
     HKHubArchProcessorDebugBreakpointWrite = (1 << 1)
 } HKHubArchProcessorDebugBreakpoint;
 
+typedef struct {
+    uint8_t offset;
+    HKHubArchInstructionState state;
+    CCLinkedList(HKHubArchProcessorInstructionGraphNode) jump;
+} HKHubArchProcessorInstructionGraphNode;
+
+typedef struct {
+    uint8_t start;
+    uint8_t count;
+} HKHubArchProcessorInstructionGraphRange;
+
 /*!
  * @brief The processor.
  * @description Allows @b CCRetain.
@@ -119,6 +130,10 @@ typedef struct HKHubArchProcessorInfo {
             };
         } debug;
     } state;
+    struct {
+        CCArray(CCLinkedList(HKHubArchProcessorInstructionGraphNode)) graph;
+        CCArray(HKHubArchProcessorInstructionGraphRange) range;
+    } cache;
     size_t cycles;
     double unusedTime;
     HKHubArchProcessorStatus status;
@@ -181,6 +196,12 @@ void HKHubArchProcessorReset(HKHubArchProcessor Processor, HKHubArchBinary Binar
  * @param Processor The processor to reset.
  */
 void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor);
+
+/*!
+ * @brief Reset the processor cache.
+ * @param Processor The processor to reset.
+ */
+void HKHubArchProcessorCacheReset(HKHubArchProcessor Processor);
 
 /*!
  * @brief Set the cycles the processor should run.
@@ -265,6 +286,12 @@ void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProc
  * @param Processor The processor to remove the breakpoints of.
  */
 void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor);
+
+/*!
+ * @brief Generate the execution cache for the processor.
+ * @param Processor The processor to create the execution cache of.
+ */
+void HKHubArchProcessorCache(HKHubArchProcessor Processor);
 
 /*!
  * @brief Whether the processor can continue to be executed or not.
