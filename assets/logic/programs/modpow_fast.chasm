@@ -1,0 +1,28 @@
+# Modular Exponentiation Procedure
+# Calculates an 8-bit modular exponent
+#
+# Input
+# r0: base
+# r1: exponent
+# r2: modulus
+#
+# Output
+# r0: modified
+# r1: 0
+# r2: modulus
+# r3: result
+
+modpow:
+    mov r3, 1
+modpow_loop:
+    and r1, r1
+    jz modpow_ret
+    umod r0, r2
+    shr r1, 1
+    juge modpow_raise
+    mul r3, r0
+    umod r3, r2
+modpow_raise:
+    mul r0, r0
+    jmp modpow_loop
+modpow_ret:
