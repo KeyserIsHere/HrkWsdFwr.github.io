@@ -1,0 +1,47 @@
+# Modular Exponentiation Procedure
+# Calculates an 8-bit modular exponent
+#
+# Input
+# r0: base
+# r1: exponent
+# r2: modulus
+#
+# Output
+# r0: modified
+# r1: 0
+# r2: modulus
+# r3: result
+
+modpow:
+    mov r3, 1
+modpow_loop:
+    and r1, r1
+    jz modpow_ret
+    shr r1, 1
+    juge modpow_raise
+    or [modpow_mul_ret], (modpow_mul_ret_0 - modpow_mul_ret) >> 6
+    mov [modpow_mul_ret + 1], (modpow_mul_ret_0 - modpow_mul_ret) << 2
+    mov [modpow_save_state], r1
+    mov [modpow_save_state + 1], r0
+    mov r1, r3
+    jmp modpow_mul
+modpow_mul_ret_0:
+    mov r0, [modpow_save_state + 1]
+modpow_raise:
+    and [modpow_mul_ret], 0xfc
+    mov [modpow_mul_ret + 1], (modpow_mul_ret_1 - modpow_mul_ret) << 2
+    mov [modpow_save_state], r1
+    mov [modpow_save_state + 1], r3
+    mov r1, r0
+modpow_mul:
+    .include modmul
+    mov r1, [modpow_save_state]
+modpow_mul_ret:
+    jmp 0
+modpow_mul_ret_1:
+    mov r0, r3
+    mov r3, [modpow_save_state + 1]
+    jmp modpow_loop
+modpow_save_state:
+    .byte 0, 0
+modpow_ret:
