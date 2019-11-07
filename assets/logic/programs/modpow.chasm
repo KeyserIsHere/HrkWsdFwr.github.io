@@ -4,16 +4,18 @@
 # Input
 # r0: base
 # r1: exponent
-# r2: modulus
+# r2: m (modulus)
 #
 # Output
 # r0: modified
-# r1: 0
-# r2: modulus
+# r1: 0 or exponent (if: 1 (mod m) = 0)
+# r2: m
 # r3: result
 
 modpow:
     mov r3, 1
+    umod r3, r2
+    jz modpow_ret
 modpow_loop:
     and r1, r1
     jz modpow_ret
