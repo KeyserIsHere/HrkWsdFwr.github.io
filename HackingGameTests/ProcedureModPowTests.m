@@ -30,6 +30,27 @@
 
 @end
 
+
+static int PowMod(int b, int e, int m)
+{
+    if (m == 1) return 0;
+    
+    int r = 1;
+    b = b % m;
+    while (e > 0)
+    {
+        if (e % 2 == 1)
+        {
+            r = (r * b) % m;
+        }
+        
+        e >>= 1;
+        b = (b * b) % m;
+    }
+    
+    return r;
+}
+
 @implementation ProcedureModPowTests
 
 -(const char*) source
@@ -45,92 +66,33 @@
     HKHubArchProcessorSetCycles(self.processor, 100000);
     HKHubArchSchedulerRun(self.scheduler, 0.0);
     
-    XCTAssertEqual(self.processor->state.r[1], 0, @"Should have the correct value");
+    XCTAssertEqual(self.processor->state.r[1], modulus == 1 ? exponent : 0, @"Should have the correct value");
     XCTAssertEqual(self.processor->state.r[2], modulus, @"Should have the correct value");
 }
 
--(void) testZeroExponent
+-(void) testAllInputs
 {
-    [self runForBase: 255 Exponent: 0 Modulus: 255];
-    XCTAssertEqual(self.processor->state.r[3], 1, @"Should have the correct value");
-}
-
--(void) testOneExponent
-{
-    [self runForBase: 255 Exponent: 1 Modulus: 255];
-    XCTAssertEqual(self.processor->state.r[3], 0, @"Should have the correct value");
-}
-
--(void) testOneExponentBigModulus
-{
-    [self runForBase: 3 Exponent: 1 Modulus: 255];
-    XCTAssertEqual(self.processor->state.r[3], 3, @"Should have the correct value");
-}
-
--(void) testOneExponentSmallModulus
-{
-    [self runForBase: 255 Exponent: 1 Modulus: 50];
-    XCTAssertEqual(self.processor->state.r[3], 5, @"Should have the correct value");
-}
-
--(void) testTwoExponent
-{
-    [self runForBase: 255 Exponent: 2 Modulus: 255];
-    XCTAssertEqual(self.processor->state.r[3], 0, @"Should have the correct value");
-}
-
--(void) testTwoExponentBigModulus
-{
-    [self runForBase: 255 Exponent: 2 Modulus: 250];
-    XCTAssertEqual(self.processor->state.r[3], 25, @"Should have the correct value");
-}
-
--(void) testTwoExponentSmallModulus
-{
-    [self runForBase: 255 Exponent: 2 Modulus: 10];
-    XCTAssertEqual(self.processor->state.r[3], 5, @"Should have the correct value");
-}
-
--(void) testTwoExponentBigModulusSmallBase
-{
-    [self runForBase: 4 Exponent: 2 Modulus: 250];
-    XCTAssertEqual(self.processor->state.r[3], 16, @"Should have the correct value");
-}
-
--(void) testTwoExponentSmallModulusSmallBase
-{
-    [self runForBase: 4 Exponent: 2 Modulus: 10];
-    XCTAssertEqual(self.processor->state.r[3], 6, @"Should have the correct value");
-}
-
--(void) testLargeExponent
-{
-    [self runForBase: 255 Exponent: 200 Modulus: 255];
-    XCTAssertEqual(self.processor->state.r[3], 0, @"Should have the correct value");
-}
-
--(void) testLargeExponentBigModulus
-{
-    [self runForBase: 255 Exponent: 200 Modulus: 250];
-    XCTAssertEqual(self.processor->state.r[3], 125, @"Should have the correct value");
-}
-
--(void) testLargeExponentSmallModulus
-{
-    [self runForBase: 255 Exponent: 200 Modulus: 10];
-    XCTAssertEqual(self.processor->state.r[3], 5, @"Should have the correct value");
-}
-
--(void) testLargeExponentBigModulusSmallBase
-{
-    [self runForBase: 4 Exponent: 200 Modulus: 250];
-    XCTAssertEqual(self.processor->state.r[3], 126, @"Should have the correct value");
-}
-
--(void) testLargeExponentSmallModulusSmallBase
-{
-    [self runForBase: 4 Exponent: 200 Modulus: 10];
-    XCTAssertEqual(self.processor->state.r[3], 6, @"Should have the correct value");
+    for (uint32_t b = 0; b < 256; b++)
+    {
+        for (uint32_t e = 0; e < 256; e++)
+        {
+            for (uint32_t m = 1; m < 256; m++)
+            {
+                self.processor->state.r[0] = 0;
+                self.processor->state.r[1] = 0;
+                self.processor->state.r[2] = 0;
+                self.processor->state.r[3] = 0;
+                self.processor->state.pc = 0;
+                self.processor->state.flags = 0;
+                self.processor->status = HKHubArchProcessorStatusRunning;
+                
+                [self runForBase: b Exponent: e Modulus: m];
+                
+                const uint32_t Result = PowMod(b, e, m);
+                XCTAssertEqual(self.processor->state.r[3], Result, @"Should have the correct value: %u (pow(%u, %u) %% %u)", Result, b, e, m);
+            }
+        }
+    }
 }
 
 @end
