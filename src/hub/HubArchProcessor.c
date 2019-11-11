@@ -84,7 +84,6 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.debugModeChange = NULL;
         Processor->state.debug.context = NULL;
         Processor->cache.graph = NULL;
-        Processor->cache.range = NULL;
         Processor->cycles = 0;
         Processor->unusedTime = 0.0;
         Processor->status = HKHubArchProcessorStatusRunning;
@@ -167,23 +166,8 @@ void HKHubArchProcessorCacheReset(HKHubArchProcessor Processor)
     
     if (Processor->cache.graph)
     {
-        CCEnumerable Enumerable;
-        CCArrayGetEnumerable(Processor->cache.graph, &Enumerable);
-        
-        for (CCLinkedList(HKHubArchProcessorInstructionGraphNode) Node = CCEnumerableGetCurrent(&Enumerable); Node; Node = CCEnumerableNext(&Enumerable))
-        {
-            CCLinkedListDestroy(Node);
-        }
-        
-        CCArrayDestroy(Processor->cache.graph);
-        
+        HKHubArchExecutionGraphDestroy(Processor->cache.graph);
         Processor->cache.graph = NULL;
-    }
-    
-    if (Processor->cache.range)
-    {
-        CCArrayDestroy(Processor->cache.range);
-        Processor->cache.range = NULL;
     }
 }
 
@@ -540,118 +524,13 @@ void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor)
     }
 }
 
-static CCLinkedList(HKHubArchProcessorInstructionGraphNode) HKHubArchProcessorCacheAddNode(HKHubArchProcessor Processor, CCLinkedList(HKHubArchProcessorInstructionGraphNode) InstructionGraphTail, HKHubArchInstructionState *Instruction, HKHubArchProcessorInstructionGraphRange *Range, uint8_t PC, uint8_t NextPC)
-{
-    CCLinkedListNode *Node = CCLinkedListCreateNode(CC_STD_ALLOCATOR, sizeof(HKHubArchProcessorInstructionGraphNode), &(HKHubArchProcessorInstructionGraphNode){
-        .offset = PC,
-        .state = *Instruction,
-        .jump = NULL
-    });
-    
-    if (!InstructionGraphTail)
-    {
-        InstructionGraphTail = Node;
-        CCArrayAppendElement(Processor->cache.graph, &Node);
-    }
-    
-    else InstructionGraphTail = CCLinkedListAppend(InstructionGraphTail, Node);
-    
-    const uint8_t Count = Range->count + (NextPC - PC);
-    Range->count = Range->count < Count ? Count : UINT8_MAX;
-    
-    return InstructionGraphTail;
-}
-
-static CCLinkedList(HKHubArchProcessorInstructionGraphNode) HKHubArchProcessorCacheGraph(HKHubArchProcessor Processor, uint8_t PC)
-{
-    for (size_t Loop = 0, Count = CCArrayGetCount(Processor->cache.range); Loop < Count; Loop++)
-    {
-        HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, Loop);
-        if ((Range->start <= PC) && ((Range->start + Range->count) > PC))
-        {
-            CCLinkedList(HKHubArchProcessorInstructionGraphNode) *Graph = CCArrayGetElementAtIndex(Processor->cache.graph, Loop);
-            return *Graph;
-        }
-    }
-    
-    CCLinkedList(HKHubArchProcessorInstructionGraphNode) InstructionGraphHead = NULL, InstructionGraphTail = NULL;
-    const size_t Index = CCArrayAppendElement(Processor->cache.range, &(HKHubArchProcessorInstructionGraphRange){ .start = PC, .count = 0 });
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, Index);
-    
-    for (uint8_t NextPC = 0; ; PC = NextPC)
-    {
-        HKHubArchInstructionState Instruction;
-        NextPC = HKHubArchInstructionDecode(PC, Processor->memory, &Instruction);
-        
-        if (Instruction.opcode != -1)
-        {
-            InstructionGraphTail = HKHubArchProcessorCacheAddNode(Processor, InstructionGraphTail, &Instruction, Range, PC, NextPC);
-            if (!InstructionGraphHead) InstructionGraphHead = InstructionGraphTail;
-            
-            if (!HKHubArchInstructionPredictableFlow(&Instruction))
-            {
-                HKHubArchInstructionControlFlow Flow = HKHubArchInstructionGetControlFlow(&Instruction);
-                switch (Flow & HKHubArchInstructionControlFlowEffectMask)
-                {
-                    case HKHubArchInstructionControlFlowEffectBranch:
-                        CCAssertLog(Instruction.operand[0].type == HKHubArchInstructionOperandI &&
-                                    Instruction.operand[1].type == HKHubArchInstructionOperandNA &&
-                                    Instruction.operand[2].type == HKHubArchInstructionOperandNA, "Branch instruction operands have changed");
-                        
-                        ((HKHubArchProcessorInstructionGraphNode*)CCLinkedListGetNodeData(InstructionGraphTail))->jump = HKHubArchProcessorCacheGraph(Processor, PC + Instruction.operand[0].value);
-                        
-                        if ((Flow & HKHubArchInstructionControlFlowEvaluationMask) == HKHubArchInstructionControlFlowEvaluationUnconditional) return InstructionGraphHead;
-                        break;
-                        
-                    case HKHubArchInstructionControlFlowEffectPause:
-                        return InstructionGraphHead;
-                        
-                    default:
-                        break;
-                }
-            }
-        }
-        
-        else break;
-        
-        for (size_t Loop = 0, Count = CCArrayGetCount(Processor->cache.range); Loop < Count; Loop++)
-        {
-            HKHubArchProcessorInstructionGraphRange *CachedRange = CCArrayGetElementAtIndex(Processor->cache.range, Loop);
-            if ((CachedRange->start <= NextPC) && ((CachedRange->start + CachedRange->count) > NextPC))
-            {
-                if (Count != 1)
-                {
-                    CCLinkedList(HKHubArchProcessorInstructionGraphNode) *Graph = CCArrayGetElementAtIndex(Processor->cache.graph, Loop);
-                    CCLinkedListPrepend(*Graph, InstructionGraphTail);
-                    *Graph = InstructionGraphHead;
-                    
-                    CachedRange->start = Range->start;
-                    CachedRange->count += Range->count;
-                    
-                    CCArrayRemoveElementAtIndex(Processor->cache.range, Index);
-                    CCArrayRemoveElementAtIndex(Processor->cache.graph, Index);
-                }
-                
-                return InstructionGraphHead;
-            }
-        }
-    }
-    
-    if (!Range->count) CCArrayRemoveElementAtIndex(Processor->cache.range, CCArrayGetCount(Processor->cache.range) - 1);
-    
-    return InstructionGraphHead;
-}
-
 void HKHubArchProcessorCache(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
     HKHubArchProcessorCacheReset(Processor);
     
-    Processor->cache.graph = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(CCLinkedList), 4);
-    Processor->cache.range = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchProcessorInstructionGraphRange), 4);
+    Processor->cache.graph = HKHubArchExecutionGraphCreate(CC_STD_ALLOCATOR, Processor->memory, Processor->state.pc);
     
-    HKHubArchProcessorCacheGraph(Processor, Processor->state.pc);
-    
-    // TODO: Generate code
+//    HKHubArchProcessorJIT(Processor->cache.graph);
 }

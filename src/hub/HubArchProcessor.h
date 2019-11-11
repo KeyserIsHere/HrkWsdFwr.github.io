@@ -30,6 +30,7 @@
 #include "HubArchBinary.h"
 #include "HubArchPort.h"
 #include "HubArchInstructionType.h"
+#include "HubArchExecutionGraph.h"
 
 typedef enum {
     HKHubArchProcessorStatusRunning = 0,
@@ -49,17 +50,6 @@ typedef enum {
     HKHubArchProcessorDebugBreakpointRead = (1 << 0),
     HKHubArchProcessorDebugBreakpointWrite = (1 << 1)
 } HKHubArchProcessorDebugBreakpoint;
-
-typedef struct {
-    uint8_t offset;
-    HKHubArchInstructionState state;
-    CCLinkedList(HKHubArchProcessorInstructionGraphNode) jump;
-} HKHubArchProcessorInstructionGraphNode;
-
-typedef struct {
-    uint8_t start;
-    uint8_t count;
-} HKHubArchProcessorInstructionGraphRange;
 
 /*!
  * @brief The processor.
@@ -131,8 +121,7 @@ typedef struct HKHubArchProcessorInfo {
         } debug;
     } state;
     struct {
-        CCArray(CCLinkedList(HKHubArchProcessorInstructionGraphNode)) graph;
-        CCArray(HKHubArchProcessorInstructionGraphRange) range;
+        HKHubArchExecutionGraph graph;
     } cache;
     size_t cycles;
     double unusedTime;
