@@ -62,23 +62,23 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 2, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 2, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 1, @"Should have the correct start");
     XCTAssertEqual(Range->count, 8, @"Should have the correct count");
     
-    Range = CCArrayGetElementAtIndex(Processor->cache.range, 1);
+    Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 1);
     XCTAssertEqual(Range->start, 12, @"Should have the correct start");
     XCTAssertEqual(Range->count, 8, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 2, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 2, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 1, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -91,7 +91,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 4, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -104,7 +104,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 7, @"Should have the correct offset");
         XCTAssertNotEqual(GraphNode->jump, NULL, @"Should jump to another node");
         
@@ -117,7 +117,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 12, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
                 
@@ -130,7 +130,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 16, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, Skip, @"Should jump to another node");
                 
@@ -143,7 +143,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 18, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
                 
@@ -156,7 +156,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 19, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
                 
@@ -198,23 +198,23 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 2, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 2, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 0, @"Should have the correct start");
     XCTAssertEqual(Range->count, 4, @"Should have the correct count");
     
-    Range = CCArrayGetElementAtIndex(Processor->cache.range, 1);
+    Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 1);
     XCTAssertEqual(Range->start, 4, @"Should have the correct start");
     XCTAssertEqual(Range->count, 4, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 2, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 2, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -228,7 +228,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertNotEqual(GraphNode->jump, NULL, @"Should jump to another node");
         
@@ -241,7 +241,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 4, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
                 
@@ -254,7 +254,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 6, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, A, @"Should jump to another node");
                 
@@ -297,23 +297,23 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 2, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 2, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 0, @"Should have the correct start");
     XCTAssertEqual(Range->count, 4, @"Should have the correct count");
     
-    Range = CCArrayGetElementAtIndex(Processor->cache.range, 1);
+    Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 1);
     XCTAssertEqual(Range->start, 4, @"Should have the correct start");
     XCTAssertEqual(Range->count, 4, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 2, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 2, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -327,7 +327,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertNotEqual(GraphNode->jump, NULL, @"Should jump to another node");
         
@@ -340,7 +340,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 4, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
                 
@@ -353,7 +353,7 @@
             XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
             if (Node)
             {
-                const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
                 XCTAssertEqual(GraphNode->offset, 6, @"Should have the correct offset");
                 XCTAssertEqual(GraphNode->jump, A, @"Should jump to another node");
                 
@@ -394,19 +394,19 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 1, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 0, @"Should have the correct start");
     XCTAssertEqual(Range->count, 6, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 1, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -420,7 +420,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -433,7 +433,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 4, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, Start, @"Should jump to another node");
         
@@ -485,19 +485,19 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 1, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 254, @"Should have the correct start");
     XCTAssertEqual(Range->count, 6, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 1, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 254, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -511,7 +511,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -524,7 +524,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, Start, @"Should jump to another node");
         
@@ -575,19 +575,19 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 1, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 254, @"Should have the correct start");
     XCTAssertEqual(Range->count, 6, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 1, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 254, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -601,7 +601,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -614,7 +614,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, Start, @"Should jump to another node");
         
@@ -666,19 +666,19 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 1, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 254, @"Should have the correct start");
     XCTAssertEqual(Range->count, 255, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 1, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 254, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -692,7 +692,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -705,7 +705,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, Start, @"Should jump to another node");
         
@@ -720,7 +720,7 @@
         XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
         if (Node)
         {
-            const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+            const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
             XCTAssertEqual(GraphNode->offset, 4 + Loop, @"Should have the correct offset");
             XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
             
@@ -772,19 +772,19 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 1, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 254, @"Should have the correct start");
     XCTAssertEqual(Range->count, 255, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 1, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 254, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -798,7 +798,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -811,7 +811,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, Start, @"Should jump to another node");
         
@@ -826,7 +826,7 @@
         XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
         if (Node)
         {
-            const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+            const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
             XCTAssertEqual(GraphNode->offset, 4 + Loop, @"Should have the correct offset");
             XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
             
@@ -878,19 +878,19 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 1, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 254, @"Should have the correct start");
     XCTAssertEqual(Range->count, 255, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 1, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 254, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -903,7 +903,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -916,7 +916,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -931,7 +931,7 @@
         XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
         if (Node)
         {
-            const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+            const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
             XCTAssertEqual(GraphNode->offset, 4 + Loop, @"Should have the correct offset");
             XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
             
@@ -982,19 +982,19 @@
     
     HKHubArchProcessorCache(Processor);
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.range), 1, @"Should have the correct number of execution ranges");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
-    HKHubArchProcessorInstructionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.range, 0);
+    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
     XCTAssertEqual(Range->start, 0, @"Should have the correct start");
     XCTAssertEqual(Range->count, 255, @"Should have the correct count");
     
-    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph), 1, @"Should have the correct number of execution paths");
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
     
-    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph, 0);
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -1007,7 +1007,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 2, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
@@ -1022,7 +1022,7 @@
         XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
         if (Node)
         {
-            const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+            const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
             XCTAssertEqual(GraphNode->offset, 4 + Loop, @"Should have the correct offset");
             XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
             
@@ -1036,7 +1036,7 @@
     XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
     if (Node)
     {
-        const HKHubArchProcessorInstructionGraphNode *GraphNode = CCLinkedListGetNodeData(Node);
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
         XCTAssertEqual(GraphNode->offset, 254, @"Should have the correct offset");
         XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
         
