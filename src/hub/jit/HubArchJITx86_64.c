@@ -561,7 +561,7 @@ static size_t HKHubArchJITGenerateAdd(uint8_t *Ptr, const HKHubArchExecutionGrap
         
         HKHubArchJITCopyFlags(Ptr, &Index);
         
-        HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterCompatibilityPC, Instruction->offset + Size);
+        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Size);
     }
     
     return Index;
