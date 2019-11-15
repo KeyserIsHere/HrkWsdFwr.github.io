@@ -30,6 +30,7 @@
 #include "HubArchExecutionGraph.h"
 
 typedef struct {
+    CCDictionary(uint8_t, uintptr_t) map;
     uintptr_t code;
 } HKHubArchJITBlock;
 
