@@ -34,7 +34,7 @@
 #endif
 #endif
 
-extern _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block);
+extern _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block);
 
 static void *HKHubArchJITAllocateExecutable(size_t Size)
 {
@@ -84,12 +84,18 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
         void *Ptr = HKHubArchJITAllocateExecutable(Size);
         if (Ptr)
         {
+            HKHubArchJITBlock Block = { .code = (uintptr_t)Ptr, .map = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchJITBlockRelativeEntry), 4) };
+            
 #if CC_HARDWARE_ARCH_X86_64
-            const _Bool Generated = HKHubArchJITGenerateBlock(JIT, Ptr, *(CCLinkedList*)CCArrayGetElementAtIndex(Graph->block, Loop));
+            const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, *(CCLinkedList*)CCArrayGetElementAtIndex(Graph->block, Loop));
 #endif
             
-            if (Generated) CCArrayAppendElement(JIT->blocks, &(HKHubArchJITBlock){ .code = (uintptr_t)Ptr });
-            else HKHubArchJITDeallocateExecutable(Ptr, Size);
+            if (Generated) CCArrayAppendElement(JIT->blocks, &Block);
+            else
+            {
+                CCArrayDestroy(Block.map);
+                HKHubArchJITDeallocateExecutable(Ptr, Size);
+            }
         }
     }
 }

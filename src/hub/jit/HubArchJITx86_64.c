@@ -404,15 +404,8 @@ static size_t HKHubArchJITGenerateAdd(uint8_t *Ptr, const HKHubArchExecutionGrap
         
         HKHubArchJITCopyFlags(Ptr, &Index);
         
-        if (Instruction->state.operand[0].reg & HKHubArchInstructionRegisterSpecialPurpose)
-        {
-            if (Instruction->state.operand[0].reg == HKHubArchInstructionRegisterPC)
-            {
-                HKHubArchJITAddInstructionReturn(Ptr, &Index);
-            }
-        }
-        
-        HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterCompatibilityPC, Instruction->offset + Size);
+        if ((Instruction->state.operand[0].reg & HKHubArchInstructionRegisterSpecialPurpose) && (Instruction->state.operand[0].reg == HKHubArchInstructionRegisterPC)) HKHubArchJITAddInstructionReturn(Ptr, &Index);
+        else HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Size);
     }
     
     else if (Instruction->state.operand[0].type == HKHubArchInstructionOperandM)
@@ -567,7 +560,7 @@ static size_t HKHubArchJITGenerateAdd(uint8_t *Ptr, const HKHubArchExecutionGrap
     return Index;
 }
 
-_Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block)
+_Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block)
 {
     /*
      rax : reserved
@@ -589,13 +582,14 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, void *Ptr, CCLinkedList(HKHubA
     CCEnumerable Enumerable;
     CCLinkedListGetEnumerable(Block, &Enumerable);
     
-    size_t Index = 0;
-    for (const HKHubArchExecutionGraphInstruction *Instruction = CCEnumerableGetCurrent(&Enumerable); Instruction; Instruction = CCEnumerableNext(&Enumerable))
+    size_t Index = 0, InstructionIndex = 0;
+    for (const HKHubArchExecutionGraphInstruction *Instruction = CCEnumerableGetCurrent(&Enumerable); Instruction; Instruction = CCEnumerableNext(&Enumerable), InstructionIndex++)
     {
         switch (Instruction->state.opcode)
         {
             case 0:
             case 1:
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
                 Index += HKHubArchJITGenerateAdd(&Ptr[Index], Instruction);
                 break;
         }
