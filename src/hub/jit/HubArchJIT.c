@@ -86,11 +86,25 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
         {
             HKHubArchJITBlock Block = { .code = (uintptr_t)Ptr, .map = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchJITBlockRelativeEntry), 4) };
             
+            CCLinkedList(HKHubArchExecutionGraphInstruction) Instruction = *(CCLinkedList*)CCArrayGetElementAtIndex(Graph->block, Loop);
+            
 #if CC_HARDWARE_ARCH_X86_64
-            const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, *(CCLinkedList*)CCArrayGetElementAtIndex(Graph->block, Loop));
+            const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, Instruction);
 #endif
             
-            if (Generated) CCArrayAppendElement(JIT->blocks, &Block);
+            if (Generated)
+            {
+                CCArrayAppendElement(JIT->blocks, &Block);
+                
+                for (size_t Loop = 0, Index = 0, Count = CCArrayGetCount(Block.map); Loop < Count; Loop++)
+                {
+                    const HKHubArchJITBlockRelativeEntry *Entry = CCArrayGetElementAtIndex(Block.map, Loop);
+                    for ( ; Entry->index != Index; Index++) Instruction = CCLinkedListEnumerateNext(Instruction);
+                    
+                    CCDictionarySetValue(JIT->map, &(uint8_t){ ((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->offset }, &Entry->entry);
+                }
+            }
+            
             else
             {
                 CCArrayDestroy(Block.map);
