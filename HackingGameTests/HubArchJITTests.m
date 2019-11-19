@@ -124,6 +124,13 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "add r0, 255\n"
         "add r0, 1\n"
         "hlt\n",
+        
+        "add flags, 255\n"
+        "hlt\n",
+        
+        "add pc, skip\n"
+        "add r0, 1\n"
+        "skip: hlt\n"
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
