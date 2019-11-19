@@ -610,6 +610,6 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
         return TRUE;
     }
     
-    return FALSE;
+    return Index;
 }
 #endif
