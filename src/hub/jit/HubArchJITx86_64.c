@@ -161,7 +161,8 @@ enum {
 };
 
 enum {
-    HKHubArchJITRexW = 0x48
+    HKHubArchJITRexW = 0x48,
+    HKHubArchJIT16Bit = 0x66
 };
 
 #if CC_HARDWARE_ARCH_X86_64
@@ -313,11 +314,23 @@ static void HKHubArchJITCopyFlags(uint8_t *Ptr, size_t *Index)
 {
     HKHubArchJITAddInstructionSeto(Ptr, Index, HKHubArchJITRegisterAL);
     Ptr[(*Index)++] = HKHubArchJITOpcodeLahf;
-    HKHubArchJITAddInstructionBitAdjustMI(Ptr, Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterRAX, 1); //oszxxxxxc << 1
-    HKHubArchJITAddInstructionBitAdjustMI8(Ptr, Index, HKHubArchJITBitAdjustRor, HKHubArchJITRegisterAL, 2); //zxxxxxcx ror 2
-    HKHubArchJITAddInstructionBitAdjustMI(Ptr, Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterRAX, 1); //oscxzxxxxx << 1
-    HKHubArchJITAddInstructionBitAdjustMI8(Ptr, Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAL, 1); //xzxxxxxx << 1
-    HKHubArchJITAddInstructionBitAdjustMI(Ptr, Index, HKHubArchJITBitAdjustShr, HKHubArchJITRegisterRAX, 7); //osczxxxxxxx >> 7
+    
+    /*
+     sz0a0p1c 0000000o
+     z0a0p1c0 000000os = AX rol 1
+     c0z0a0p1          = AH ror 2
+     0z0a0p10 00000osc = AX rol 1
+     z0a0p100          = AH << 1
+     0a0p1000 0000oscz = AX rol 1
+     */
+    Ptr[(*Index)++] = HKHubArchJIT16Bit;
+    HKHubArchJITAddInstructionBitAdjustMI(Ptr, Index, HKHubArchJITBitAdjustRol, HKHubArchJITRegisterAX, 1);
+    HKHubArchJITAddInstructionBitAdjustMI8(Ptr, Index, HKHubArchJITBitAdjustRor, HKHubArchJITRegisterAH, 2);
+    Ptr[(*Index)++] = HKHubArchJIT16Bit;
+    HKHubArchJITAddInstructionBitAdjustMI(Ptr, Index, HKHubArchJITBitAdjustRol, HKHubArchJITRegisterAX, 1);
+    HKHubArchJITAddInstructionBitAdjustMI8(Ptr, Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAH, 1);
+    Ptr[(*Index)++] = HKHubArchJIT16Bit;
+    HKHubArchJITAddInstructionBitAdjustMI(Ptr, Index, HKHubArchJITBitAdjustRol, HKHubArchJITRegisterAX, 1);
     HKHubArchJITAddInstructionArithmeticMI8(Ptr, Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterCompatibilityFlags, 0xf0);
     HKHubArchJITAddInstructionOrMR8(Ptr, Index, HKHubArchJITRegisterCompatibilityFlags, HKHubArchJITRegisterAL);
 }
