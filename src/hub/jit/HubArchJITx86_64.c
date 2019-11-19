@@ -582,7 +582,7 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
     CCEnumerable Enumerable;
     CCLinkedListGetEnumerable(Block, &Enumerable);
     
-    size_t Index = 0, InstructionIndex = 0;
+    size_t Index = 0, InstructionIndex = 0, ReturnIndex = 0;
     for (const HKHubArchExecutionGraphInstruction *Instruction = CCEnumerableGetCurrent(&Enumerable); Instruction; Instruction = CCEnumerableNext(&Enumerable), InstructionIndex++)
     {
         switch (Instruction->state.opcode)
@@ -592,10 +592,18 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
                 CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
                 Index += HKHubArchJITGenerateAdd(&Ptr[Index], Instruction);
                 break;
+                
+            default:
+                if (Index != ReturnIndex)
+                {
+                    HKHubArchJITAddInstructionReturn(Ptr, &Index);
+                    ReturnIndex = Index;
+                }
+                break;
         }
     }
     
-    if (Index)
+    if (Index != ReturnIndex)
     {
         HKHubArchJITAddInstructionReturn(Ptr, &Index);
         
