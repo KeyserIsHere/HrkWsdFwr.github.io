@@ -612,4 +612,67 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
     
     return Index;
 }
+
+void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor)
+{
+    const uintptr_t *Entry = CCDictionaryGetValue(JIT->map, &Processor->state.pc);
+    if (!Entry) return;
+    
+#define HK_HUB_ARCH_JIT_Processor_r0 56
+#define HK_HUB_ARCH_JIT_Processor_r1 57
+#define HK_HUB_ARCH_JIT_Processor_r2 58
+#define HK_HUB_ARCH_JIT_Processor_r3 59
+#define HK_HUB_ARCH_JIT_Processor_pc 60
+#define HK_HUB_ARCH_JIT_Processor_flags 61
+#define HK_HUB_ARCH_JIT_Processor_cycles 144
+#define HK_HUB_ARCH_JIT_Processor_memory 164
+    
+    _Static_assert(HK_HUB_ARCH_JIT_Processor_r0 == offsetof(typeof(*Processor), state.r[0]) &&
+                   HK_HUB_ARCH_JIT_Processor_r1 == offsetof(typeof(*Processor), state.r[1]) &&
+                   HK_HUB_ARCH_JIT_Processor_r2 == offsetof(typeof(*Processor), state.r[2]) &&
+                   HK_HUB_ARCH_JIT_Processor_r3 == offsetof(typeof(*Processor), state.r[3]) &&
+                   HK_HUB_ARCH_JIT_Processor_pc == offsetof(typeof(*Processor), state.pc) &&
+                   HK_HUB_ARCH_JIT_Processor_flags == offsetof(typeof(*Processor), state.flags) &&
+                   HK_HUB_ARCH_JIT_Processor_cycles == offsetof(typeof(*Processor), cycles) &&
+                   HK_HUB_ARCH_JIT_Processor_memory == offsetof(typeof(*Processor), memory), "Need to update the offsets");
+    
+#define HK_HUB_ARCH_JIT_LABEL(label) HK_HUB_ARCH_JIT_LABEL_(label, HK_HUB_ARCH_JIT_##label)
+#define HK_HUB_ARCH_JIT_LABEL_(label, value) HK_HUB_ARCH_JIT_LABEL__(label, value)
+#define HK_HUB_ARCH_JIT_LABEL__(label, value) ".set " #label ", " #value "\n"
+    
+    asm(HK_HUB_ARCH_JIT_LABEL(Processor_r0)
+        HK_HUB_ARCH_JIT_LABEL(Processor_r1)
+        HK_HUB_ARCH_JIT_LABEL(Processor_r2)
+        HK_HUB_ARCH_JIT_LABEL(Processor_r3)
+        HK_HUB_ARCH_JIT_LABEL(Processor_pc)
+        HK_HUB_ARCH_JIT_LABEL(Processor_flags)
+        HK_HUB_ARCH_JIT_LABEL(Processor_cycles)
+        HK_HUB_ARCH_JIT_LABEL(Processor_memory)
+        "movq %0, %%rax\n"
+        "movb Processor_r0(%%rax), %%bl\n"
+        "movb Processor_r1(%%rax), %%bh\n"
+        "movb Processor_r2(%%rax), %%cl\n"
+        "movb Processor_r3(%%rax), %%ch\n"
+        "movb Processor_flags(%%rax), %%dl\n"
+        "movb Processor_pc(%%rax), %%dh\n"
+        "movq Processor_cycles(%%rax), %%rsi\n"
+        "leaq Processor_memory(%%rax), %%rdi\n"
+        "pushq %%rbp\n"
+        "pushq %%rax\n"
+        "xorq %%rbp, %%rbp\n"
+        "xorq %%rax, %%rax\n"
+        "callq *%1\n"
+        "popq %%rax\n"
+        "popq %%rbp\n"
+        "movb %%bl, Processor_r0(%%rax)\n"
+        "movb %%bh, Processor_r1(%%rax)\n"
+        "movb %%cl, Processor_r2(%%rax)\n"
+        "movb %%ch, Processor_r3(%%rax)\n"
+        "movb %%dl, Processor_flags(%%rax)\n"
+        "movb %%dh, Processor_pc(%%rax)\n"
+        "movq %%rsi, Processor_cycles(%%rax)\n"
+        :
+        : "m" (Processor), "m" (*Entry)
+        : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "memory");
+}
 #endif
