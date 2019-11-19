@@ -6,6 +6,7 @@ CC_CONTAINER_DECLARE(CCArray, CC_CONTAINER(CCLinkedList, HKHubArchExecutionGraph
 CC_CONTAINER_DECLARE(CCArray, HKHubArchAssemblyASTType); \
 CC_CONTAINER_DECLARE(CCArray, HKHubArchExecutionGraphRange); \
 CC_CONTAINER_DECLARE(CCArray, HKHubArchJITBlock); \
+CC_CONTAINER_DECLARE(CCArray, HKHubArchJITBlockRelativeEntry); \
 CC_CONTAINER_DECLARE(CCArray, uint8_t);
 
 #define CC_CONTAINER_DECLARE_PRESET_CCCollection() \
