@@ -91,6 +91,7 @@ typedef enum {
     HKHubArchJITOpcodeSubMR8 = 0x28,
     HKHubArchJITOpcodeSubRM8 = 0x2a,
     HKHubArchJITOpcodeOrMR8 = 8,
+    HKHubArchJITOpcodeOrRM8 = 0x0a,
     HKHubArchJITOpcodeMovMR8 = 0x88,
     HKHubArchJITOpcodeMovRM8 = 0x8a,
     HKHubArchJITOpcodeArithmeticMI8 = 0x80,
@@ -585,6 +586,11 @@ static size_t HKHubArchJITGenerateSub(uint8_t *Ptr, const HKHubArchExecutionGrap
     return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticSub, HKHubArchJITOpcodeSubMR8, HKHubArchJITOpcodeSubRM8, 2);
 }
 
+static size_t HKHubArchJITGenerateOr(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
+{
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticOr, HKHubArchJITOpcodeOrMR8, HKHubArchJITOpcodeOrRM8, 2);
+}
+
 _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block)
 {
     /*
@@ -622,6 +628,12 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
             case 5:
                 CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
                 Index += HKHubArchJITGenerateSub(&Ptr[Index], Instruction);
+                break;
+                
+            case 44:
+            case 45:
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateOr(&Ptr[Index], Instruction);
                 break;
                 
             default:
