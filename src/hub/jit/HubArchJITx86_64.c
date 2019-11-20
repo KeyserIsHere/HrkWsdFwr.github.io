@@ -426,7 +426,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
         
         HKHubArchJITCopyFlags(Ptr, &Index);
         
-        if ((Instruction->state.operand[0].reg & HKHubArchInstructionRegisterSpecialPurpose) && (Instruction->state.operand[0].reg == HKHubArchInstructionRegisterPC) && (((HKHubArchInstructionGetMemoryOperation(&Instruction->state) >> HKHubArchInstructionMemoryOperationOp1) & HKHubArchInstructionMemoryOperationMask) == HKHubArchInstructionMemoryOperationDst)) HKHubArchJITAddInstructionReturn(Ptr, &Index);
+        if ((Instruction->state.operand[0].reg & HKHubArchInstructionRegisterSpecialPurpose) && (Instruction->state.operand[0].reg == HKHubArchInstructionRegisterPC) && ((HKHubArchInstructionGetMemoryOperation(&Instruction->state) >> HKHubArchInstructionMemoryOperationOp1) & HKHubArchInstructionMemoryOperationDst)) HKHubArchJITAddInstructionReturn(Ptr, &Index);
         else HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Size);
     }
     
