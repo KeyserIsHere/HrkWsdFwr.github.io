@@ -343,4 +343,88 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
 }
 
+-(void) testXor
+{
+    const char *Sources[] = {
+        ".byte 4\n"
+        ".entrypoint\n"
+        "xor [0], 4\n"
+        "hlt\n",
+        
+        "xor r0, 4\n"
+        "xor r0, 5\n"
+        "hlt\n",
+        
+        "xor r0, 0\n"
+        "hlt\n",
+        
+        "xor r0, 1\n"
+        "xor r1, 2\n"
+        "xor r2, 3\n"
+        "xor r3, 4\n"
+        "xor r0, r1\n"
+        "xor r2, r3\n"
+        "xor r0, r2\n"
+        "hlt\n",
+        
+        ".byte 1,2,3,4\n"
+        ".entrypoint\n"
+        "xor r1, 1\n"
+        "xor r0, [r1]\n"
+        "xor r0, [r1+r0]\n"
+        "xor r0, [r1+1]\n"
+        "xor r0, [1]\n"
+        "xor [r1], [r1]\n"
+        "xor [r1], [r1-1]\n"
+        "xor [r1], [r1+r1]\n"
+        "xor [r1], [1]\n"
+        "xor [r1], r1\n"
+        "xor [r1], 1\n"
+        "xor [r1+r1], [r1]\n"
+        "xor [r1+r1], [r1-1]\n"
+        "xor [r1+r1], [r1+r1]\n"
+        "xor [r1+r1], [1]\n"
+        "xor [r1+r1], r1\n"
+        "xor [r1+r1], 1\n"
+        "xor [r1-1], [r1]\n"
+        "xor [r1-1], [r1-1]\n"
+        "xor [r1-1], [r1+r1]\n"
+        "xor [r1-1], [1]\n"
+        "xor [r1-1], r1\n"
+        "xor [r1-1], 1\n"
+        "xor [1], [r1]\n"
+        "xor [1], [r1-1]\n"
+        "xor [1], [r1+r1]\n"
+        "xor [1], [1]\n"
+        "xor [1], r1\n"
+        "xor [1], 1\n"
+        "hlt\n",
+        
+        "xor r0, 127\n"
+        "xor r0, 1\n"
+        "hlt\n",
+        
+        "xor r0, -1\n"
+        "xor r0, -2\n"
+        "hlt\n",
+        
+        "xor r0, 128\n"
+        "xor r0, 2\n"
+        "hlt\n",
+        
+        "xor r0, 255\n"
+        "xor r0, 1\n"
+        "hlt\n",
+        
+        "xor flags, 255\n"
+        "hlt\n",
+        
+        "xor pc, skip\n"
+        "xor r0, 1\n"
+        "skip: hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
 @end
