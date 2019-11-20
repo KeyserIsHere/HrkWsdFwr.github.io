@@ -371,7 +371,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
     const size_t Size = HKHubArchInstructionSizeOfEncoding(&Instruction->state);
     
     size_t Index = 0;
-    HKHubArchJITCheckCycles(Ptr, &Index, 2 + (Size * HKHubArchProcessorSpeedMemoryRead), Instruction);
+    HKHubArchJITCheckCycles(Ptr, &Index, Cost + (Size * HKHubArchProcessorSpeedMemoryRead), Instruction);
     
     if (Instruction->state.operand[0].type == HKHubArchInstructionOperandR)
     {
@@ -424,7 +424,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
         
         HKHubArchJITCopyFlags(Ptr, &Index);
         
-        if ((Instruction->state.operand[0].reg & HKHubArchInstructionRegisterSpecialPurpose) && (Instruction->state.operand[0].reg == HKHubArchInstructionRegisterPC)) HKHubArchJITAddInstructionReturn(Ptr, &Index);
+        if ((Instruction->state.operand[0].reg & HKHubArchInstructionRegisterSpecialPurpose) && (Instruction->state.operand[0].reg == HKHubArchInstructionRegisterPC) && (((HKHubArchInstructionGetMemoryOperation(&Instruction->state) >> HKHubArchInstructionMemoryOperationOp1) & HKHubArchInstructionMemoryOperationMask) == HKHubArchInstructionMemoryOperationDst)) HKHubArchJITAddInstructionReturn(Ptr, &Index);
         else HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Size);
     }
     
@@ -592,17 +592,17 @@ static size_t HKHubArchJITGenerateSub(uint8_t *Ptr, const HKHubArchExecutionGrap
 
 static size_t HKHubArchJITGenerateOr(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticOr, HKHubArchJITOpcodeOrMR8, HKHubArchJITOpcodeOrRM8, 2);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticOr, HKHubArchJITOpcodeOrMR8, HKHubArchJITOpcodeOrRM8, 1);
 }
 
 static size_t HKHubArchJITGenerateXor(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticXor, HKHubArchJITOpcodeXorMR8, HKHubArchJITOpcodeXorRM8, 2);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticXor, HKHubArchJITOpcodeXorMR8, HKHubArchJITOpcodeXorRM8, 1);
 }
 
 static size_t HKHubArchJITGenerateAnd(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticAnd, HKHubArchJITOpcodeAndMR8, HKHubArchJITOpcodeAndRM8, 2);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticAnd, HKHubArchJITOpcodeAndMR8, HKHubArchJITOpcodeAndRM8, 1);
 }
 
 _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block)
