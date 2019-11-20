@@ -259,4 +259,88 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
 }
 
+-(void) testOr
+{
+    const char *Sources[] = {
+        ".byte 4\n"
+        ".entrypoint\n"
+        "or [0], 4\n"
+        "hlt\n",
+        
+        "or r0, 4\n"
+        "or r0, 5\n"
+        "hlt\n",
+        
+        "or r0, 0\n"
+        "hlt\n",
+        
+        "or r0, 1\n"
+        "or r1, 2\n"
+        "or r2, 3\n"
+        "or r3, 4\n"
+        "or r0, r1\n"
+        "or r2, r3\n"
+        "or r0, r2\n"
+        "hlt\n",
+        
+        ".byte 1,2,3,4\n"
+        ".entrypoint\n"
+        "or r1, 1\n"
+        "or r0, [r1]\n"
+        "or r0, [r1+r0]\n"
+        "or r0, [r1+1]\n"
+        "or r0, [1]\n"
+        "or [r1], [r1]\n"
+        "or [r1], [r1-1]\n"
+        "or [r1], [r1+r1]\n"
+        "or [r1], [1]\n"
+        "or [r1], r1\n"
+        "or [r1], 1\n"
+        "or [r1+r1], [r1]\n"
+        "or [r1+r1], [r1-1]\n"
+        "or [r1+r1], [r1+r1]\n"
+        "or [r1+r1], [1]\n"
+        "or [r1+r1], r1\n"
+        "or [r1+r1], 1\n"
+        "or [r1-1], [r1]\n"
+        "or [r1-1], [r1-1]\n"
+        "or [r1-1], [r1+r1]\n"
+        "or [r1-1], [1]\n"
+        "or [r1-1], r1\n"
+        "or [r1-1], 1\n"
+        "or [1], [r1]\n"
+        "or [1], [r1-1]\n"
+        "or [1], [r1+r1]\n"
+        "or [1], [1]\n"
+        "or [1], r1\n"
+        "or [1], 1\n"
+        "hlt\n",
+        
+        "or r0, 127\n"
+        "or r0, 1\n"
+        "hlt\n",
+        
+        "or r0, -1\n"
+        "or r0, -2\n"
+        "hlt\n",
+        
+        "or r0, 128\n"
+        "or r0, 2\n"
+        "hlt\n",
+        
+        "or r0, 255\n"
+        "or r0, 1\n"
+        "hlt\n",
+        
+        "or flags, 255\n"
+        "hlt\n",
+        
+        "or pc, skip\n"
+        "or r0, 1\n"
+        "skip: hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
 @end
