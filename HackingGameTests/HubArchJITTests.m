@@ -55,7 +55,11 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     HKHubArchExecutionGraphDestroy(Graph);
     
     HKHubArchProcessorSetCycles(Processor, 1000);
-    HKHubArchJITCall(JIT, Processor);
+    for (size_t PrevCycles = 0; PrevCycles != Processor->cycles; )
+    {
+        PrevCycles = Processor->cycles;
+        HKHubArchJITCall(JIT, Processor);
+    }
     
     HKHubArchJITDestroy(JIT);
     
@@ -68,6 +72,7 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     XCTAssertEqual(Processor->state.r[3], ProcessorNormal->state.r[3], "Should have the correct value");
     XCTAssertEqual(Processor->state.pc, ProcessorNormal->state.pc, "Should have the correct value");
     XCTAssertEqual(Processor->state.flags, ProcessorNormal->state.flags, "Should have the correct value");
+    XCTAssertEqual(Processor->cycles ? (Processor->cycles - 1) : 0, ProcessorNormal->cycles, "Should have the correct value");
     
     for (size_t Loop = 0; Loop < 256; Loop++) XCTAssertEqual(Processor->memory[Loop], ProcessorNormal->memory[Loop], "Should have the correct value");
     
@@ -505,6 +510,90 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         
         "and pc, skip\n"
         "and r0, 1\n"
+        "skip: hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
+-(void) testCompare
+{
+    const char *Sources[] = {
+        ".byte 4\n"
+        ".entrypoint\n"
+        "cmp [0], 4\n"
+        "hlt\n",
+        
+        "cmp r0, 4\n"
+        "cmp r0, 5\n"
+        "hlt\n",
+        
+        "cmp r0, 0\n"
+        "hlt\n",
+        
+        "cmp r0, 1\n"
+        "cmp r1, 2\n"
+        "cmp r2, 3\n"
+        "cmp r3, 4\n"
+        "cmp r0, r1\n"
+        "cmp r2, r3\n"
+        "cmp r0, r2\n"
+        "hlt\n",
+        
+        ".byte 1,2,3,4\n"
+        ".entrypoint\n"
+        "cmp r1, 1\n"
+        "cmp r0, [r1]\n"
+        "cmp r0, [r1+r0]\n"
+        "cmp r0, [r1+1]\n"
+        "cmp r0, [1]\n"
+        "cmp [r1], [r1]\n"
+        "cmp [r1], [r1-1]\n"
+        "cmp [r1], [r1+r1]\n"
+        "cmp [r1], [1]\n"
+        "cmp [r1], r1\n"
+        "cmp [r1], 1\n"
+        "cmp [r1+r1], [r1]\n"
+        "cmp [r1+r1], [r1-1]\n"
+        "cmp [r1+r1], [r1+r1]\n"
+        "cmp [r1+r1], [1]\n"
+        "cmp [r1+r1], r1\n"
+        "cmp [r1+r1], 1\n"
+        "cmp [r1-1], [r1]\n"
+        "cmp [r1-1], [r1-1]\n"
+        "cmp [r1-1], [r1+r1]\n"
+        "cmp [r1-1], [1]\n"
+        "cmp [r1-1], r1\n"
+        "cmp [r1-1], 1\n"
+        "cmp [1], [r1]\n"
+        "cmp [1], [r1-1]\n"
+        "cmp [1], [r1+r1]\n"
+        "cmp [1], [1]\n"
+        "cmp [1], r1\n"
+        "cmp [1], 1\n"
+        "hlt\n",
+        
+        "cmp r0, 127\n"
+        "cmp r0, 1\n"
+        "hlt\n",
+        
+        "cmp r0, -1\n"
+        "cmp r0, -2\n"
+        "hlt\n",
+        
+        "cmp r0, 128\n"
+        "cmp r0, 2\n"
+        "hlt\n",
+        
+        "cmp r0, 255\n"
+        "cmp r0, 1\n"
+        "hlt\n",
+        
+        "cmp flags, 255\n"
+        "hlt\n",
+        
+        "cmp pc, skip\n"
+        "cmp r0, 1\n"
         "skip: hlt\n"
     };
     
