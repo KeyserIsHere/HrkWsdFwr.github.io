@@ -105,8 +105,31 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "add r0, [r1]\n"
         "add r0, [r1+r0]\n"
         "add r0, [r1+1]\n"
+        "add r0, [1]\n"
+        "add [r1], [r1]\n"
         "add [r1], [r1-1]\n"
+        "add [r1], [r1+r1]\n"
+        "add [r1], [1]\n"
+        "add [r1], r1\n"
+        "add [r1], 1\n"
+        "add [r1+r1], [r1]\n"
+        "add [r1+r1], [r1-1]\n"
         "add [r1+r1], [r1+r1]\n"
+        "add [r1+r1], [1]\n"
+        "add [r1+r1], r1\n"
+        "add [r1+r1], 1\n"
+        "add [r1-1], [r1]\n"
+        "add [r1-1], [r1-1]\n"
+        "add [r1-1], [r1+r1]\n"
+        "add [r1-1], [1]\n"
+        "add [r1-1], r1\n"
+        "add [r1-1], 1\n"
+        "add [1], [r1]\n"
+        "add [1], [r1-1]\n"
+        "add [1], [r1+r1]\n"
+        "add [1], [1]\n"
+        "add [1], r1\n"
+        "add [1], 1\n"
         "hlt\n",
         
         "add r0, 127\n"
@@ -130,6 +153,106 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         
         "add pc, skip\n"
         "add r0, 1\n"
+        "skip: hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
+-(void) testSubtraction
+{
+    const char *Sources[] = {
+        ".byte 4\n"
+        ".entrypoint\n"
+        "sub [0], 4\n"
+        "hlt\n",
+        
+        "sub r0, 4\n"
+        "sub r0, 5\n"
+        "hlt\n",
+        
+        "sub r0, 0\n"
+        "hlt\n",
+        
+        "sub r0, 1\n"
+        "sub r1, 2\n"
+        "sub r2, 3\n"
+        "sub r3, 4\n"
+        "sub r0, r1\n"
+        "sub r2, r3\n"
+        "sub r0, r2\n"
+        "hlt\n",
+        
+        ".byte 1,2,3,4\n"
+        ".entrypoint\n"
+        "sub r1, 1\n"
+        "sub r0, [r1]\n"
+        "sub r0, [r1+r0]\n"
+        "sub r0, [r1+1]\n"
+        "sub r0, [1]\n"
+        "sub [r1], [r1]\n"
+        "sub [r1], [r1-1]\n"
+        "sub [r1], [r1+r1]\n"
+        "sub [r1], [1]\n"
+        "sub [r1], r1\n"
+        "sub [r1], 1\n"
+        "sub [r1+r1], [r1]\n"
+        "sub [r1+r1], [r1-1]\n"
+        "sub [r1+r1], [r1+r1]\n"
+        "sub [r1+r1], [1]\n"
+        "sub [r1+r1], r1\n"
+        "sub [r1+r1], 1\n"
+        "sub [r1-1], [r1]\n"
+        "sub [r1-1], [r1-1]\n"
+        "sub [r1-1], [r1+r1]\n"
+        "sub [r1-1], [1]\n"
+        "sub [r1-1], r1\n"
+        "sub [r1-1], 1\n"
+        "sub [1], [r1]\n"
+        "sub [1], [r1-1]\n"
+        "sub [1], [r1+r1]\n"
+        "sub [1], [1]\n"
+        "sub [1], r1\n"
+        "sub [1], 1\n"
+        "hlt\n",
+        
+        "sub r0, 127\n"
+        "sub r0, 1\n"
+        "hlt\n",
+        
+        "sub r0, 127\n"
+        "sub r0, -1\n"
+        "hlt\n",
+        
+        "sub r0, 1\n"
+        "sub r0, 255\n"
+        "hlt\n",
+        
+        "sub r0, -1\n"
+        "sub r0, -2\n"
+        "hlt\n",
+        
+        "sub r0, 0\n"
+        "sub r0, 1\n"
+        "hlt\n",
+        
+        "sub r0, 128\n"
+        "sub r0, -1\n"
+        "hlt\n",
+        
+        "sub r0, 128\n"
+        "sub r0, 1\n"
+        "hlt\n",
+        
+        "sub r0, 255\n"
+        "sub r0, 1\n"
+        "hlt\n",
+        
+        "sub flags, 1\n"
+        "hlt\n",
+        
+        "sub pc, -skip\n"
+        "sub r0, 1\n"
         "skip: hlt\n"
     };
     
