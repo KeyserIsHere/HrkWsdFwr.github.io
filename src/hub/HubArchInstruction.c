@@ -743,7 +743,7 @@ size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State
         }
     }
     
-    return (InstructionBits / 8) + 1;
+    return (InstructionBits / 8) + (_Bool)(InstructionBits % 8);
 }
 
 _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State)
