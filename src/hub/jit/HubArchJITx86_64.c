@@ -109,7 +109,8 @@ typedef enum {
     HKHubArchJITOpcodeBitAdjust1MI = 0xd1,
     HKHubArchJITOpcodeRetn = 0xc3,
     HKHubArchJITOpcodeMovOI8 = 0xb0,
-    HKHubArchJITOpcodeMovOI = 0xb8
+    HKHubArchJITOpcodeMovOI = 0xb8,
+    HKHubArchJITOpcodeMoveMI8 = 0xc6
 } HKHubArchJITOpcode;
 
 typedef enum {
@@ -163,6 +164,10 @@ typedef enum {
     HKHubArchJITBitAdjustSal,
     HKHubArchJITBitAdjustSar
 } HKHubArchJITBitAdjust;
+
+typedef enum {
+    HKHubArchJITMoveMov
+} HKHubArchJITMove;
 
 enum {
     HKHubArchJIT0fPrefixOpcodeSeto = 0x90,
@@ -368,7 +373,7 @@ static void HKHubArchJITCheckCycles(uint8_t *Ptr, size_t *Index, size_t Cost, co
     HKHubArchJITAddInstructionReturn(Ptr, Index);
 }
 
-static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, uint8_t Type, HKHubArchJITOpcode OpcodeMR, HKHubArchJITOpcode OpcodeRM, size_t Cost)
+static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, uint8_t Type, HKHubArchJITOpcode OpcodeMR, HKHubArchJITOpcode OpcodeRM, HKHubArchJITOpcode OpcodeMI, size_t Cost, _Bool FlagsAffected)
 {
     const size_t Size = HKHubArchInstructionSizeOfEncoding(&Instruction->state);
     
@@ -385,7 +390,9 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
         
         else if (Instruction->state.operand[1].type == HKHubArchInstructionOperandI)
         {
-            HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, Type, HKHubArchJITGetRegister(Instruction->state.operand[0].reg), Instruction->state.operand[1].value);
+            Ptr[Index++] = OpcodeMI;
+            Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModRegister, Type, HKHubArchJITGetRegister(Instruction->state.operand[0].reg));
+            Ptr[Index++] = Instruction->state.operand[1].value;
         }
         
         else if (Instruction->state.operand[1].type == HKHubArchInstructionOperandM)
@@ -424,7 +431,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
             }
         }
         
-        HKHubArchJITCopyFlags(Ptr, &Index);
+        if (FlagsAffected) HKHubArchJITCopyFlags(Ptr, &Index);
         
         if ((Instruction->state.operand[0].reg & HKHubArchInstructionRegisterSpecialPurpose) && (Instruction->state.operand[0].reg == HKHubArchInstructionRegisterPC) && ((HKHubArchInstructionGetMemoryOperation(&Instruction->state) >> HKHubArchInstructionMemoryOperationOp1) & HKHubArchInstructionMemoryOperationDst)) HKHubArchJITAddInstructionReturn(Ptr, &Index);
         else HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Size);
@@ -473,7 +480,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
             switch (Instruction->state.operand[0].memory.type)
             {
                 case HKHubArchInstructionMemoryOffset:
-                    Ptr[Index++] = HKHubArchJITOpcodeArithmeticMI8;
+                    Ptr[Index++] = OpcodeMI;
                     Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, Type, HKHubArchJITRegisterCompatibilityMemory);
                     Ptr[Index++] = Instruction->state.operand[0].memory.offset;
                     Ptr[Index++] = Instruction->state.operand[1].value;
@@ -481,7 +488,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
                     
                 case HKHubArchInstructionMemoryRegister:
                     HKHubArchJITAddInstructionMovzxMR8(Ptr, &Index, HKHubArchJITRegisterEAX, HKHubArchJITGetRegister(Instruction->state.operand[0].memory.reg));
-                    Ptr[Index++] = HKHubArchJITOpcodeArithmeticMI8;
+                    Ptr[Index++] = OpcodeMI;
                     Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddress, Type, HKHubArchJITRMSIB);
                     Ptr[Index++] = HKHubArchJITSIB(0, HKHubArchJITRegisterRAX, HKHubArchJITRegisterCompatibilityMemory);
                     Ptr[Index++] = Instruction->state.operand[1].value;
@@ -490,7 +497,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
                 case HKHubArchInstructionMemoryRelativeOffset:
                     HKHubArchJITAddInstructionMovzxMR8(Ptr, &Index, HKHubArchJITRegisterEAX, HKHubArchJITGetRegister(Instruction->state.operand[0].memory.relativeOffset.reg));
                     HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterAL, Instruction->state.operand[0].memory.relativeOffset.offset);
-                    Ptr[Index++] = HKHubArchJITOpcodeArithmeticMI8;
+                    Ptr[Index++] = OpcodeMI;
                     Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddress, Type, HKHubArchJITRMSIB);
                     Ptr[Index++] = HKHubArchJITSIB(0, HKHubArchJITRegisterRAX, HKHubArchJITRegisterCompatibilityMemory);
                     Ptr[Index++] = Instruction->state.operand[1].value;
@@ -500,7 +507,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
                     HKHubArchJITAddInstructionMovzxMR8(Ptr, &Index, HKHubArchJITRegisterEAX, HKHubArchJITGetRegister(Instruction->state.operand[0].memory.relativeReg[0]));
                     Ptr[Index++] = HKHubArchJITOpcodeAddMR8;
                     Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITGetRegister(Instruction->state.operand[0].memory.relativeReg[1]), HKHubArchJITRegisterAL);
-                    Ptr[Index++] = HKHubArchJITOpcodeArithmeticMI8;
+                    Ptr[Index++] = OpcodeMI;
                     Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddress, Type, HKHubArchJITRMSIB);
                     Ptr[Index++] = HKHubArchJITSIB(0, HKHubArchJITRegisterRAX, HKHubArchJITRegisterCompatibilityMemory);
                     Ptr[Index++] = Instruction->state.operand[1].value;
@@ -574,7 +581,7 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
             Ptr[Index++] = HKHubArchJITSIB(0, HKHubArchJITRegisterRBP, HKHubArchJITRegisterCompatibilityMemory);
         }
         
-        HKHubArchJITCopyFlags(Ptr, &Index);
+        if (FlagsAffected) HKHubArchJITCopyFlags(Ptr, &Index);
         
         HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Size);
     }
@@ -584,32 +591,37 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
 
 static size_t HKHubArchJITGenerateAdd(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticAdd, HKHubArchJITOpcodeAddMR8, HKHubArchJITOpcodeAddRM8, 2);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticAdd, HKHubArchJITOpcodeAddMR8, HKHubArchJITOpcodeAddRM8, HKHubArchJITOpcodeArithmeticMI8, 2, TRUE);
 }
 
 static size_t HKHubArchJITGenerateSub(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticSub, HKHubArchJITOpcodeSubMR8, HKHubArchJITOpcodeSubRM8, 2);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticSub, HKHubArchJITOpcodeSubMR8, HKHubArchJITOpcodeSubRM8, HKHubArchJITOpcodeArithmeticMI8, 2, TRUE);
 }
 
 static size_t HKHubArchJITGenerateOr(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticOr, HKHubArchJITOpcodeOrMR8, HKHubArchJITOpcodeOrRM8, 1);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticOr, HKHubArchJITOpcodeOrMR8, HKHubArchJITOpcodeOrRM8, HKHubArchJITOpcodeArithmeticMI8, 1, TRUE);
 }
 
 static size_t HKHubArchJITGenerateXor(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticXor, HKHubArchJITOpcodeXorMR8, HKHubArchJITOpcodeXorRM8, 1);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticXor, HKHubArchJITOpcodeXorMR8, HKHubArchJITOpcodeXorRM8, HKHubArchJITOpcodeArithmeticMI8, 1, TRUE);
 }
 
 static size_t HKHubArchJITGenerateAnd(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticAnd, HKHubArchJITOpcodeAndMR8, HKHubArchJITOpcodeAndRM8, 1);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticAnd, HKHubArchJITOpcodeAndMR8, HKHubArchJITOpcodeAndRM8, HKHubArchJITOpcodeArithmeticMI8, 1, TRUE);
 }
 
 static size_t HKHubArchJITGenerateCmp(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
-    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticCmp, HKHubArchJITOpcodeCmpMR8, HKHubArchJITOpcodeCmpRM8, 2);
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITArithmeticCmp, HKHubArchJITOpcodeCmpMR8, HKHubArchJITOpcodeCmpRM8, HKHubArchJITOpcodeArithmeticMI8, 2, TRUE);
+}
+
+static size_t HKHubArchJITGenerateMov(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
+{
+    return HKHubArchJITGenerate2OperandMutator(Ptr, Instruction, HKHubArchJITMoveMov, HKHubArchJITOpcodeMovMR8, HKHubArchJITOpcodeMovRM8, HKHubArchJITOpcodeMoveMI8, 1, FALSE);
 }
 
 _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block)
@@ -643,6 +655,12 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
             case 1:
                 CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
                 Index += HKHubArchJITGenerateAdd(&Ptr[Index], Instruction);
+                break;
+                
+            case 2:
+            case 6:
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateMov(&Ptr[Index], Instruction);
                 break;
                 
             case 4:
