@@ -80,6 +80,90 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     HKHubArchProcessorDestroy(ProcessorNormal);
 }
 
+-(void) testMove
+{
+    const char *Sources[] = {
+        ".byte 4\n"
+        ".entrypoint\n"
+        "mov [0], 4\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "mov r0, 5\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r2, 3\n"
+        "mov r3, 4\n"
+        "mov r0, r1\n"
+        "mov r2, r3\n"
+        "mov r0, r2\n"
+        "hlt\n",
+        
+        ".byte 1,2,3,4\n"
+        ".entrypoint\n"
+        "mov r1, 1\n"
+        "mov r0, [r1]\n"
+        "mov r0, [r1+r0]\n"
+        "mov r0, [r1+1]\n"
+        "mov r0, [1]\n"
+        "mov [r1], [r1]\n"
+        "mov [r1], [r1-1]\n"
+        "mov [r1], [r1+r1]\n"
+        "mov [r1], [1]\n"
+        "mov [r1], r1\n"
+        "mov [r1], 1\n"
+        "mov [r1+r1], [r1]\n"
+        "mov [r1+r1], [r1-1]\n"
+        "mov [r1+r1], [r1+r1]\n"
+        "mov [r1+r1], [1]\n"
+        "mov [r1+r1], r1\n"
+        "mov [r1+r1], 1\n"
+        "mov [r1-1], [r1]\n"
+        "mov [r1-1], [r1-1]\n"
+        "mov [r1-1], [r1+r1]\n"
+        "mov [r1-1], [1]\n"
+        "mov [r1-1], r1\n"
+        "mov [r1-1], 1\n"
+        "mov [1], [r1]\n"
+        "mov [1], [r1-1]\n"
+        "mov [1], [r1+r1]\n"
+        "mov [1], [1]\n"
+        "mov [1], r1\n"
+        "mov [1], 1\n"
+        "hlt\n",
+        
+        "mov r0, 127\n"
+        "mov r0, 1\n"
+        "hlt\n",
+        
+        "mov r0, -1\n"
+        "mov r0, -2\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "mov r0, 2\n"
+        "hlt\n",
+        
+        "mov r0, 255\n"
+        "mov r0, 1\n"
+        "hlt\n",
+        
+        "mov flags, 255\n"
+        "hlt\n",
+        
+        "mov pc, skip\n"
+        "mov r0, 1\n"
+        "skip: hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
 -(void) testAddition
 {
     const char *Sources[] = {
