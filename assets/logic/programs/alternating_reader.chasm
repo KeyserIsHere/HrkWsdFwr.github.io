@@ -1,3 +1,39 @@
+# Alternating Reader
+# Alternates between reading data from one device and sending to another. It's
+# intended to allow for faster successive read attempts with less waiting
+# in-between subsequent reads.
+#
+# This is intended to be a standalone program that runs indefinitely.
+# ----------------------------------Defines----------------------------------
+# Define: active:
+# As a boolean number indicating whether this should start off reading or wait
+# for a notification from the read_notifier port.
+#
+# Define: read_attempts:
+# As the number of successive reads that should take place before waiting to
+# send.
+# -----------------------------------Ports-----------------------------------
+# Port(0): read_notifier:
+# Is the port to the device that will send an empty message when this program
+# can begin reading, and will receive an empty message indicating when this
+# program has finished reading.
+#
+# Port(1): in:
+# Is the port to a device that will be read from.
+#
+# Port(2): out:
+# Is the port to a device that will be send to.
+#
+# Port(3): switch:
+# Is the port to a device that will be receive an empty message indicating
+# when this program has finished sending before notifying the send_notifier.
+#
+# Port(255): send_notifier:
+# Is the port to a device that will send an empty message when this program
+# can begin sending, and will receive an empty message indicating when this
+# program has finished sending.
+#
+
 .port read_notifier, 0
 .port in, 1
 .port out, 2
