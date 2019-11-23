@@ -7,7 +7,7 @@
 # ----------------------------------Defines----------------------------------
 # Define: active:
 # As a boolean number indicating whether this should start off reading or wait
-# for a notification from the read_notifier port.
+# for a notification from the 'read_notifier' port.
 #
 # Define: read_attempts:
 # As the number of successive reads that should take place before waiting to
@@ -19,19 +19,35 @@
 # program has finished reading.
 #
 # Port(1): in:
-# Is the port to a device that will be read from.
+# Is the port to a device that will be read from. It expects to receive only 1
+# byte at a time.
 #
 # Port(2): out:
-# Is the port to a device that will be send to.
+# Is the port to a device that will be send to. It sends only 1 byte at a time.
 #
 # Port(3): switch:
 # Is the port to a device that will be receive an empty message indicating
-# when this program has finished sending before notifying the send_notifier.
+# when this program has finished sending before notifying the 'send_notifier'.
 #
 # Port(255): send_notifier:
 # Is the port to a device that will send an empty message when this program
 # can begin sending, and will receive an empty message indicating when this
 # program has finished sending.
+# ----------------------------------Details----------------------------------
+# Program State:
+#   1. Polls the 'read_notifier' for a message indicating it can now read.
+#
+#   2. Repeatedly reads for the amount of times defined by 'read_attempts'.
+#
+#   3. Notifies the 'read_notifier'.
+#
+#   4. Polls the 'send_notifier' for a message indicating it can now send.
+#
+#   5. Sends each successfully read byte in the order they were received.
+#
+#   6. Notifies 'switch'.
+#
+#   7. Notifies the 'send_notifier'.
 #
 
 .port read_notifier, 0
@@ -39,9 +55,6 @@
 .port out, 2
 .port switch, 3
 .port send_notifier, 255
-
-# .define active, 1
-# .define read_attempts, 64
 
 .entrypoint
     mov r3, out
