@@ -49,6 +49,27 @@
 #
 #   7. Notifies the 'send_notifier'.
 #
+# Commonly this program is used in the following system design:
+#   +-------------------------------------+
+#   |                                     |
+#   |                                   out ------------------------------------------------------------------+
+#   in         alternating_reader         |                                                                   |
+#   |                                switch ----------------------+                                           |
+#   |                                     |                       |                                           |
+#   +-read_notifier---------send_notifier-+                       |                                           |
+#          |                       |                              |                                           |
+#   +------a---------+   +---------b------+     +----------------in:0----------------+     +-----------------in:0-------------------+
+#   | cross_notifier |   | cross_notifier |     | alternating_source_passthrough_0 out --- switch switchable_source_passthrough_1 out
+#   +------b---------+   +---------a------+     +----------------in:1----------------+     +-----------------in:1-------------------+
+#          |                       |                              |                                           |
+#   +-read_notifier---------send_notifier-+                       |                                           |
+#   |                                     |                       |                                           |
+#   |                                switch ----------------------+                                           |
+#   in         alternating_reader         |                                                                   |
+#   |                                   out ------------------------------------------------------------------+
+#   |                                     |
+#   +-------------------------------------+
+#
 
 .port read_notifier, 0
 .port in, 1
