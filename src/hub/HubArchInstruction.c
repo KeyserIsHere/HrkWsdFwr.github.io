@@ -779,55 +779,118 @@ _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State
 
 HKHubArchProcessorFlags HKHubArchInstructionReadFlags(const HKHubArchInstructionState *State)
 {
-    HKHubArchProcessorFlags Flags = HKHubArchInstructionGetModifiedFlags(State);
-    if (Flags != HKHubArchProcessorFlagsMask)
+    const HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(State);
+    for (size_t Loop = 0; Loop < 3; Loop++)
     {
-        const HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(State);
-        for (size_t Loop = 0; Loop < 3; Loop++)
+        _Static_assert(HKHubArchInstructionMemoryOperationOp1 == 0 &&
+                       HKHubArchInstructionMemoryOperationOp2 == 2 &&
+                       HKHubArchInstructionMemoryOperationOp3 == 4, "Expects the following operand mask layout");
+        
+        switch (State->operand[Loop].type)
         {
-            _Static_assert(HKHubArchInstructionMemoryOperationOp1 == 0 &&
-                           HKHubArchInstructionMemoryOperationOp2 == 2 &&
-                           HKHubArchInstructionMemoryOperationOp3 == 4, "Expects the following operand mask layout");
-            
-            switch (State->operand[Loop].type)
-            {
-                case HKHubArchInstructionOperandR:
-                    if (State->operand[Loop].reg == HKHubArchInstructionRegisterFlags)
-                    {
-                        if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationSrc) return HKHubArchProcessorFlagsMask;
-                    }
-                    break;
-                    
-                case HKHubArchInstructionOperandM:
+            case HKHubArchInstructionOperandR:
+                if (State->operand[Loop].reg == HKHubArchInstructionRegisterFlags)
                 {
-                    switch (State->operand[Loop].memory.type)
-                    {
-                        case HKHubArchInstructionMemoryRegister:
-                            if (State->operand[Loop].memory.reg == HKHubArchInstructionRegisterFlags) return HKHubArchProcessorFlagsMask;
-                            break;
-                            
-                        case HKHubArchInstructionMemoryRelativeOffset:
-                            if (State->operand[Loop].memory.relativeOffset.reg == HKHubArchInstructionRegisterFlags) return HKHubArchProcessorFlagsMask;
-                            break;
-                            
-                        case HKHubArchInstructionMemoryRelativeRegister:
-                            if ((State->operand[Loop].memory.relativeReg[0] == HKHubArchInstructionRegisterFlags) || (State->operand[Loop].memory.relativeReg[1] == HKHubArchInstructionRegisterFlags)) return HKHubArchProcessorFlagsMask;
-                            break;
-                            
-                        default:
-                            break;
-                    }
-                    
-                    break;
+                    if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationSrc) return HKHubArchProcessorFlagsMask;
                 }
-                    
-                default:
-                    break;
+                break;
+                
+            case HKHubArchInstructionOperandM:
+            {
+                switch (State->operand[Loop].memory.type)
+                {
+                    case HKHubArchInstructionMemoryRegister:
+                        if (State->operand[Loop].memory.reg == HKHubArchInstructionRegisterFlags) return HKHubArchProcessorFlagsMask;
+                        break;
+                        
+                    case HKHubArchInstructionMemoryRelativeOffset:
+                        if (State->operand[Loop].memory.relativeOffset.reg == HKHubArchInstructionRegisterFlags) return HKHubArchProcessorFlagsMask;
+                        break;
+                        
+                    case HKHubArchInstructionMemoryRelativeRegister:
+                        if ((State->operand[Loop].memory.relativeReg[0] == HKHubArchInstructionRegisterFlags) || (State->operand[Loop].memory.relativeReg[1] == HKHubArchInstructionRegisterFlags)) return HKHubArchProcessorFlagsMask;
+                        break;
+                        
+                    default:
+                        break;
+                }
+                
+                break;
             }
+                
+            default:
+                break;
         }
     }
     
-    return Flags;
+    static const HKHubArchProcessorFlags FlagDependentInstructions[sizeof(Instructions) / sizeof(typeof(*Instructions))] = {
+        0,
+        0,
+        0,
+        HKHubArchProcessorFlagsZero, //jz
+        0,
+        0,
+        0,
+        HKHubArchProcessorFlagsZero, //jnz
+        0,
+        0,
+        0,
+        HKHubArchProcessorFlagsSign, //js
+        0,
+        0,
+        0,
+        HKHubArchProcessorFlagsSign, //jns
+        0,
+        0,
+        0,
+        HKHubArchProcessorFlagsOverflow, //jo
+        0,
+        0,
+        0,
+        HKHubArchProcessorFlagsOverflow, //jno
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsOverflow, //jsl
+        HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsOverflow, //jsge
+        HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsOverflow, //jsle
+        HKHubArchProcessorFlagsZero | HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsOverflow, //jsg
+        HKHubArchProcessorFlagsCarry, //jul
+        HKHubArchProcessorFlagsCarry, //juge
+        HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero, //jule
+        HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero, //jug
+        0,
+        0,
+        0,
+        0
+    };
+    
+    return FlagDependentInstructions[State->opcode];
 }
 
 HKHubArchInstructionControlFlow HKHubArchInstructionGetControlFlow(const HKHubArchInstructionState *State)
