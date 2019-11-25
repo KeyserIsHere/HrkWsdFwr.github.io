@@ -893,6 +893,25 @@ HKHubArchProcessorFlags HKHubArchInstructionReadFlags(const HKHubArchInstruction
     return FlagDependentInstructions[State->opcode];
 }
 
+HKHubArchProcessorFlags HKHubArchInstructionWriteFlags(const HKHubArchInstructionState *State)
+{
+    HKHubArchProcessorFlags Flags = HKHubArchInstructionGetModifiedFlags(State);
+    if (Flags != HKHubArchProcessorFlagsMask)
+    {
+        const HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(State);
+        for (size_t Loop = 0; Loop < 3; Loop++)
+        {
+            _Static_assert(HKHubArchInstructionMemoryOperationOp1 == 0 &&
+                           HKHubArchInstructionMemoryOperationOp2 == 2 &&
+                           HKHubArchInstructionMemoryOperationOp3 == 4, "Expects the following operand mask layout");
+            
+            if ((State->operand[Loop].type == HKHubArchInstructionOperandR) && (State->operand[Loop].reg == HKHubArchInstructionRegisterFlags) && ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)) return HKHubArchProcessorFlagsMask;
+        }
+    }
+    
+    return Flags;
+}
+
 HKHubArchInstructionControlFlow HKHubArchInstructionGetControlFlow(const HKHubArchInstructionState *State)
 {
     CCAssertLog(State, "State must not be null");

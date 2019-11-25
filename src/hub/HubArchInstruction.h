@@ -93,6 +93,16 @@ _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State
 HKHubArchProcessorFlags HKHubArchInstructionReadFlags(const HKHubArchInstructionState *State);
 
 /*!
+ * @brief Check what flags an instruction writes.
+ * @description This is the same as @b HKHubArchInstructionGetModifiedFlags but also includes if the flags
+ *              register is a destination.
+ *
+ * @param State The state for the instruction.
+ * @return What flags the instruction writes.
+ */
+HKHubArchProcessorFlags HKHubArchInstructionWriteFlags(const HKHubArchInstructionState *State);
+
+/*!
  * @brief Get the control flow of the instruction.
  * @param State The state for the instruction.
  * @return The control flow.
