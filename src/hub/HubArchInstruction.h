@@ -86,6 +86,13 @@ size_t HKHubArchInstructionSizeOfEncoding(const HKHubArchInstructionState *State
 _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State);
 
 /*!
+ * @brief Check what flags an instruction will read/depend on.
+ * @param State The state for the instruction.
+ * @return What flags the instruction reads.
+ */
+HKHubArchProcessorFlags HKHubArchInstructionReadFlags(const HKHubArchInstructionState *State);
+
+/*!
  * @brief Get the control flow of the instruction.
  * @param State The state for the instruction.
  * @return The control flow.

@@ -777,6 +777,59 @@ _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State
     return FALSE;
 }
 
+HKHubArchProcessorFlags HKHubArchInstructionReadFlags(const HKHubArchInstructionState *State)
+{
+    HKHubArchProcessorFlags Flags = HKHubArchInstructionGetModifiedFlags(State);
+    if (Flags != HKHubArchProcessorFlagsMask)
+    {
+        const HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(State);
+        for (size_t Loop = 0; Loop < 3; Loop++)
+        {
+            _Static_assert(HKHubArchInstructionMemoryOperationOp1 == 0 &&
+                           HKHubArchInstructionMemoryOperationOp2 == 2 &&
+                           HKHubArchInstructionMemoryOperationOp3 == 4, "Expects the following operand mask layout");
+            
+            switch (State->operand[Loop].type)
+            {
+                case HKHubArchInstructionOperandR:
+                    if (State->operand[Loop].reg == HKHubArchInstructionRegisterFlags)
+                    {
+                        if ((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationSrc) return HKHubArchProcessorFlagsMask;
+                    }
+                    break;
+                    
+                case HKHubArchInstructionOperandM:
+                {
+                    switch (State->operand[Loop].memory.type)
+                    {
+                        case HKHubArchInstructionMemoryRegister:
+                            if (State->operand[Loop].memory.reg == HKHubArchInstructionRegisterFlags) return HKHubArchProcessorFlagsMask;
+                            break;
+                            
+                        case HKHubArchInstructionMemoryRelativeOffset:
+                            if (State->operand[Loop].memory.relativeOffset.reg == HKHubArchInstructionRegisterFlags) return HKHubArchProcessorFlagsMask;
+                            break;
+                            
+                        case HKHubArchInstructionMemoryRelativeRegister:
+                            if ((State->operand[Loop].memory.relativeReg[0] == HKHubArchInstructionRegisterFlags) || (State->operand[Loop].memory.relativeReg[1] == HKHubArchInstructionRegisterFlags)) return HKHubArchProcessorFlagsMask;
+                            break;
+                            
+                        default:
+                            break;
+                    }
+                    
+                    break;
+                }
+                    
+                default:
+                    break;
+            }
+        }
+    }
+    
+    return Flags;
+}
+
 HKHubArchInstructionControlFlow HKHubArchInstructionGetControlFlow(const HKHubArchInstructionState *State)
 {
     CCAssertLog(State, "State must not be null");
