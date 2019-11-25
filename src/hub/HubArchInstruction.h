@@ -93,6 +93,14 @@ _Bool HKHubArchInstructionPredictableFlow(const HKHubArchInstructionState *State
 HKHubArchInstructionControlFlow HKHubArchInstructionGetControlFlow(const HKHubArchInstructionState *State);
 
 /*!
+ * @brief Get the flags this instruction modifies.
+ * @note This does not include if the flags register is modified due to being the destination.
+ * @param State The state for the instruction.
+ * @return The modified flags.
+ */
+HKHubArchProcessorFlags HKHubArchInstructionGetModifiedFlags(const HKHubArchInstructionState *State);
+
+/*!
  * @brief Get the memory operation of the instruction.
  * @param State The state for the instruction.
  * @return The memory operation.

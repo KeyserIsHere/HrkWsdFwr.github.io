@@ -73,58 +73,59 @@ static const struct {
     HKHubArchInstructionOperand operands[3];
     HKHubArchInstructionMemoryOperation memory;
     HKHubArchInstructionControlFlow control;
+    HKHubArchProcessorFlags flags;
 } Instructions[64] = {
-    { CC_STRING("add")     , HKHubArchInstructionOperationADD,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("add")     , HKHubArchInstructionOperationADD,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("add")     , HKHubArchInstructionOperationADD,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("add")     , HKHubArchInstructionOperationADD,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { CC_STRING("mov")     , HKHubArchInstructionOperationMOV,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationDS },
     { CC_STRING("jz")      , HKHubArchInstructionOperationJZ,   { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
-    { CC_STRING("sub")     , HKHubArchInstructionOperationSUB,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("sub")     , HKHubArchInstructionOperationSUB,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("sub")     , HKHubArchInstructionOperationSUB,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("sub")     , HKHubArchInstructionOperationSUB,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { CC_STRING("mov")     , HKHubArchInstructionOperationMOV,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationDS },
     { CC_STRING("jnz")     , HKHubArchInstructionOperationJNZ,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
-    { CC_STRING("mul")     , HKHubArchInstructionOperationMUL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("mul")     , HKHubArchInstructionOperationMUL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("mul")     , HKHubArchInstructionOperationMUL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("mul")     , HKHubArchInstructionOperationMUL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
     { CC_STRING("js")      , HKHubArchInstructionOperationJS,   { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
-    { CC_STRING("sdiv")    , HKHubArchInstructionOperationSDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("sdiv")    , HKHubArchInstructionOperationSDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("sdiv")    , HKHubArchInstructionOperationSDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("sdiv")    , HKHubArchInstructionOperationSDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
     { CC_STRING("jns")     , HKHubArchInstructionOperationJNS,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
-    { CC_STRING("udiv")    , HKHubArchInstructionOperationUDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("udiv")    , HKHubArchInstructionOperationUDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("udiv")    , HKHubArchInstructionOperationUDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("udiv")    , HKHubArchInstructionOperationUDIV, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
     { CC_STRING("jo")      , HKHubArchInstructionOperationJO,   { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
-    { CC_STRING("smod")    , HKHubArchInstructionOperationSMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("smod")    , HKHubArchInstructionOperationSMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("smod")    , HKHubArchInstructionOperationSMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("smod")    , HKHubArchInstructionOperationSMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
     { CC_STRING("jno")     , HKHubArchInstructionOperationJNO,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
-    { CC_STRING("umod")    , HKHubArchInstructionOperationUMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("umod")    , HKHubArchInstructionOperationUMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("umod")    , HKHubArchInstructionOperationUMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("umod")    , HKHubArchInstructionOperationUMOD, { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  }, HKHubArchInstructionMemoryOperationSSS },
-    { CC_STRING("cmp")     , HKHubArchInstructionOperationCMP,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationSS },
-    { CC_STRING("cmp")     , HKHubArchInstructionOperationCMP,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationSS },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  }, HKHubArchInstructionMemoryOperationSSS, .flags = HKHubArchProcessorFlagsZero },
+    { CC_STRING("cmp")     , HKHubArchInstructionOperationCMP,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationSS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("cmp")     , HKHubArchInstructionOperationCMP,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationSS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS },
-    { CC_STRING("shl")     , HKHubArchInstructionOperationSHL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("shl")     , HKHubArchInstructionOperationSHL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, .flags = HKHubArchProcessorFlagsZero },
+    { CC_STRING("shl")     , HKHubArchInstructionOperationSHL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("shl")     , HKHubArchInstructionOperationSHL,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  }, HKHubArchInstructionMemoryOperationSSS },
-    { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM  }, HKHubArchInstructionMemoryOperationSSS, .flags = HKHubArchProcessorFlagsZero },
+    { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("shr")     , HKHubArchInstructionOperationSHR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("recv")    , HKHubArchInstructionOperationRECV, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationSD },
-    { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
+    { CC_STRING("recv")    , HKHubArchInstructionOperationRECV, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandM,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationSD, .flags = HKHubArchProcessorFlagsZero },
+    { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("xor")     , HKHubArchInstructionOperationXOR,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
     { 0                    , NULL,                              { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA } },
-    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM  }, HKHubArchInstructionMemoryOperationSSS },
-    { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("neg")     , HKHubArchInstructionOperationNEG,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationB },
-    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS },
-    { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS },
-    { CC_STRING("not")     , HKHubArchInstructionOperationNOT,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationB },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandR,   HKHubArchInstructionOperandI,   HKHubArchInstructionOperandM  }, HKHubArchInstructionMemoryOperationSSS, .flags = HKHubArchProcessorFlagsZero },
+    { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("or")      , HKHubArchInstructionOperationOR,   { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("neg")     , HKHubArchInstructionOperationNEG,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationB, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("send")    , HKHubArchInstructionOperationSEND, { HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, .flags = HKHubArchProcessorFlagsZero },
+    { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("and")     , HKHubArchInstructionOperationAND,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandI,   HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationBS, .flags = HKHubArchProcessorFlagsMask },
+    { CC_STRING("not")     , HKHubArchInstructionOperationNOT,  { HKHubArchInstructionOperandRM,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationB, .flags = HKHubArchProcessorFlagsMask },
     { CC_STRING("hlt")     , HKHubArchInstructionOperationHLT,  { HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, .control = HKHubArchInstructionControlFlowEffectPause },
     { CC_STRING("jsl")     , HKHubArchInstructionOperationJSL,  { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
     { CC_STRING("jsge")    , HKHubArchInstructionOperationJSGE, { HKHubArchInstructionOperandRel, HKHubArchInstructionOperandNA,  HKHubArchInstructionOperandNA }, HKHubArchInstructionMemoryOperationS, HKHubArchInstructionControlFlowEffectBranch | HKHubArchInstructionControlFlowEvaluationConditional },
@@ -787,6 +788,19 @@ HKHubArchInstructionControlFlow HKHubArchInstructionGetControlFlow(const HKHubAr
     }
     
     return Flow;
+}
+
+HKHubArchProcessorFlags HKHubArchInstructionGetModifiedFlags(const HKHubArchInstructionState *State)
+{
+    CCAssertLog(State, "State must not be null");
+    
+    HKHubArchProcessorFlags Flags = 0;
+    if ((State->opcode != -1) && (Instructions[State->opcode].mnemonic))
+    {
+        Flags = Instructions[State->opcode].flags;
+    }
+    
+    return Flags;
 }
 
 HKHubArchInstructionMemoryOperation HKHubArchInstructionGetMemoryOperation(const HKHubArchInstructionState *State)
