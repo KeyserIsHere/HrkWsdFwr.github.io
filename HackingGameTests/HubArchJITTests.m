@@ -684,4 +684,642 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
 }
 
+-(void) testLeftShift
+{
+    const char *Sources[] = {
+        "mov r0, 5\n"
+        "shl r0, 1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "shl r0, 2\n"
+        "hlt\n",
+        
+        "mov r0, 64\n"
+        "shl r0, 1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "shl r0, 1\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "shl r0, 128\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "shl r0, 3\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "shl r0, 128\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "shl r0, 0\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "shl r0, 0\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "shl r0, 0\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r1, 1\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r1, 2\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 64\n"
+        "mov r1, 1\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "mov r1, 1\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "mov r1, 1\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "mov r1, 3\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "mov r1, 128\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r1, 0\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "mov r1, 0\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "mov r1, 0\n"
+        "shl r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "shl r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r2, 2\n"
+        "shl r0, r2\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r3, 2\n"
+        "shl r0, r3\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "mov r0, 2\n"
+        "shl r1, r0\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "shl r1, r1\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "mov r2, 2\n"
+        "shl r1, r2\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "mov r3, 2\n"
+        "shl r1, r3\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "mov r0, 2\n"
+        "shl r2, r0\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "mov r1, 2\n"
+        "shl r2, r1\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "shl r2, r2\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "mov r3, 2\n"
+        "shl r2, r3\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "mov r0, 2\n"
+        "shl r3, r0\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "mov r1, 2\n"
+        "shl r3, r1\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "mov r2, 2\n"
+        "shl r3, r2\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "shl r3, r3\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shl r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shl r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "shl r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "shl r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shl r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shl r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "shl r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "shl r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shl r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shl r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "shl r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "shl r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "mov r1, 1\n"
+        "shl r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "mov r1, 1\n"
+        "shl r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "mov r1, 1\n"
+        "shl r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "mov r1, 1\n"
+        "shl r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r1, 128\n"
+        "mov r0, 1\n"
+        "shl r1, [r0+r0]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r2, 128\n"
+        "mov r1, 1\n"
+        "shl r2, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r3, 128\n"
+        "mov r1, 1\n"
+        "shl r3, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 1\n"
+        "shl r0, [r0+r0]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r1, 1\n"
+        "shl r1, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r2, 1\n"
+        "shl r2, [r2+r2]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r3, 1\n"
+        "shl r3, [r3+r3]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r3, 1\n"
+        "shl r3, [r3+0]\n"
+        "hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
+-(void) testRightShift
+{
+    const char *Sources[] = {
+        "mov r0, 5\n"
+        "shr r0, 1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "shr r0, 2\n"
+        "hlt\n",
+        
+        "mov r0, 64\n"
+        "shr r0, 1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "shr r0, 1\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "shr r0, 128\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "shr r0, 3\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "shr r0, 128\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "shr r0, 0\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "shr r0, 0\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "shr r0, 0\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r1, 1\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r1, 2\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 64\n"
+        "mov r1, 1\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "mov r1, 1\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "mov r1, 1\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "mov r1, 3\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "mov r1, 128\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r1, 0\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 0\n"
+        "mov r1, 0\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "mov r1, 0\n"
+        "shr r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "shr r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r2, 2\n"
+        "shr r0, r2\n"
+        "hlt\n",
+        
+        "mov r0, 5\n"
+        "mov r3, 2\n"
+        "shr r0, r3\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "mov r0, 2\n"
+        "shr r1, r0\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "shr r1, r1\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "mov r2, 2\n"
+        "shr r1, r2\n"
+        "hlt\n",
+        
+        "mov r1, 5\n"
+        "mov r3, 2\n"
+        "shr r1, r3\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "mov r0, 2\n"
+        "shr r2, r0\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "mov r1, 2\n"
+        "shr r2, r1\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "shr r2, r2\n"
+        "hlt\n",
+        
+        "mov r2, 5\n"
+        "mov r3, 2\n"
+        "shr r2, r3\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "mov r0, 2\n"
+        "shr r3, r0\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "mov r1, 2\n"
+        "shr r3, r1\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "mov r2, 2\n"
+        "shr r3, r2\n"
+        "hlt\n",
+        
+        "mov r3, 5\n"
+        "shr r3, r3\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shr r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shr r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "shr r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "shr r0, [0]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shr r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shr r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "shr r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "shr r0, [r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shr r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "shr r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "shr r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "shr r0, [r1+1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "mov r1, 1\n"
+        "shr r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 2\n"
+        ".entrypoint\n"
+        "mov r0, 5\n"
+        "mov r1, 1\n"
+        "shr r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 64\n"
+        "mov r1, 1\n"
+        "shr r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 128\n"
+        "mov r1, 1\n"
+        "shr r0, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r1, 128\n"
+        "mov r0, 1\n"
+        "shr r1, [r0+r0]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r2, 128\n"
+        "mov r1, 1\n"
+        "shr r2, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r3, 128\n"
+        "mov r1, 1\n"
+        "shr r3, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r0, 1\n"
+        "shr r0, [r0+r0]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r1, 1\n"
+        "shr r1, [r1+r1]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r2, 1\n"
+        "shr r2, [r2+r2]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r3, 1\n"
+        "shr r3, [r3+r3]\n"
+        "hlt\n",
+        
+        ".byte 0, 0, 1\n"
+        ".entrypoint\n"
+        "mov r3, 1\n"
+        "shr r3, [r3+0]\n"
+        "hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
 @end
