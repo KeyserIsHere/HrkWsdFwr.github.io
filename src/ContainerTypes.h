@@ -40,6 +40,7 @@ CC_CONTAINER_DECLARE(CCDictionary, CCString, uint8_t); \
 CC_CONTAINER_DECLARE(CCDictionary, HKHubArchPortID, HKHubArchPortConnection); \
 CC_CONTAINER_DECLARE(CCDictionary, HKHubModuleWirelessTransceiverPacketSignature, uint8_t); \
 CC_CONTAINER_DECLARE(CCDictionary, uint8_t, HKHubArchProcessorDebugBreakpoint); \
+CC_CONTAINER_DECLARE(CCDictionary, uint8_t, size_t); \
 CC_CONTAINER_DECLARE(CCDictionary, uint8_t, uintptr_t);
 
 #define CC_CONTAINER_DECLARE_PRESET_CCHashMap()
