@@ -832,13 +832,117 @@ static size_t HKHubArchJITGenerate1OperandJump(uint8_t *Ptr, const HKHubArchExec
     size_t Index = 0;
     HKHubArchJITCheckCycles(Ptr, &Index, Cost + (Size * HKHubArchProcessorSpeedMemoryRead), Instruction);
     
-    if (Type == HKHubArchJITJumpUnconditional)
+    if (Type != HKHubArchJITJumpUnconditional)
     {
-        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Instruction->state.operand[0].value);
+        switch (Type)
+        {
+            case HKHubArchJITJumpZero:
+            case HKHubArchJITJumpNotZero:
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsZero);
+                break;
+                
+            case HKHubArchJITJumpSign:
+                Type = HKHubArchJITJumpZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsSign);
+                break;
+                
+            case HKHubArchJITJumpNotSign:
+                Type = HKHubArchJITJumpNotZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsSign);
+                break;
+                
+            case HKHubArchJITJumpOverflow:
+                Type = HKHubArchJITJumpZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsOverflow);
+                break;
+                
+            case HKHubArchJITJumpNotOverflow:
+                Type = HKHubArchJITJumpNotZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsOverflow);
+                break;
+                
+            case HKHubArchJITJumpCarry:
+                Type = HKHubArchJITJumpZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsCarry);
+                break;
+                
+            case HKHubArchJITJumpNotCarry:
+                Type = HKHubArchJITJumpNotZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsCarry);
+                break;
+                
+            case HKHubArchJITJumpBelowEqual:
+                Type = HKHubArchJITJumpZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero);
+                break;
+                
+            case HKHubArchJITJumpNotBelowEqual:
+                Type = HKHubArchJITJumpNotZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero);
+                break;
+                
+            case HKHubArchJITJumpLess:
+                Type = HKHubArchJITJumpZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsSign);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAH, HKHubArchProcessorFlagsOverflow);
+                HKHubArchJITAddInstructionBitAdjustMI8(Ptr, &Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAL, 1);
+                HKHubArchJITAddInstructionXorMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterAH);
+                break;
+                
+            case HKHubArchJITJumpNotLess:
+                Type = HKHubArchJITJumpNotZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsSign);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAH, HKHubArchProcessorFlagsOverflow);
+                HKHubArchJITAddInstructionBitAdjustMI8(Ptr, &Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAL, 1);
+                HKHubArchJITAddInstructionXorMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterAH);
+                break;
+                
+            case HKHubArchJITJumpLessEqual:
+                Type = HKHubArchJITJumpZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsZero);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAH, HKHubArchProcessorFlagsOverflow);
+                HKHubArchJITAddInstructionBitAdjustMI8(Ptr, &Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAL, 1);
+                HKHubArchJITAddInstructionXorMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterAH);
+                break;
+                
+            case HKHubArchJITJumpNotLessEqual:
+                Type = HKHubArchJITJumpNotZero;
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterCompatibilityFlags);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsSign | HKHubArchProcessorFlagsZero);
+                HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAH, HKHubArchProcessorFlagsOverflow);
+                HKHubArchJITAddInstructionBitAdjustMI8(Ptr, &Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAL, 1);
+                HKHubArchJITAddInstructionXorMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterAH);
+                break;
+                
+            default:
+                break;
+        }
         
-        CCArrayAppendElement(Jumps, &(HKHubArchJITJumpRef){ .jump = Ptr + Index, .rel = (int32_t*)(Ptr + Index + 1), .pc = Instruction->offset + Instruction->state.operand[0].value });
-        HKHubArchJITAddInstructionJumpRel32(Ptr, &Index, Type, 0);
+        HKHubArchJITAddInstructionJumpRel32(Ptr, &Index, Type, 8);
     }
+    
+    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Instruction->state.operand[0].value);
+    
+    CCArrayAppendElement(Jumps, &(HKHubArchJITJumpRef){ .jump = Ptr + Index, .rel = (int32_t*)(Ptr + Index + 1), .pc = Instruction->offset + Instruction->state.operand[0].value });
+    HKHubArchJITAddInstructionJumpRel32(Ptr, &Index, HKHubArchJITJumpUnconditional, 0);
+    
+    if (Type != HKHubArchJITJumpUnconditional) HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityPC, Size);
     
     return Index;
 }
@@ -886,6 +990,76 @@ static size_t HKHubArchJITGenerateShl(uint8_t *Ptr, const HKHubArchExecutionGrap
 static size_t HKHubArchJITGenerateShr(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction)
 {
     return HKHubArchJITGenerate2OperandBitMutator(Ptr, Instruction, HKHubArchJITBitAdjustShr, 1, TRUE);
+}
+
+static size_t HKHubArchJITGenerateJz(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpZero, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJnz(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpNotZero, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJs(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpSign, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJns(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpNotSign, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJo(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpOverflow, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJno(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpNotOverflow, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJsl(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpLess, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJsge(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpGreaterEqual, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJsle(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpLessEqual, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJsg(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpGreater, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJul(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpBelow, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJuge(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpAboveEqual, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJule(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpBelowEqual, 1, Jumps);
+}
+
+static size_t HKHubArchJITGenerateJug(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
+{
+    return HKHubArchJITGenerate1OperandJump(Ptr, Instruction, HKHubArchJITJumpAbove, 1, Jumps);
 }
 
 static size_t HKHubArchJITGenerateJmp(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, CCArray(HKHubArchJITJumpRef) Jumps)
@@ -1011,6 +1185,90 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
                 CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
                 CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
                 Index += HKHubArchJITGenerateAnd(&Ptr[Index], Instruction);
+                break;
+                
+            case 3:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJz(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 7:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJnz(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 11:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJs(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 15:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJns(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 19:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJo(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 23:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJno(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 52:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJsl(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 53:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJsge(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 54:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJsle(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 55:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJsg(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 56:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJul(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 57:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJuge(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 58:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJule(&Ptr[Index], Instruction, Jumps);
+                break;
+                
+            case 59:
+                CCDictionarySetValue(Offsets, &Instruction->offset, &Index);
+                CCArrayAppendElement(JITBlock->map, &(HKHubArchJITBlockRelativeEntry){ .entry = (uintptr_t)(Ptr + Index), .index = InstructionIndex });
+                Index += HKHubArchJITGenerateJug(&Ptr[Index], Instruction, Jumps);
                 break;
                 
             case 63:
