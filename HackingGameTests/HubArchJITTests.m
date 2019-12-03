@@ -39,7 +39,7 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
 
 @implementation HubArchJITTests
 
--(void) run: (const char*)source
+-(void) run: (const char*)source Halts: (_Bool)halts
 {
     CCOrderedCollection AST = HKHubArchAssemblyParse(source);
     
@@ -72,12 +72,17 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     XCTAssertEqual(Processor->state.r[3], ProcessorNormal->state.r[3], "Should have the correct value");
     XCTAssertEqual(Processor->state.pc, ProcessorNormal->state.pc, "Should have the correct value");
     XCTAssertEqual(Processor->state.flags, ProcessorNormal->state.flags, "Should have the correct value");
-    XCTAssertEqual(Processor->cycles ? (Processor->cycles - 1) : 0, ProcessorNormal->cycles, "Should have the correct value");
+    XCTAssertEqual(Processor->cycles ? (Processor->cycles - halts) : 0, ProcessorNormal->cycles, "Should have the correct value");
     
     for (size_t Loop = 0; Loop < 256; Loop++) XCTAssertEqual(Processor->memory[Loop], ProcessorNormal->memory[Loop], "Should have the correct value");
     
     HKHubArchProcessorDestroy(Processor);
     HKHubArchProcessorDestroy(ProcessorNormal);
+}
+
+-(void) run: (const char*)source
+{
+    [self run: source Halts: TRUE];
 }
 
 -(void) testMove
@@ -1320,6 +1325,490 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
+-(void) testJump
+{
+    const char *Sources[] = {
+        //jmp
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jmp skip\n"
+        "mov r1, 3\n"
+        "skip:\n"
+        "mov r1, 4\n"
+        "jmp repeat\n",
+        
+        //jz
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jnz
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jnz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jnz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jnz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jnz repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //js
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "js repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "js repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "js repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "js repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jns
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jns repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jns repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jns repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jns repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jo
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jo repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jo repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jo repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jo repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jno
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jno repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jno repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jno repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jno repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jul
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jul repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jul repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jul repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jul repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //juge
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "juge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "juge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "juge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "juge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jule
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jule repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jule repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jule repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jule repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jug
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jug repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jug repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jug repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jug repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jsl
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jsl repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jsl repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jsl repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jsl repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jsge
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jsge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jsge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jsge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jsge repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jsle
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jsle repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jsle repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jsle repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jsle repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        //jsg
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "jsg repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "mov r2, 248\n"
+        "add r0, 1\n"
+        "xor r2, r0\n"
+        "jsg repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 2\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "cmp r0, 230\n"
+        "jsg repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n",
+        
+        "mov r0, 0xff\n"
+        "repeat:\n"
+        "add r0, 1\n"
+        "mov flags, r0\n"
+        "jsg repeat\n"
+        "add r3, 1\n"
+        "jmp repeat\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop] Halts: FALSE];
 }
 
 @end
