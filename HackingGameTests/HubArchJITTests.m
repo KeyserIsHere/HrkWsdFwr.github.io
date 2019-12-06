@@ -1811,4 +1811,221 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop] Halts: FALSE];
 }
 
+-(void) testModulo
+{
+    const char *Sources[] = {
+        "umod r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "umod r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "mov r1, 2\n"
+        "umod r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 0\n"
+        "umod r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 129\n"
+        "mov r1, 129\n"
+        "umod r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 200\n"
+        "mov r1, 129\n"
+        "umod r0, r1\n"
+        "hlt\n"
+        
+        "mov r0, 129\n"
+        "mov r1, 200\n"
+        "umod r0, r1\n"
+        "hlt\n"
+        
+        "umod r0, [r0]\n"
+        "hlt\n",
+        
+        "umod r0, [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 4\n"
+        "umod r0, [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "umod r0, [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 4\n"
+        "umod r1, [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "umod r0, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "umod r0, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 4\n"
+        "umod r1, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "umod r0, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "umod r1, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "umod r2, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "umod [r0], r0\n"
+        "hlt\n",
+        
+        "umod [data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 4\n"
+        "umod [data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "umod [r0], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 4\n"
+        "umod [r0], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "umod [r0+data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "umod [r0+data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 4\n"
+        "umod [r0+data], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "umod [r0+r1], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "umod [r0+r1], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "umod [r0+r1], r2\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "umod [data], [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data + 1\n"
+        "umod [r0], [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data + 1\n"
+        "umod [data], [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "umod [data+r1], [data+r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "umod [data+r0], [data+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "umod [r3+r1], [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "umod [r3+r2], [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "umod [r3+r1], [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "umod [r3+r2], [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+    
+    for (size_t Loop = 0; Loop < 256; Loop++)
+    {
+        for (size_t Loop2 = 0; Loop2 < 256; Loop2++)
+        {
+            [self run: [[NSString stringWithFormat: @"mov r0, %zu\numod r0, %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte %zu\n.entrypoint\numod [0], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte %zu\n.entrypoint\numod [r0], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\numod [r0+2], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\nmov r1, 2\numod [r0+r1], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+        }
+    }
+}
+
 @end
