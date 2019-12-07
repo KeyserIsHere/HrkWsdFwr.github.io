@@ -2194,6 +2194,22 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     XCTAssertEqual(Processor->state.flags, 0, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 5, @"Should have the correct value");
     
+    Processor->state.r[0] = -56;
+    Processor->state.r[1] = -127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    Processor->state.r[0] = -127;
+    Processor->state.r[1] = -56;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, 0, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 2, @"Should have the correct value");
+    
     
     
     Source =
@@ -2407,7 +2423,7 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     Processor->state.pc = 0;
     HKHubArchProcessorSetCycles(Processor, 10);
     HKHubArchProcessorRun(Processor);
-    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
     
     Processor->state.r[0] = 0;
@@ -2449,6 +2465,22 @@ static HKHubArchPortResponse TestAccumulationSequence(HKHubArchPortConnection Co
     HKHubArchProcessorRun(Processor);
     XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsZero, @"Should have the correct value");
     XCTAssertEqual(Processor->state.r[0], 0, @"Should have the correct value");
+    
+    Processor->state.r[0] = -56;
+    Processor->state.r[1] = -127;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], (uint8_t)-56, @"Should have the correct value");
+    
+    Processor->state.r[0] = -127;
+    Processor->state.r[1] = -56;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 10);
+    HKHubArchProcessorRun(Processor);
+    XCTAssertEqual(Processor->state.flags, HKHubArchProcessorFlagsSign, @"Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], (uint8_t)-15, @"Should have the correct value");
     
     Processor->state.r[0] = 127;
     Processor->state.r[1] = 127;
