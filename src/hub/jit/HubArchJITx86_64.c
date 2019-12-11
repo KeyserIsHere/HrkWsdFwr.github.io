@@ -958,72 +958,138 @@ static size_t HKHubArchJITGenerate2OperandModMutator(uint8_t *Ptr, const HKHubAr
         {
             const HKHubArchJITRegister Dst = HKHubArchJITGetRegister(Instruction->state.operand[0].reg);
             
-            switch (Instruction->state.operand[1].value)
+            if (Signed)
             {
-                case 0:
-                    HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero);
-                    HKHubArchJITAddInstructionXorMR8(Ptr, &Index, Dst, Dst);
-                    break;
-                    
-                case 1:
-                    HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsZero);
-                    HKHubArchJITAddInstructionXorMR8(Ptr, &Index, Dst, Dst);
-                    break;
-                    
-                case 2:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 1);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                case 4:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 3);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                case 8:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 7);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                case 16:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 15);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                case 32:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 31);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                case 64:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 63);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                case 128:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 127);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                case 130 ... 255:
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticCmp, Dst, -(256 - Instruction->state.operand[1].value));
-                    HKHubArchJITAddInstructionJumpRel8(Ptr, &Index, HKHubArchJITJumpBelow, 3);
-                    HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, Dst, 256 - Instruction->state.operand[1].value);
-                    HKHubArchJITAddInstructionTestMR8(Ptr, &Index, Dst, Dst);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    break;
-                    
-                default:
-                    Ptr[Index++] = HKHubArchJITRexB;
-                    HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterR8B, Instruction->state.operand[1].value);
-                    HKHubArchJITAddInstructionMovzxRM8(Ptr, &Index, HKHubArchJITRegisterEAX, Dst);
-                    Ptr[Index++] = HKHubArchJITRexB;
-                    Ptr[Index++] = HKHubArchJITOpcodeOneOpArithmeticM8;
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITOneOpArithmeticDiv, HKHubArchJITRegisterR8B);
-                    HKHubArchJITAddInstructionTestMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterAH);
-                    HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
-                    HKHubArchJITAddInstructionMovMR8(Ptr, &Index, Dst, HKHubArchJITRegisterAH);
-                    break;
+                switch (Instruction->state.operand[1].value)
+                {
+                    case 0:
+                        HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero);
+                        HKHubArchJITAddInstructionXorMR8(Ptr, &Index, Dst, Dst);
+                        break;
+                        
+                    case 1:
+                        HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsZero);
+                        HKHubArchJITAddInstructionXorMR8(Ptr, &Index, Dst, Dst);
+                        break;
+                        
+                    case 255:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticCmp, Dst, 0x80);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        HKHubArchJITAddInstructionBitAdjustMI8(Ptr, &Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAL, 3);
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticOr, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsZero);
+                        HKHubArchJITAddInstructionXorMR8(Ptr, &Index, Dst, Dst);
+                        break;
+                        
+                    default:
+                        Ptr[Index++] = HKHubArchJITRexB;
+                        HKHubArchJITAddInstructionMovOI(Ptr, &Index, HKHubArchJITRegisterR8D, (int8_t)Instruction->state.operand[1].value);
+                        HKHubArchJITAddInstructionMovsxRM8(Ptr, &Index, HKHubArchJITRegisterEAX, Dst);
+                        Ptr[Index++] = HKHubArchJITRexB;
+                        HKHubArchJITAddInstructionMovMR(Ptr, &Index, HKHubArchJITRegisterR9D, HKHubArchJITRegisterEDX);
+                        
+                        Ptr[Index++] = HKHubArchJITOpcodeCdq;
+                        Ptr[Index++] = HKHubArchJITRexB;
+                        Ptr[Index++] = HKHubArchJITOpcodeOneOpArithmeticM;
+                        Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITOneOpArithmeticIdiv, HKHubArchJITRegisterR8D);
+                        
+                        HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterDL);
+                        Ptr[Index++] = HKHubArchJITRexR;
+                        HKHubArchJITAddInstructionMovMR(Ptr, &Index, HKHubArchJITRegisterEDX, HKHubArchJITRegisterR9D);
+                        
+                        if (Instruction->state.operand[1].value & 0x80)
+                        {
+                            HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterAL, 0x80);
+                            HKHubArchJITAddInstructionAndMR8(Ptr, &Index, HKHubArchJITRegisterAL, Dst);
+                            HKHubArchJITAddInstructionBitAdjustMI8(Ptr, &Index, HKHubArchJITBitAdjustShr, HKHubArchJITRegisterAL, 4);
+                            Ptr[Index++] = HKHubArchJITRexB;
+                            HKHubArchJITAddInstructionMovMR8(Ptr, &Index, HKHubArchJITRegisterR9B, HKHubArchJITRegisterAL);
+                        }
+                        
+                        HKHubArchJITAddInstructionTestMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterAH);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        HKHubArchJITAddInstructionMovMR8(Ptr, &Index, Dst, HKHubArchJITRegisterAH);
+                        HKHubArchJITAddInstructionSets(Ptr, &Index, HKHubArchJITRegisterAH);
+                        HKHubArchJITAddInstructionBitAdjustMI8(Ptr, &Index, HKHubArchJITBitAdjustShl, HKHubArchJITRegisterAH, 2);
+                        HKHubArchJITAddInstructionXorMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterAH);
+                        
+                        if (Instruction->state.operand[1].value & 0x80)
+                        {
+                            Ptr[Index++] = HKHubArchJITRexR;
+                            HKHubArchJITAddInstructionXorMR8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchJITRegisterR9B);
+                        }
+                        break;
+                }
+            }
+            
+            else
+            {
+                switch (Instruction->state.operand[1].value)
+                {
+                    case 0:
+                        HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsOverflow | HKHubArchProcessorFlagsCarry | HKHubArchProcessorFlagsZero);
+                        HKHubArchJITAddInstructionXorMR8(Ptr, &Index, Dst, Dst);
+                        break;
+                        
+                    case 1:
+                        HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterAL, HKHubArchProcessorFlagsZero);
+                        HKHubArchJITAddInstructionXorMR8(Ptr, &Index, Dst, Dst);
+                        break;
+                        
+                    case 2:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 1);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    case 4:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 3);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    case 8:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 7);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    case 16:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 15);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    case 32:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 31);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    case 64:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 63);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    case 128:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, Dst, 127);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    case 130 ... 255:
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticCmp, Dst, -(256 - Instruction->state.operand[1].value));
+                        HKHubArchJITAddInstructionJumpRel8(Ptr, &Index, HKHubArchJITJumpBelow, 3);
+                        HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAdd, Dst, 256 - Instruction->state.operand[1].value);
+                        HKHubArchJITAddInstructionTestMR8(Ptr, &Index, Dst, Dst);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        break;
+                        
+                    default:
+                        Ptr[Index++] = HKHubArchJITRexB;
+                        HKHubArchJITAddInstructionMovOI8(Ptr, &Index, HKHubArchJITRegisterR8B, Instruction->state.operand[1].value);
+                        HKHubArchJITAddInstructionMovzxRM8(Ptr, &Index, HKHubArchJITRegisterEAX, Dst);
+                        Ptr[Index++] = HKHubArchJITRexB;
+                        Ptr[Index++] = HKHubArchJITOpcodeOneOpArithmeticM8;
+                        Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITOneOpArithmeticDiv, HKHubArchJITRegisterR8B);
+                        HKHubArchJITAddInstructionTestMR8(Ptr, &Index, HKHubArchJITRegisterAH, HKHubArchJITRegisterAH);
+                        HKHubArchJITAddInstructionSetz(Ptr, &Index, HKHubArchJITRegisterAL);
+                        HKHubArchJITAddInstructionMovMR8(Ptr, &Index, Dst, HKHubArchJITRegisterAH);
+                        break;
+                }
             }
             
             HKHubArchJITAddInstructionArithmeticMI8(Ptr, &Index, HKHubArchJITArithmeticAnd, HKHubArchJITRegisterCompatibilityFlags, 0xf0);
