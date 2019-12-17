@@ -2058,106 +2058,106 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     const char *Sources[] = {
         "smod r0, r0\n"
         "hlt\n",
-
+        
         "mov r0, 4\n"
         "smod r0, r0\n"
         "hlt\n",
-
+        
         "mov r0, 4\n"
         "mov r1, 2\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 0\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, 129\n"
         "mov r1, 129\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, 200\n"
         "mov r1, 129\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, 129\n"
         "mov r1, 200\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, -128\n"
         "mov r1, -1\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, -1\n"
         "mov r1, -128\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, -128\n"
         "mov r1, 1\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "mov r0, 1\n"
         "mov r1, -128\n"
         "smod r0, r1\n"
         "hlt\n",
-
+        
         "smod r0, [r0]\n"
         "hlt\n",
-
+        
         "smod r0, [data]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 4\n"
         "smod r0, [data]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "smod r0, [r0]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 4\n"
         "smod r1, [r0]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "smod r0, [r0+data]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "smod r0, [r0+data]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 4\n"
         "smod r1, [r0+data]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 1\n"
         "smod r0, [r0+r1]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 1\n"
         "smod r1, [r0+r1]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 1\n"
         "smod r2, [r0+r1]\n"
@@ -2187,134 +2187,134 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "smod r0, [r1+1]\n"
         "hlt\n"
         "data: .byte 1\n",
-
+        
         "smod [r0], r0\n"
         "hlt\n",
-
+        
         "smod [data], r0\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 4\n"
         "smod [data], r0\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "smod [r0], r0\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 4\n"
         "smod [r0], r1\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "smod [r0+data], r0\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "smod [r0+data], r0\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 4\n"
         "smod [r0+data], r1\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 1\n"
         "smod [r0+r1], r0\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 1\n"
         "smod [r0+r1], r1\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, 1\n"
         "smod [r0+r1], r2\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data\n"
         "mov r1, -1\n"
         "smod [r0], r1\n"
         "hlt\n"
         "data: .byte -128\n",
-
+        
         "mov r0, data\n"
         "mov r1, -128\n"
         "smod [r0], r1\n"
         "hlt\n"
         "data: .byte -1\n",
-
+        
         "mov r0, data\n"
         "mov r1, 1\n"
         "smod [r0], r1\n"
         "hlt\n"
         "data: .byte -128\n",
-
+        
         "mov r0, data\n"
         "mov r1, -128\n"
         "smod [r0], r1\n"
         "hlt\n"
         "data: .byte 1\n",
-
+        
         "smod [data], [data]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data + 1\n"
         "smod [r0], [data]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, data + 1\n"
         "smod [data], [r0]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 2\n"
         "smod [data+r1], [data+r0]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 2\n"
         "smod [data+r0], [data+r1]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 2\n"
         "mov r3, data\n"
         "smod [r3+r1], [r3+r2]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 2\n"
         "mov r3, data\n"
         "smod [r3+r2], [r3+r1]\n"
         "hlt\n"
         "data: .byte 10, 20, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 2\n"
         "mov r3, data\n"
         "smod [r3+r1], [r3+r2]\n"
         "hlt\n"
         "data: .byte 10, 0, 30, 40\n",
-
+        
         "mov r0, 1\n"
         "mov r1, 2\n"
         "mov r3, data\n"
@@ -2354,6 +2354,616 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
             [self run: [[NSString stringWithFormat: @".byte %zu\n.entrypoint\nsmod [r0], %zu\nhlt\n", Loop, Loop2] UTF8String]];
             [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\nsmod [r0+2], %zu\nhlt\n", Loop, Loop2] UTF8String]];
             [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\nmov r1, 2\nsmod [r0+r1], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+        }
+    }
+}
+
+-(void) testUnsignedDivision
+{
+    const char *Sources[] = {
+        "udiv r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "udiv r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "mov r1, 2\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 0\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 129\n"
+        "mov r1, 129\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 200\n"
+        "mov r1, 129\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 129\n"
+        "mov r1, 200\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, -128\n"
+        "mov r1, -1\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, -1\n"
+        "mov r1, -128\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, -128\n"
+        "mov r1, 1\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, -128\n"
+        "udiv r0, r1\n"
+        "hlt\n",
+        
+        "udiv r0, [r0]\n"
+        "hlt\n",
+        
+        "udiv r0, [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 4\n"
+        "udiv r0, [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "udiv r0, [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 4\n"
+        "udiv r1, [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "udiv r0, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "udiv r0, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 4\n"
+        "udiv r1, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "udiv r0, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "udiv r1, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "udiv r2, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, -1\n"
+        "mov r1, data\n"
+        "udiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, -128\n"
+        "mov r1, data\n"
+        "udiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte -1\n",
+        
+        "mov r0, 1\n"
+        "mov r1, data\n"
+        "udiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, -128\n"
+        "mov r1, data\n"
+        "udiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte 1\n",
+        
+        "udiv [r0], r0\n"
+        "hlt\n",
+        
+        "udiv [data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 4\n"
+        "udiv [data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "udiv [r0], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 4\n"
+        "udiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "udiv [r0+data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "udiv [r0+data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 4\n"
+        "udiv [r0+data], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "udiv [r0+r1], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "udiv [r0+r1], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "udiv [r0+r1], r2\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, -1\n"
+        "udiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, data\n"
+        "mov r1, -128\n"
+        "udiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte -1\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "udiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, data\n"
+        "mov r1, -128\n"
+        "udiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte 1\n",
+        
+        "udiv [data], [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data + 1\n"
+        "udiv [r0], [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data + 1\n"
+        "udiv [data], [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "udiv [data+r1], [data+r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "udiv [data+r0], [data+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "udiv [r3+r1], [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "udiv [r3+r2], [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "udiv [r3+r1], [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "udiv [r3+r2], [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+        
+        "mov r0, data\n"
+        "udiv [r0], [r0+1]\n"
+        "hlt\n"
+        "data: .byte -128, -1\n",
+        
+        "mov r0, data\n"
+        "udiv [r0+1], [r0]\n"
+        "hlt\n"
+        "data: .byte -128, -1\n",
+        
+        "mov r0, data\n"
+        "udiv [r0], [r0+1]\n"
+        "hlt\n"
+        "data: .byte -128, 1\n",
+        
+        "mov r0, data\n"
+        "udiv [r0+1], [r0]\n"
+        "hlt\n"
+        "data: .byte -128, 1\n",
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+    
+    for (size_t Loop = 0; Loop < 256; Loop++)
+    {
+        for (size_t Loop2 = 0; Loop2 < 256; Loop2++)
+        {
+            [self run: [[NSString stringWithFormat: @"mov r0, %zu\nudiv r0, %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte %zu\n.entrypoint\nudiv [0], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte %zu\n.entrypoint\nudiv [r0], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\nudiv [r0+2], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\nmov r1, 2\nudiv [r0+r1], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+        }
+    }
+}
+
+-(void) testSignedDivision
+{
+    const char *Sources[] = {
+        "sdiv r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "sdiv r0, r0\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "mov r1, 2\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 0\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 129\n"
+        "mov r1, 129\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 200\n"
+        "mov r1, 129\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 129\n"
+        "mov r1, 200\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, -128\n"
+        "mov r1, -1\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, -1\n"
+        "mov r1, -128\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, -128\n"
+        "mov r1, 1\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, -128\n"
+        "sdiv r0, r1\n"
+        "hlt\n",
+        
+        "sdiv r0, [r0]\n"
+        "hlt\n",
+        
+        "sdiv r0, [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 4\n"
+        "sdiv r0, [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "sdiv r0, [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 4\n"
+        "sdiv r1, [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "sdiv r0, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "sdiv r0, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 4\n"
+        "sdiv r1, [r0+data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "sdiv r0, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "sdiv r1, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "sdiv r2, [r0+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, -1\n"
+        "mov r1, data\n"
+        "sdiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, -128\n"
+        "mov r1, data\n"
+        "sdiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte -1\n",
+        
+        "mov r0, 1\n"
+        "mov r1, data\n"
+        "sdiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, -128\n"
+        "mov r1, data\n"
+        "sdiv r0, [r1+1]\n"
+        "hlt\n"
+        "data: .byte 1\n",
+        
+        "sdiv [r0], r0\n"
+        "hlt\n",
+        
+        "sdiv [data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 4\n"
+        "sdiv [data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "sdiv [r0], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 4\n"
+        "sdiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "sdiv [r0+data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "sdiv [r0+data], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 4\n"
+        "sdiv [r0+data], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "sdiv [r0+r1], r0\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "sdiv [r0+r1], r1\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "sdiv [r0+r1], r2\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data\n"
+        "mov r1, -1\n"
+        "sdiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, data\n"
+        "mov r1, -128\n"
+        "sdiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte -1\n",
+        
+        "mov r0, data\n"
+        "mov r1, 1\n"
+        "sdiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte -128\n",
+        
+        "mov r0, data\n"
+        "mov r1, -128\n"
+        "sdiv [r0], r1\n"
+        "hlt\n"
+        "data: .byte 1\n",
+        
+        "sdiv [data], [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data + 1\n"
+        "sdiv [r0], [data]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, data + 1\n"
+        "sdiv [data], [r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "sdiv [data+r1], [data+r0]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "sdiv [data+r0], [data+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "sdiv [r3+r1], [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "sdiv [r3+r2], [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 20, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "sdiv [r3+r1], [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "sdiv [r3+r2], [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+        
+        "mov r0, data\n"
+        "sdiv [r0], [r0+1]\n"
+        "hlt\n"
+        "data: .byte -128, -1\n",
+        
+        "mov r0, data\n"
+        "sdiv [r0+1], [r0]\n"
+        "hlt\n"
+        "data: .byte -128, -1\n",
+        
+        "mov r0, data\n"
+        "sdiv [r0], [r0+1]\n"
+        "hlt\n"
+        "data: .byte -128, 1\n",
+        
+        "mov r0, data\n"
+        "sdiv [r0+1], [r0]\n"
+        "hlt\n"
+        "data: .byte -128, 1\n",
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+    
+    for (size_t Loop = 0; Loop < 256; Loop++)
+    {
+        for (size_t Loop2 = 0; Loop2 < 256; Loop2++)
+        {
+            [self run: [[NSString stringWithFormat: @"mov r0, %zu\nsdiv r0, %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte %zu\n.entrypoint\nsdiv [0], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte %zu\n.entrypoint\nsdiv [r0], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\nsdiv [r0+2], %zu\nhlt\n", Loop, Loop2] UTF8String]];
+            [self run: [[NSString stringWithFormat: @".byte 0, 0, 0, %zu\n.entrypoint\nmov r0, 1\nmov r1, 2\nsdiv [r0+r1], %zu\nhlt\n", Loop, Loop2] UTF8String]];
         }
     }
 }
