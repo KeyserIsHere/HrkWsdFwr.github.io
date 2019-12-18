@@ -2968,4 +2968,100 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     }
 }
 
+-(void) testNegate
+{
+    const char *Sources[] = {
+        "neg r0\n"
+        "hlt\n",
+        
+        "mov r0, 4\n"
+        "neg r0\n"
+        "hlt\n",
+        
+        "mov r0, 127\n"
+        "neg r0\n"
+        "hlt\n",
+        
+        "mov r0, 128\n"
+        "neg r0\n"
+        "hlt\n",
+        
+        "mov r0, 255\n"
+        "neg r0\n"
+        "hlt\n",
+        
+        "neg [data]\n"
+        "hlt\n"
+        "data: .byte 4, 127, 128, 255\n",
+        
+        "mov r0, data + 1\n"
+        "neg [r0]\n"
+        "hlt\n"
+        "data: .byte 4, 127, 128, 255\n",
+        
+        "mov r0, data + 1\n"
+        "neg [data]\n"
+        "hlt\n"
+        "data: .byte 4, 127, 128, 255\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "neg [data+r1]\n"
+        "hlt\n"
+        "data: .byte 4, 127, 128, 255\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "neg [data+r0]\n"
+        "hlt\n"
+        "data: .byte 4, 127, 128, 255\n",
+        
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "neg [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 4, 127, 128, 255\n",
+        
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "neg [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 4, 127, 128, 255\n",
+        
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "neg [r3+r1]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+        
+        "mov r1, 2\n"
+        "mov r3, data\n"
+        "neg [r3+r2]\n"
+        "hlt\n"
+        "data: .byte 10, 0, 30, 40\n",
+        
+        "mov r0, data\n"
+        "neg [r0]\n"
+        "hlt\n"
+        "data: .byte -128, -1\n",
+        
+        "mov r0, data\n"
+        "neg [r0+1]\n"
+        "hlt\n"
+        "data: .byte -128, -1\n",
+        
+        "mov r0, data\n"
+        "neg [r0]\n"
+        "hlt\n"
+        "data: .byte -128, 1\n",
+        
+        "mov r0, data\n"
+        "neg [r0+1]\n"
+        "hlt\n"
+        "data: .byte -128, 1\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
 @end
