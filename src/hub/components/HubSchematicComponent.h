@@ -26,6 +26,97 @@
 #ifndef HackingGame_HubSchematicComponent_h
 #define HackingGame_HubSchematicComponent_h
 
-#include <stdio.h>
+#include "Base.h"
+#include "HubArchPort.h"
+#include "HubSystem.h"
+
+#define HK_HUB_SCHEMATIC_COMPONENT_ID (HKHubTypeSchematic | HK_HUB_COMPONENT_FLAG)
+
+typedef struct {
+    CC_COMPONENT_INHERIT(CCComponentClass);
+    _Bool editable;
+    _Bool debuggable;
+} HKHubSchematicComponentClass, *HKHubSchematicComponentPrivate;
+
+
+void HKHubSchematicComponentRegister(void);
+void HKHubSchematicComponentDeregister(void);
+void HKHubSchematicComponentDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred);
+
+/*!
+ * @brief Initialize the schematic component.
+ * @param Component The component to be initialized.
+ * @param id The component ID.
+ */
+static inline void HKHubSchematicComponentInitialize(CCComponent Component, CCComponentID id);
+
+/*!
+ * @brief Deallocate the schematic component.
+ * @param Component The component to be deallocated.
+ */
+static inline void HKHubSchematicComponentDeallocate(CCComponent Component);
+
+/*!
+ * @brief Get whether the schematic is editable.
+ * @param Component The schematic component.
+ * @return Whether the schematic can be edited.
+ */
+static inline _Bool HKHubSchematicComponentGetIsEditable(CCComponent Component);
+
+/*!
+ * @brief Set whether the schematic is editable or not.
+ * @param Component The schematic component.
+ * @param Editable Whether the schematic is editable or not.
+ */
+static inline void HKHubSchematicComponentSetIsEditable(CCComponent Component, _Bool Editable);
+
+/*!
+ * @brief Get whether the schematic is debuggable.
+ * @param Component The schematic component.
+ * @return Whether the schematic can be debugged.
+ */
+static inline _Bool HKHubSchematicComponentGetIsDebuggable(CCComponent Component);
+
+/*!
+ * @brief Set whether the schematic is debuggable or not.
+ * @param Component The schematic component.
+ * @param Debuggable Whether the schematic can be debugged or not.
+ */
+static inline void HKHubSchematicComponentSetIsDebuggable(CCComponent Component, _Bool Debuggable);
+
+
+#pragma mark -
+
+static inline void HKHubSchematicComponentInitialize(CCComponent Component, CCComponentID id)
+{
+    CCComponentInitialize(Component, id);
+    ((HKHubSchematicComponentPrivate)Component)->editable = FALSE;
+    ((HKHubSchematicComponentPrivate)Component)->debuggable = FALSE;
+}
+
+static inline void HKHubSchematicComponentDeallocate(CCComponent Component)
+{
+    CCComponentDeallocate(Component);
+}
+
+static inline _Bool HKHubSchematicComponentGetIsEditable(CCComponent Component)
+{
+    return ((HKHubSchematicComponentPrivate)Component)->editable;
+}
+
+static inline void HKHubSchematicComponentSetIsEditable(CCComponent Component, _Bool Editable)
+{
+    ((HKHubSchematicComponentPrivate)Component)->editable = Editable;
+}
+
+static inline _Bool HKHubSchematicComponentGetIsDebuggable(CCComponent Component)
+{
+    return ((HKHubSchematicComponentPrivate)Component)->debuggable;
+}
+
+static inline void HKHubSchematicComponentSetIsDebuggable(CCComponent Component, _Bool Debuggable)
+{
+    ((HKHubSchematicComponentPrivate)Component)->debuggable = Debuggable;
+}
 
 #endif

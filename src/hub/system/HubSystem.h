@@ -36,6 +36,7 @@ typedef enum {
     HKHubTypeModule,
     HKHubTypeDebugger,
     HKHubTypePortConnection,
+    HKHubTypeSchematic,
     
     HKHubTypeModuleMask = (0xff << 8),
     HKHubTypeModuleKeyboard = (1 << 8),
