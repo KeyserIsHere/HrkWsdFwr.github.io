@@ -59,6 +59,7 @@ static void HKHubSystemPacketBroadcaster(HKHubModule Transmitter, HKHubModuleWir
 
 static HKHubArchScheduler Scheduler;
 static mtx_t Lock;
+static CCCollection(CCComponent) Schematics = NULL;
 void HKHubSystemRegister(void)
 {
     int err;
@@ -76,6 +77,7 @@ void HKHubSystemRegister(void)
     HKHubModuleWirelessTransceiverBroadcast = HKHubSystemPacketBroadcaster;
     
     Transceivers = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeMedium, sizeof(CCComponent), NULL);
+    Schematics = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeMedium, sizeof(CCComponent), NULL);
 }
 
 void HKHubSystemDeregister(void)
@@ -465,12 +467,22 @@ static void HKHubSystemDisconnectPorts(CCComponent Connection)
 
 static void HKHubSystemAddTransceiver(CCComponent Transceiver)
 {
-    CCCollectionInsertElement(Transceivers, &Transceiver);
+    CCAssertLog(0, "not implemented");
 }
 
 static void HKHubSystemRemoveTransceiver(CCComponent Transceiver)
 {
-    CCAssertLog(0, "not implemented");
+    CCCollectionRemoveElement(Transceivers, CCCollectionFindElement(Transceivers, &Transceiver, NULL));
+}
+
+static void HKHubSystemAddSchematic(CCComponent Schematic)
+{
+    CCCollectionInsertElement(Schematics, &Schematic);
+}
+
+static void HKHubSystemRemoveSchematic(CCComponent Schematic)
+{
+    CCCollectionRemoveElement(Schematics, CCCollectionFindElement(Schematics, &Schematic, NULL));
 }
 
 typedef struct {
@@ -478,34 +490,43 @@ typedef struct {
     void (*debugger)(CCComponent);
     void (*connection)(CCComponent);
     void (*transceiver)(CCComponent);
+    void (*schematic)(CCComponent);
 } HKHubSystemUpdater;
 
 static void HKHubSystemUpdateScheduler(CCCollection(CCComponent) Components, HKHubSystemUpdater Update)
 {
     CC_COLLECTION_FOREACH(CCComponent, Component, Components)
     {
-        const HKHubType Type = CCComponentGetID(Component) & HKHubTypeMask;
-        if (Type == HKHubTypeProcessor)
-        {
-            Update.processor(Scheduler, HKHubProcessorComponentGetProcessor(Component));
-        }
+        const CCComponentID ID = CCComponentGetID(Component);
         
-        else if (Type == HKHubTypeDebugger)
+        switch (ID & HKHubTypeMask)
         {
-            Update.debugger(Component);
-        }
-        
-        else if (Type == HKHubTypePortConnection)
-        {
-            Update.connection(Component);
-        }
-        
-        else if (Type == HKHubTypeModule)
-        {
-            if (CCComponentGetID(Component) & HKHubTypeModuleWirelessTransceiver)
-            {
-                Update.transceiver(Component);
-            }
+            case HKHubTypeProcessor:
+                Update.processor(Scheduler, HKHubProcessorComponentGetProcessor(Component));
+                break;
+                
+            case HKHubTypeDebugger:
+                Update.debugger(Component);
+                break;
+                
+            case HKHubTypePortConnection:
+                Update.connection(Component);
+                break;
+                
+            case HKHubTypeModule:
+                if (ID & HKHubTypeModuleWirelessTransceiver)
+                {
+                    Update.transceiver(Component);
+                }
+                break;
+                
+            case HKHubTypeSchematic:
+                Update.schematic(Component);
+                break;
+                
+            default:
+                CCAssertLog(0, "Unhandled HKHubType");
+                break;
         }
     }
     
@@ -518,13 +539,15 @@ static void HKHubSystemUpdate(CCComponentSystemHandle *Handle, double DeltaTime,
         .processor = HKHubArchSchedulerAddProcessor,
         .debugger = HKHubSystemAttachDebugger,
         .connection = HKHubSystemConnectPorts,
-        .transceiver = HKHubSystemAddTransceiver
+        .transceiver = HKHubSystemAddTransceiver,
+        .schematic = HKHubSystemAddSchematic
     });
     HKHubSystemUpdateScheduler(CCComponentSystemGetRemovedComponentsForSystem(HK_HUB_SYSTEM_ID), (HKHubSystemUpdater){
         .processor = HKHubArchSchedulerRemoveProcessor,
         .debugger = HKHubSystemDetachDebugger,
         .connection = HKHubSystemDisconnectPorts,
-        .transceiver = HKHubSystemRemoveTransceiver
+        .transceiver = HKHubSystemRemoveTransceiver,
+        .schematic = HKHubSystemRemoveSchematic
     });
     
     const size_t TimestampShift = DeltaTime * HKHubArchProcessorHertz;
