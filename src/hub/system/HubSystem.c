@@ -467,7 +467,7 @@ static void HKHubSystemDisconnectPorts(CCComponent Connection)
 
 static void HKHubSystemAddTransceiver(CCComponent Transceiver)
 {
-    CCAssertLog(0, "not implemented");
+    CCCollectionInsertElement(Transceivers, &Transceiver);
 }
 
 static void HKHubSystemRemoveTransceiver(CCComponent Transceiver)
