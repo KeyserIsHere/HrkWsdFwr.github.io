@@ -39,7 +39,7 @@ const CCComponentExpressionDescriptor HKHubModuleKeyboardComponentDescriptor = {
 
 void HKHubModuleKeyboardComponentKeyboardCallback(CCComponent Component, CCKeyboardMap State)
 {
-    if (State.state.down) CCMessagePost(CC_STD_ALLOCATOR, HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID, CCMessageDeliverToComponentBelongingToEntity(HK_HUB_MODULE_KEYBOARD_COMPONENT_ID, CCComponentGetEntity(Component)), sizeof(uint8_t), &(uint8_t){ State.character });
+    if (State.state.down) CCMessagePost(CC_STD_ALLOCATOR, HK_HUB_MODULE_KEYBOARD_COMPONENT_KEY_IN_MESSAGE_ID, CCMessageDeliverToComponentBelongingToEntity(HK_HUB_MODULE_KEYBOARD_COMPONENT_ID, CCComponentGetEntity(Component)), sizeof(uint8_t), &(uint8_t){ State.character }, NULL);
 }
 
 static void HKHubModuleKeyboardComponentMessageHandler(CCComponent Component, CCMessage *Message)
