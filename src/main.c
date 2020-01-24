@@ -44,8 +44,15 @@
 static void PreSetup(void)
 {
     char Path[] = __FILE__;
-    Path[sizeof(__FILE__) - sizeof("Hacking-Game/src/main.c")] = 0;
-    CCFileFilterInputAddPath(Path);
+    if ((sizeof(__FILE__) > sizeof("Hacking-Game/src/main.c")) && (!strcmp(Path + (sizeof(__FILE__) - sizeof("Hacking-Game/src/main.c")), "Hacking-Game/src/main.c")))
+    {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warray-bounds"
+        Path[sizeof(__FILE__) - sizeof("Hacking-Game/src/main.c")] = 0;
+#pragma clang diagnostic pop
+
+        CCFileFilterInputAddPath(Path);
+    }
     
     CCExpressionEvaluatorRegister(CC_STRING("disassemble"), HKHubArchExpressionDisassemble);
     
