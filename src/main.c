@@ -94,23 +94,29 @@ int main(int argc, const char *argv[])
     
 #if CC_PLATFORM_OS_X || CC_PLATFORM_IOS
     CFBundleRef Bundle = CFBundleGetBundleWithIdentifier(CFSTR("io.scrimpycat.HackingGame"));
-    CFURLRef ResourceURL = CFBundleCopyResourcesDirectoryURL(Bundle);
-    char ResourcePath[PATH_MAX];
-    
-    if ((!ResourceURL) || (!CFURLGetFileSystemRepresentation(ResourceURL, TRUE, (UInt8*)ResourcePath, sizeof(ResourcePath))))
+    if (Bundle)
     {
-        CC_LOG_ERROR("Could not find asset path");
-        return EXIT_FAILURE;
+        CFURLRef ResourceURL = CFBundleCopyResourcesDirectoryURL(Bundle);
+        char ResourcePath[PATH_MAX];
+        
+        if ((!ResourceURL) || (!CFURLGetFileSystemRepresentation(ResourceURL, TRUE, (UInt8*)ResourcePath, sizeof(ResourcePath))))
+        {
+            CC_LOG_ERROR("Could not find asset path");
+            return EXIT_FAILURE;
+        }
+        
+        CFRelease(ResourceURL);
+        
+        B2EngineConfiguration.project = FSPathCreateFromSystemPath(ResourcePath);
     }
-    
-    CFRelease(ResourceURL);
-    
-    B2EngineConfiguration.project = FSPathCreateFromSystemPath(ResourcePath);
-#else
-    char Path[] = __FILE__;
-    Path[sizeof(__FILE__) - sizeof("src/main.c")] = 0;
-    B2EngineConfiguration.project = FSPathCreateFromSystemPath(Path);
+
+    else
 #endif
+    {
+        CCOrderedCollection(FSPathComponent) Path = FSPathConvertSystemPathToComponents(argv[0], TRUE);
+        CCOrderedCollectionRemoveLastElement(Path);
+        B2EngineConfiguration.project = FSPathCreateFromComponents(Path);
+    }
     
     FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeDirectory, "assets"));
     FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeFile, "game"));
