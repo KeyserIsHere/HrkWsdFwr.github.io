@@ -31,6 +31,7 @@
 #include "HubArchPort.h"
 #include "HubArchInstructionType.h"
 #include "HubArchExecutionGraph.h"
+#include "HubArchJIT.h"
 
 typedef enum {
     HKHubArchProcessorStatusRunning = 0,
@@ -122,6 +123,7 @@ typedef struct HKHubArchProcessorInfo {
     } state;
     struct {
         HKHubArchExecutionGraph graph;
+        HKHubArchJIT jit;
     } cache;
     size_t cycles;
     double unusedTime;
