@@ -104,11 +104,12 @@ func(__VA_ARGS__, HKHubArchScheduler);
 
 #ifndef CC_QUICK_COMPILE
 #define CC_QUICK_COMPILE
-#endif
-
 #define CC_CONTAINER_ENABLE
 #define CC_CONTAINER_DISABLE_PRESETS
+
 #include "ContainerTypes.h"
+#endif
+
 #include <Blob2D/Blob2D.h>
 
 #endif
