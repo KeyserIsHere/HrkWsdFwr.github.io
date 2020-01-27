@@ -70,6 +70,10 @@ static size_t HKHubArchAssemblyResolveLiteralValue(CCArray(HKHubArchAssemblyASTN
     {
         switch (Operator)
         {
+            case '?':
+                Node.type = HKHubArchAssemblyASTTypeRandom;
+                break;
+                
             case '.':
                 Node.type = HKHubArchAssemblyASTTypeOffset;
                 break;
@@ -1012,6 +1016,13 @@ _Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchA
                 Operation = HKHubArchAssemblyASTTypeUnknown;
                 break;
                 
+            case HKHubArchAssemblyASTTypeRandom:
+                Byte = HKHubArchAssemblyResolveEquation(Byte, CCRandom() & UINT8_MAX, Modifiers, Operation);
+                CCArrayRemoveAllElements(Modifiers);
+                ConstantOnly = FALSE;
+                Operation = HKHubArchAssemblyASTTypeUnknown;
+                break;
+                
             case HKHubArchAssemblyASTTypeMinus:
             case HKHubArchAssemblyASTTypeNot:
             case HKHubArchAssemblyASTTypeOnesComplement:
@@ -1234,6 +1245,7 @@ static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection(HKHubArchAssembly
             "expression",
             "operand",
             "symbol",
+            "random",
             "plus",
             "minus",
             "multiply",
@@ -1256,6 +1268,8 @@ static void HKHubArchAssemblyPrintASTNodes(CCOrderedCollection(HKHubArchAssembly
             "greater_than_or_equal",
             "offset"
         };
+        
+        _Static_assert(sizeof(Types) / sizeof(typeof(*Types)) == HKHubArchAssemblyASTTypeMax, "AST types have changed");
         
         if (!First) printf(", ");
         

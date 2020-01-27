@@ -180,12 +180,19 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
         if (Count == 1)
         {
             HKHubArchAssemblyASTNode *Value = CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 0);
-            if (Value->type == HKHubArchAssemblyASTTypeInteger) return HKHubArchInstructionOperandI;
-            else if (Value->type == HKHubArchAssemblyASTTypeSymbol)
+            switch (Value->type)
             {
-                if (CCDictionaryFindKey(RegularRegisters, &Value->string)) return HKHubArchInstructionOperandR;
-                
-                return HKHubArchInstructionOperandI;
+                case HKHubArchAssemblyASTTypeInteger:
+                case HKHubArchAssemblyASTTypeOffset:
+                case HKHubArchAssemblyASTTypeRandom:
+                    return HKHubArchInstructionOperandI;
+                    
+                case HKHubArchAssemblyASTTypeSymbol:
+                    if (CCDictionaryFindKey(RegularRegisters, &Value->string)) return HKHubArchInstructionOperandR;
+                    return HKHubArchInstructionOperandI;
+                    
+                default:
+                    break;
             }
         }
         

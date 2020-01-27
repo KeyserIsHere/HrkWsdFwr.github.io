@@ -43,6 +43,7 @@ typedef enum {
     HKHubArchAssemblyASTTypeExpression,
     HKHubArchAssemblyASTTypeOperand,
     HKHubArchAssemblyASTTypeSymbol,
+    HKHubArchAssemblyASTTypeRandom,
     HKHubArchAssemblyASTTypePlus,
     HKHubArchAssemblyASTTypeMinus,
     HKHubArchAssemblyASTTypeMultiply,
@@ -63,7 +64,8 @@ typedef enum {
     HKHubArchAssemblyASTTypeLessThanOrEqual,
     HKHubArchAssemblyASTTypeGreaterThan,
     HKHubArchAssemblyASTTypeGreaterThanOrEqual,
-    HKHubArchAssemblyASTTypeOffset
+    HKHubArchAssemblyASTTypeOffset,
+    HKHubArchAssemblyASTTypeMax
 } HKHubArchAssemblyASTType;
 
 typedef struct {
