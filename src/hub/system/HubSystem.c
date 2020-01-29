@@ -382,6 +382,7 @@ static void HKHubSystemAttachDebugger(CCComponent Debugger)
             GUIManagerLock();
             Target->state.debug.context = GUIManagerFindObjectWithNamespace(CC_STRING(":debugger"));
             HKHubSystemInitDebugger(Target->state.debug.context, Target);
+            CCExpressionSetState(GUIObjectGetExpressionState(Target->state.debug.context), CC_STRING(".entity"), CCExpressionCreateCustomType(CC_STD_ALLOCATOR, CCEntityExpressionValueTypeEntity, CCRetain(CCComponentGetEntity(Debugger)), CCExpressionRetainedValueCopy, (CCExpressionValueDestructor)CCEntityDestroy), FALSE);
             GUIManagerUnlock();
             
             break;

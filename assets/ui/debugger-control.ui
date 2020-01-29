@@ -32,8 +32,8 @@
                 ))
             )))
 
-            (.off-click! (quote (message (component-router :debugger) :debug-continue)))
-            (.on-click! (quote (message (component-router :debugger) :debug-pause)))
+            (.off-click! (quote (message (entity-component-router .entity :debugger) :debug-continue)))
+            (.on-click! (quote (message (entity-component-router .entity :debugger) :debug-pause)))
 
             (render: (.active! (= .debug-mode :pause)))
         )
@@ -64,7 +64,7 @@
                 ))
             )))
 
-            (.on-click! (quote (message (component-router :debugger) :debug-step)))
+            (.on-click! (quote (message (entity-component-router .entity :debugger) :debug-step)))
         )
     )
 )

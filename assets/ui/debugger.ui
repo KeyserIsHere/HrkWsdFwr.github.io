@@ -1,5 +1,6 @@
 (gui "gui-debugger"
     (namespace! :debugger)
+    (state! ".entity")
     (state! ".debug-mode" :continue)
     (state! ".memory" (repeat "@i" 256 0))
     (state! ".memory-changed" #f)
