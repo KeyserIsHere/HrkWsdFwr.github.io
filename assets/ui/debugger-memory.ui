@@ -99,7 +99,7 @@
                 (begin
                     (state! ".index")
                     (.index! (text-cursor-offset .text @pos)) ;TODO: make selection easier by using a radius and choosing the offset that represents the biggest area of that radius
-                    (if (!= .index -1) (message (entity-component-router (inspect .entity) :debugger) :debug-toggle-break ((/ .index 3) :write)))
+                    (if (!= .index -1) (message (entity-component-router .entity :debugger) :debug-toggle-break ((/ .index 3) :write)))
                 )
             )
         )
