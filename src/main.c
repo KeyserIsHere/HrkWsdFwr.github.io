@@ -31,6 +31,7 @@
 #include "HubProcessorComponent.h"
 #include "HubPortConnectionComponent.h"
 #include "HubDebuggerComponent.h"
+#include "HubSchematicComponent.h"
 #include "HubModuleComponent.h"
 #include "HubModuleKeyboardComponent.h"
 #include "HubModuleDisplayComponent.h"
@@ -56,10 +57,16 @@ static void PreSetup(void)
     
     CCExpressionEvaluatorRegister(CC_STRING("disassemble"), HKHubArchExpressionDisassemble);
     
+    HKRapServerStart();
+}
+
+static void Setup(void)
+{
     HKHubSystemRegister();
     HKHubProcessorComponentRegister();
     HKHubPortConnectionComponentRegister();
     HKHubDebuggerComponentRegister();
+    HKHubSchematicComponentRegister();
     HKHubModuleComponentRegister();
     HKHubModuleKeyboardComponentRegister();
     HKHubModuleDisplayComponentRegister();
@@ -67,11 +74,6 @@ static void PreSetup(void)
     
     HKItemManualComponentRegister();
     
-    HKRapServerStart();
-}
-
-static void Setup(void)
-{
     HKHubArchAssemblyIncludeSearchPaths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(FSPath), FSPathComponentDestructorForCollection);
     
     FSPath IncludeSearchPath = FSPathCopy(B2EngineConfiguration.project);
