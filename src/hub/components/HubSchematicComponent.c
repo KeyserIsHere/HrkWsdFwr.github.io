@@ -47,8 +47,8 @@ void HKHubSchematicComponentDeregister(void)
 }
 
 static CCComponentExpressionArgumentDeserializer Arguments[] = {
-    { .name = CC_STRING("editable:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeBool, .setter = HKHubSchematicComponentSetIsEditable },
-    { .name = CC_STRING("debuggable:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeBool, .setter = HKHubSchematicComponentSetIsDebuggable }
+    { .name = CC_STRING("editable:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeBool, .setter = (CCComponentExpressionSetter)HKHubSchematicComponentSetIsEditable },
+    { .name = CC_STRING("debuggable:"), .serializedType = CCExpressionValueTypeUnspecified, .setterType = CCComponentExpressionArgumentTypeBool, .setter = (CCComponentExpressionSetter)HKHubSchematicComponentSetIsDebuggable }
 };
 
 void HKHubSchematicComponentDeserializer(CCComponent Component, CCExpression Arg, _Bool Deferred)
