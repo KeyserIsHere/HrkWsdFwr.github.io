@@ -1,9 +1,34 @@
-git submodule update
+#!/bin/bash
 
-cd deps/Blob2D
-sh setup.sh
+usage() { echo "Usage: $0 [-h] [-s] [-p]" 1>&2; exit 1; }
+
+while getopts "hsp" opt; do
+    case "${opt}" in
+        s)
+            shallow=1
+            ;;
+        p)
+            preserve=1
+            ;;
+        h|*)
+            usage
+            ;;
+    esac
+done
 
 build=${BUILD_DIR:-build}
+
+if [ -z "${shallow}" ]; then
+    if [ -z "${preserve}" ]; then
+        git submodule update
+    fi
+
+    parent=$(echo $build | sed s/[^\/]*/../g)
+
+    cd deps/Blob2D
+    sh setup.sh $@
+    cd "../../"
+fi
 
 cd ../../
 rm -rf "$build"
