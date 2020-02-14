@@ -23,7 +23,7 @@
             )
         )
 
-        (repeat "@index" 50 (begin
+        (repeat "@index" (/ .height 19) (begin
             (state! ".instruction" (if (= 0 (get .offset .instruction-cache))
                 (get .offset (.instruction-cache! (set .offset .instruction-cache (flatten (disassemble .memory .offset) .offset))))
                 (get .offset .instruction-cache)
@@ -37,7 +37,7 @@
             (if (> .offset 255) (.offset! (- .offset 256)))
             ((get 2 .instruction) (get 1 .instruction))
         ))
-    )) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .memory-changed) #f))))
+    )) (invalidate: (quote (if (frame-changed?) (any? .pc-changed .memory-changed .rect-changed) #f))))
 
     (state! ".text" (quote (render-text .rect
         (flatten
