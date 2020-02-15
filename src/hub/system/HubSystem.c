@@ -28,6 +28,7 @@
 #include "HubProcessorComponent.h"
 #include "HubPortConnectionComponent.h"
 #include "HubModuleComponent.h"
+#include "HubDebuggerComponent.h"
 #include "HubArchScheduler.h"
 #include "HubArchInstruction.h"
 #include "RapServer.h"
@@ -130,7 +131,6 @@ static CCString BreakpointType[] = {
 
 static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Processor)
 {
-    //TODO: Set target processor? so it can message back
     CCExpression State = GUIObjectGetExpressionState(Debugger);
     
     CCExpressionSetState(State, CC_STRING(".debug-mode"), CCExpressionCreateAtom(CC_STD_ALLOCATOR, (CCString[2]){
@@ -216,6 +216,8 @@ static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, con
 {
     //TODO: Send update message (instead of update here/avoid locking UI)
     GUIManagerLock();
+    
+    GUIObjectInvalidateCache(Processor->state.debug.context);
     
     CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
     
@@ -367,7 +369,8 @@ static void HKHubSystemDebuggerDebugModeChangeHook(HKHubArchProcessor Processor)
 
 static void HKHubSystemAttachDebugger(CCComponent Debugger)
 {
-    CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(CCComponentGetEntity(Debugger)))
+    CCEntity Entity = CCComponentGetEntity(Debugger);
+    CC_COLLECTION_FOREACH(CCComponent, Component, CCEntityGetComponents(Entity))
     {
         if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeProcessor)
         {
@@ -379,11 +382,43 @@ static void HKHubSystemAttachDebugger(CCComponent Debugger)
             Target->state.debug.breakpointChange = HKHubSystemDebuggerBreakpointChangeHook;
             Target->state.debug.debugModeChange = HKHubSystemDebuggerDebugModeChangeHook;
             
-            GUIManagerLock();
-            Target->state.debug.context = GUIManagerFindObjectWithNamespace(CC_STRING(":debugger"));
-            HKHubSystemInitDebugger(Target->state.debug.context, Target);
-            CCExpressionSetState(GUIObjectGetExpressionState(Target->state.debug.context), CC_STRING(".entity"), CCExpressionCreateCustomType(CC_STD_ALLOCATOR, CCEntityExpressionValueTypeEntity, CCRetain(CCComponentGetEntity(Debugger)), CCExpressionRetainedValueCopy, (CCExpressionValueDestructor)CCEntityDestroy), FALSE);
-            GUIManagerUnlock();
+            CCExpression Expr = CCExpressionCreateFromSource("(gui-debugger)");
+            CCExpression Result = CCExpressionEvaluate(Expr);
+            if (CCExpressionGetType(Result) == GUIExpressionValueTypeGUIObject)
+            {
+                CCExpressionChangeOwnership(Result, NULL, NULL);
+                Target->state.debug.context = CCExpressionGetData(Result);
+                HKHubSystemInitDebugger(Target->state.debug.context, Target);
+                CCExpressionSetState(GUIObjectGetExpressionState(Target->state.debug.context), CC_STRING(".entity"), CCExpressionCreateCustomType(CC_STD_ALLOCATOR, CCEntityExpressionValueTypeEntity, CCRetain(Entity), CCExpressionRetainedValueCopy, (CCExpressionValueDestructor)CCEntityDestroy), FALSE);
+                
+                GUIObjectSetCacheStrategy(Target->state.debug.context, GUIObjectCacheStrategyInvalidateOnRequest | GUIObjectCacheStrategyInvalidateOnMove | GUIObjectCacheStrategyInvalidateOnResize);
+                GUIObjectSetEnabled(Target->state.debug.context, TRUE);
+                GUIManagerAddObject(Target->state.debug.context);
+            }
+            
+            CCExpressionDestroy(Expr);
+            
+            break;
+        }
+        
+        else if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeSchematic)
+        {
+            CCCollection(CCEntity) Children = CCRelationSystemGetChildren(Entity);
+            
+            CC_COLLECTION_FOREACH(CCEntity, Child, Children)
+            {
+                CC_COLLECTION_FOREACH(CCComponent, ChildComponent, CCEntityGetComponents(Child))
+                {
+                    if ((CCComponentGetID(ChildComponent) & HKHubTypeMask) == HKHubTypeProcessor)
+                    {
+                        CCComponent DebuggerComponent = CCComponentCreate(HK_HUB_DEBUGGER_COMPONENT_ID);
+                        CCEntityAttachComponent(Child, DebuggerComponent);
+                        CCComponentSystemAddComponent(DebuggerComponent);
+                    }
+                }
+            }
+            
+            CCCollectionDestroy(Children);
             
             break;
         }
@@ -400,12 +435,32 @@ static void HKHubSystemDetachDebugger(CCComponent Debugger)
             HKHubArchProcessor Target = HKHubProcessorComponentGetProcessor(Component);
             HKHubArchProcessorSetDebugMode(Target, HKHubArchProcessorDebugModeContinue);
             
-            GUIManagerLock();
             GUIObjectSetEnabled(Target->state.debug.context, FALSE);
-            GUIManagerUnlock();
+            GUIManagerRemoveObject(Target->state.debug.context);
             
             Target->state.debug.context = NULL;
             Target->state.debug.operation = NULL;
+            
+            break;
+        }
+        
+        else if ((CCComponentGetID(Component) & HKHubTypeMask) == HKHubTypeSchematic)
+        {
+            CCCollection(CCEntity) Children = CCRelationSystemGetChildren(Entity);
+            
+            CC_COLLECTION_FOREACH(CCEntity, Child, Children)
+            {
+                CC_COLLECTION_FOREACH(CCComponent, ChildComponent, CCEntityGetComponents(Child))
+                {
+                    if ((CCComponentGetID(ChildComponent) & HKHubTypeMask) == HKHubTypeDebugger)
+                    {
+                        CCEntityDetachComponent(Child, ChildComponent);
+                        CCComponentSystemRemoveComponent(ChildComponent);
+                    }
+                }
+            }
+            
+            CCCollectionDestroy(Children);
             
             break;
         }
