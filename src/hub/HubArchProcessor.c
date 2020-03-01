@@ -51,6 +51,8 @@ static void HKHubArchProcessorDestructor(HKHubArchProcessor Processor)
     CCDictionaryDestroy(Processor->ports);
     
     if (Processor->state.debug.breakpoints) CCDictionaryDestroy(Processor->state.debug.breakpoints);
+    if (Processor->cache.graph) HKHubArchExecutionGraphDestroy(Processor->cache.graph);
+    if (Processor->cache.jit) HKHubArchJITDestroy(Processor->cache.jit);
 }
 
 HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArchBinary Binary)
@@ -84,6 +86,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.debugModeChange = NULL;
         Processor->state.debug.context = NULL;
         Processor->cache.graph = NULL;
+        Processor->cache.jit = NULL;
         Processor->cycles = 0;
         Processor->unusedTime = 0.0;
         Processor->status = HKHubArchProcessorStatusRunning;
@@ -168,6 +171,12 @@ void HKHubArchProcessorCacheReset(HKHubArchProcessor Processor)
     {
         HKHubArchExecutionGraphDestroy(Processor->cache.graph);
         Processor->cache.graph = NULL;
+    }
+    
+    if (Processor->cache.jit)
+    {
+        HKHubArchJITDestroy(Processor->cache.jit);
+        Processor->cache.jit = NULL;
     }
 }
 
@@ -380,6 +389,15 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
     
     while (HKHubArchProcessorIsRunning(Processor))
     {
+        if (Processor->cache.jit)
+        {
+            for (size_t PrevCycles = 0; PrevCycles != Processor->cycles; )
+            {
+                PrevCycles = Processor->cycles;
+                HKHubArchJITCall(Processor->cache.jit, Processor);
+            }
+        }
+        
         HKHubArchInstructionState Instruction;
         uint8_t NextPC = HKHubArchInstructionDecode(Processor->state.pc, Processor->memory, &Instruction);
         
@@ -531,6 +549,5 @@ void HKHubArchProcessorCache(HKHubArchProcessor Processor)
     HKHubArchProcessorCacheReset(Processor);
     
     Processor->cache.graph = HKHubArchExecutionGraphCreate(CC_STD_ALLOCATOR, Processor->memory, Processor->state.pc);
-    
-//    HKHubArchProcessorJIT(Processor->cache.graph);
+    Processor->cache.jit = HKHubArchJITCreate(CC_STD_ALLOCATOR, Processor->cache.graph);
 }
