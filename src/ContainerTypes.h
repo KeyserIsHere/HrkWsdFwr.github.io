@@ -31,6 +31,9 @@ CC_CONTAINER_DECLARE(CCCollection, HKHubArchProcessor);
 #define CC_CONTAINER_DECLARE_PRESET_CCData()
 
 #define CC_CONTAINER_DECLARE_PRESET_CCDictionary() \
+CC_CONTAINER_DECLARE(CCDictionary, CCString, CCKeyboardKeycode); \
+CC_CONTAINER_DECLARE(CCDictionary, CCString, CCKeyboardModifier); \
+CC_CONTAINER_DECLARE(CCDictionary, CCString, CCMouseButton); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, CFTypeRef); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, GLShaderAttributeInfo); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, GLShaderLibrarySource); \
@@ -39,9 +42,9 @@ CC_CONTAINER_DECLARE(CCDictionary, CCString, HKHubModuleDisplayBufferConverter);
 CC_CONTAINER_DECLARE(CCDictionary, CCString, uint8_t); \
 CC_CONTAINER_DECLARE(CCDictionary, HKHubArchPortID, HKHubArchPortConnection); \
 CC_CONTAINER_DECLARE(CCDictionary, HKHubModuleWirelessTransceiverPacketSignature, uint8_t); \
+CC_CONTAINER_DECLARE(CCDictionary, uint8_t, HKHubArchJITBlockRelativeEntry); \
 CC_CONTAINER_DECLARE(CCDictionary, uint8_t, HKHubArchProcessorDebugBreakpoint); \
-CC_CONTAINER_DECLARE(CCDictionary, uint8_t, size_t); \
-CC_CONTAINER_DECLARE(CCDictionary, uint8_t, uintptr_t);
+CC_CONTAINER_DECLARE(CCDictionary, uint8_t, size_t);
 
 #define CC_CONTAINER_DECLARE_PRESET_CCHashMap()
 
