@@ -23,7 +23,7 @@
             )
         )
 
-        (repeat! "@index" (/ .height 19) (begin
+        (repeat! "@index" (max 0 (/ .height (float->integer (round (unquote (flatten font-line-height .font)))))) (begin
             (state! ".instruction")
             (.instruction! (if (= 0 (get .offset .instruction-cache))
                 (get .offset (.instruction-cache! (set .offset .instruction-cache (flatten (disassemble .memory .offset) .offset))))
