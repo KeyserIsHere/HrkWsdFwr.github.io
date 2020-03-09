@@ -383,13 +383,15 @@ static _Bool HKHubArchProcessorShouldBreakForRange(HKHubArchProcessor Processor,
     return FALSE;
 }
 
+void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
+
 void HKHubArchProcessorRun(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
     while (HKHubArchProcessorIsRunning(Processor))
     {
-        if (Processor->cache.jit)
+        if ((Processor->cache.jit) && (!Processor->state.debug.context) && (!Processor->state.debug.breakpoints) && (Processor->state.debug.mode == HKHubArchProcessorDebugModeContinue))
         {
             for (size_t PrevCycles = 0; PrevCycles != Processor->cycles; )
             {
