@@ -74,6 +74,11 @@
                             "args": [[{ "type": "float", "name": "value" }]]
                         }
                     ]
+                },
+                {
+                    "name": "jit",
+                    "description": "Whether the processor should use the JIT.",
+                    "args": [[{ "type": "boolean" }]]
                 }
             ]
         },
