@@ -383,6 +383,33 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                     
                     return;
                 }
+                
+                else if (CCStringEqual(Name, CC_STRING("jit:")))
+                {
+                    HKHubArchProcessor Processor = HKHubProcessorComponentGetProcessor(Component);
+                    if (Processor)
+                    {
+                        if (ArgCount == 2)
+                        {
+                            CCExpression JITExpr = *(CCExpression*)CCOrderedCollectionGetElementAtIndex(CCExpressionGetList(Arg), 1);
+                            if (CCExpressionGetType(JITExpr) == CCExpressionValueTypeInteger)
+                            {
+                                if (CCExpressionGetInteger(JITExpr))
+                                {
+                                    HKHubArchProcessorCache(Processor);
+                                }
+                            }
+                            
+                            else CC_LOG_ERROR("Expect value for argument (jit:) to be a boolean");
+                        }
+                        
+                        else CC_LOG_ERROR("Expect value for argument (jit:) to be a boolean");
+                    }
+                    
+                    else CC_LOG_ERROR("Expect processor to already be initialised");
+                    
+                    return;
+                }
             }
         }
     }
