@@ -7,7 +7,7 @@
     (state! ".text" (quote (render-text .rect
         (flatten
             (text:
-                (cat (loop "@port" .ports
+                (cat (loop! "@port" .ports
                     (cat ("port" (format :dec (get 0 @port)) ":" (if (= :connected (get 1 @port)) "connected" "disconnected")) " ")
                 ) "\n")
                 (colour: .colour)

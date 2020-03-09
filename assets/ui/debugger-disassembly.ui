@@ -7,7 +7,7 @@
     (state! ".breakpoint-colour" (0 255 255))
     (state! ".text-alignment" :center)
     (state! ".current-instruction")
-    (state! ".instruction-cache" (repeat "@i" 256 0))
+    (state! ".instruction-cache" (repeat! "@i" 256 0))
     (state! ".instructions" (quote (begin
         (state! ".offset")
         (state! ".length")
@@ -16,20 +16,22 @@
         (.length! 0)
 
         (if .memory-changed ;TODO: Check that any surrounding instructions wouldn't need to be invalidated (e.g. cached instruction at offset 0x0, changed byte at offset 0x02, instruction at offset 0x0 may be 4 bytes long so would be invalidated)
-            (loop "@range" .memory-modified
-                (repeat "@index" (get 1 @range)
+            (loop! "@range" .memory-modified
+                (repeat! "@index" (get 1 @range)
                     (.instruction-cache! (set (+ @index (get 0 @range)) .instruction-cache 0))
                 )
             )
         )
 
-        (repeat "@index" (/ .height 19) (begin
-            (state! ".instruction" (if (= 0 (get .offset .instruction-cache))
+        (repeat! "@index" (/ .height 19) (begin
+            (state! ".instruction")
+            (.instruction! (if (= 0 (get .offset .instruction-cache))
                 (get .offset (.instruction-cache! (set .offset .instruction-cache (flatten (disassemble .memory .offset) .offset))))
                 (get .offset .instruction-cache)
             ))
 
-            (state! ".end-length" (+ .length 4 (length (get 1 .instruction))))
+            (state! ".end-length")
+            (.end-length! (+ .length 4 (length (get 1 .instruction))))
             (if (= .pc .offset) (.current-instruction! (.length .end-length)))
             (.length! .end-length)
 
@@ -42,7 +44,7 @@
     (state! ".text" (quote (render-text .rect
         (flatten
             (text:
-                (cat (loop "@instruction" .instructions
+                (cat (loop! "@instruction" .instructions
                     (format :hex @instruction (suffix: ": ") (compact: #f) (precision: 2))
                 ) "\n")
                 (colour: .colour)

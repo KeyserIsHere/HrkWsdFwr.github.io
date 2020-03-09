@@ -1,5 +1,5 @@
 (begin
-    (unquote (flatten begin (loop "@colour" (eval (cat (@cd "palette.blob")))
+    (unquote (flatten begin (loop! "@colour" (eval (cat (@cd "palette.blob")))
         (flatten super ((flatten state! (cat ("." (get 0 @colour))) ((get 1 @colour)))))
     )))
 
