@@ -157,6 +157,12 @@ HKHubArchExecutionGraph HKHubArchExecutionGraphCreate(CCAllocatorType Allocator,
         
         HKHubArchExecutionGraphGenerate(Graph, Memory, PC);
         
+        for (size_t Loop = 0, Count = CCArrayGetCount(Graph->block); Loop < Count; Loop++)
+        {
+            CCLinkedList(HKHubArchExecutionGraphInstruction) *Block = CCArrayGetElementAtIndex(Graph->block, Loop);
+            *Block = CCLinkedListGetHead(*Block);
+        }
+        
         CCMemorySetDestructor(Graph, (CCMemoryDestructorCallback)HKHubArchExecutionGraphDestructor);
     }
     
