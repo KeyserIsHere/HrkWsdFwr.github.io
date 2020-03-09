@@ -36,6 +36,7 @@ fi
 rm -rf "$build"
 ruby deps/Blob2D/deps/CommonGameKit/build.rb --executable \
 --define=CC_QUICK_COMPILE=1 \
+--define=CC_RANDOM_XORWOW=1 \
 --framework="deps/Blob2D/$build/Blob2D" \
 --dylib="deps/Blob2D/$build/Blob2D/CommonGameKit/CommonGameKit.dylib","deps/Blob2D/$build/Blob2D/CommonGameKit" \
 --header=deps/Blob2D/deps/CommonGameKit/deps/CommonC \
