@@ -296,6 +296,8 @@ static void HKHubSystemDebuggerPortConnectionChangeHook(HKHubArchProcessor Proce
 {
     GUIManagerLock();
     
+    GUIObjectInvalidateCache(Processor->state.debug.context);
+    
     CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
     
     CCExpression Ports = CCExpressionCreateList(CC_STD_ALLOCATOR);
@@ -323,6 +325,8 @@ static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor
 {
     //TODO: Send update message (instead of update here/avoid locking UI)
     GUIManagerLock();
+    
+    GUIObjectInvalidateCache(Processor->state.debug.context);
     
     CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
     
@@ -356,6 +360,8 @@ static void HKHubSystemDebuggerDebugModeChangeHook(HKHubArchProcessor Processor)
 {
     //TODO: Send update message (instead of update here/avoid locking UI)
     GUIManagerLock();
+    
+    GUIObjectInvalidateCache(Processor->state.debug.context);
     
     CCExpression State = GUIObjectGetExpressionState(Processor->state.debug.context);
     
