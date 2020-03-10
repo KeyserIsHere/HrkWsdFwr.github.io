@@ -93,6 +93,118 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "mov [0], 4\n"
         "hlt\n",
         
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov r1, 127\n"
+        "mov [r1], 1\n"
+        "mov r1, 128\n"
+        "mov [r1], 2\n"
+        "mov r1, 255\n"
+        "mov [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 127\n"
+        "mov [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "mov [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "mov [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, [127]\n"
+        "mov r1, [128]\n"
+        "mov r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov [0], [127]\n"
+        "mov [127], [128]\n"
+        "mov [128], [255]\n"
+        "mov [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 1\n"
+        "mov [128+r3], 2\n"
+        "mov [255+r3], 3\n"
+        "mov r0, [127+r3]\n"
+        "mov r1, [128+r3]\n"
+        "mov r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 1\n"
+        "mov [128+r3], 2\n"
+        "mov [255+r3], 3\n"
+        "mov [0+r3], [127+r3]\n"
+        "mov [127+r3], [128+r3]\n"
+        "mov [128+r3], [255+r3]\n"
+        "mov [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "mov r0, [r3]\n"
+        "mov r3, 128\n"
+        "mov r1, [r3]\n"
+        "mov r3, 255\n"
+        "mov r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "mov [0], [r3]\n"
+        "mov r3, 128\n"
+        "mov [127], [r3]\n"
+        "mov r3, 255\n"
+        "mov [128], [r3]\n"
+        "mov [r3], [0]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "mov r0, [r3+r0]\n"
+        "mov r3, 128\n"
+        "mov r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "mov r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r3, 127\n"
+        "mov [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "mov [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "mov [128+r0], [r3+r0]\n"
+        "mov [r3+r0], [0+r0]\n"
+        "hlt\n",
+        
         "mov r0, 4\n"
         "mov r0, 5\n"
         "hlt\n",
@@ -175,6 +287,120 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         ".byte 4\n"
         ".entrypoint\n"
         "add [0], 4\n"
+        "hlt\n",
+        
+        "add [127], 1\n"
+        "add [128], 2\n"
+        "add [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "add [127+r0], 1\n"
+        "add [128+r0], 2\n"
+        "add [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov r1, 127\n"
+        "add [r1], 1\n"
+        "mov r1, 128\n"
+        "add [r1], 2\n"
+        "mov r1, 255\n"
+        "add [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 127\n"
+        "add [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "add [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "add [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "add r0, [127]\n"
+        "add r1, [128]\n"
+        "add r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "add [0], [127]\n"
+        "add [127], [128]\n"
+        "add [128], [255]\n"
+        "add [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "add [127+r3], 1\n"
+        "add [128+r3], 2\n"
+        "add [255+r3], 3\n"
+        "add r0, [127+r3]\n"
+        "add r1, [128+r3]\n"
+        "add r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "add [127+r3], 1\n"
+        "add [128+r3], 2\n"
+        "add [255+r3], 3\n"
+        "add [0+r3], [127+r3]\n"
+        "add [127+r3], [128+r3]\n"
+        "add [128+r3], [255+r3]\n"
+        "add [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "add r0, [r3]\n"
+        "mov r3, 128\n"
+        "add r1, [r3]\n"
+        "mov r3, 255\n"
+        "add r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "add [0], [r3]\n"
+        "mov r3, 128\n"
+        "add [127], [r3]\n"
+        "mov r3, 255\n"
+        "add [128], [r3]\n"
+        "add [r3], [0]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "add r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "add r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "add r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r3, 127\n"
+        "add [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "add [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "add [128+r0], [r3+r0]\n"
+        "add [r3+r0], [0+r0]\n"
         "hlt\n",
         
         "add r0, 4\n"
@@ -264,6 +490,120 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         ".byte 4\n"
         ".entrypoint\n"
         "sub [0], 4\n"
+        "hlt\n",
+        
+        "sub [127], 1\n"
+        "sub [128], 2\n"
+        "sub [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "sub [127+r0], 1\n"
+        "sub [128+r0], 2\n"
+        "sub [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov r1, 127\n"
+        "sub [r1], 1\n"
+        "mov r1, 128\n"
+        "sub [r1], 2\n"
+        "mov r1, 255\n"
+        "sub [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 127\n"
+        "sub [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "sub [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "sub [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "sub r0, [127]\n"
+        "sub r1, [128]\n"
+        "sub r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "sub [0], [127]\n"
+        "sub [127], [128]\n"
+        "sub [128], [255]\n"
+        "sub [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "sub [127+r3], 1\n"
+        "sub [128+r3], 2\n"
+        "sub [255+r3], 3\n"
+        "sub r0, [127+r3]\n"
+        "sub r1, [128+r3]\n"
+        "sub r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "sub [127+r3], 1\n"
+        "sub [128+r3], 2\n"
+        "sub [255+r3], 3\n"
+        "sub [0+r3], [127+r3]\n"
+        "sub [127+r3], [128+r3]\n"
+        "sub [128+r3], [255+r3]\n"
+        "sub [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "sub r0, [r3]\n"
+        "mov r3, 128\n"
+        "sub r1, [r3]\n"
+        "mov r3, 255\n"
+        "sub r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "sub [0], [r3]\n"
+        "mov r3, 128\n"
+        "sub [127], [r3]\n"
+        "mov r3, 255\n"
+        "sub [128], [r3]\n"
+        "sub [r3], [0]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "sub r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "sub r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "sub r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r3, 127\n"
+        "sub [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "sub [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "sub [128+r0], [r3+r0]\n"
+        "sub [r3+r0], [0+r0]\n"
         "hlt\n",
         
         "sub r0, 4\n"
@@ -366,6 +706,120 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "or [0], 4\n"
         "hlt\n",
         
+        "or [127], 1\n"
+        "or [128], 2\n"
+        "or [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "or [127+r0], 1\n"
+        "or [128+r0], 2\n"
+        "or [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov r1, 127\n"
+        "or [r1], 1\n"
+        "mov r1, 128\n"
+        "or [r1], 2\n"
+        "mov r1, 255\n"
+        "or [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 127\n"
+        "or [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "or [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "or [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "or r0, [127]\n"
+        "or r1, [128]\n"
+        "or r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "or [0], [127]\n"
+        "or [127], [128]\n"
+        "or [128], [255]\n"
+        "or [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "or [127+r3], 1\n"
+        "or [128+r3], 2\n"
+        "or [255+r3], 3\n"
+        "or r0, [127+r3]\n"
+        "or r1, [128+r3]\n"
+        "or r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "or [127+r3], 1\n"
+        "or [128+r3], 2\n"
+        "or [255+r3], 3\n"
+        "or [0+r3], [127+r3]\n"
+        "or [127+r3], [128+r3]\n"
+        "or [128+r3], [255+r3]\n"
+        "or [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "or r0, [r3]\n"
+        "mov r3, 128\n"
+        "or r1, [r3]\n"
+        "mov r3, 255\n"
+        "or r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "or [0], [r3]\n"
+        "mov r3, 128\n"
+        "or [127], [r3]\n"
+        "mov r3, 255\n"
+        "or [128], [r3]\n"
+        "or [r3], [0]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "or r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "or r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "or r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r3, 127\n"
+        "or [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "or [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "or [128+r0], [r3+r0]\n"
+        "or [r3+r0], [0+r0]\n"
+        "hlt\n",
+        
         "or r0, 4\n"
         "or r0, 5\n"
         "hlt\n",
@@ -448,6 +902,120 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         ".byte 4\n"
         ".entrypoint\n"
         "xor [0], 4\n"
+        "hlt\n",
+        
+        "xor [127], 1\n"
+        "xor [128], 2\n"
+        "xor [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "xor [127+r0], 1\n"
+        "xor [128+r0], 2\n"
+        "xor [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov r1, 127\n"
+        "xor [r1], 1\n"
+        "mov r1, 128\n"
+        "xor [r1], 2\n"
+        "mov r1, 255\n"
+        "xor [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 127\n"
+        "xor [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "xor [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "xor [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "xor r0, [127]\n"
+        "xor r1, [128]\n"
+        "xor r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "xor [0], [127]\n"
+        "xor [127], [128]\n"
+        "xor [128], [255]\n"
+        "xor [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "xor [127+r3], 1\n"
+        "xor [128+r3], 2\n"
+        "xor [255+r3], 3\n"
+        "xor r0, [127+r3]\n"
+        "xor r1, [128+r3]\n"
+        "xor r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "xor [127+r3], 1\n"
+        "xor [128+r3], 2\n"
+        "xor [255+r3], 3\n"
+        "xor [0+r3], [127+r3]\n"
+        "xor [127+r3], [128+r3]\n"
+        "xor [128+r3], [255+r3]\n"
+        "xor [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "xor r0, [r3]\n"
+        "mov r3, 128\n"
+        "xor r1, [r3]\n"
+        "mov r3, 255\n"
+        "xor r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "xor [0], [r3]\n"
+        "mov r3, 128\n"
+        "xor [127], [r3]\n"
+        "mov r3, 255\n"
+        "xor [128], [r3]\n"
+        "xor [r3], [0]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "xor r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "xor r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "xor r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r3, 127\n"
+        "xor [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "xor [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "xor [128+r0], [r3+r0]\n"
+        "xor [r3+r0], [0+r0]\n"
         "hlt\n",
         
         "xor r0, 4\n"
@@ -534,6 +1102,149 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "and [0], 4\n"
         "hlt\n",
         
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "and [127], 1\n"
+        "and [128], 2\n"
+        "and [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "and [127+r0], 1\n"
+        "and [128+r0], 2\n"
+        "and [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "mov r1, 127\n"
+        "and [r1], 1\n"
+        "mov r1, 128\n"
+        "and [r1], 2\n"
+        "mov r1, 255\n"
+        "and [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r1, 127\n"
+        "and [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "and [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "and [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "and r0, [127]\n"
+        "and r1, [128]\n"
+        "and r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 0xf0\n"
+        "mov [128], 0x0f\n"
+        "mov [255], 0xc3\n"
+        "and [0], [127]\n"
+        "and [127], [128]\n"
+        "and [128], [255]\n"
+        "and [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "and [127+r3], 1\n"
+        "and [128+r3], 2\n"
+        "and [255+r3], 3\n"
+        "and r0, [127+r3]\n"
+        "and r1, [128+r3]\n"
+        "and r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 0xff\n"
+        "mov [128+r3], 0xff\n"
+        "mov [255+r3], 0xff\n"
+        "and [127+r3], 1\n"
+        "and [128+r3], 2\n"
+        "and [255+r3], 3\n"
+        "and [0+r3], [127+r3]\n"
+        "and [127+r3], [128+r3]\n"
+        "and [128+r3], [255+r3]\n"
+        "and [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "and r0, [r3]\n"
+        "mov r3, 128\n"
+        "and r1, [r3]\n"
+        "mov r3, 255\n"
+        "and r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 3\n"
+        "mov [255], 5\n"
+        "mov r3, 127\n"
+        "and [0], [r3]\n"
+        "mov r3, 128\n"
+        "and [127], [r3]\n"
+        "mov r3, 255\n"
+        "and [128], [r3]\n"
+        "and [r3], [0]\n"
+        "hlt\n",
+        
+        "mov r2, 0xff\n"
+        "mov r3, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "and r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "and r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "and r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 3\n"
+        "mov [255+r0], 5\n"
+        "mov r3, 127\n"
+        "and [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "and [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "and [128+r0], [r3+r0]\n"
+        "and [r3+r0], [0+r0]\n"
+        "hlt\n",
+        
         "and r0, 4\n"
         "and r0, 5\n"
         "hlt\n",
@@ -616,6 +1327,164 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         ".byte 4\n"
         ".entrypoint\n"
         "cmp [0], 4\n"
+        "hlt\n",
+        
+        "cmp [127], 1\n"
+        "add [50], flags\n"
+        "cmp [128], 2\n"
+        "add [50], flags\n"
+        "cmp [255], 3\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "cmp [127+r0], 1\n"
+        "add [50], flags\n"
+        "cmp [128+r0], 2\n"
+        "add [50], flags\n"
+        "cmp [255+r0], 3\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov r1, 127\n"
+        "cmp [r1], 1\n"
+        "add [50], flags\n"
+        "mov r1, 128\n"
+        "cmp [r1], 2\n"
+        "add [50], flags\n"
+        "mov r1, 255\n"
+        "cmp [r1], 3\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov r1, 127\n"
+        "cmp [r1+r0], 1\n"
+        "add [50], flags\n"
+        "mov r1, 128\n"
+        "cmp [r1+r0], 2\n"
+        "add [50], flags\n"
+        "mov r1, 255\n"
+        "cmp [r1+r0], 3\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "cmp r0, [127]\n"
+        "add [50], flags\n"
+        "cmp r1, [128]\n"
+        "add [50], flags\n"
+        "cmp r2, [255]\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "cmp [0], [127]\n"
+        "add [50], flags\n"
+        "cmp [127], [128]\n"
+        "add [50], flags\n"
+        "cmp [128], [255]\n"
+        "add [50], flags\n"
+        "cmp [255], [0]\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 1\n"
+        "mov [128+r3], 2\n"
+        "mov [255+r3], 3\n"
+        "mov r0, 1\n"
+        "mov r1, 2\n"
+        "mov r2, 3\n"
+        "cmp r0, [127+r3]\n"
+        "add [50], flags\n"
+        "cmp r1, [128+r3]\n"
+        "add [50], flags\n"
+        "cmp r2, [255+r3]\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 1\n"
+        "mov [128+r3], 2\n"
+        "mov [255+r3], 3\n"
+        "cmp [0+r3], [127+r3]\n"
+        "add [50], flags\n"
+        "cmp [127+r3], [128+r3]\n"
+        "add [50], flags\n"
+        "cmp [128+r3], [255+r3]\n"
+        "add [50], flags\n"
+        "cmp [255+r3], [0+r3]\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "cmp r0, [r3]\n"
+        "add [50], flags\n"
+        "mov r3, 128\n"
+        "cmp r1, [r3]\n"
+        "add [50], flags\n"
+        "mov r3, 255\n"
+        "cmp r2, [r3]\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "cmp [0], [r3]\n"
+        "add [50], flags\n"
+        "mov r3, 128\n"
+        "cmp [127], [r3]\n"
+        "add [50], flags\n"
+        "mov r3, 255\n"
+        "cmp [128], [r3]\n"
+        "add [50], flags\n"
+        "cmp [r3], [0]\n"
+        "add [50], flags\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "cmp r0, [r3+r0]\n"
+        "add [50], flags\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "mov r1, 2\n"
+        "cmp r1, [r3+r0]\n"
+        "add [50], flags\n"
+        "mov r3, 255\n"
+        "mov r2, 3\n"
+        "cmp r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r3, 127\n"
+        "cmp [0+r0], [r3+r0]\n"
+        "add [150], flags\n"
+        "mov r3, 128\n"
+        "cmp [127+r0], [r3+r0]\n"
+        "add [150], flags\n"
+        "mov r3, 255\n"
+        "cmp [128+r0], [r3+r0]\n"
+        "add [150], flags\n"
+        "cmp [r3+r0], [0+r0]\n"
+        "add [150], flags\n"
         "hlt\n",
         
         "cmp r0, 4\n"
@@ -1007,7 +1876,150 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         ".entrypoint\n"
         "mov r3, 1\n"
         "shl r3, [r3+0]\n"
-        "hlt\n"
+        "hlt\n",
+        
+//        "mov [127], 0xff\n"
+//        "mov [128], 0xff\n"
+//        "mov [255], 0xff\n"
+//        "shl [127], 1\n"
+//        "shl [128], 2\n"
+//        "shl [255], 3\n"
+//        "hlt\n",
+        
+//        "mov r0, 1\n"
+//        "mov [127+r0], 0xff\n"
+//        "mov [128+r0], 0xff\n"
+//        "mov [255+r0], 0xff\n"
+//        "shl [127+r0], 1\n"
+//        "shl [128+r0], 2\n"
+//        "shl [255+r0], 3\n"
+//        "hlt\n",
+        
+//        "mov [127], 0xff\n"
+//        "mov [128], 0xff\n"
+//        "mov [255], 0xff\n"
+//        "mov r1, 127\n"
+//        "shl [r1], 1\n"
+//        "mov r1, 128\n"
+//        "shl [r1], 2\n"
+//        "mov r1, 255\n"
+//        "shl [r1], 3\n"
+//        "hlt\n",
+        
+//        "mov r0, 1\n"
+//        "mov [127+r0], 0xff\n"
+//        "mov [128+r0], 0xff\n"
+//        "mov [255+r0], 0xff\n"
+//        "mov r1, 127\n"
+//        "shl [r1+r0], 1\n"
+//        "mov r1, 128\n"
+//        "shl [r1+r0], 2\n"
+//        "mov r1, 255\n"
+//        "shl [r1+r0], 3\n"
+//        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "shl r0, [127]\n"
+        "shl r1, [128]\n"
+        "shl r2, [255]\n"
+        "hlt\n",
+        
+//        "mov [127], 0xf0\n"
+//        "mov [128], 0x0f\n"
+//        "mov [255], 0xc3\n"
+//        "shl [0], [127]\n"
+//        "shl [127], [128]\n"
+//        "shl [128], [255]\n"
+//        "shl [255], [0]\n"
+//        "hlt\n",
+        
+//        "mov r3, 1\n"
+//        "mov [127+r0], 0xff\n"
+//        "mov [128+r0], 0xff\n"
+//        "mov [255+r0], 0xff\n"
+//        "mov r0, 0xff\n"
+//        "mov r1, 0xff\n"
+//        "mov r2, 0xff\n"
+//        "shl [127+r3], 1\n"
+//        "shl [128+r3], 2\n"
+//        "shl [255+r3], 3\n"
+//        "shl r0, [127+r3]\n"
+//        "shl r1, [128+r3]\n"
+//        "shl r2, [255+r3]\n"
+//        "hlt\n",
+        
+//        "mov r3, 1\n"
+//        "mov [127+r3], 0xff\n"
+//        "mov [128+r3], 0xff\n"
+//        "mov [255+r3], 0xff\n"
+//        "shl [127+r3], 1\n"
+//        "shl [128+r3], 2\n"
+//        "shl [255+r3], 3\n"
+//        "shl [0+r3], [127+r3]\n"
+//        "shl [127+r3], [128+r3]\n"
+//        "shl [128+r3], [255+r3]\n"
+//        "shl [255+r3], [0+r3]\n"
+//        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "shl r0, [r3]\n"
+        "mov r3, 128\n"
+        "shl r1, [r3]\n"
+        "mov r3, 255\n"
+        "shl r2, [r3]\n"
+        "hlt\n",
+        
+//        "mov [127], 1\n"
+//        "mov [128], 3\n"
+//        "mov [255], 5\n"
+//        "mov r3, 127\n"
+//        "shl [0], [r3]\n"
+//        "mov r3, 128\n"
+//        "shl [127], [r3]\n"
+//        "mov r3, 255\n"
+//        "shl [128], [r3]\n"
+//        "shl [r3], [0]\n"
+//        "hlt\n",
+        
+        "mov r2, 0xff\n"
+        "mov r3, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "shl r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "shl r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "shl r2, [r3+r0]\n"
+        "hlt\n",
+        
+//        "mov r0, 1\n"
+//        "mov [127+r0], 1\n"
+//        "mov [128+r0], 3\n"
+//        "mov [255+r0], 5\n"
+//        "mov r3, 127\n"
+//        "shl [0+r0], [r3+r0]\n"
+//        "mov r3, 128\n"
+//        "shl [127+r0], [r3+r0]\n"
+//        "mov r3, 255\n"
+//        "shl [128+r0], [r3+r0]\n"
+//        "shl [r3+r0], [0+r0]\n"
+//        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
@@ -1326,7 +2338,150 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         ".entrypoint\n"
         "mov r3, 1\n"
         "shr r3, [r3+0]\n"
-        "hlt\n"
+        "hlt\n",
+        
+//        "mov [127], 0xff\n"
+//        "mov [128], 0xff\n"
+//        "mov [255], 0xff\n"
+//        "shr [127], 1\n"
+//        "shr [128], 2\n"
+//        "shr [255], 3\n"
+//        "hlt\n",
+        
+//        "mov r0, 1\n"
+//        "mov [127+r0], 0xff\n"
+//        "mov [128+r0], 0xff\n"
+//        "mov [255+r0], 0xff\n"
+//        "shr [127+r0], 1\n"
+//        "shr [128+r0], 2\n"
+//        "shr [255+r0], 3\n"
+//        "hlt\n",
+        
+//        "mov [127], 0xff\n"
+//        "mov [128], 0xff\n"
+//        "mov [255], 0xff\n"
+//        "mov r1, 127\n"
+//        "shr [r1], 1\n"
+//        "mov r1, 128\n"
+//        "shr [r1], 2\n"
+//        "mov r1, 255\n"
+//        "shr [r1], 3\n"
+//        "hlt\n",
+        
+//        "mov r0, 1\n"
+//        "mov [127+r0], 0xff\n"
+//        "mov [128+r0], 0xff\n"
+//        "mov [255+r0], 0xff\n"
+//        "mov r1, 127\n"
+//        "shr [r1+r0], 1\n"
+//        "mov r1, 128\n"
+//        "shr [r1+r0], 2\n"
+//        "mov r1, 255\n"
+//        "shr [r1+r0], 3\n"
+//        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "shr r0, [127]\n"
+        "shr r1, [128]\n"
+        "shr r2, [255]\n"
+        "hlt\n",
+        
+//        "mov [127], 0xf0\n"
+//        "mov [128], 0x0f\n"
+//        "mov [255], 0xc3\n"
+//        "shr [0], [127]\n"
+//        "shr [127], [128]\n"
+//        "shr [128], [255]\n"
+//        "shr [255], [0]\n"
+//        "hlt\n",
+        
+//        "mov r3, 1\n"
+//        "mov [127+r0], 0xff\n"
+//        "mov [128+r0], 0xff\n"
+//        "mov [255+r0], 0xff\n"
+//        "mov r0, 0xff\n"
+//        "mov r1, 0xff\n"
+//        "mov r2, 0xff\n"
+//        "shr [127+r3], 1\n"
+//        "shr [128+r3], 2\n"
+//        "shr [255+r3], 3\n"
+//        "shr r0, [127+r3]\n"
+//        "shr r1, [128+r3]\n"
+//        "shr r2, [255+r3]\n"
+//        "hlt\n",
+        
+//        "mov r3, 1\n"
+//        "mov [127+r3], 0xff\n"
+//        "mov [128+r3], 0xff\n"
+//        "mov [255+r3], 0xff\n"
+//        "shr [127+r3], 1\n"
+//        "shr [128+r3], 2\n"
+//        "shr [255+r3], 3\n"
+//        "shr [0+r3], [127+r3]\n"
+//        "shr [127+r3], [128+r3]\n"
+//        "shr [128+r3], [255+r3]\n"
+//        "shr [255+r3], [0+r3]\n"
+//        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "shr r0, [r3]\n"
+        "mov r3, 128\n"
+        "shr r1, [r3]\n"
+        "mov r3, 255\n"
+        "shr r2, [r3]\n"
+        "hlt\n",
+        
+//        "mov [127], 1\n"
+//        "mov [128], 3\n"
+//        "mov [255], 5\n"
+//        "mov r3, 127\n"
+//        "shr [0], [r3]\n"
+//        "mov r3, 128\n"
+//        "shr [127], [r3]\n"
+//        "mov r3, 255\n"
+//        "shr [128], [r3]\n"
+//        "shr [r3], [0]\n"
+//        "hlt\n",
+        
+        "mov r2, 0xff\n"
+        "mov r3, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "shr r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "shr r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "shr r2, [r3+r0]\n"
+        "hlt\n",
+        
+//        "mov r0, 1\n"
+//        "mov [127+r0], 1\n"
+//        "mov [128+r0], 3\n"
+//        "mov [255+r0], 5\n"
+//        "mov r3, 127\n"
+//        "shr [0+r0], [r3+r0]\n"
+//        "mov r3, 128\n"
+//        "shr [127+r0], [r3+r0]\n"
+//        "mov r3, 255\n"
+//        "shr [128+r0], [r3+r0]\n"
+//        "shr [r3+r0], [0+r0]\n"
+//        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
@@ -2036,6 +3191,149 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "umod [r3+r2], [r3+r1]\n"
         "hlt\n"
         "data: .byte 10, 0, 30, 40\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "umod [127], 1\n"
+        "umod [128], 2\n"
+        "umod [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "umod [127+r0], 1\n"
+        "umod [128+r0], 2\n"
+        "umod [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "mov r1, 127\n"
+        "umod [r1], 1\n"
+        "mov r1, 128\n"
+        "umod [r1], 2\n"
+        "mov r1, 255\n"
+        "umod [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r1, 127\n"
+        "umod [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "umod [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "umod [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "umod r0, [127]\n"
+        "umod r1, [128]\n"
+        "umod r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 0xf0\n"
+        "mov [128], 0x0f\n"
+        "mov [255], 0xc3\n"
+        "umod [0], [127]\n"
+        "umod [127], [128]\n"
+        "umod [128], [255]\n"
+        "umod [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "umod [127+r3], 1\n"
+        "umod [128+r3], 2\n"
+        "umod [255+r3], 3\n"
+        "umod r0, [127+r3]\n"
+        "umod r1, [128+r3]\n"
+        "umod r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 0xff\n"
+        "mov [128+r3], 0xff\n"
+        "mov [255+r3], 0xff\n"
+        "umod [127+r3], 1\n"
+        "umod [128+r3], 2\n"
+        "umod [255+r3], 3\n"
+        "umod [0+r3], [127+r3]\n"
+        "umod [127+r3], [128+r3]\n"
+        "umod [128+r3], [255+r3]\n"
+        "umod [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "umod r0, [r3]\n"
+        "mov r3, 128\n"
+        "umod r1, [r3]\n"
+        "mov r3, 255\n"
+        "umod r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 3\n"
+        "mov [255], 5\n"
+        "mov r3, 127\n"
+        "umod [0], [r3]\n"
+        "mov r3, 128\n"
+        "umod [127], [r3]\n"
+        "mov r3, 255\n"
+        "umod [128], [r3]\n"
+        "umod [r3], [0]\n"
+        "hlt\n",
+        
+        "mov r2, 0xff\n"
+        "mov r3, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "umod r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "umod r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "umod r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 3\n"
+        "mov [255+r0], 5\n"
+        "mov r3, 127\n"
+        "umod [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "umod [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "umod [128+r0], [r3+r0]\n"
+        "umod [r3+r0], [0+r0]\n"
+        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
@@ -2341,6 +3639,149 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "smod [r0+1], [r0]\n"
         "hlt\n"
         "data: .byte -128, 1\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "smod [127], 1\n"
+        "smod [128], 2\n"
+        "smod [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "smod [127+r0], 1\n"
+        "smod [128+r0], 2\n"
+        "smod [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "mov r1, 127\n"
+        "smod [r1], 1\n"
+        "mov r1, 128\n"
+        "smod [r1], 2\n"
+        "mov r1, 255\n"
+        "smod [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r1, 127\n"
+        "smod [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "smod [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "smod [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "smod r0, [127]\n"
+        "smod r1, [128]\n"
+        "smod r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 0xf0\n"
+        "mov [128], 0x0f\n"
+        "mov [255], 0xc3\n"
+        "smod [0], [127]\n"
+        "smod [127], [128]\n"
+        "smod [128], [255]\n"
+        "smod [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "smod [127+r3], 1\n"
+        "smod [128+r3], 2\n"
+        "smod [255+r3], 3\n"
+        "smod r0, [127+r3]\n"
+        "smod r1, [128+r3]\n"
+        "smod r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 0xff\n"
+        "mov [128+r3], 0xff\n"
+        "mov [255+r3], 0xff\n"
+        "smod [127+r3], 1\n"
+        "smod [128+r3], 2\n"
+        "smod [255+r3], 3\n"
+        "smod [0+r3], [127+r3]\n"
+        "smod [127+r3], [128+r3]\n"
+        "smod [128+r3], [255+r3]\n"
+        "smod [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "smod r0, [r3]\n"
+        "mov r3, 128\n"
+        "smod r1, [r3]\n"
+        "mov r3, 255\n"
+        "smod r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 3\n"
+        "mov [255], 5\n"
+        "mov r3, 127\n"
+        "smod [0], [r3]\n"
+        "mov r3, 128\n"
+        "smod [127], [r3]\n"
+        "mov r3, 255\n"
+        "smod [128], [r3]\n"
+        "smod [r3], [0]\n"
+        "hlt\n",
+        
+        "mov r2, 0xff\n"
+        "mov r3, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "smod r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "smod r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "smod r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 3\n"
+        "mov [255+r0], 5\n"
+        "mov r3, 127\n"
+        "smod [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "smod [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "smod [128+r0], [r3+r0]\n"
+        "smod [r3+r0], [0+r0]\n"
+        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
@@ -2646,6 +4087,149 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "udiv [r0+1], [r0]\n"
         "hlt\n"
         "data: .byte -128, 1\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "udiv [127], 1\n"
+        "udiv [128], 2\n"
+        "udiv [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "udiv [127+r0], 1\n"
+        "udiv [128+r0], 2\n"
+        "udiv [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "mov r1, 127\n"
+        "udiv [r1], 1\n"
+        "mov r1, 128\n"
+        "udiv [r1], 2\n"
+        "mov r1, 255\n"
+        "udiv [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r1, 127\n"
+        "udiv [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "udiv [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "udiv [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "udiv r0, [127]\n"
+        "udiv r1, [128]\n"
+        "udiv r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 0xf0\n"
+        "mov [128], 0x0f\n"
+        "mov [255], 0xc3\n"
+        "udiv [0], [127]\n"
+        "udiv [127], [128]\n"
+        "udiv [128], [255]\n"
+        "udiv [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "udiv [127+r3], 1\n"
+        "udiv [128+r3], 2\n"
+        "udiv [255+r3], 3\n"
+        "udiv r0, [127+r3]\n"
+        "udiv r1, [128+r3]\n"
+        "udiv r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 0xff\n"
+        "mov [128+r3], 0xff\n"
+        "mov [255+r3], 0xff\n"
+        "udiv [127+r3], 1\n"
+        "udiv [128+r3], 2\n"
+        "udiv [255+r3], 3\n"
+        "udiv [0+r3], [127+r3]\n"
+        "udiv [127+r3], [128+r3]\n"
+        "udiv [128+r3], [255+r3]\n"
+        "udiv [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "udiv r0, [r3]\n"
+        "mov r3, 128\n"
+        "udiv r1, [r3]\n"
+        "mov r3, 255\n"
+        "udiv r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 3\n"
+        "mov [255], 5\n"
+        "mov r3, 127\n"
+        "udiv [0], [r3]\n"
+        "mov r3, 128\n"
+        "udiv [127], [r3]\n"
+        "mov r3, 255\n"
+        "udiv [128], [r3]\n"
+        "udiv [r3], [0]\n"
+        "hlt\n",
+        
+        "mov r2, 0xff\n"
+        "mov r3, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "udiv r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "udiv r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "udiv r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 3\n"
+        "mov [255+r0], 5\n"
+        "mov r3, 127\n"
+        "udiv [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "udiv [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "udiv [128+r0], [r3+r0]\n"
+        "udiv [r3+r0], [0+r0]\n"
+        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
@@ -2951,6 +4535,149 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "sdiv [r0+1], [r0]\n"
         "hlt\n"
         "data: .byte -128, 1\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "sdiv [127], 1\n"
+        "sdiv [128], 2\n"
+        "sdiv [255], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "sdiv [127+r0], 1\n"
+        "sdiv [128+r0], 2\n"
+        "sdiv [255+r0], 3\n"
+        "hlt\n",
+        
+        "mov [127], 0xff\n"
+        "mov [128], 0xff\n"
+        "mov [255], 0xff\n"
+        "mov r1, 127\n"
+        "sdiv [r1], 1\n"
+        "mov r1, 128\n"
+        "sdiv [r1], 2\n"
+        "mov r1, 255\n"
+        "sdiv [r1], 3\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r1, 127\n"
+        "sdiv [r1+r0], 1\n"
+        "mov r1, 128\n"
+        "sdiv [r1+r0], 2\n"
+        "mov r1, 255\n"
+        "sdiv [r1+r0], 3\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "sdiv r0, [127]\n"
+        "sdiv r1, [128]\n"
+        "sdiv r2, [255]\n"
+        "hlt\n",
+        
+        "mov [127], 0xf0\n"
+        "mov [128], 0x0f\n"
+        "mov [255], 0xc3\n"
+        "sdiv [0], [127]\n"
+        "sdiv [127], [128]\n"
+        "sdiv [128], [255]\n"
+        "sdiv [255], [0]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r0], 0xff\n"
+        "mov [128+r0], 0xff\n"
+        "mov [255+r0], 0xff\n"
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "sdiv [127+r3], 1\n"
+        "sdiv [128+r3], 2\n"
+        "sdiv [255+r3], 3\n"
+        "sdiv r0, [127+r3]\n"
+        "sdiv r1, [128+r3]\n"
+        "sdiv r2, [255+r3]\n"
+        "hlt\n",
+        
+        "mov r3, 1\n"
+        "mov [127+r3], 0xff\n"
+        "mov [128+r3], 0xff\n"
+        "mov [255+r3], 0xff\n"
+        "sdiv [127+r3], 1\n"
+        "sdiv [128+r3], 2\n"
+        "sdiv [255+r3], 3\n"
+        "sdiv [0+r3], [127+r3]\n"
+        "sdiv [127+r3], [128+r3]\n"
+        "sdiv [128+r3], [255+r3]\n"
+        "sdiv [255+r3], [0+r3]\n"
+        "hlt\n",
+        
+        "mov r0, 0xff\n"
+        "mov r1, 0xff\n"
+        "mov r2, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r3, 127\n"
+        "sdiv r0, [r3]\n"
+        "mov r3, 128\n"
+        "sdiv r1, [r3]\n"
+        "mov r3, 255\n"
+        "sdiv r2, [r3]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 3\n"
+        "mov [255], 5\n"
+        "mov r3, 127\n"
+        "sdiv [0], [r3]\n"
+        "mov r3, 128\n"
+        "sdiv [127], [r3]\n"
+        "mov r3, 255\n"
+        "sdiv [128], [r3]\n"
+        "sdiv [r3], [0]\n"
+        "hlt\n",
+        
+        "mov r2, 0xff\n"
+        "mov r3, 0xff\n"
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r0, 1\n"
+        "mov r3, 127\n"
+        "sdiv r0, [r3+r0]\n"
+        "mov [0], r0\n"
+        "mov r0, 1\n"
+        "mov r3, 128\n"
+        "sdiv r1, [r3+r0]\n"
+        "mov r3, 255\n"
+        "sdiv r2, [r3+r0]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 3\n"
+        "mov [255+r0], 5\n"
+        "mov r3, 127\n"
+        "sdiv [0+r0], [r3+r0]\n"
+        "mov r3, 128\n"
+        "sdiv [127+r0], [r3+r0]\n"
+        "mov r3, 255\n"
+        "sdiv [128+r0], [r3+r0]\n"
+        "sdiv [r3+r0], [0+r0]\n"
+        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
@@ -3058,7 +4785,47 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "mov r0, data\n"
         "neg [r0+1]\n"
         "hlt\n"
-        "data: .byte -128, 1\n"
+        "data: .byte -128, 1\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "neg [127]\n"
+        "neg [128]\n"
+        "neg [255]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "neg [127+r0]\n"
+        "neg [128+r0]\n"
+        "neg [255+r0]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r1, 127\n"
+        "neg [r1]\n"
+        "mov r1, 128\n"
+        "neg [r1]\n"
+        "mov r1, 255\n"
+        "neg [r1]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r1, 127\n"
+        "neg [r1+r0]\n"
+        "mov r1, 128\n"
+        "neg [r1+r0]\n"
+        "mov r1, 255\n"
+        "neg [r1+r0]\n"
+        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
@@ -3154,7 +4921,47 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "mov r0, data\n"
         "not [r0+1]\n"
         "hlt\n"
-        "data: .byte -128, 1\n"
+        "data: .byte -128, 1\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "not [127]\n"
+        "not [128]\n"
+        "not [255]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "not [127+r0]\n"
+        "not [128+r0]\n"
+        "not [255+r0]\n"
+        "hlt\n",
+        
+        "mov [127], 1\n"
+        "mov [128], 2\n"
+        "mov [255], 3\n"
+        "mov r1, 127\n"
+        "not [r1]\n"
+        "mov r1, 128\n"
+        "not [r1]\n"
+        "mov r1, 255\n"
+        "not [r1]\n"
+        "hlt\n",
+        
+        "mov r0, 1\n"
+        "mov [127+r0], 1\n"
+        "mov [128+r0], 2\n"
+        "mov [255+r0], 3\n"
+        "mov r1, 127\n"
+        "not [r1+r0]\n"
+        "mov r1, 128\n"
+        "not [r1+r0]\n"
+        "mov r1, 255\n"
+        "not [r1+r0]\n"
+        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
