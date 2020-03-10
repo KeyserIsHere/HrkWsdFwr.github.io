@@ -607,8 +607,9 @@ static size_t HKHubArchJITGenerate1OperandMutator(uint8_t *Ptr, const HKHubArchE
         {
             case HKHubArchInstructionMemoryOffset:
                 Ptr[Index++] = OpcodeM;
-                Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, Type, HKHubArchJITRegisterCompatibilityMemory);
-                Ptr[Index++] = Instruction->state.operand[0].memory.offset;
+                Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, Type, HKHubArchJITRegisterCompatibilityMemory);
+                *(uint32_t*)&Ptr[Index] = Instruction->state.operand[0].memory.offset;
+                Index += 4;
                 break;
                 
             case HKHubArchInstructionMemoryRegister:
@@ -644,8 +645,9 @@ static size_t HKHubArchJITGenerate1OperandMutator(uint8_t *Ptr, const HKHubArchE
                 {
                     case HKHubArchInstructionMemoryOffset:
                         Ptr[Index++] = HKHubArchJITOpcodeMovRM8;
-                        Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityMemory);
-                        Ptr[Index++] = Instruction->state.operand[0].memory.offset;
+                        Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityMemory);
+                        *(uint32_t*)&Ptr[Index] = Instruction->state.operand[0].memory.offset;
+                        Index += 4;
                         break;
                         
                     case HKHubArchInstructionMemoryRegister:
@@ -713,8 +715,9 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
             {
                 case HKHubArchInstructionMemoryOffset:
                     Ptr[Index++] = OpcodeRM;
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITGetRegister(Instruction->state.operand[0].reg), HKHubArchJITRegisterCompatibilityMemory);
-                    Ptr[Index++] = Instruction->state.operand[1].memory.offset;
+                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITGetRegister(Instruction->state.operand[0].reg), HKHubArchJITRegisterCompatibilityMemory);
+                    *(uint32_t*)&Ptr[Index] = Instruction->state.operand[1].memory.offset;
+                    Index += 4;
                     break;
                     
                 case HKHubArchInstructionMemoryRegister:
@@ -757,8 +760,9 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
             {
                 case HKHubArchInstructionMemoryOffset:
                     Ptr[Index++] = OpcodeMR;
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITGetRegister(Instruction->state.operand[1].reg), HKHubArchJITRegisterCompatibilityMemory);
-                    Ptr[Index++] = Instruction->state.operand[0].memory.offset;
+                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITGetRegister(Instruction->state.operand[1].reg), HKHubArchJITRegisterCompatibilityMemory);
+                    *(uint32_t*)&Ptr[Index] = Instruction->state.operand[0].memory.offset;
+                    Index += 4;
                     break;
                     
                 case HKHubArchInstructionMemoryRegister:
@@ -793,8 +797,9 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
             {
                 case HKHubArchInstructionMemoryOffset:
                     Ptr[Index++] = OpcodeMI;
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, Type, HKHubArchJITRegisterCompatibilityMemory);
-                    Ptr[Index++] = Instruction->state.operand[0].memory.offset;
+                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, Type, HKHubArchJITRegisterCompatibilityMemory);
+                    *(uint32_t*)&Ptr[Index] = Instruction->state.operand[0].memory.offset;
+                    Index += 4;
                     Ptr[Index++] = Instruction->state.operand[1].value;
                     break;
                     
@@ -859,8 +864,9 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
             {
                 case HKHubArchInstructionMemoryOffset:
                     Ptr[Index++] = HKHubArchJITOpcodeMovRM8;
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityMemory);
-                    Ptr[Index++] = Instruction->state.operand[1].memory.offset;
+                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterAL, HKHubArchJITRegisterCompatibilityMemory);
+                    *(uint32_t*)&Ptr[Index] = Instruction->state.operand[1].memory.offset;
+                    Index += 4;
                     break;
                     
                 case HKHubArchInstructionMemoryRegister:
@@ -984,8 +990,9 @@ static size_t HKHubArchJITGenerate2OperandBitMutator(uint8_t *Ptr, const HKHubAr
             {
                 case HKHubArchInstructionMemoryOffset:
                     Ptr[Index++] = HKHubArchJITOpcodeMovRM8;
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITRegisterAH, HKHubArchJITRegisterCompatibilityMemory);
-                    Ptr[Index++] = Instruction->state.operand[1].memory.offset;
+                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterAH, HKHubArchJITRegisterCompatibilityMemory);
+                    *(uint32_t*)&Ptr[Index] = Instruction->state.operand[1].memory.offset;
+                    Index += 4;
                     break;
                     
                 case HKHubArchInstructionMemoryRegister:
@@ -1431,8 +1438,9 @@ static size_t HKHubArchJITGenerate2OperandDivisionMutator(uint8_t *Ptr, const HK
                     
                     else Ptr[Index++] = HKHubArchJITOpcodeMovRM8;
                     
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITRegisterR8B, HKHubArchJITRegisterCompatibilityMemory);
-                    Ptr[Index++] = Instruction->state.operand[1].memory.offset;
+                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterR8B, HKHubArchJITRegisterCompatibilityMemory);
+                    *(uint32_t*)&Ptr[Index] = Instruction->state.operand[1].memory.offset;
+                    Index += 4;
                     break;
                     
                 case HKHubArchInstructionMemoryRegister:
@@ -2136,8 +2144,9 @@ static size_t HKHubArchJITGenerate2OperandDivisionMutator(uint8_t *Ptr, const HK
                     
                     else Ptr[Index++] = HKHubArchJITOpcodeMovRM8;
                     
-                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITRegisterR8B, HKHubArchJITRegisterCompatibilityMemory);
-                    Ptr[Index++] = Instruction->state.operand[1].memory.offset;
+                    Ptr[Index++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterR8B, HKHubArchJITRegisterCompatibilityMemory);
+                    *(uint32_t*)&Ptr[Index] = Instruction->state.operand[1].memory.offset;
+                    Index += 4;
                     break;
                     
                 case HKHubArchInstructionMemoryRegister:
