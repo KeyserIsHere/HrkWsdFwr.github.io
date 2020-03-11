@@ -133,7 +133,7 @@ static void HKHubArchExecutionGraphDestructor(HKHubArchExecutionGraph Graph)
     CCEnumerable Enumerable;
     CCArrayGetEnumerable(Graph->block, &Enumerable);
     
-    for (CCLinkedList(HKHubArchProcessorInstructionGraphNode) *Node = CCEnumerableGetCurrent(&Enumerable); Node; Node = CCEnumerableNext(&Enumerable))
+    for (CCLinkedList(HKHubArchExecutionGraphInstruction) *Node = CCEnumerableGetCurrent(&Enumerable); Node; Node = CCEnumerableNext(&Enumerable))
     {
         CCLinkedListDestroy(*Node);
     }
