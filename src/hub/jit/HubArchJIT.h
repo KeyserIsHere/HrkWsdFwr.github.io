@@ -29,6 +29,10 @@
 #include "Base.h"
 #include "HubArchExecutionGraph.h"
 
+typedef enum {
+	HKHubArchJITOptionsWatchMemory = (1 << 0)
+} HKHubArchJITOptions;
+
 typedef struct {
     uintptr_t entry;
     size_t index;
@@ -40,8 +44,12 @@ typedef struct {
 } HKHubArchJITBlock;
 
 typedef struct {
-    CCDictionary(uint8_t, uintptr_t) map;
-    CCArray(HKHubArchJITBlock) blocks;
+    uintptr_t entry;
+    HKHubArchJITBlock *block;
+} HKHubArchJITBlockReferenceEntry;
+
+typedef struct {
+    CCDictionary(uint8_t, HKHubArchJITBlockReferenceEntry) map;
 } HKHubArchJITInfo;
 
 /*!
@@ -60,9 +68,9 @@ typedef HKHubArchJITInfo *HKHubArchJIT;
 CC_NEW HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph);
 
 /*!
- * @brief Destroy a JIT block.
- * @param Block The JIT block to be destroyed.
+ * @brief Destroy a JIT.
+ * @param JIT The JIT to be destroyed.
  */
-void HKHubArchJITDestroy(HKHubArchJIT CC_DESTROY(Block));
+void HKHubArchJITDestroy(HKHubArchJIT CC_DESTROY(JIT));
 
 #endif

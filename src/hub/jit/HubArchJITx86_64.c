@@ -2859,7 +2859,7 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
 
 void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor)
 {
-    const uintptr_t *Entry = CCDictionaryGetValue(JIT->map, &Processor->state.pc);
+    const HKHubArchJITBlockReferenceEntry *Entry = CCDictionaryGetValue(JIT->map, &Processor->state.pc);
     if (!Entry) return;
     
 #define HK_HUB_ARCH_JIT_Processor_r0 56
@@ -2916,7 +2916,7 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor)
         "movb %%dh, Processor_pc(%%rax)\n"
         "movq %%rsi, Processor_cycles(%%rax)\n"
         :
-        : "m" (Processor), "m" (*Entry)
+        : "m" (Processor), "m" (Entry->entry)
         : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "r8", "r9", "memory");
 }
 #endif
