@@ -63,9 +63,10 @@ typedef HKHubArchJITInfo *HKHubArchJIT;
  * @brief Create a JIT native block of executable code for the graph.
  * @param Allocator The allocator to be used.
  * @param Graph The instruction graph.
+ * @param Cache Whether the jit block should be cached or not.
  * @return The JIT native block. Must be destroyed to free memory.
  */
-CC_NEW HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph);
+CC_NEW HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph, _Bool Cache);
 
 /*!
  * @brief Destroy a JIT.

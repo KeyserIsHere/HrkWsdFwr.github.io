@@ -182,7 +182,7 @@ void HKHubArchJITBlockReferenceEntryElementDestructor(CCDictionary Dictionary, H
     CCFree(Element->block);
 }
 
-HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph)
+HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph, _Bool Cache)
 {
     CCAssertLog(Graph, "Graph must not be null");
     
@@ -197,7 +197,7 @@ HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGra
             })
         };
         
-        HKHubArchJITGenerate(JIT, Graph, TRUE);
+        HKHubArchJITGenerate(JIT, Graph, Cache);
         
         CCMemorySetDestructor(JIT, (CCMemoryDestructorCallback)HKHubArchJITDestructor);
     }

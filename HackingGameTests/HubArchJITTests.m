@@ -51,7 +51,7 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary), ProcessorNormal = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     HKHubArchBinaryDestroy(Binary);
     
-    HKHubArchJIT JIT = HKHubArchJITCreate(CC_STD_ALLOCATOR, Graph);
+    HKHubArchJIT JIT = HKHubArchJITCreate(CC_STD_ALLOCATOR, Graph, FALSE);
     HKHubArchExecutionGraphDestroy(Graph);
     
     HKHubArchProcessorSetCycles(Processor, 1000);
