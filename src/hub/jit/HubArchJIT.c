@@ -114,7 +114,7 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
             void *Ptr = HKHubArchJITAllocateExecutable(Size);
             if (Ptr)
             {
-                HKHubArchJITBlock Block = { .code = (uintptr_t)Ptr, .map = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchJITBlockRelativeEntry), 4) };
+                HKHubArchJITBlock Block = { .code = (uintptr_t)Ptr, .map = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchJITBlockRelativeEntry), 4), .cached = Cache };
                 
 #if CC_HARDWARE_ARCH_X86_64
                 const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, Instruction);
@@ -124,18 +124,18 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
                 {
                     CCArray(HKHubArchInstructionState) Instructions = NULL;
                     
+                    CC_SAFE_Malloc(CachedBlock, sizeof(HKHubArchJITBlock),
+                                   CCArrayDestroy(Block.map);
+                                   HKHubArchJITDeallocateExecutable(Ptr, Size);
+                                   continue;
+                                   );
+                    
+                    *CachedBlock = Block;
+                    
+                    CCMemorySetDestructor(CachedBlock, (CCMemoryDestructorCallback)HKHubArchJITBlockDestructor);
+                    
                     if (Cache)
                     {
-                        CC_SAFE_Malloc(CachedBlock, sizeof(HKHubArchJITBlock),
-                                       CCArrayDestroy(Block.map);
-                                       HKHubArchJITDeallocateExecutable(Ptr, Size);
-                                       continue;
-                                       );
-                        
-                        *CachedBlock = Block;
-                        
-                        CCMemorySetDestructor(CachedBlock, (CCMemoryDestructorCallback)HKHubArchJITBlockDestructor);
-                        
                         Instructions = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchInstructionState), 8);
                         CCArrayAppendElement(Instructions, &((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->state);
                     }
@@ -194,8 +194,7 @@ HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGra
         *JIT = (HKHubArchJITInfo){
             .map = CCDictionaryCreate(Allocator, CCDictionaryHintSizeMedium | CCDictionaryHintConstantElements | CCDictionaryHintConstantLength | CCDictionaryHintHeavyFinding, sizeof(uint8_t), sizeof(HKHubArchJITBlockReferenceEntry), &(CCDictionaryCallbacks){
                 .valueDestructor = (CCDictionaryElementDestructor)HKHubArchJITBlockReferenceEntryElementDestructor
-            }),
-            .cached = Cache
+            })
         };
         
         HKHubArchJITGenerate(JIT, Graph, Cache);

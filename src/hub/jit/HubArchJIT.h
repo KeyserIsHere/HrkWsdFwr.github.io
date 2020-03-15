@@ -41,6 +41,7 @@ typedef struct {
 typedef struct {
     CCArray(HKHubArchJITBlockRelativeEntry) map;
     uintptr_t code;
+    _Bool cached;
 } HKHubArchJITBlock;
 
 typedef struct {
@@ -50,7 +51,6 @@ typedef struct {
 
 typedef struct {
     CCDictionary(uint8_t, HKHubArchJITBlockReferenceEntry) map;
-    _Bool cached;
 } HKHubArchJITInfo;
 
 /*!
