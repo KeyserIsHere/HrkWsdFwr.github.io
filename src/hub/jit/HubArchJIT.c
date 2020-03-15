@@ -194,7 +194,8 @@ HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGra
         *JIT = (HKHubArchJITInfo){
             .map = CCDictionaryCreate(Allocator, CCDictionaryHintSizeMedium | CCDictionaryHintConstantElements | CCDictionaryHintConstantLength | CCDictionaryHintHeavyFinding, sizeof(uint8_t), sizeof(HKHubArchJITBlockReferenceEntry), &(CCDictionaryCallbacks){
                 .valueDestructor = (CCDictionaryElementDestructor)HKHubArchJITBlockReferenceEntryElementDestructor
-            })
+            }),
+            .cached = Cache
         };
         
         HKHubArchJITGenerate(JIT, Graph, Cache);
