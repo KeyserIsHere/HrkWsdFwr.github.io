@@ -75,4 +75,12 @@ CC_NEW HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecu
  */
 void HKHubArchJITDestroy(HKHubArchJIT CC_DESTROY(JIT));
 
+/*!
+ * @brief Invalidate any JIT blocks that are inside the specified address range.
+ * @param JIT The JIT whose blocks will be invalidated.
+ * @param Offset The beginning of invalidated address range.
+ * @param Size The size of the invalidated address range.
+ */
+void HKHubArchJITInvalidateBlocks(HKHubArchJIT JIT, uint8_t Offset, size_t Size);
+
 #endif

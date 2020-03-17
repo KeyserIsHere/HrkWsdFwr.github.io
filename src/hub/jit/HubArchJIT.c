@@ -36,6 +36,7 @@
 #endif
 
 extern _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block);
+extern void HKHubArchJITRemoveEntry(void *Entry);
 
 static void *HKHubArchJITAllocateExecutable(size_t Size)
 {
@@ -82,10 +83,12 @@ CC_ARRAY_DECLARE(HKHubArchInstructionState);
 static void HKHubArchJITBlockAssetRegister(CCArray(HKHubArchInstructionState) Instructions, HKHubArchJITBlock *CC_RETAIN(Block));
 static CC_NEW HKHubArchJITBlock *HKHubArchJITBlockAssetCreate(CCLinkedList(HKHubArchExecutionGraphInstruction) Instructions);
 
+#define HK_HUB_ARCH_JIT_BLOCK_SIZE 1024
+
 static void HKHubArchJITBlockDestructor(HKHubArchJITBlock *Block)
 {
     CCArrayDestroy(Block->map);
-    HKHubArchJITDeallocateExecutable((void*)Block->code, 1024);
+    HKHubArchJITDeallocateExecutable((void*)Block->code, HK_HUB_ARCH_JIT_BLOCK_SIZE);
 }
 
 static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph, _Bool Cache)
@@ -110,7 +113,7 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
         
         else
         {
-            const size_t Size = 1024; // TODO: calculate size required
+            const size_t Size = HK_HUB_ARCH_JIT_BLOCK_SIZE; // TODO: calculate size required?
             void *Ptr = HKHubArchJITAllocateExecutable(Size);
             if (Ptr)
             {
@@ -215,6 +218,89 @@ void HKHubArchJITDestroy(HKHubArchJIT JIT)
     CCAssertLog(JIT, "JIT must not be null");
     
     CCFree(JIT);
+}
+
+void HKHubArchJITInvalidateBlocks(HKHubArchJIT JIT, uint8_t Offset, size_t Size)
+{
+    for (size_t Loop = 0; Loop < Size; Loop++)
+    {
+        CCDictionaryEntry Entry = CCDictionaryFindKey(JIT->map, &(uint8_t){ Offset + Loop });
+        const HKHubArchJITBlockReferenceEntry *Ref = CCDictionaryGetEntry(JIT->map, Entry);
+        
+        if (Ref->block->cached)
+        {
+            const HKHubArchJITBlock *RefBlock = Ref->block;
+            
+            const size_t Size = HK_HUB_ARCH_JIT_BLOCK_SIZE;
+            void *Ptr = HKHubArchJITAllocateExecutable(Size);
+            if (Ptr)
+            {
+                HKHubArchJITBlock *Block = CCMalloc(CC_DEFAULT_ALLOCATOR, sizeof(HKHubArchJITBlock), NULL, CC_DEFAULT_ERROR_CALLBACK);
+                if (Block)
+                {
+                    *Block = (HKHubArchJITBlock){ .code = (uintptr_t)Ptr, .map = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchJITBlockRelativeEntry), 4), .cached = FALSE };
+                    
+                    memcpy(Ptr, (const void*)RefBlock->code, Size);
+                    
+                    CCMemorySetDestructor(Block, (CCMemoryDestructorCallback)HKHubArchJITBlockDestructor);
+                    
+                    for (size_t Loop = 0, Count = CCArrayGetCount(RefBlock->map); Loop < Count; Loop++)
+                    {
+                        HKHubArchJITBlockRelativeEntry BlockEntry = *(const HKHubArchJITBlockRelativeEntry*)CCArrayGetElementAtIndex(RefBlock->map, Loop);
+                        BlockEntry.entry = (BlockEntry.entry - RefBlock->code) + Block->code;
+                        CCArrayAppendElement(Block->map, &BlockEntry);
+                    }
+                    
+                    CC_DICTIONARY_FOREACH_VALUE_PTR(HKHubArchJITBlockReferenceEntry, Value, JIT->map)
+                    {
+                        if (Value->block == RefBlock)
+                        {
+                            CCFree(Value->block);
+                            Value->block = CCRetain(Block);
+                            Value->entry = (Value->entry - Ref->block->code) + Block->code;
+                        }
+                    }
+                    
+                    CCFree(Block);
+                }
+                
+                else
+                {
+                    HKHubArchJITDeallocateExecutable(Ptr, Size);
+                    
+                    goto RemoveBlock;
+                }
+            }
+            
+            else
+            {
+            RemoveBlock:;
+                size_t Count = 0;
+                uint8_t Keys[256];
+                
+                CC_DICTIONARY_FOREACH_VALUE_PTR(HKHubArchJITBlockReferenceEntry, Value, JIT->map)
+                {
+                    if (Value->block == RefBlock)
+                    {
+                        Keys[Count++] = *(uint8_t*)CCDictionaryGetKey(JIT->map, CCDictionaryEnumeratorGetEntry(&CC_DICTIONARY_CURRENT_VALUE_ENUMERATOR));
+                    }
+                }
+                
+                for (size_t Loop = 0; Loop < Count; Loop++)
+                {
+                    CCDictionaryRemoveValue(JIT->map, &Keys[Loop]);
+                }
+                
+                continue;
+            }
+        }
+        
+#if CC_HARDWARE_ARCH_X86_64
+        HKHubArchJITRemoveEntry((void*)Ref->entry);
+#endif
+        
+        CCDictionaryRemoveEntry(JIT->map, Entry);
+    }
 }
 
 #ifndef HK_HUB_ARCH_JIT
