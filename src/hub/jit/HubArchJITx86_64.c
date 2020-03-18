@@ -2857,6 +2857,11 @@ _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, v
     return Index;
 }
 
+void HKHubArchJITRemoveEntry(void *Entry)
+{
+    HKHubArchJITAddInstructionReturn(Entry, &(size_t){ 0 });
+}
+
 void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor)
 {
     const HKHubArchJITBlockReferenceEntry *Entry = CCDictionaryGetValue(JIT->map, &Processor->state.pc);
