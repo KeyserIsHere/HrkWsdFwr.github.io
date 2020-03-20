@@ -125,6 +125,8 @@ typedef enum {
     HKHubArchJITOpcodeAndRM8 = 0x22,
     HKHubArchJITOpcodeCmpMR8 = 0x38,
     HKHubArchJITOpcodeCmpRM8 = 0x3a,
+    HKHubArchJITOpcodePushR = 0x50,
+    HKHubArchJITOpcodePopR = 0x58,
     HKHubArchJITOpcodeMovMR8 = 0x88,
     HKHubArchJITOpcodeMovMR = 0x89,
     HKHubArchJITOpcodeMovRM8 = 0x8a,
@@ -393,6 +395,16 @@ static CC_FORCE_INLINE void HKHubArchJITAddInstructionXorMR8(uint8_t *Ptr, size_
 {
     Ptr[(*Index)++] = HKHubArchJITOpcodeXorMR8;
     Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, Src, Dst);
+}
+
+static CC_FORCE_INLINE void HKHubArchJITAddInstructionPushR(uint8_t *Ptr, size_t *Index, HKHubArchJITRegister Reg)
+{
+    Ptr[(*Index)++] = HKHubArchJITOpcodePushR + Reg;
+}
+
+static CC_FORCE_INLINE void HKHubArchJITAddInstructionPopR(uint8_t *Ptr, size_t *Index, HKHubArchJITRegister Reg)
+{
+    Ptr[(*Index)++] = HKHubArchJITOpcodePopR + Reg;
 }
 
 static CC_FORCE_INLINE void HKHubArchJITAddInstructionMovOI8(uint8_t *Ptr, size_t *Index, HKHubArchJITRegister Reg, uint8_t Imm8)
