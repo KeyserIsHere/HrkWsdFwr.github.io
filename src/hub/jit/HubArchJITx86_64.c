@@ -142,8 +142,10 @@ typedef enum {
     HKHubArchJITOpcodeMovOI = 0xb8,
     HKHubArchJITOpcodeMoveMI8 = 0xc6,
     HKHubArchJITOpcodeTestMR8 = 0x84,
+    HKHubArchJITOpcodeCallD = 0xe8,
     HKHubArchJITOpcodeOneOpArithmeticM8 = 0xf6,
     HKHubArchJITOpcodeOneOpArithmeticM = 0xf7,
+    HKHubArchJITOpcodeOneOpBranchM = 0xff,
     HKHubArchJITOpcodeCdq = 0x99
 } HKHubArchJITOpcode;
 
@@ -208,6 +210,16 @@ typedef enum {
     HKHubArchJITOneOpArithmeticDiv,
     HKHubArchJITOneOpArithmeticIdiv
 } HKHubArchJITOneOpArithmetic;
+
+typedef enum {
+    HKHubArchJITOneOpBranchInc,
+    HKHubArchJITOneOpBranchDec,
+    HKHubArchJITOneOpBranchCall,
+    HKHubArchJITOneOpBranchCallF,
+    HKHubArchJITOneOpBranchJmp,
+    HKHubArchJITOneOpBranchJmpF,
+    HKHubArchJITOneOpBranchPush
+} HKHubArchJITOneOpBranch;
 
 typedef enum {
     HKHubArchJITMoveMov
@@ -408,6 +420,14 @@ static CC_FORCE_INLINE void HKHubArchJITAddInstructionMovOI(uint8_t *Ptr, size_t
     *Index += 4;
 }
 
+static CC_FORCE_INLINE void HKHubArchJITAddInstructionMovOI64(uint8_t *Ptr, size_t *Index, HKHubArchJITRegister Reg, uint64_t Imm64)
+{
+    Ptr[(*Index)++] = HKHubArchJITRexW;
+    Ptr[(*Index)++] = HKHubArchJITOpcodeMovOI + Reg;
+    *(uint64_t*)&Ptr[*Index] = Imm64;
+    *Index += 8;
+}
+
 static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticMI8(uint8_t *Ptr, size_t *Index, HKHubArchJITArithmetic Type, HKHubArchJITRegister Reg, uint8_t Imm8)
 {
     Ptr[(*Index)++] = HKHubArchJITOpcodeArithmeticMI8;
@@ -464,6 +484,24 @@ static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticM8(uint8_t *Ptr,
 {
     Ptr[(*Index)++] = HKHubArchJITOpcodeOneOpArithmeticM8;
     Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, Type, Reg);
+}
+
+static CC_FORCE_INLINE void HKHubArchJITAddInstructionCall(uint8_t *Ptr, size_t *Index, uintptr_t Address, HKHubArchJITRegister Reg)
+{
+    ptrdiff_t Rel = (ptrdiff_t)(Ptr - Address);
+    if ((Rel < INT32_MIN) || (Rel > INT32_MAX))
+    {
+        HKHubArchJITAddInstructionMovOI64(Ptr, Index, Reg, Address);
+        Ptr[(*Index)++] = HKHubArchJITOpcodeOneOpBranchM;
+        Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITOneOpBranchCall, Reg);
+    }
+    
+    else
+    {
+        Ptr[(*Index)++] = HKHubArchJITOpcodeCallD;
+        *(int32_t*)&Ptr[*Index] = (int32_t)Rel;
+        *Index += 4;
+    }
 }
 
 static CC_FORCE_INLINE void HKHubArchJITAddInstructionJumpRel8(uint8_t *Ptr, size_t *Index, HKHubArchJITJump Type, int8_t Rel8)
