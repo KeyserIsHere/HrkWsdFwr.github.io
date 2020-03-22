@@ -132,6 +132,7 @@ typedef enum {
     HKHubArchJITOpcodeMovMR = 0x89,
     HKHubArchJITOpcodeMovRM8 = 0x8a,
     HKHubArchJITOpcodeArithmeticMI8 = 0x80,
+    HKHubArchJITOpcodeArithmeticMIn = 0x81,
     HKHubArchJITOpcodeArithmeticMI = 0x83,
     HKHubArchJITOpcodeLahf = 0x9f,
     HKHubArchJITOpcodeBitAdjustMI8 = 0xc0,
@@ -459,6 +460,13 @@ static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticMI(uint8_t *Ptr,
     Ptr[(*Index)++] = HKHubArchJITOpcodeArithmeticMI;
     Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, Type, Reg);
     Ptr[(*Index)++] = Imm8;
+}
+
+static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticMIn(uint8_t *Ptr, size_t *Index, HKHubArchJITArithmetic Type, HKHubArchJITRegister Reg, uint64_t Imm64)
+{
+    Ptr[(*Index)++] = HKHubArchJITOpcodeArithmeticMIn;
+    Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, Type, Reg);
+    Ptr[(*Index)++] = Imm64;
 }
 
 static CC_FORCE_INLINE void HKHubArchJITAddInstructionBitAdjustMI8(uint8_t *Ptr, size_t *Index, HKHubArchJITBitAdjust Type, HKHubArchJITRegister Reg, uint8_t Imm8)
