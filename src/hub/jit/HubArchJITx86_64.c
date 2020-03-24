@@ -37,6 +37,11 @@ typedef enum {
     HKHubArchJITRegisterDH,
     HKHubArchJITRegisterBH,
     
+    HKHubArchJITRegisterSPL = HKHubArchJITRegisterAH,
+    HKHubArchJITRegisterBPL = HKHubArchJITRegisterCH,
+    HKHubArchJITRegisterSIL = HKHubArchJITRegisterDH,
+    HKHubArchJITRegisterDIL = HKHubArchJITRegisterBH,
+    
     HKHubArchJITRegisterAX = 0,
     HKHubArchJITRegisterCX,
     HKHubArchJITRegisterDX,
@@ -611,6 +616,54 @@ static void HKHubArchJITCheckCycles(uint8_t *Ptr, size_t *Index, size_t Cost, co
     Ptr[(*Index)++] = HKHubArchJITRexW;
     HKHubArchJITAddInstructionArithmeticMI(Ptr, Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterCompatibilityCycles, Cycles);
     HKHubArchJITAddInstructionReturn(Ptr, Index);
+}
+
+static void HKHubArchJITCheckMemoryAccess(uint8_t *Ptr, size_t *Index, const HKHubArchExecutionGraphInstruction *Instruction, HKHubArchJITRegister Offset)
+{
+    const HKHubArchInstructionMemoryOperation MemoryOp = HKHubArchInstructionGetMemoryOperation(&Instruction->state);
+    for (size_t Loop = 0; Loop < 3; Loop++)
+    {
+        if ((((MemoryOp >> (Loop * 2)) & HKHubArchInstructionMemoryOperationDst)) && (Instruction->state.operand[Loop].type == HKHubArchInstructionOperandM))
+        {
+            /*
+             TODO: If memory operand is a literal then it can avoid adding a check and instead add it to a list of invalidated memory addresses.
+             then after creation of the jit it invalidates all of those constant addresses.
+             */
+            HKHubArchJITAddInstructionPushR(Ptr, Index, HKHubArchJITRegisterRBX);
+            HKHubArchJITAddInstructionPushR(Ptr, Index, HKHubArchJITRegisterRCX);
+            HKHubArchJITAddInstructionPushR(Ptr, Index, HKHubArchJITRegisterRDX);
+            HKHubArchJITAddInstructionPushR(Ptr, Index, HKHubArchJITRegisterRSI);
+            HKHubArchJITAddInstructionPushR(Ptr, Index, HKHubArchJITRegisterRDI);
+            
+            if (Instruction->state.operand[Loop].memory.type == HKHubArchInstructionMemoryOffset)
+            {
+                Ptr[(*Index)++] = HKHubArchJITRexW;
+                HKHubArchJITAddInstructionXorMR(Ptr, Index, HKHubArchJITRegisterRSI, HKHubArchJITRegisterRSI);
+                Ptr[(*Index)++] = HKHubArchJITRex;
+                HKHubArchJITAddInstructionMovOI8(Ptr, Index, HKHubArchJITRegisterSIL, Instruction->state.operand[Loop].memory.offset);
+            }
+            
+            else
+            {
+                HKHubArchJITAddInstructionMovMR(Ptr, Index, HKHubArchJITRegisterRSI, Offset);
+            }
+            
+            HKHubArchJITAddInstructionArithmeticMIn(Ptr, Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterRDI, offsetof(HKHubArchProcessorInfo, cache.jit) - offsetof(HKHubArchProcessorInfo, memory));
+            
+            Ptr[(*Index)++] = HKHubArchJITRexW;
+            HKHubArchJITAddInstructionXorMR(Ptr, Index, HKHubArchJITRegisterRDX, HKHubArchJITRegisterRDX);
+            Ptr[(*Index)++] = HKHubArchJITOpcodeOneOpBranchM;
+            Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITOneOpBranchInc, HKHubArchJITRegisterRDX);
+            
+            HKHubArchJITAddInstructionCall(Ptr, Index, (uintptr_t)HKHubArchJITInvalidateBlocks, HKHubArchJITRegisterRAX);
+            
+            HKHubArchJITAddInstructionPopR(Ptr, Index, HKHubArchJITRegisterRDI);
+            HKHubArchJITAddInstructionPopR(Ptr, Index, HKHubArchJITRegisterRSI);
+            HKHubArchJITAddInstructionPopR(Ptr, Index, HKHubArchJITRegisterRDX);
+            HKHubArchJITAddInstructionPopR(Ptr, Index, HKHubArchJITRegisterRCX);
+            HKHubArchJITAddInstructionPopR(Ptr, Index, HKHubArchJITRegisterRBX);
+        }
+    }
 }
 
 static size_t HKHubArchJITGenerate0OperandMutator(uint8_t *Ptr, const HKHubArchExecutionGraphInstruction *Instruction, uint8_t Type, size_t Cost, _Bool FlagsAffected)
