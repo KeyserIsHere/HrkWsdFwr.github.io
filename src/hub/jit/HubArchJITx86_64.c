@@ -755,6 +755,10 @@ static size_t HKHubArchJITGenerate1OperandMutator(uint8_t *Ptr, const HKHubArchE
                 break;
         }
         
+        HKHubArchJITAddInstructionPushR(Ptr, &Index, HKHubArchJITRegisterRAX);
+        HKHubArchJITCheckMemoryAccess(Ptr, &Index, Instruction, HKHubArchJITRegisterRAX);
+        HKHubArchJITAddInstructionPopR(Ptr, &Index, HKHubArchJITRegisterRAX);
+        
         if (FlagsAffected)
         {
             if (ManualFlagTest)
@@ -907,6 +911,8 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
                     Ptr[Index++] = HKHubArchJITSIB(0, HKHubArchJITRegisterRAX, HKHubArchJITRegisterCompatibilityMemory);
                     break;
             }
+            
+            HKHubArchJITCheckMemoryAccess(Ptr, &Index, Instruction, HKHubArchJITRegisterRAX);
         }
         
         else if (Instruction->state.operand[1].type == HKHubArchInstructionOperandI)
@@ -948,6 +954,8 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
                     Ptr[Index++] = Instruction->state.operand[1].value;
                     break;
             }
+            
+            HKHubArchJITCheckMemoryAccess(Ptr, &Index, Instruction, HKHubArchJITRegisterRAX);
         }
         
         else if (Instruction->state.operand[1].type == HKHubArchInstructionOperandM)
@@ -977,6 +985,10 @@ static size_t HKHubArchJITGenerate2OperandMutator(uint8_t *Ptr, const HKHubArchE
                     HKHubArchJITAddInstructionMovzxRM8(Ptr, &Index, HKHubArchJITRegisterEBP, HKHubArchJITRegisterAL);
                     break;
             }
+            
+            HKHubArchJITAddInstructionPushR(Ptr, &Index, HKHubArchJITRegisterRBP);
+            HKHubArchJITCheckMemoryAccess(Ptr, &Index, Instruction, HKHubArchJITRegisterRBP);
+            HKHubArchJITAddInstructionPopR(Ptr, &Index, HKHubArchJITRegisterRBP);
             
             switch (Instruction->state.operand[1].memory.type)
             {
@@ -1716,6 +1728,10 @@ static size_t HKHubArchJITGenerate2OperandDivisionMutator(uint8_t *Ptr, const HK
                     break;
             }
             
+            HKHubArchJITAddInstructionPushR(Ptr, &Index, HKHubArchJITRegisterRBP);
+            HKHubArchJITCheckMemoryAccess(Ptr, &Index, Instruction, HKHubArchJITRegisterRBP);
+            HKHubArchJITAddInstructionPopR(Ptr, &Index, HKHubArchJITRegisterRBP);
+            
             const HKHubArchJITRegister Src = HKHubArchJITGetRegister(Instruction->state.operand[1].reg);
             HKHubArchJITRegister Result, Flags;
             
@@ -1826,6 +1842,10 @@ static size_t HKHubArchJITGenerate2OperandDivisionMutator(uint8_t *Ptr, const HK
                     HKHubArchJITAddInstructionMovMR(Ptr, &Index, HKHubArchJITRegisterEBP, HKHubArchJITRegisterEAX);
                     break;
             }
+            
+            HKHubArchJITAddInstructionPushR(Ptr, &Index, HKHubArchJITRegisterRBP);
+            HKHubArchJITCheckMemoryAccess(Ptr, &Index, Instruction, HKHubArchJITRegisterRBP);
+            HKHubArchJITAddInstructionPopR(Ptr, &Index, HKHubArchJITRegisterRBP);
             
             if (Signed)
             {
@@ -2248,6 +2268,10 @@ static size_t HKHubArchJITGenerate2OperandDivisionMutator(uint8_t *Ptr, const HK
                     HKHubArchJITAddInstructionMovMR(Ptr, &Index, HKHubArchJITRegisterEBP, HKHubArchJITRegisterEAX);
                     break;
             }
+            
+            HKHubArchJITAddInstructionPushR(Ptr, &Index, HKHubArchJITRegisterRBP);
+            HKHubArchJITCheckMemoryAccess(Ptr, &Index, Instruction, HKHubArchJITRegisterRBP);
+            HKHubArchJITAddInstructionPopR(Ptr, &Index, HKHubArchJITRegisterRBP);
             
             switch (Instruction->state.operand[1].memory.type)
             {
