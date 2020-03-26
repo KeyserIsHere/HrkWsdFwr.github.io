@@ -35,7 +35,7 @@
 #endif
 #endif
 
-extern _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block);
+extern _Bool HKHubArchJITGenerateBlock(HKHubArchJIT JIT, HKHubArchJITBlock *JITBlock, void *Ptr, CCLinkedList(HKHubArchExecutionGraphInstruction) Block, HKHubArchJITOptions Options);
 extern void HKHubArchJITRemoveEntry(void *Entry);
 
 static void *HKHubArchJITAllocateExecutable(size_t Size)
@@ -120,7 +120,7 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
                 HKHubArchJITBlock Block = { .code = (uintptr_t)Ptr, .map = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchJITBlockRelativeEntry), 4), .cached = Cache };
                 
 #if CC_HARDWARE_ARCH_X86_64
-                const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, Instruction);
+                const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, Instruction, 0);
 #endif
                 
                 if (Generated)
