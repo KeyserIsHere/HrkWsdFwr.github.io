@@ -91,8 +91,9 @@ static void HKHubArchJITBlockDestructor(HKHubArchJITBlock *Block)
     HKHubArchJITDeallocateExecutable((void*)Block->code, HK_HUB_ARCH_JIT_BLOCK_SIZE);
 }
 
-static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph, _Bool Cache)
+static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph, HKHubArchJITOptions Options)
 {
+    const _Bool Cache = Options & HKHubArchJITOptionsCache;
     for (size_t Loop = 0, Count = CCArrayGetCount(Graph->block); Loop < Count; Loop++)
     {
         CCLinkedList(HKHubArchExecutionGraphInstruction) Instruction = *(CCLinkedList*)CCArrayGetElementAtIndex(Graph->block, Loop);
@@ -120,7 +121,7 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
                 HKHubArchJITBlock Block = { .code = (uintptr_t)Ptr, .map = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchJITBlockRelativeEntry), 4), .cached = Cache };
                 
 #if CC_HARDWARE_ARCH_X86_64
-                const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, Instruction, 0);
+                const _Bool Generated = HKHubArchJITGenerateBlock(JIT, &Block, Ptr, Instruction, Options);
 #endif
                 
                 if (Generated)
@@ -185,7 +186,7 @@ void HKHubArchJITBlockReferenceEntryElementDestructor(CCDictionary Dictionary, H
     CCFree(Element->block);
 }
 
-HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph, _Bool Cache)
+HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph, HKHubArchJITOptions Options)
 {
     CCAssertLog(Graph, "Graph must not be null");
     
@@ -200,7 +201,7 @@ HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGra
             })
         };
         
-        HKHubArchJITGenerate(JIT, Graph, Cache);
+        HKHubArchJITGenerate(JIT, Graph, Options);
         
         CCMemorySetDestructor(JIT, (CCMemoryDestructorCallback)HKHubArchJITDestructor);
     }

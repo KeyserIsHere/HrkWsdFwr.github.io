@@ -551,5 +551,5 @@ void HKHubArchProcessorCache(HKHubArchProcessor Processor)
     HKHubArchProcessorCacheReset(Processor);
     
     Processor->cache.graph = HKHubArchExecutionGraphCreate(CC_STD_ALLOCATOR, Processor->memory, Processor->state.pc);
-    Processor->cache.jit = HKHubArchJITCreate(CC_STD_ALLOCATOR, Processor->cache.graph, TRUE);
+    Processor->cache.jit = HKHubArchJITCreate(CC_STD_ALLOCATOR, Processor->cache.graph, 0);
 }

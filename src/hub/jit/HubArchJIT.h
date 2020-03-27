@@ -30,7 +30,10 @@
 #include "HubArchExecutionGraph.h"
 
 typedef enum {
-	HKHubArchJITOptionsWatchMemory = (1 << 0)
+    /// Indicate that the jit block should watch for memory writes and invalidate them.
+	HKHubArchJITOptionsWatchMemory = (1 << 0),
+    /// Indicate that the jit block should be cached.
+    HKHubArchJITOptionsCache = (1 << 1)
 } HKHubArchJITOptions;
 
 typedef struct {
@@ -64,10 +67,10 @@ typedef HKHubArchJITInfo *HKHubArchJIT;
  * @brief Create a JIT native block of executable code for the graph.
  * @param Allocator The allocator to be used.
  * @param Graph The instruction graph.
- * @param Cache Whether the jit block should be cached or not.
+ * @param Options The options to control how the JIT block should be generated.
  * @return The JIT native block. Must be destroyed to free memory.
  */
-CC_NEW HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph, _Bool Cache);
+CC_NEW HKHubArchJIT HKHubArchJITCreate(CCAllocatorType Allocator, HKHubArchExecutionGraph Graph, HKHubArchJITOptions Options);
 
 /*!
  * @brief Destroy a JIT.
