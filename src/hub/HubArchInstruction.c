@@ -185,6 +185,7 @@ static HKHubArchInstructionOperand HKHubArchInstructionResolveOperand(HKHubArchA
                 case HKHubArchAssemblyASTTypeInteger:
                 case HKHubArchAssemblyASTTypeOffset:
                 case HKHubArchAssemblyASTTypeRandom:
+                case HKHubArchAssemblyASTTypeExpression:
                     return HKHubArchInstructionOperandI;
                     
                 case HKHubArchAssemblyASTTypeSymbol:
