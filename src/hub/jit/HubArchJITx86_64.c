@@ -136,6 +136,7 @@ typedef enum {
     HKHubArchJITOpcodeMovMR8 = 0x88,
     HKHubArchJITOpcodeMovMR = 0x89,
     HKHubArchJITOpcodeMovRM8 = 0x8a,
+    HKHubArchJITOpcodeMovRM = 0x8b,
     HKHubArchJITOpcodeArithmeticMI8 = 0x80,
     HKHubArchJITOpcodeArithmeticMIn = 0x81,
     HKHubArchJITOpcodeArithmeticMI = 0x83,
@@ -467,11 +468,12 @@ static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticMI(uint8_t *Ptr,
     Ptr[(*Index)++] = Imm8;
 }
 
-static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticMIn(uint8_t *Ptr, size_t *Index, HKHubArchJITArithmetic Type, HKHubArchJITRegister Reg, uint64_t Imm64)
+static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticMIn(uint8_t *Ptr, size_t *Index, HKHubArchJITArithmetic Type, HKHubArchJITRegister Reg, uint32_t Imm32)
 {
     Ptr[(*Index)++] = HKHubArchJITOpcodeArithmeticMIn;
     Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, Type, Reg);
-    Ptr[(*Index)++] = Imm64;
+    *(uint32_t*)&Ptr[*Index] = Imm32;
+    *Index += 4;
 }
 
 static CC_FORCE_INLINE void HKHubArchJITAddInstructionBitAdjustMI8(uint8_t *Ptr, size_t *Index, HKHubArchJITBitAdjust Type, HKHubArchJITRegister Reg, uint8_t Imm8)
@@ -520,7 +522,7 @@ static CC_FORCE_INLINE void HKHubArchJITAddInstructionArithmeticM8(uint8_t *Ptr,
 
 static CC_FORCE_INLINE void HKHubArchJITAddInstructionCall(uint8_t *Ptr, size_t *Index, uintptr_t Address, HKHubArchJITRegister Reg)
 {
-    ptrdiff_t Rel = (ptrdiff_t)(Ptr - Address);
+    ptrdiff_t Rel = (Address - (ptrdiff_t)(Ptr + *Index)) - 5;
     if ((Rel < INT32_MIN) || (Rel > INT32_MAX))
     {
         HKHubArchJITAddInstructionMovOI64(Ptr, Index, Reg, Address);
@@ -648,12 +650,16 @@ static void HKHubArchJITCheckMemoryAccess(uint8_t *Ptr, size_t *Index, const HKH
                 HKHubArchJITAddInstructionMovMR(Ptr, Index, HKHubArchJITRegisterRSI, Offset);
             }
             
-            HKHubArchJITAddInstructionArithmeticMIn(Ptr, Index, HKHubArchJITArithmeticAdd, HKHubArchJITRegisterRDI, offsetof(HKHubArchProcessorInfo, cache.jit) - offsetof(HKHubArchProcessorInfo, memory));
+            Ptr[(*Index)++] = HKHubArchJITRexW;
+            Ptr[(*Index)++] = HKHubArchJITOpcodeMovRM;
+            Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterRDI, HKHubArchJITRegisterCompatibilityMemory);
+            *(int32_t*)&Ptr[*Index] = (int32_t)(offsetof(HKHubArchProcessorInfo, cache.jit) - offsetof(HKHubArchProcessorInfo, memory));
+            *Index += 4;
             
             Ptr[(*Index)++] = HKHubArchJITRexW;
             HKHubArchJITAddInstructionXorMR(Ptr, Index, HKHubArchJITRegisterRDX, HKHubArchJITRegisterRDX);
             Ptr[(*Index)++] = HKHubArchJITOpcodeOneOpBranchM;
-            Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITOneOpBranchInc, HKHubArchJITRegisterRDX);
+            Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModRegister, HKHubArchJITOneOpBranchInc, HKHubArchJITRegisterEDX);
             
             HKHubArchJITAddInstructionCall(Ptr, Index, (uintptr_t)HKHubArchJITInvalidateBlocks, HKHubArchJITRegisterRAX);
             
