@@ -5068,4 +5068,103 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     HKHubArchProcessorDestroy(Processor);
 }
 
+-(void) testAutoInvalidation
+{
+    const char *Source =
+        "mov r0, 5\n"
+        "or [Modify], 4 << 2\n"
+        "Modify:\n"
+        "add r0, 1\n"
+        "add r0, 2\n"
+        "hlt\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchExecutionGraph Graph = HKHubArchExecutionGraphCreate(CC_STD_ALLOCATOR, Binary->data, Binary->entrypoint);
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    
+    HKHubArchJIT JIT = HKHubArchJITCreate(CC_STD_ALLOCATOR, Graph, 0);
+    
+    HKHubArchProcessorSetCycles(Processor, 100);
+    
+    for (size_t PrevCycles = 0; PrevCycles != Processor->cycles; )
+    {
+        PrevCycles = Processor->cycles;
+        HKHubArchJITCall(JIT, Processor);
+    }
+    
+    XCTAssertEqual(Processor->state.pc, 13, "Should have the correct value");
+    XCTAssertEqual(Processor->cycles, 79, "Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 8, "Should have the correct value");
+    
+    HKHubArchJITDestroy(JIT);
+    
+    
+    JIT = HKHubArchJITCreate(CC_STD_ALLOCATOR, Graph, 0);
+    
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 100);
+    
+    for (size_t PrevCycles = 0; PrevCycles != Processor->cycles; )
+    {
+        PrevCycles = Processor->cycles;
+        HKHubArchJITCall(JIT, Processor);
+    }
+    
+    XCTAssertEqual(Processor->state.pc, 13, "Should have the correct value");
+    XCTAssertEqual(Processor->cycles, 79, "Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 8, "Should have the correct value");
+    
+    HKHubArchJITDestroy(JIT);
+    
+    
+    JIT = HKHubArchJITCreate(CC_STD_ALLOCATOR, Graph, HKHubArchJITOptionsWatchMemory);
+    
+    Processor->cache.jit = JIT;
+    Processor->state.pc = 0;
+    HKHubArchProcessorSetCycles(Processor, 100);
+    
+    for (size_t PrevCycles = 0; PrevCycles != Processor->cycles; )
+    {
+        PrevCycles = Processor->cycles;
+        HKHubArchJITCall(JIT, Processor);
+    }
+    
+    XCTAssertEqual(Processor->state.pc, 7, "Should have the correct value");
+    XCTAssertEqual(Processor->cycles, 89, "Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 5, "Should have the correct value");
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModePause);
+    HKHubArchProcessorStep(Processor, 1);
+    HKHubArchProcessorRun(Processor);
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    
+    XCTAssertEqual(Processor->state.pc, 10, "Should have the correct value");
+    XCTAssertEqual(Processor->cycles, 84, "Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 4, "Should have the correct value");
+    
+    for (size_t PrevCycles = 0; PrevCycles != Processor->cycles; )
+    {
+        PrevCycles = Processor->cycles;
+        HKHubArchJITCall(JIT, Processor);
+    }
+    
+    XCTAssertEqual(Processor->state.pc, 13, "Should have the correct value");
+    XCTAssertEqual(Processor->cycles, 79, "Should have the correct value");
+    XCTAssertEqual(Processor->state.r[0], 6, "Should have the correct value");
+    
+    Processor->cache.jit = NULL;
+    HKHubArchJITDestroy(JIT);
+    
+    HKHubArchExecutionGraphDestroy(Graph);
+    
+    HKHubArchProcessorDestroy(Processor);
+    HKHubArchBinaryDestroy(Binary);
+}
+
 @end
