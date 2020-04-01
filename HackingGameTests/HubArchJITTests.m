@@ -4989,6 +4989,39 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
 }
 
+-(void) testPartials
+{
+    const char *Sources[] = {
+        "mov r1, 1\n"
+        "add r1, r1\n"
+        "jmp 4\n"
+        ".byte 2 << 2\n"
+        "mov r2, 2\n"
+        "hlt\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0\n"
+        "mov r2, 3\n"
+        "hlt\n",
+        
+        "mov r1, -1\n"
+        "add r1, r1\n"
+        "jmp 4\n"
+        ".byte 2 << 2\n"
+        "mov r2, 2\n"
+        "hlt\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0\n"
+        "mov r2, 3\n"
+        "hlt\n"
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
+}
+
 -(void) testInvalidation
 {
     const char *Source =
