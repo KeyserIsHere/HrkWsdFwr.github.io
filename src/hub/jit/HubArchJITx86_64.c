@@ -650,11 +650,22 @@ static void HKHubArchJITCheckMemoryAccess(uint8_t *Ptr, size_t *Index, const HKH
                 HKHubArchJITAddInstructionMovMR(Ptr, Index, HKHubArchJITRegisterRSI, Offset);
             }
             
+            const int32_t JitField = (int32_t)(offsetof(HKHubArchProcessorInfo, cache.jit) - offsetof(HKHubArchProcessorInfo, memory));
+            
             Ptr[(*Index)++] = HKHubArchJITRexW;
             Ptr[(*Index)++] = HKHubArchJITOpcodeMovRM;
-            Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterRDI, HKHubArchJITRegisterCompatibilityMemory);
-            *(int32_t*)&Ptr[*Index] = (int32_t)(offsetof(HKHubArchProcessorInfo, cache.jit) - offsetof(HKHubArchProcessorInfo, memory));
-            *Index += 4;
+            if ((JitField < INT8_MIN) || (JitField > INT8_MAX))
+            {
+                Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp32, HKHubArchJITRegisterRDI, HKHubArchJITRegisterCompatibilityMemory);
+                *(int32_t*)&Ptr[*Index] = JitField;
+                *Index += 4;
+            }
+            
+            else
+            {
+                Ptr[(*Index)++] = HKHubArchJITModRM(HKHubArchJITModAddressDisp8, HKHubArchJITRegisterRDI, HKHubArchJITRegisterCompatibilityMemory);
+                *(int8_t*)&Ptr[(*Index)++] = (int8_t)JitField;
+            }
             
             Ptr[(*Index)++] = HKHubArchJITRexW;
             HKHubArchJITAddInstructionXorMR(Ptr, Index, HKHubArchJITRegisterRDX, HKHubArchJITRegisterRDX);
