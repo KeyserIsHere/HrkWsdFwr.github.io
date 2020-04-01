@@ -396,7 +396,7 @@ void HKHubProcessorComponentDeserializer(CCComponent Component, CCExpression Arg
                             {
                                 if (CCExpressionGetInteger(JITExpr))
                                 {
-                                    HKHubArchProcessorCache(Processor);
+                                    HKHubArchProcessorCache(Processor, 0);
                                 }
                             }
                             

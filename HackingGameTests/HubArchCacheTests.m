@@ -60,7 +60,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 2, @"Should have the correct number of execution ranges");
     
@@ -196,7 +196,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 2, @"Should have the correct number of execution ranges");
     
@@ -295,7 +295,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 2, @"Should have the correct number of execution ranges");
     
@@ -392,7 +392,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
@@ -483,7 +483,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
@@ -573,7 +573,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
@@ -664,7 +664,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
@@ -770,7 +770,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
@@ -876,7 +876,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     
@@ -980,7 +980,7 @@
     
     HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
     
-    HKHubArchProcessorCache(Processor);
+    HKHubArchProcessorCache(Processor, 0);
     
     XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
     

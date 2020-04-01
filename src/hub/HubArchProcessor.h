@@ -281,8 +281,9 @@ void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor);
 /*!
  * @brief Generate the execution cache for the processor.
  * @param Processor The processor to create the execution cache of.
+ * @param Options The options to control how the JIT should be generated.
  */
-void HKHubArchProcessorCache(HKHubArchProcessor Processor);
+void HKHubArchProcessorCache(HKHubArchProcessor Processor, HKHubArchJITOptions Options);
 
 /*!
  * @brief Whether the processor can continue to be executed or not.

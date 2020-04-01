@@ -52,7 +52,7 @@
 
 -(void) testMultiplyingAllInputs
 {
-    HKHubArchProcessorCache(self.processor);
+    HKHubArchProcessorCache(self.processor, 0);
     
     for (uint32_t a = 0; a < 256; a++)
     {

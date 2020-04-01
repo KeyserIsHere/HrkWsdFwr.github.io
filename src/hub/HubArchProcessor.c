@@ -544,12 +544,12 @@ void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor)
     }
 }
 
-void HKHubArchProcessorCache(HKHubArchProcessor Processor)
+void HKHubArchProcessorCache(HKHubArchProcessor Processor, HKHubArchJITOptions Options)
 {
     CCAssertLog(Processor, "Processor must not be null");
     
     HKHubArchProcessorCacheReset(Processor);
     
     Processor->cache.graph = HKHubArchExecutionGraphCreate(CC_STD_ALLOCATOR, Processor->memory, Processor->state.pc);
-    Processor->cache.jit = HKHubArchJITCreate(CC_STD_ALLOCATOR, Processor->cache.graph, 0);
+    Processor->cache.jit = HKHubArchJITCreate(CC_STD_ALLOCATOR, Processor->cache.graph, Options);
 }
