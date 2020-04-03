@@ -1052,4 +1052,178 @@
     HKHubArchProcessorDestroy(Processor);
 }
 
+-(void) testPartialFlow
+{
+    const char *Source =
+        "mov r1, 1\n"
+        "add r1, r1\n"
+        "jmp 4\n"
+        ".byte 2 << 2\n"
+        "mov r2, 2\n"
+        "hlt\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n"
+        ".byte 0,0,0,0,0,0,0\n"
+        "mov r2, 3\n"
+        "hlt\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    
+    HKHubArchProcessorCache(Processor, 0);
+    
+//    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->range), 1, @"Should have the correct number of execution ranges");
+    
+//    HKHubArchExecutionGraphRange *Range = CCArrayGetElementAtIndex(Processor->cache.graph->range, 0);
+//    XCTAssertEqual(Range->start, 0, @"Should have the correct start");
+//    XCTAssertEqual(Range->count, 255, @"Should have the correct count");
+    
+    XCTAssertEqual(CCArrayGetCount(Processor->cache.graph->block), 1, @"Should have the correct number of execution paths");
+    
+    CCLinkedListNode *Node = *(CCLinkedListNode**)CCArrayGetElementAtIndex(Processor->cache.graph->block, 0);
+    XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+    if (Node)
+    {
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+        XCTAssertEqual(GraphNode->offset, 0, @"Should have the correct offset");
+        XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
+        
+        CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+        XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("mov r1,0x01")), @"Should have the correct instruction");
+        CCStringDestroy(Instruction);
+    }
+    
+    Node = CCLinkedListEnumerateNext(Node);
+    XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+    if (Node)
+    {
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+        XCTAssertEqual(GraphNode->offset, 3, @"Should have the correct offset");
+        XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
+        
+        CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+        XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("add r1,r1")), @"Should have the correct instruction");
+        CCStringDestroy(Instruction);
+    }
+    
+    Node = CCLinkedListEnumerateNext(Node);
+    XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+    if (Node)
+    {
+        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+        XCTAssertEqual(GraphNode->offset, 5, @"Should have the correct offset");
+        XCTAssertNotEqual(GraphNode->jump, NULL, @"Should jump to another node");
+        
+        CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+        XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("jmp 0xff")), @"Should have the correct instruction");
+        CCStringDestroy(Instruction);
+        
+        {
+            CCLinkedListNode *Node = GraphNode->jump;
+            XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+            if (Node)
+            {
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+                XCTAssertEqual(GraphNode->offset, 4, @"Should have the correct offset");
+                XCTAssertNotEqual(GraphNode->jump, NULL, @"Should jump to another node");
+                
+                CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+                XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("jsl 0x3f")), @"Should have the correct instruction");
+                CCStringDestroy(Instruction);
+                
+                {
+                    CCLinkedListNode *Node = GraphNode->jump;
+                    XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+                    if (Node)
+                    {
+                        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+                        XCTAssertEqual(GraphNode->offset, 0x43, @"Should have the correct offset");
+                        XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
+                        
+                        CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+                        XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("mov r2,0x03")), @"Should have the correct instruction");
+                        CCStringDestroy(Instruction);
+                    }
+                    
+                    Node = CCLinkedListEnumerateNext(Node);
+                    XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+                    if (Node)
+                    {
+                        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+                        XCTAssertEqual(GraphNode->offset, 0x46, @"Should have the correct offset");
+                        XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
+                        
+                        CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+                        XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("hlt")), @"Should have the correct instruction");
+                        CCStringDestroy(Instruction);
+                    }
+                    
+                    Node = CCLinkedListEnumerateNext(Node);
+                    XCTAssertEqual(Node, NULL, @"Should not have another graph node");
+                }
+            }
+            
+            Node = CCLinkedListEnumerateNext(Node);
+            XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+            if (Node)
+            {
+                const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+                XCTAssertEqual(GraphNode->offset, 6, @"Should have the correct offset");
+                XCTAssertNotEqual(GraphNode->jump, NULL, @"Should jump to another node");
+                
+                CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+                XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("jmp 0x02")), @"Should have the correct instruction");
+                CCStringDestroy(Instruction);
+                
+                {
+                    CCLinkedListNode *Node = GraphNode->jump;
+                    XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+                    if (Node)
+                    {
+                        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+                        XCTAssertEqual(GraphNode->offset, 8, @"Should have the correct offset");
+                        XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
+                        
+                        CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+                        XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("mov r2,0x02")), @"Should have the correct instruction");
+                        CCStringDestroy(Instruction);
+                    }
+                    
+                    Node = CCLinkedListEnumerateNext(Node);
+                    XCTAssertNotEqual(Node, NULL, @"Should have the correct graph node");
+                    if (Node)
+                    {
+                        const HKHubArchExecutionGraphInstruction *GraphNode = CCLinkedListGetNodeData(Node);
+                        XCTAssertEqual(GraphNode->offset, 0x0b, @"Should have the correct offset");
+                        XCTAssertEqual(GraphNode->jump, NULL, @"Should not jump to another node");
+                        
+                        CCString Instruction = HKHubArchInstructionDisassemble(&GraphNode->state);
+                        XCTAssertTrue(CCStringEqual(Instruction, CC_STRING("hlt")), @"Should have the correct instruction");
+                        CCStringDestroy(Instruction);
+                    }
+                    
+                    Node = CCLinkedListEnumerateNext(Node);
+                    XCTAssertEqual(Node, NULL, @"Should not have another graph node");
+                }
+            }
+            
+            Node = CCLinkedListEnumerateNext(Node);
+            XCTAssertEqual(Node, NULL, @"Should not have another graph node");
+        }
+    }
+    
+    Node = CCLinkedListEnumerateNext(Node);
+    XCTAssertEqual(Node, NULL, @"Should not have another graph node");
+    
+    HKHubArchBinaryDestroy(Binary);
+    HKHubArchProcessorDestroy(Processor);
+}
+
 @end
