@@ -25,6 +25,7 @@
 
 #include "HubArchJIT.h"
 #include "HubArchProcessor.h"
+#include "HubArchInstruction.h"
 
 #if CC_PLATFORM_OS_X
 #include <mach/mach.h>
@@ -106,7 +107,7 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
                 const HKHubArchJITBlockRelativeEntry *Entry = CCArrayGetElementAtIndex(CachedBlock->map, Loop);
                 for ( ; Entry->index != Index; Index++) Instruction = CCLinkedListEnumerateNext(Instruction);
                 
-                CCDictionarySetValue(JIT->map, &(uint8_t){ ((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->offset }, &(HKHubArchJITBlockReferenceEntry){ .entry = Entry->entry, .block = CCRetain(CachedBlock) });
+                CCDictionarySetValue(JIT->map, &(uint8_t){ ((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->offset }, &(HKHubArchJITBlockReferenceEntry){ .entry = Entry->entry, .block = CCRetain(CachedBlock), .size = HKHubArchInstructionSizeOfEncoding(&((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->state) });
             }
             
             CCFree(CachedBlock);
@@ -153,7 +154,7 @@ static void HKHubArchJITGenerate(HKHubArchJIT JIT, HKHubArchExecutionGraph Graph
                             if (Cache) CCArrayAppendElement(Instructions, &((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->state);
                         }
                         
-                        CCDictionarySetValue(JIT->map, &(uint8_t){ ((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->offset }, &(HKHubArchJITBlockReferenceEntry){ .entry = Entry->entry, .block = CCRetain(CachedBlock) });
+                        CCDictionarySetValue(JIT->map, &(uint8_t){ ((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->offset }, &(HKHubArchJITBlockReferenceEntry){ .entry = Entry->entry, .block = CCRetain(CachedBlock), .size = HKHubArchInstructionSizeOfEncoding(&((HKHubArchExecutionGraphInstruction*)CCLinkedListGetNodeData(Instruction))->state) });
                     }
                     
                     if (Cache)
@@ -227,6 +228,23 @@ void HKHubArchJITInvalidateBlocks(HKHubArchJIT JIT, uint8_t Offset, size_t Size)
     {
         CCDictionaryEntry Entry = CCDictionaryFindKey(JIT->map, &(uint8_t){ Offset + Loop });
         const HKHubArchJITBlockReferenceEntry *Ref = CCDictionaryGetEntry(JIT->map, Entry);
+        
+        /*
+         TODO: Refactor graph and jit lookup
+         */
+        if ((!Loop) && (!Ref))
+        {
+            for (size_t Attempts = 0; Attempts < 5; Attempts++)
+            {
+                Entry = CCDictionaryFindKey(JIT->map, &(uint8_t){ Offset - Attempts });
+                Ref = CCDictionaryGetEntry(JIT->map, Entry);
+                if ((Ref) && (Offset < (Offset - Attempts) + Ref->size)) break;
+                
+                Ref = NULL;
+            }
+        }
+        
+        if (!Ref) continue;
         
         if (Ref->block->cached)
         {

@@ -50,6 +50,7 @@ typedef struct {
 typedef struct {
     uintptr_t entry;
     HKHubArchJITBlock *block;
+    uint8_t size;
 } HKHubArchJITBlockReferenceEntry;
 
 typedef struct {
