@@ -28,14 +28,17 @@
 
 #include "Base.h"
 
-typedef enum {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wflag-enum"
+typedef CC_FLAG_ENUM(HKHubArchInstructionOperand, uint8_t) {
     HKHubArchInstructionOperandNA = (1 << 0),
     HKHubArchInstructionOperandI = (1 << 1),
     HKHubArchInstructionOperandR = (1 << 2),
     HKHubArchInstructionOperandM = (1 << 3),
     HKHubArchInstructionOperandRM = HKHubArchInstructionOperandR | HKHubArchInstructionOperandM,
     HKHubArchInstructionOperandRel = (1 << 4) | HKHubArchInstructionOperandI
-} HKHubArchInstructionOperand;
+};
+#pragma clang diagnostic pop
 
 typedef enum {
     HKHubArchInstructionMemoryOperationMask = 3,
@@ -90,7 +93,7 @@ typedef enum {
     HKHubArchInstructionMemoryOperationBBB = HKHubArchInstructionMemoryOperationBBS | HKHubArchInstructionMemoryOperationBBD
 } HKHubArchInstructionMemoryOperation;
 
-typedef enum {
+typedef CC_FLAG_ENUM(HKHubArchInstructionControlFlow, uint8_t) {
     HKHubArchInstructionControlFlowEvaluationMask = 1,
     HKHubArchInstructionControlFlowEvaluationUnconditional = (0 << 0),
     HKHubArchInstructionControlFlowEvaluationConditional = (1 << 0),
@@ -100,9 +103,9 @@ typedef enum {
     HKHubArchInstructionControlFlowEffectBranch = (1 << 1),
     HKHubArchInstructionControlFlowEffectPause = (2 << 1),
     HKHubArchInstructionControlFlowEffectIO = (3 << 1)
-} HKHubArchInstructionControlFlow;
+};
 
-typedef enum {
+typedef CC_FLAG_ENUM(HKHubArchInstructionRegister, uint8_t) {
     HKHubArchInstructionRegisterSpecialPurpose = (1 << 1),
     HKHubArchInstructionRegisterGeneralPurpose = (1 << 2),
     HKHubArchInstructionRegisterGeneralPurposeIndexMask = 3,
@@ -115,14 +118,14 @@ typedef enum {
     
     HKHubArchInstructionRegisterFlags = 0 | HKHubArchInstructionRegisterSpecialPurpose,
     HKHubArchInstructionRegisterPC = 1 | HKHubArchInstructionRegisterSpecialPurpose
-} HKHubArchInstructionRegister;
+};
 
-typedef enum {
+typedef CC_ENUM(HKHubArchInstructionMemory, uint8_t) {
     HKHubArchInstructionMemoryOffset,           //[0]
     HKHubArchInstructionMemoryRegister,         //[r0]
     HKHubArchInstructionMemoryRelativeOffset,   //[r0+0]
     HKHubArchInstructionMemoryRelativeRegister  //[r0+r0]
-} HKHubArchInstructionMemory;
+};
 
 typedef struct {
     HKHubArchInstructionOperand type; //HKHubArchInstructionOperandNA or HKHubArchInstructionOperandI or HKHubArchInstructionOperandR or HKHubArchInstructionOperandM
