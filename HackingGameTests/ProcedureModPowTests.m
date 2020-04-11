@@ -72,6 +72,8 @@ static int PowMod(int b, int e, int m)
 
 -(void) testAllInputs
 {
+    HKHubArchProcessorCache(self.processor, HKHubArchJITOptionsWatchMemory);
+    
     for (uint32_t b = 0; b < 256; b++)
     {
         for (uint32_t e = 0; e < 256; e++)
