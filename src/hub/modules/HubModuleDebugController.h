@@ -28,6 +28,10 @@
 
 #include "HubModule.h"
 
+#if DEBUG
+extern size_t HKHubModuleDebugControllerEventBufferMax;
+#endif
+
 /*!
  * @brief Create a debug controller module.
  * @param Allocator The allocator to be used.

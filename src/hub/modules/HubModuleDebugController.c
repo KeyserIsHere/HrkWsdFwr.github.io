@@ -1,0 +1,130 @@
+/*
+ *  Copyright (c) 2020, Stefan Johnson
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice, this list
+ *     of conditions and the following disclaimer.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this
+ *     list of conditions and the following disclaimer in the documentation and/or other
+ *     materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "HubModuleDebugController.h"
+#include "HubArchProcessor.h"
+
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX 100
+
+#if DEBUG
+size_t HKHubModuleDebugControllerEventBufferMax = HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX;
+#undef HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX HKHubModuleDebugControllerEventBufferMax
+#endif
+
+typedef enum {
+    HKHubModuleDebugControllerDeviceEventTypePause,
+    HKHubModuleDebugControllerDeviceEventTypeRun,
+    HKHubModuleDebugControllerDeviceEventTypeChangeBreakpoint,
+    HKHubModuleDebugControllerDeviceEventTypeChangePortConnection,
+    HKHubModuleDebugControllerDeviceEventTypeExecutedOperation,
+    HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
+    HKHubModuleDebugControllerDeviceEventTypeModifyMemory,
+    HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
+} HKHubModuleDebugControllerDeviceEventType;
+
+typedef struct {
+    HKHubModuleDebugControllerDeviceEventType type;
+    size_t device;
+    union {
+        struct {
+            uint8_t offset;
+            HKHubArchProcessorDebugBreakpoint access;
+        } breakpoint;
+        struct {
+            struct {
+                size_t device;
+                uint8_t port;
+            } target;
+            uint8_t port;
+        } connection;
+        uint8_t instruction[5];
+        HKHubArchInstructionRegister reg;
+        struct {
+            uint8_t offset;
+            uint8_t size;
+        } memory;
+        CCArray(uint8_t) data; //TODO: union of 8/ptr size uint8_t's, or the array of uint8_t's to avoid allocations on small data
+    };
+} HKHubModuleDebugControllerDeviceEvent;
+
+CC_ARRAY_DECLARE(HKHubModuleDebugControllerDeviceEvent);
+
+typedef struct {
+    CCArray(HKHubModuleDebugControllerDeviceEvent) buffer;
+    size_t count;
+} HKHubModuleDebugControllerDeviceEventBuffer;
+
+CC_ARRAY_DECLARE(HKHubModuleDebugControllerDeviceEventBuffer);
+
+typedef struct {
+    size_t index;
+} HKHubModuleDebugControllerEventState;
+
+typedef struct {
+    CCArray(HKHubModuleDebugControllerDeviceEventBuffer) events;
+    HKHubModuleDebugControllerEventState eventPortState[128];
+} HKHubModuleDebugControllerState;
+
+static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugControllerState *State)
+{
+    if (State->events)
+    {
+        for (size_t Loop = 0, Count = CCArrayGetCount(State->events); Loop < Count; Loop++)
+        {
+            HKHubModuleDebugControllerDeviceEventBuffer *Events = CCArrayGetElementAtIndex(State->events, Loop);
+            
+            for (size_t Loop2 = 0, Count2 = CCArrayGetCount(Events->buffer); Loop2 < Count2; Loop2++)
+            {
+                HKHubModuleDebugControllerDeviceEvent *Event = CCArrayGetElementAtIndex(Events->buffer, Loop2);
+                if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
+                {
+                    if (Event->data) CCArrayDestroy(Event->data);
+                }
+            }
+            
+            CCArrayDestroy(Events->buffer);
+        }
+        
+        CCArrayDestroy(State->events);
+    }
+    
+    CCFree(State);
+}
+
+HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
+{
+    HKHubModuleDebugControllerState *State = CCMalloc(Allocator, sizeof(HKHubModuleDebugControllerState), NULL, CC_DEFAULT_ERROR_CALLBACK);
+    if (State)
+    {
+        memset(State, 0, sizeof(*State));
+        
+        return HKHubModuleCreate(Allocator, NULL, NULL, State, (HKHubModuleDataDestructor)HKHubModuleDebugControllerStateDestructor, NULL);
+    }
+    
+    else CC_LOG_ERROR("Failed to create debug controller module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleDebugControllerState));
+    
+    return NULL;
+}
