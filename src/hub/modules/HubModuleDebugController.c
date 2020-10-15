@@ -77,38 +77,55 @@ typedef struct {
     size_t count;
 } HKHubModuleDebugControllerDeviceEventBuffer;
 
-CC_ARRAY_DECLARE(HKHubModuleDebugControllerDeviceEventBuffer);
+typedef enum {
+    HKHubModuleDebugControllerDeviceTypeProcessor,
+    HKHubModuleDebugControllerDeviceTypeModule
+} HKHubModuleDebugControllerDeviceType;
+
+typedef struct {
+    HKHubModuleDebugControllerDeviceType type;
+    union {
+        HKHubArchProcessor processor;
+        HKHubModule module;
+    };
+    HKHubModuleDebugControllerDeviceEventBuffer events;
+} HKHubModuleDebugControllerDevice;
+
+CC_ARRAY_DECLARE(HKHubModuleDebugControllerDevice);
 
 typedef struct {
     size_t index;
 } HKHubModuleDebugControllerEventState;
 
 typedef struct {
-    CCArray(HKHubModuleDebugControllerDeviceEventBuffer) events;
+    CCArray(HKHubModuleDebugControllerDevice) devices;
     HKHubModuleDebugControllerEventState eventPortState[128];
 } HKHubModuleDebugControllerState;
 
 static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugControllerState *State)
 {
-    if (State->events)
+    if (State->devices)
     {
-        for (size_t Loop = 0, Count = CCArrayGetCount(State->events); Loop < Count; Loop++)
+        for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
         {
-            HKHubModuleDebugControllerDeviceEventBuffer *Events = CCArrayGetElementAtIndex(State->events, Loop);
+            HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Loop);
             
-            for (size_t Loop2 = 0, Count2 = CCArrayGetCount(Events->buffer); Loop2 < Count2; Loop2++)
+            if (Device->events.buffer)
             {
-                HKHubModuleDebugControllerDeviceEvent *Event = CCArrayGetElementAtIndex(Events->buffer, Loop2);
-                if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
+                for (size_t Loop2 = 0, Count2 = CCArrayGetCount(Device->events.buffer); Loop2 < Count2; Loop2++)
                 {
-                    if (Event->data) CCArrayDestroy(Event->data);
+                    HKHubModuleDebugControllerDeviceEvent *Event = CCArrayGetElementAtIndex(Device->events.buffer, Loop2);
+                    if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
+                    {
+                        if (Event->data) CCArrayDestroy(Event->data);
+                    }
                 }
             }
             
-            CCArrayDestroy(Events->buffer);
+            CCArrayDestroy(Device->events.buffer);
         }
         
-        CCArrayDestroy(State->events);
+        CCArrayDestroy(State->devices);
     }
     
     CCFree(State);
