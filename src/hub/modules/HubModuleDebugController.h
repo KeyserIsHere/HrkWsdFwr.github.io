@@ -27,6 +27,7 @@
 #define HackingGame_HubModuleDebugController_h
 
 #include "HubModule.h"
+#include "HubArchProcessor.h"
 
 #if DEBUG
 extern size_t HKHubModuleDebugControllerEventBufferMax;
@@ -38,5 +39,33 @@ extern size_t HKHubModuleDebugControllerEventBufferMax;
  * @return The debug controller module. Must be destroyed to free memory.
  */
 CC_NEW HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator);
+
+/*!
+ * @brief Connect the debug controller to the processor.
+ * @param Controller The debug controller.
+ * @param Processor The processor to be connected to.
+ */
+void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor);
+
+/*!
+ * @brief Disconnect the debug controller from the processor.
+ * @param Controller The debug controller.
+ * @param Processor The processor to be disconnected from.
+ */
+void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor);
+
+/*!
+ * @brief Connect the debug controller to the module.
+ * @param Controller The debug controller.
+ * @param Module The module to be connected to.
+ */
+void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule Module);
+
+/*!
+ * @brief Disconnect the debug controller from the processor.
+ * @param Controller The debug controller.
+ * @param Module The module to be disconnected from.
+ */
+void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubModule Module);
 
 #endif

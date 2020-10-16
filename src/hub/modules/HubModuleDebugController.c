@@ -24,7 +24,6 @@
  */
 
 #include "HubModuleDebugController.h"
-#include "HubArchProcessor.h"
 
 #define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX 100
 
