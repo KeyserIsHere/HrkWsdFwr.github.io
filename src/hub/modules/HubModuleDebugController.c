@@ -77,6 +77,7 @@ typedef struct {
 } HKHubModuleDebugControllerDeviceEventBuffer;
 
 typedef enum {
+    HKHubModuleDebugControllerDeviceTypeNone,
     HKHubModuleDebugControllerDeviceTypeProcessor,
     HKHubModuleDebugControllerDeviceTypeModule
 } HKHubModuleDebugControllerDeviceType;
@@ -103,30 +104,26 @@ typedef struct {
 
 static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugControllerState *State)
 {
-    if (State->devices)
+    for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
     {
-        for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
+        HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Loop);
+        
+        if (Device->events.buffer)
         {
-            HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Loop);
-            
-            if (Device->events.buffer)
+            for (size_t Loop2 = 0, Count2 = CCArrayGetCount(Device->events.buffer); Loop2 < Count2; Loop2++)
             {
-                for (size_t Loop2 = 0, Count2 = CCArrayGetCount(Device->events.buffer); Loop2 < Count2; Loop2++)
+                HKHubModuleDebugControllerDeviceEvent *Event = CCArrayGetElementAtIndex(Device->events.buffer, Loop2);
+                if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
                 {
-                    HKHubModuleDebugControllerDeviceEvent *Event = CCArrayGetElementAtIndex(Device->events.buffer, Loop2);
-                    if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
-                    {
-                        if (Event->data) CCArrayDestroy(Event->data);
-                    }
+                    if (Event->data) CCArrayDestroy(Event->data);
                 }
             }
-            
-            CCArrayDestroy(Device->events.buffer);
         }
         
-        CCArrayDestroy(State->devices);
+        CCArrayDestroy(Device->events.buffer);
     }
     
+    CCArrayDestroy(State->devices);
     CCFree(State);
 }
 
@@ -137,10 +134,71 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
     {
         memset(State, 0, sizeof(*State));
         
+        State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
+        
         return HKHubModuleCreate(Allocator, NULL, NULL, State, (HKHubModuleDataDestructor)HKHubModuleDebugControllerStateDestructor, NULL);
     }
     
     else CC_LOG_ERROR("Failed to create debug controller module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleDebugControllerState));
     
     return NULL;
+}
+
+void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor)
+{
+    CCAssertLog(Controller, "Controller must not be null");
+    CCAssertLog(Processor, "Processor must not be null");
+    CCAssertLog(!Processor->state.debug.context, "Processor must not already be debugged");
+    
+    HKHubModuleDebugControllerState *State = Controller->internal;
+    CCArrayAppendElement(State->devices, &(HKHubModuleDebugControllerDevice){
+        .type = HKHubModuleDebugControllerDeviceTypeProcessor,
+        .processor = Processor,
+        .events = {
+            .buffer = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubModuleDebugControllerDeviceEvent), 16),
+            .count = 0
+        }
+    });
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModePause);
+    
+    Processor->state.debug.context = Controller;
+    
+//    Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
+//    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
+//    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
+//    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
+    
+    // TODO: add event for connected device
+}
+
+void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor)
+{
+    CCAssertLog(Controller, "Controller must not be null");
+    CCAssertLog(Processor, "Processor must not be null");
+    CCAssertLog(Processor->state.debug.context == Controller, "Processor must connected to the controller");
+    
+    HKHubModuleDebugControllerState *State = Controller->internal;
+    for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
+    {
+        HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Loop);
+        
+        if ((Device->type == HKHubModuleDebugControllerDeviceTypeProcessor) && (Device->processor == Processor))
+        {
+            Device->type = HKHubModuleDebugControllerDeviceTypeNone;
+            Device->processor = NULL;
+            break;
+        }
+    }
+    
+    Processor->state.debug.operation = NULL;
+    Processor->state.debug.portConnectionChange = NULL;
+    Processor->state.debug.breakpointChange = NULL;
+    Processor->state.debug.debugModeChange = NULL;
+    
+    Processor->state.debug.context = NULL;
+    
+    HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    
+    // TODO: add event for disconnected device
 }
