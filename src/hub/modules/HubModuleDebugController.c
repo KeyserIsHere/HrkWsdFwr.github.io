@@ -176,7 +176,7 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Processor, "Processor must not be null");
-    CCAssertLog(Processor->state.debug.context == Controller, "Processor must connected to the controller");
+    CCAssertLog(Processor->state.debug.context == Controller, "Processor must be connected to the controller");
     
     HKHubModuleDebugControllerState *State = Controller->internal;
     for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
@@ -199,6 +199,45 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     Processor->state.debug.context = NULL;
     
     HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
+    
+    // TODO: add event for disconnected device
+}
+
+void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule Module)
+{
+    CCAssertLog(Controller, "Controller must not be null");
+    CCAssertLog(Module, "Module must not be null");
+    
+    HKHubModuleDebugControllerState *State = Controller->internal;
+    CCArrayAppendElement(State->devices, &(HKHubModuleDebugControllerDevice){
+        .type = HKHubModuleDebugControllerDeviceTypeModule,
+        .module = Module,
+        .events = {
+            .buffer = NULL,
+            .count = 0
+        }
+    });
+    
+    // TODO: add event for connected device
+}
+
+void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubModule Module)
+{
+    CCAssertLog(Controller, "Controller must not be null");
+    CCAssertLog(Module, "Module must not be null");
+    
+    HKHubModuleDebugControllerState *State = Controller->internal;
+    for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
+    {
+        HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Loop);
+        
+        if ((Device->type == HKHubModuleDebugControllerDeviceTypeModule) && (Device->module == Module))
+        {
+            Device->type = HKHubModuleDebugControllerDeviceTypeNone;
+            Device->module = NULL;
+            break;
+        }
+    }
     
     // TODO: add event for disconnected device
 }
