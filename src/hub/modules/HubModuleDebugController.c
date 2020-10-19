@@ -102,6 +102,27 @@ typedef struct {
     HKHubModuleDebugControllerEventState eventPortState[128];
 } HKHubModuleDebugControllerState;
 
+static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerDeviceEventBuffer *Events, const HKHubModuleDebugControllerDeviceEvent *Event)
+{
+    if (CCArrayGetCount(Events->buffer) == HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX)
+    {
+        CCArrayAppendElement(Events->buffer, Event);
+        Events->count++;
+    }
+    
+    else
+    {
+        CCArrayReplaceElementAtIndex(Events->buffer, Events->count % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX, Event);
+    }
+}
+
+static HKHubModuleDebugControllerDeviceEvent *HKHubModuleDebugControllerPopEvent(HKHubModuleDebugControllerDeviceEventBuffer *Events, size_t *Index)
+{
+    if ((*Index + HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX) <= Events->count) *Index = Events->count - HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX;
+    
+    return CCArrayGetElementAtIndex(Events->buffer, (*Index)++ % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX);
+}
+
 static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugControllerState *State)
 {
     for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
