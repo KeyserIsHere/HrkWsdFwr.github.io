@@ -42,11 +42,12 @@ typedef enum {
     HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
     HKHubModuleDebugControllerDeviceEventTypeModifyMemory,
     HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
+    HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
+    HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
 } HKHubModuleDebugControllerDeviceEventType;
 
 typedef struct {
     HKHubModuleDebugControllerDeviceEventType type;
-    size_t device;
     union {
         struct {
             uint8_t offset;
@@ -172,7 +173,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
     CCAssertLog(!Processor->state.debug.context, "Processor must not already be debugged");
     
     HKHubModuleDebugControllerState *State = Controller->internal;
-    CCArrayAppendElement(State->devices, &(HKHubModuleDebugControllerDevice){
+    const size_t Index = CCArrayAppendElement(State->devices, &(HKHubModuleDebugControllerDevice){
         .type = HKHubModuleDebugControllerDeviceTypeProcessor,
         .processor = Processor,
         .events = {
@@ -190,7 +191,9 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
-    // TODO: add event for connected device
+    HKHubModuleDebugControllerPushEvent(&((HKHubModuleDebugControllerDevice*)CCArrayGetElementAtIndex(State->devices, Index))->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected
+    });
 }
 
 void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor)
@@ -208,6 +211,10 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
         {
             Device->type = HKHubModuleDebugControllerDeviceTypeNone;
             Device->processor = NULL;
+            
+            HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+                .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
+            });
             break;
         }
     }
@@ -220,8 +227,6 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     Processor->state.debug.context = NULL;
     
     HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
-    
-    // TODO: add event for disconnected device
 }
 
 void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule Module)
@@ -230,7 +235,7 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
     CCAssertLog(Module, "Module must not be null");
     
     HKHubModuleDebugControllerState *State = Controller->internal;
-    CCArrayAppendElement(State->devices, &(HKHubModuleDebugControllerDevice){
+    const size_t Index = CCArrayAppendElement(State->devices, &(HKHubModuleDebugControllerDevice){
         .type = HKHubModuleDebugControllerDeviceTypeModule,
         .module = Module,
         .events = {
@@ -239,7 +244,9 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
         }
     });
     
-    // TODO: add event for connected device
+    HKHubModuleDebugControllerPushEvent(&((HKHubModuleDebugControllerDevice*)CCArrayGetElementAtIndex(State->devices, Index))->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected
+    });
 }
 
 void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubModule Module)
@@ -256,9 +263,11 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
         {
             Device->type = HKHubModuleDebugControllerDeviceTypeNone;
             Device->module = NULL;
+            
+            HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+                .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
+            });
             break;
         }
     }
-    
-    // TODO: add event for disconnected device
 }
