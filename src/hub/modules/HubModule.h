@@ -40,6 +40,9 @@ typedef struct {
     HKHubArchPortTransmit receive;
     HKHubModuleDataDestructor destructor;
     CCData memory;
+    struct {
+        void *context;
+    } debug;
 } HKHubModuleInfo;
 
 
