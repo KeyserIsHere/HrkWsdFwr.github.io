@@ -143,6 +143,27 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
             }
         }
         
+        switch (Device->type)
+        {
+            case HKHubModuleDebugControllerDeviceTypeProcessor:
+                Device->processor->state.debug.operation = NULL;
+                Device->processor->state.debug.portConnectionChange = NULL;
+                Device->processor->state.debug.breakpointChange = NULL;
+                Device->processor->state.debug.debugModeChange = NULL;
+                
+                Device->processor->state.debug.context = NULL;
+                
+                HKHubArchProcessorSetDebugMode(Device->processor, HKHubArchProcessorDebugModeContinue);
+                break;
+                
+            case HKHubModuleDebugControllerDeviceTypeModule:
+                Device->module->debug.context = NULL;
+                break;
+                
+            default:
+                break;
+        }
+        
         CCArrayDestroy(Device->events.buffer);
     }
     
