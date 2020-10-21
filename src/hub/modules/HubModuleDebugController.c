@@ -90,6 +90,7 @@ typedef struct {
         HKHubModule module;
     };
     HKHubModuleDebugControllerDeviceEventBuffer events;
+    HKHubModule controller;
 } HKHubModuleDebugControllerDevice;
 
 CC_ARRAY_DECLARE(HKHubModuleDebugControllerDevice);
@@ -179,19 +180,22 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
         .events = {
             .buffer = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubModuleDebugControllerDeviceEvent), 16),
             .count = 0
-        }
+        },
+        .controller = Controller
     });
     
     HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModePause);
     
-    Processor->state.debug.context = Controller;
+    HKHubModuleDebugControllerDevice * const Device = CCArrayGetElementAtIndex(State->devices, Index);
+    
+    Processor->state.debug.context = Device;
     
 //    Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
 //    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
 //    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
-    HKHubModuleDebugControllerPushEvent(&((HKHubModuleDebugControllerDevice*)CCArrayGetElementAtIndex(State->devices, Index))->events, &(HKHubModuleDebugControllerDeviceEvent){
+    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected
     });
 }
@@ -200,24 +204,15 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Processor, "Processor must not be null");
-    CCAssertLog(Processor->state.debug.context == Controller, "Processor must be connected to the controller");
+    CCAssertLog(Processor->state.debug.context && ((HKHubModuleDebugControllerDevice*)Processor->state.debug.context)->controller == Controller, "Processor must be connected to the controller");
     
-    HKHubModuleDebugControllerState *State = Controller->internal;
-    for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
-    {
-        HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Loop);
-        
-        if ((Device->type == HKHubModuleDebugControllerDeviceTypeProcessor) && (Device->processor == Processor))
-        {
-            Device->type = HKHubModuleDebugControllerDeviceTypeNone;
-            Device->processor = NULL;
-            
-            HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-                .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
-            });
-            break;
-        }
-    }
+    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    Device->type = HKHubModuleDebugControllerDeviceTypeNone;
+    Device->processor = NULL;
+    
+    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
+    });
     
     Processor->state.debug.operation = NULL;
     Processor->state.debug.portConnectionChange = NULL;
@@ -233,6 +228,7 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Module, "Module must not be null");
+    CCAssertLog(!Module->debug.context, "Module must not already be debugged");
     
     HKHubModuleDebugControllerState *State = Controller->internal;
     const size_t Index = CCArrayAppendElement(State->devices, &(HKHubModuleDebugControllerDevice){
@@ -241,10 +237,15 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
         .events = {
             .buffer = NULL,
             .count = 0
-        }
+        },
+        .controller = Controller
     });
     
-    HKHubModuleDebugControllerPushEvent(&((HKHubModuleDebugControllerDevice*)CCArrayGetElementAtIndex(State->devices, Index))->events, &(HKHubModuleDebugControllerDeviceEvent){
+    HKHubModuleDebugControllerDevice * const Device = CCArrayGetElementAtIndex(State->devices, Index);
+    
+    Module->debug.context = Device;
+    
+    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected
     });
 }
@@ -253,21 +254,13 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Module, "Module must not be null");
+    CCAssertLog(Module->debug.context && ((HKHubModuleDebugControllerDevice*)Module->debug.context)->controller == Controller, "Module must be connected to the controller");
     
-    HKHubModuleDebugControllerState *State = Controller->internal;
-    for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
-    {
-        HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Loop);
-        
-        if ((Device->type == HKHubModuleDebugControllerDeviceTypeModule) && (Device->module == Module))
-        {
-            Device->type = HKHubModuleDebugControllerDeviceTypeNone;
-            Device->module = NULL;
-            
-            HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-                .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
-            });
-            break;
-        }
-    }
+    HKHubModuleDebugControllerDevice *Device = Module->debug.context;
+    Device->type = HKHubModuleDebugControllerDeviceTypeNone;
+    Device->module = NULL;
+    
+    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
+    });
 }
