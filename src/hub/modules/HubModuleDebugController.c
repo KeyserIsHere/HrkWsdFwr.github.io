@@ -48,6 +48,7 @@ typedef enum {
 
 typedef struct {
     HKHubModuleDebugControllerDeviceEventType type;
+    size_t device;
     union {
         struct {
             uint8_t offset;
@@ -91,6 +92,7 @@ typedef struct {
     };
     HKHubModuleDebugControllerDeviceEventBuffer events;
     HKHubModule controller;
+    size_t index;
 } HKHubModuleDebugControllerDevice;
 
 CC_ARRAY_DECLARE(HKHubModuleDebugControllerDevice);
@@ -217,7 +219,8 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
+        .device = (Device->index = Index)
     });
 }
 
@@ -232,7 +235,8 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     Device->processor = NULL;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
+        .device = Device->index
     });
     
     Processor->state.debug.operation = NULL;
@@ -267,7 +271,8 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
     Module->debug.context = Device;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
+        .device = (Device->index = Index)
     });
 }
 
@@ -282,6 +287,7 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
     Device->module = NULL;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected
+        .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
+        .device = Device->index
     });
 }
