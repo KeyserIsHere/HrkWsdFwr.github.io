@@ -25,6 +25,8 @@
 
 #include "HubModuleDebugController.h"
 
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK 0x80
+
 #define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX 100
 
 #if DEBUG
@@ -47,7 +49,7 @@ typedef enum {
 } HKHubModuleDebugControllerDeviceEventType;
 
 typedef struct {
-    size_t id;
+    CCBigInt id;
     HKHubModuleDebugControllerDeviceEventType type;
     size_t device;
     union {
@@ -105,11 +107,15 @@ typedef struct {
 typedef struct {
     CCArray(HKHubModuleDebugControllerDevice) devices;
     HKHubModuleDebugControllerEventState eventPortState[128];
-    size_t sharedID;
+    CCBigInt sharedID;
 } HKHubModuleDebugControllerState;
 
-static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerDeviceEventBuffer *Events, const HKHubModuleDebugControllerDeviceEvent *Event)
+static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerState *State, HKHubModuleDebugControllerDeviceEventBuffer *Events, HKHubModuleDebugControllerDeviceEvent *Event)
 {
+    Event->id = CCBigIntCreate(CC_STD_ALLOCATOR);
+    CCBigIntSet(Event->id, State->sharedID);
+    CCBigIntAdd(State->sharedID, 1);
+    
     if (CCArrayGetCount(Events->buffer) == HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX)
     {
         CCArrayAppendElement(Events->buffer, Event);
@@ -144,6 +150,8 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
                 {
                     if (Event->data) CCArrayDestroy(Event->data);
                 }
+                
+                CCBigIntDestroy(Event->id);
             }
         }
         
@@ -172,6 +180,7 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
     }
     
     CCArrayDestroy(State->devices);
+    CCBigIntDestroy(State->sharedID);
     CCFree(State);
 }
 
@@ -183,6 +192,7 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
         memset(State, 0, sizeof(*State));
         
         State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
+        State->sharedID = CCBigIntCreate(CC_STD_ALLOCATOR);
         
         return HKHubModuleCreate(Allocator, NULL, NULL, State, (HKHubModuleDataDestructor)HKHubModuleDebugControllerStateDestructor, NULL);
     }
@@ -220,8 +230,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
-    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .id = State->sharedID++,
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
         .device = (Device->index = Index)
     });
@@ -237,8 +246,7 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     Device->type = HKHubModuleDebugControllerDeviceTypeNone;
     Device->processor = NULL;
     
-    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .id = ((HKHubModuleDebugControllerState*)Controller)->sharedID++,
+    HKHubModuleDebugControllerPushEvent(Controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
         .device = Device->index
     });
@@ -274,8 +282,7 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
     
     Module->debug.context = Device;
     
-    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .id = State->sharedID++,
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
         .device = (Device->index = Index)
     });
@@ -291,8 +298,7 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
     Device->type = HKHubModuleDebugControllerDeviceTypeNone;
     Device->module = NULL;
     
-    HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .id = ((HKHubModuleDebugControllerState*)Controller)->sharedID++,
+    HKHubModuleDebugControllerPushEvent(Controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
         .device = Device->index
     });
