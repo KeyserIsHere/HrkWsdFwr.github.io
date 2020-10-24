@@ -47,6 +47,7 @@ typedef enum {
 } HKHubModuleDebugControllerDeviceEventType;
 
 typedef struct {
+    size_t id;
     HKHubModuleDebugControllerDeviceEventType type;
     size_t device;
     union {
@@ -104,6 +105,7 @@ typedef struct {
 typedef struct {
     CCArray(HKHubModuleDebugControllerDevice) devices;
     HKHubModuleDebugControllerEventState eventPortState[128];
+    size_t sharedID;
 } HKHubModuleDebugControllerState;
 
 static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerDeviceEventBuffer *Events, const HKHubModuleDebugControllerDeviceEvent *Event)
@@ -219,6 +221,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .id = State->sharedID++,
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
         .device = (Device->index = Index)
     });
@@ -235,6 +238,7 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     Device->processor = NULL;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .id = ((HKHubModuleDebugControllerState*)Controller)->sharedID++,
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
         .device = Device->index
     });
@@ -271,6 +275,7 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
     Module->debug.context = Device;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .id = State->sharedID++,
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
         .device = (Device->index = Index)
     });
@@ -287,6 +292,7 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
     Device->module = NULL;
     
     HKHubModuleDebugControllerPushEvent(&Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .id = ((HKHubModuleDebugControllerState*)Controller)->sharedID++,
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
         .device = Device->index
     });
