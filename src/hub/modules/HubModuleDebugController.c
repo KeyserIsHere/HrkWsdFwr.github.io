@@ -110,6 +110,16 @@ typedef struct {
     CCBigInt sharedID;
 } HKHubModuleDebugControllerState;
 
+static void HKHubModuleDebugControllerDeviceEventDestructor(HKHubModuleDebugControllerDeviceEvent *Event)
+{
+    if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
+    {
+        if (Event->data) CCArrayDestroy(Event->data);
+    }
+    
+    CCBigIntDestroy(Event->id);
+}
+
 static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerState *State, HKHubModuleDebugControllerDeviceEventBuffer *Events, HKHubModuleDebugControllerDeviceEvent *Event)
 {
     Event->id = CCBigIntCreate(CC_STD_ALLOCATOR);
@@ -124,6 +134,8 @@ static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerState 
     
     else
     {
+        HKHubModuleDebugControllerDeviceEventDestructor(CCArrayGetElementAtIndex(Events->buffer, Events->count % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX));
+        
         CCArrayReplaceElementAtIndex(Events->buffer, Events->count % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX, Event);
     }
 }
@@ -145,13 +157,7 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
         {
             for (size_t Loop2 = 0, Count2 = CCArrayGetCount(Device->events.buffer); Loop2 < Count2; Loop2++)
             {
-                HKHubModuleDebugControllerDeviceEvent *Event = CCArrayGetElementAtIndex(Device->events.buffer, Loop2);
-                if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
-                {
-                    if (Event->data) CCArrayDestroy(Event->data);
-                }
-                
-                CCBigIntDestroy(Event->id);
+                HKHubModuleDebugControllerDeviceEventDestructor(CCArrayGetElementAtIndex(Device->events.buffer, Loop2));
             }
         }
         
