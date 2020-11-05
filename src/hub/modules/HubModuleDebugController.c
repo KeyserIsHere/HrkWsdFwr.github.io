@@ -49,7 +49,7 @@ typedef enum {
 } HKHubModuleDebugControllerDeviceEventType;
 
 typedef struct {
-    CCBigInt id;
+    CCBigIntFast id;
     HKHubModuleDebugControllerDeviceEventType type;
     size_t device;
     union {
@@ -101,13 +101,13 @@ typedef struct {
 CC_ARRAY_DECLARE(HKHubModuleDebugControllerDevice);
 
 typedef struct {
-    size_t index;
+    CCBigIntFast index;
 } HKHubModuleDebugControllerEventState;
 
 typedef struct {
     CCArray(HKHubModuleDebugControllerDevice) devices;
     HKHubModuleDebugControllerEventState eventPortState[128];
-    CCBigInt sharedID;
+    CCBigIntFast sharedID;
 } HKHubModuleDebugControllerState;
 
 static void HKHubModuleDebugControllerDeviceEventDestructor(HKHubModuleDebugControllerDeviceEvent *Event)
@@ -117,14 +117,14 @@ static void HKHubModuleDebugControllerDeviceEventDestructor(HKHubModuleDebugCont
         if (Event->data) CCArrayDestroy(Event->data);
     }
     
-    CCBigIntDestroy(Event->id);
+    CCBigIntFastDestroy(Event->id);
 }
 
 static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerState *State, HKHubModuleDebugControllerDeviceEventBuffer *Events, HKHubModuleDebugControllerDeviceEvent *Event)
 {
-    Event->id = CCBigIntCreate(CC_STD_ALLOCATOR);
-    CCBigIntSet(Event->id, State->sharedID);
-    CCBigIntAdd(State->sharedID, 1);
+    Event->id = CCBigIntFastCreate(CC_STD_ALLOCATOR);
+    CCBigIntFastSet(&Event->id, State->sharedID);
+    CCBigIntFastAdd(&State->sharedID, 1);
     
     if (CCArrayGetCount(Events->buffer) == HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX)
     {
@@ -185,8 +185,13 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
         CCArrayDestroy(Device->events.buffer);
     }
     
+    for (size_t Loop = 0; Loop < sizeof(State->eventPortState) / sizeof(typeof(*State->eventPortState)); Loop++)
+    {
+        CCBigIntFastDestroy(State->eventPortState[Loop].index);
+    }
+    
     CCArrayDestroy(State->devices);
-    CCBigIntDestroy(State->sharedID);
+    CCBigIntFastDestroy(State->sharedID);
     CCFree(State);
 }
 
@@ -195,10 +200,13 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
     HKHubModuleDebugControllerState *State = CCMalloc(Allocator, sizeof(HKHubModuleDebugControllerState), NULL, CC_DEFAULT_ERROR_CALLBACK);
     if (State)
     {
-        memset(State, 0, sizeof(*State));
+        for (size_t Loop = 0; Loop < sizeof(State->eventPortState) / sizeof(typeof(*State->eventPortState)); Loop++)
+        {
+            State->eventPortState[Loop].index = CC_BIG_INT_FAST_0;
+        }
         
         State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
-        State->sharedID = CCBigIntCreate(CC_STD_ALLOCATOR);
+        State->sharedID = CCBigIntFastCreate(CC_STD_ALLOCATOR);
         
         return HKHubModuleCreate(Allocator, NULL, NULL, State, (HKHubModuleDataDestructor)HKHubModuleDebugControllerStateDestructor, NULL);
     }
