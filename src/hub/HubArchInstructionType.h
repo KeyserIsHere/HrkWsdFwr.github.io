@@ -106,7 +106,9 @@ typedef CC_FLAG_ENUM(HKHubArchInstructionControlFlow, uint8_t) {
 };
 
 typedef CC_FLAG_ENUM(HKHubArchInstructionRegister, uint8_t) {
+    /// Bit that will be set for special purpose registers (must also check the @b HKHubArchInstructionRegisterGeneralPurpose is not set)
     HKHubArchInstructionRegisterSpecialPurpose = (1 << 1),
+    /// Bit that will be set for general purpose registers
     HKHubArchInstructionRegisterGeneralPurpose = (1 << 2),
     HKHubArchInstructionRegisterGeneralPurposeIndexMask = 3,
     HKHubArchInstructionRegisterSpecialPurposeIndexMask = 1,
@@ -161,5 +163,31 @@ typedef enum {
     HKHubArchInstructionOperationResultFlagPipelineStall = (1 << 2),
     HKHubArchInstructionOperationResultFlagInvalidOp = (1 << 3)
 } HKHubArchInstructionOperationResult;
+
+/*!
+ * @brief Check if the register is a general purpose register.
+ * @param Register The register.
+ * @return Whether it's a general purpose register.
+ */
+static CC_FORCE_INLINE _Bool HKHubArchInstructionRegisterIsGeneralPurpose(HKHubArchInstructionRegister Register);
+
+/*!
+ * @brief Check if the register is a special purpose register.
+ * @param Register The register.
+ * @return Whether it's a special purpose register.
+ */
+static CC_FORCE_INLINE _Bool HKHubArchInstructionRegisterIsSpecialPurpose(HKHubArchInstructionRegister Register);
+
+#pragma mark -
+
+static CC_FORCE_INLINE _Bool HKHubArchInstructionRegisterIsGeneralPurpose(HKHubArchInstructionRegister Register)
+{
+    return Register & HKHubArchInstructionRegisterGeneralPurpose;
+}
+
+static CC_FORCE_INLINE _Bool HKHubArchInstructionRegisterIsSpecialPurpose(HKHubArchInstructionRegister Register)
+{
+    return (Register & (HKHubArchInstructionRegisterSpecialPurpose | HKHubArchInstructionRegisterGeneralPurpose)) == HKHubArchInstructionRegisterSpecialPurpose;
+}
 
 #endif
