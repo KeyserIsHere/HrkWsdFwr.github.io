@@ -412,7 +412,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                             break;
                             
                         case HKHubModuleDebugControllerDeviceEventTypeChangeBreakpoint:
-                            //[2:4] [device:12] change breakpoint [offset:8] [w:1] [r:1]
+                            //[2:4] [device:12] change breakpoint [offset:8] [_:6] [w:1] [r:1]
                             State->eventPortState[Port].message[Size++] = Event->breakpoint.offset;
                             State->eventPortState[Port].message[Size++] = Event->breakpoint.access & 3;
                             _Static_assert(HKHubArchProcessorDebugBreakpointRead == (1 << 0), "Read breakpoint flag changed");
@@ -420,7 +420,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                             break;
                             
                         case HKHubModuleDebugControllerDeviceEventTypeChangePortConnection:
-                            //[3:4] [device:12] change [port:8] [receiving port: 8, device:12]
+                            //[3:4] [device:12] change [port:8] [receiving port: 8, _:4, device:12]
                             State->eventPortState[Port].message[Size++] = Event->connection.port;
                             State->eventPortState[Port].message[Size++] = Event->connection.target.port;
                             State->eventPortState[Port].message[Size++] = (Event->connection.target.device & 0xf00) >> 8;
@@ -436,7 +436,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                             break;
                             
                         case HKHubModuleDebugControllerDeviceEventTypeModifyRegister:
-                            //[5:4] [device:12] modified [reg:3]
+                            //[5:4] [device:12] modified [_:5] [reg:3]
                             State->eventPortState[Port].message[Size++] = Event->reg;
                             break;
                             
