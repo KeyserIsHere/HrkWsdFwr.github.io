@@ -29,6 +29,8 @@
 
 #define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX 100
 
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE 8
+
 #if DEBUG
 size_t HKHubModuleDebugControllerEventBufferMax = HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX;
 #undef HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX
@@ -64,7 +66,10 @@ typedef struct {
             } target;
             uint8_t port;
         } connection;
-        uint8_t instruction[5];
+        struct {
+            uint8_t encoding[5];
+            uint8_t size;
+        } instruction;
         HKHubArchInstructionRegister reg;
         struct {
             uint8_t offset;
@@ -102,6 +107,9 @@ CC_ARRAY_DECLARE(HKHubModuleDebugControllerDevice);
 
 typedef struct {
     CCBigIntFast index;
+    uint8_t *message;
+    uint8_t chunks;
+    uint8_t chunkBatchSize;
 } HKHubModuleDebugControllerEventState;
 
 typedef struct {
@@ -147,6 +155,131 @@ static HKHubModuleDebugControllerDeviceEvent *HKHubModuleDebugControllerPopEvent
     return CCArrayGetElementAtIndex(Events->buffer, (*Index)++ % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX);
 }
 
+static inline size_t HKHubModuleDebugControllerEventPortMessageSize(size_t MinSize, size_t DefaultChunkSize)
+{
+    const size_t DefaultLargestMessageSize = 2 + DefaultChunkSize;
+    
+    return MinSize > DefaultLargestMessageSize ? MinSize : DefaultLargestMessageSize;
+}
+
+static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchProcessor ConnectedDevice, int64_t Timestamp, size_t *Wait)
+{
+    HKHubModuleDebugControllerState *State = Device->internal;
+    
+    if (Port & HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK)
+    {
+        // query api
+    }
+    
+    else
+    {
+        // event api
+        for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
+        {
+            const HKHubModuleDebugControllerDevice *DebuggedDevice = CCArrayGetElementAtIndex(State->devices, Loop);
+            
+            if (DebuggedDevice->events.buffer)
+            {
+                const HKHubModuleDebugControllerDeviceEvent *Event = NULL;
+                CCComparisonResult Result = CCComparisonResultInvalid;
+                
+                for (size_t Loop2 = DebuggedDevice->index, Count2 = CCArrayGetCount(DebuggedDevice->events.buffer); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultDescending); Loop2++)
+                {
+                    Event = CCArrayGetElementAtIndex(DebuggedDevice->events.buffer, Loop2);
+                    Result = CCBigIntFastCompare(State->eventPortState[Port].index, Event->id);
+                }
+                
+                if (Result == CCComparisonResultEqual)
+                {
+                    size_t Size = 0;
+                    State->eventPortState[Port].message[Size++] = (Event->type << 4) | ((Event->device & 0xf00) >> 8);
+                    State->eventPortState[Port].message[Size++] = Event->device & 0xff;
+                    
+                    switch (Event->type)
+                    {
+                        case HKHubModuleDebugControllerDeviceEventTypePause:
+                            //[0:4] [device:12] paused
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeRun:
+                            //[1:4] [device:12] running
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeChangeBreakpoint:
+                            //[2:4] [device:12] change breakpoint [offset:8] [w:1] [r:1]
+                            State->eventPortState[Port].message[Size++] = Event->breakpoint.offset;
+                            State->eventPortState[Port].message[Size++] = Event->breakpoint.access & 3;
+                            _Static_assert(HKHubArchProcessorDebugBreakpointRead == (1 << 0), "Read breakpoint flag changed");
+                            _Static_assert(HKHubArchProcessorDebugBreakpointWrite == (1 << 1), "Write breakpoint flag changed");
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeChangePortConnection:
+                            //[3:4] [device:12] change [port:8] [receiving port: 8, device:12]
+                            State->eventPortState[Port].message[Size++] = Event->connection.port;
+                            State->eventPortState[Port].message[Size++] = Event->connection.target.port;
+                            State->eventPortState[Port].message[Size++] = (Event->connection.target.device & 0xf00) >> 8;
+                            State->eventPortState[Port].message[Size++] = Event->connection.target.device & 0xff;
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeExecutedOperation:
+                            //[4:4] [device:12] change op [encoded instruction:8 ...]
+                            for (size_t Index = 0; Index < Event->instruction.size; Index++)
+                            {
+                                State->eventPortState[Port].message[Size++] = Event->instruction.encoding[Index];
+                            }
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeModifyRegister:
+                            //[5:4] [device:12] modified [reg:3]
+                            State->eventPortState[Port].message[Size++] = Event->reg;
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeModifyMemory:
+                            //[6:4] [device:12] modified memory [offset:8] [size:8]
+                            State->eventPortState[Port].message[Size++] = Event->memory.offset;
+                            State->eventPortState[Port].message[Size++] = Event->memory.size;
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk:
+                        {
+                            //[7:4] [device:12] modified [data:8 ...] (comes in as 8 byte sequences, this can be changed)
+                            size_t ChunkSize = CCArrayGetCount(Event->data) - State->eventPortState[Port].chunks;
+                            
+                            if (ChunkSize > State->eventPortState[Port].chunkBatchSize) ChunkSize = State->eventPortState[Port].chunkBatchSize;
+                            
+                            memcpy(&State->eventPortState[Port].message[Size], CCArrayGetData(Event->data) + State->eventPortState[Port].chunks, ChunkSize);
+                            State->eventPortState[Port].chunks += ChunkSize;
+                            Size += ChunkSize;
+                            break;
+                        }
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeDeviceConnected:
+                            //[8:4] [device:12] connected
+                            break;
+                            
+                        case HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected:
+                            //[9:4] [device:12] disconnected
+                            break;
+                            
+                    }
+                    
+                    *Message = (HKHubArchPortMessage){
+                        .memory = State->eventPortState[Port].message,
+                        .offset = 0,
+                        .size = Size
+                    };
+                    
+                    if (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port))) return HKHubArchPortResponseDefer;
+                    
+                    return HKHubArchPortResponseSuccess;
+                }
+            }
+        }
+    }
+    
+    return HKHubArchPortResponseTimeout;
+}
+
 static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugControllerState *State)
 {
     for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
@@ -188,6 +321,7 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
     for (size_t Loop = 0; Loop < sizeof(State->eventPortState) / sizeof(typeof(*State->eventPortState)); Loop++)
     {
         CCBigIntFastDestroy(State->eventPortState[Loop].index);
+        CC_SAFE_Free(State->eventPortState[Loop].message);
     }
     
     CCArrayDestroy(State->devices);
@@ -203,6 +337,9 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
         for (size_t Loop = 0; Loop < sizeof(State->eventPortState) / sizeof(typeof(*State->eventPortState)); Loop++)
         {
             State->eventPortState[Loop].index = CC_BIG_INT_FAST_0;
+            CC_SAFE_Malloc(State->eventPortState[Loop].message, HKHubModuleDebugControllerEventPortMessageSize(16, HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE));
+            State->eventPortState[Loop].chunks = 0;
+            State->eventPortState[Loop].chunkBatchSize = HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE;
         }
         
         State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
