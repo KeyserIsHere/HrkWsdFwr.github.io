@@ -110,6 +110,10 @@ typedef struct {
     uint8_t *message;
     uint8_t chunks;
     uint8_t chunkBatchSize;
+    struct {
+        uint16_t commands;
+        CCArray(uint16_t) devices;
+    } filter;
 } HKHubModuleDebugControllerEventState;
 
 typedef struct {
@@ -160,6 +164,208 @@ static inline size_t HKHubModuleDebugControllerEventPortMessageSize(size_t MinSi
     const size_t DefaultLargestMessageSize = 2 + DefaultChunkSize;
     
     return MinSize > DefaultLargestMessageSize ? MinSize : DefaultLargestMessageSize;
+}
+
+static _Bool HKHubModuleDebugControllerFindDevice(CCArray(uint16_t) DeviceRanges, const uint16_t MatchDevice, size_t *RangeIndex, uint16_t *UpdatedRange, _Bool *Insert)
+{
+    //TODO: change to a binary search
+    
+    _Bool EarlyExit = FALSE;
+    for (size_t Loop = 0, Count = CCArrayGetCount(DeviceRanges); Loop < Count; Loop++)
+    {
+        uint16_t *DeviceRange = CCArrayGetElementAtIndex(DeviceRanges, Loop);
+        const uint16_t Start = *DeviceRange >> 12;
+        const uint16_t Stop = (*DeviceRange & 0xf) + Start;
+        const _Bool Unused = (*DeviceRange & 0xf) != 0xf;
+        
+        if (((Start - 1) == MatchDevice) && Unused)
+        {
+            if (RangeIndex) *RangeIndex = Loop;
+            if (UpdatedRange) *UpdatedRange = ((Stop - Start) + 1) | ((Start - 1) << 12);
+            if (Insert) *Insert = FALSE;
+            
+            return FALSE;
+        }
+        
+        else if (((Stop + 1) == MatchDevice) && Unused)
+        {
+            if (RangeIndex) *RangeIndex = Loop;
+            if (UpdatedRange) *UpdatedRange = ((Stop - Start) + 1) | (Start << 12);
+            if (Insert) *Insert = FALSE;
+            
+            EarlyExit = TRUE;
+        }
+        
+        else if ((Start <= MatchDevice) && (Stop >= MatchDevice))
+        {
+            if (RangeIndex) *RangeIndex = Loop;
+            if (UpdatedRange) *UpdatedRange = *DeviceRange;
+            if (Insert) *Insert = FALSE;
+            
+            return TRUE;
+        }
+        
+        else if (MatchDevice < Start)
+        {
+            if (RangeIndex) *RangeIndex = Loop;
+            if (UpdatedRange) *UpdatedRange = MatchDevice << 12;
+            if (Insert) *Insert = TRUE;
+            
+            return FALSE;
+        }
+        
+        else if (EarlyExit) return FALSE;
+    }
+    
+    if (!EarlyExit)
+    {
+        if (RangeIndex) *RangeIndex = SIZE_MAX;
+        if (UpdatedRange) *UpdatedRange = MatchDevice << 12;
+        if (Insert) *Insert = TRUE;
+    }
+    
+    return FALSE;
+}
+
+static void HKHubModuleDebugControllerAddDevice(CCArray(uint16_t) DeviceRanges, const uint16_t MatchDevice)
+{
+    size_t RangeIndex;
+    uint16_t UpdatedRange;
+    _Bool Insert;
+    
+    if (!HKHubModuleDebugControllerFindDevice(DeviceRanges, MatchDevice, &RangeIndex, &UpdatedRange, &Insert))
+    {
+        if (Insert)
+        {
+            if (RangeIndex == SIZE_MAX) CCArrayAppendElement(DeviceRanges, &UpdatedRange);
+            else CCArrayInsertElementAtIndex(DeviceRanges, RangeIndex, &UpdatedRange);
+        }
+        
+        else CCArrayReplaceElementAtIndex(DeviceRanges, RangeIndex, &UpdatedRange);
+    }
+}
+
+static void HKHubModuleDebugControllerRemoveDevice(CCArray(uint16_t) DeviceRanges, const uint16_t MatchDevice)
+{
+    size_t RangeIndex;
+    uint16_t UpdatedRange;
+    
+    if (HKHubModuleDebugControllerFindDevice(DeviceRanges, MatchDevice, &RangeIndex, &UpdatedRange, NULL))
+    {
+        const uint16_t Start = UpdatedRange >> 12;
+        const uint16_t Stop = (UpdatedRange & 0xf) + Start;
+        
+        if (Start == Stop)
+        {
+            CCArrayRemoveElementAtIndex(DeviceRanges, RangeIndex);
+        }
+        
+        else if ((Start - 1) == MatchDevice)
+        {
+            CCArrayReplaceElementAtIndex(DeviceRanges, RangeIndex, &(uint16_t){ ((Stop - Start) - 1) | ((Start + 1) << 12) });
+        }
+        
+        else if ((Stop + 1) == MatchDevice)
+        {
+            CCArrayReplaceElementAtIndex(DeviceRanges, RangeIndex, &(uint16_t){ ((Stop - Start) - 1) | (Start << 12) });
+        }
+        
+        else
+        {
+            CCArrayReplaceElementAtIndex(DeviceRanges, RangeIndex, &(uint16_t){ ((Stop - MatchDevice) - 1) | ((MatchDevice + 1) << 12) });
+            CCArrayInsertElementAtIndex(DeviceRanges, RangeIndex, &(uint16_t){ ((MatchDevice - Start) - 1) | (Start << 12) });
+        }
+    }
+}
+
+static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchPortDevice ConnectedDevice, int64_t Timestamp, size_t *Wait)
+{
+    const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Connection, Device, Port);
+    
+    if (HKHubArchPortIsReady(OppositePort))
+    {
+        if (Message->size >= 1)
+        {
+            HKHubModuleDebugControllerState *State = Device->internal;
+            
+            if (Port & HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK)
+            {
+                // query api
+            }
+            
+            else
+            {
+                // event api
+                HKHubArchPortResponse Response = HKHubArchPortResponseTimeout;
+                
+                switch (Message->memory[Message->offset] >> 4)
+                {
+                    case 0:
+                        //[0:4] add filter [command:4]
+                        State->eventPortState[Port].filter.commands |= 1 << (Message->memory[Message->offset] & 0xf);
+                        Response = HKHubArchPortResponseSuccess;
+                        break;
+                        
+                    case 1:
+                        //[1:4] remove filter [command:4]
+                        State->eventPortState[Port].filter.commands &= ~(1 << (Message->memory[Message->offset] & 0xf));
+                        Response = HKHubArchPortResponseSuccess;
+                        break;
+                        
+                    case 2:
+                        //[2:4] add filter [device:12]
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t FilterDevice = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (!State->eventPortState[Port].filter.devices)
+                            {
+                                State->eventPortState[Port].filter.devices = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(uint16_t), 4);
+                            }
+                            
+                            HKHubModuleDebugControllerAddDevice(State->eventPortState[Port].filter.devices, FilterDevice);
+                            Response = HKHubArchPortResponseSuccess;
+                        }
+                        break;
+                        
+                    case 3:
+                        //[3:4] remove filter [device:12]
+                        if (Message->size >= 2)
+                        {
+                            if (State->eventPortState[Port].filter.devices)
+                            {
+                                const uint16_t FilterDevice = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                                
+                                HKHubModuleDebugControllerRemoveDevice(State->eventPortState[Port].filter.devices, FilterDevice);
+                                
+                                if (CCArrayGetCount(State->eventPortState[Port].filter.devices) == 0)
+                                {
+                                    CCArrayDestroy(State->eventPortState[Port].filter.devices);
+                                    State->eventPortState[Port].filter.devices = NULL;
+                                }
+                            }
+                            
+                            Response = HKHubArchPortResponseSuccess;
+                        }
+                        break;
+                        
+                    case 4:
+                        //[4:4] [_:4] set modified data chunk [size:8]
+                        if (Message->size >= 2)
+                        {
+                            State->eventPortState[Port].chunkBatchSize = Message->memory[Message->offset + 1];
+                            Response = HKHubArchPortResponseSuccess;
+                        }
+                        
+                        break;
+                }
+                
+                return Response;
+            }
+        }
+    }
+    
+    return HKHubArchPortResponseSuccess;
 }
 
 static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnection Connection, HKHubModule Device, HKHubArchPortID Port, HKHubArchPortMessage *Message, HKHubArchProcessor ConnectedDevice, int64_t Timestamp, size_t *Wait)
@@ -322,6 +528,7 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
     {
         CCBigIntFastDestroy(State->eventPortState[Loop].index);
         CC_SAFE_Free(State->eventPortState[Loop].message);
+        if (State->eventPortState[Loop].filter.devices) CCArrayDestroy(State->eventPortState[Loop].filter.devices);
     }
     
     CCArrayDestroy(State->devices);
@@ -340,6 +547,8 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
             CC_SAFE_Malloc(State->eventPortState[Loop].message, HKHubModuleDebugControllerEventPortMessageSize(16, HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE));
             State->eventPortState[Loop].chunks = 0;
             State->eventPortState[Loop].chunkBatchSize = HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE;
+            State->eventPortState[Loop].filter.commands = 0;
+            State->eventPortState[Loop].filter.devices = NULL;
         }
         
         State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
