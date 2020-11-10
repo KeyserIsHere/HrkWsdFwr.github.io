@@ -572,7 +572,7 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
         State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
         State->sharedID = CCBigIntFastCreate(CC_STD_ALLOCATOR);
         
-        return HKHubModuleCreate(Allocator, NULL, NULL, State, (HKHubModuleDataDestructor)HKHubModuleDebugControllerStateDestructor, NULL);
+        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleDebugControllerSend, (HKHubArchPortTransmit)HKHubModuleDebugControllerReceive, State, (HKHubModuleDataDestructor)HKHubModuleDebugControllerStateDestructor, NULL);
     }
     
     else CC_LOG_ERROR("Failed to create debug controller module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleDebugControllerState));
