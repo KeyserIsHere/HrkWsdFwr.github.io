@@ -53,7 +53,7 @@ typedef enum {
 typedef struct {
     CCBigIntFast id;
     HKHubModuleDebugControllerDeviceEventType type;
-    size_t device;
+    uint16_t device;
     union {
         struct {
             uint8_t offset;
@@ -61,7 +61,7 @@ typedef struct {
         } breakpoint;
         struct {
             struct {
-                size_t device;
+                uint16_t device;
                 uint8_t port;
             } target;
             uint8_t port;
@@ -380,7 +380,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
     else
     {
         // event api
-        for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
+        for (size_t Loop = 0, Skip1 = SIZE_MAX, Skip2 = SIZE_MAX, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
         {
             const HKHubModuleDebugControllerDevice *DebuggedDevice = CCArrayGetElementAtIndex(State->devices, Loop);
             
@@ -389,10 +389,28 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                 const HKHubModuleDebugControllerDeviceEvent *Event = NULL;
                 CCComparisonResult Result = CCComparisonResultInvalid;
                 
-                for (size_t Loop2 = DebuggedDevice->index, Count2 = CCArrayGetCount(DebuggedDevice->events.buffer); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultDescending); Loop2++)
+                for (size_t Loop2 = DebuggedDevice->index, Count2 = CCArrayGetCount(DebuggedDevice->events.buffer); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultDescending) && ((Skip1 != Loop) || (Skip2 != Loop2)); Loop2++)
                 {
                     Event = CCArrayGetElementAtIndex(DebuggedDevice->events.buffer, Loop2);
                     Result = CCBigIntFastCompare(State->eventPortState[Port].index, Event->id);
+                    
+                    if ((State->eventPortState[Port].filter.commands != 0) && ((State->eventPortState[Port].filter.commands & (1 << Event->type)) == 0))
+                    {
+                        CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
+                        Result = CCComparisonResultInvalid;
+                        Skip1 = Loop;
+                        Skip2 = Loop2;
+                        Loop = 0;
+                    }
+                    
+                    else if ((State->eventPortState[Port].filter.devices) && (CCArrayGetCount(State->eventPortState[Port].filter.devices)) && (!HKHubModuleDebugControllerFindDevice(State->eventPortState[Port].filter.devices, (uint16_t)Event->device, NULL, NULL, NULL)))
+                    {
+                        CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
+                        Result = CCComparisonResultInvalid;
+                        Skip1 = Loop;
+                        Skip2 = Loop2;
+                        Loop = 0;
+                    }
                 }
                 
                 if (Result == CCComparisonResultEqual)
@@ -590,9 +608,11 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
+    CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
+    
     HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
-        .device = (Device->index = Index)
+        .device = (uint16_t)(Device->index = Index)
     });
 }
 
@@ -608,7 +628,7 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     
     HKHubModuleDebugControllerPushEvent(Controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
-        .device = Device->index
+        .device = (uint16_t)Device->index
     });
     
     Processor->state.debug.operation = NULL;
@@ -642,9 +662,11 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
     
     Module->debug.context = Device;
     
+    CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
+    
     HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceConnected,
-        .device = (Device->index = Index)
+        .device = (uint16_t)(Device->index = Index)
     });
 }
 
@@ -660,6 +682,6 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
     
     HKHubModuleDebugControllerPushEvent(Controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
-        .device = Device->index
+        .device = (uint16_t)Device->index
     });
 }
