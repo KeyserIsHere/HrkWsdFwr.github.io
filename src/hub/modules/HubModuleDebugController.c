@@ -291,6 +291,119 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
             if (Port & HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK)
             {
                 // query api
+                HKHubArchPortResponse Response = HKHubArchPortResponseTimeout;
+                
+                switch (Message->memory[Message->offset] >> 4)
+                {
+                    case 0:
+                        //[0:4] device count (count:16)
+                        break;
+                        
+                    case 1:
+                        //[1:4] [device:12] memory size (size:16)
+                        break;
+                        
+                    case 2:
+                        //[2:4] [device:12] read memory [offset:8] [size:8] ...
+                        break;
+                        
+                    case 3:
+                        //[3:4] [device:12] read memory [offset:16] [size:16] ...
+                        break;
+                        
+                    case 4:
+                        //[4:4] [device:12] read registers (48 bits)
+                        break;
+                        
+                    case 5:
+                        //[5:4] [device:12] [_:5] read registers [reg:3 ...] (8 bits ...)
+                        break;
+                        
+                    case 6:
+                        //[6:4] [device:12] read breakpoints (r:256 bits, w:256 bits)
+                        break;
+                        
+                    case 7:
+                        //[7:4] [device:12] read breakpoints [offset:8 ...] (r:1 ..., w:1 ...)
+                        break;
+                        
+                    case 8:
+                        //[8:4] [device:12] read ports (256 bits)
+                        break;
+                        
+                    case 9:
+                        //[9:4] [device:12] read ports [port:8 ...] (receiving port:8, device:12)
+                        break;
+                        
+                    case 10:
+                        //[a:4] [device:12] toggle break [offset:8] [_:6] [rw:2] ... (xors rw)
+                        break;
+                        
+                    case 11:
+                        //[b:4] [device:12] pause
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    HKHubArchProcessorSetDebugMode(Device->processor, HKHubArchProcessorDebugModePause);
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 12:
+                        //[c:4] [device:12] continue
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    HKHubArchProcessorStep(Device->processor, 1);
+                                    HKHubArchProcessorSetDebugMode(Device->processor, HKHubArchProcessorDebugModeContinue);
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 13:
+                        //[d:4] [device:12] step
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    HKHubArchProcessorStep(Device->processor, 1);
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 14:
+                        //[e:4] [device:12] mode (_:7, paused/running: 1 bit)
+                        break;
+                        
+                    case 15:
+                        //[f:4] [device:12] name [size:8? defaults to 256] (string:256?)
+                        break;
+                }
+                
+                return Response;
             }
             
             else
