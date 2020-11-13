@@ -337,6 +337,31 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 10:
                         //[a:4] [device:12] toggle break [offset:8] [_:6] [rw:2] ... (xors rw)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 2)
+                                    {
+                                        HKHubArchProcessorDebugBreakpoint CurrentBP = 0;
+                                        if (Device->processor->state.debug.breakpoints)
+                                        {
+                                            HKHubArchProcessorDebugBreakpoint *Breakpoint = CCDictionaryGetValue(Device->processor->state.debug.breakpoints, &Message->memory[Loop]);
+                                            if (Breakpoint) CurrentBP = *Breakpoint;
+                                        }
+                                        
+                                        HKHubArchProcessorSetBreakpoint(Device->processor, CurrentBP ^ Message->memory[Loop + 1], Message->memory[Loop]);
+                                    }
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 11:
