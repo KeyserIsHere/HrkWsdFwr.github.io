@@ -492,6 +492,10 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         if (Message->size >= 2)
                         {
                             State->eventPortState[Port].chunkBatchSize = Message->memory[Message->offset + 1];
+                            CC_SAFE_Realloc(State->eventPortState[Port].message, HKHubModuleDebugControllerEventPortMessageSize(16, State->eventPortState[Port].chunkBatchSize),
+                                            CC_LOG_ERROR("Failed to resize event port message buffer, due to allocation failure (%zu)", HKHubModuleDebugControllerEventPortMessageSize(16, State->eventPortState[Port].chunkBatchSize));
+                                            );
+                            
                             Response = HKHubArchPortResponseSuccess;
                         }
                         
@@ -700,11 +704,14 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
         for (size_t Loop = 0; Loop < sizeof(State->eventPortState) / sizeof(typeof(*State->eventPortState)); Loop++)
         {
             State->eventPortState[Loop].index = CC_BIG_INT_FAST_0;
-            CC_SAFE_Malloc(State->eventPortState[Loop].message, HKHubModuleDebugControllerEventPortMessageSize(16, HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE));
             State->eventPortState[Loop].chunks = 0;
             State->eventPortState[Loop].chunkBatchSize = HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE;
             State->eventPortState[Loop].filter.commands = 0;
             State->eventPortState[Loop].filter.devices = NULL;
+            
+            CC_SAFE_Malloc(State->eventPortState[Loop].message, HKHubModuleDebugControllerEventPortMessageSize(16, HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE),
+                           CC_LOG_ERROR("Failed to create event port message buffer, due to allocation failure (%zu)", HKHubModuleDebugControllerEventPortMessageSize(16, HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE));
+                           );
         }
         
         State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
