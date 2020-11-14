@@ -117,9 +117,15 @@ typedef struct {
 } HKHubModuleDebugControllerEventState;
 
 typedef struct {
+    uint8_t *message;
+    uint8_t size;
+} HKHubModuleDebugControllerQueryState;
+
+typedef struct {
     CCArray(HKHubModuleDebugControllerDevice) devices;
-    HKHubModuleDebugControllerEventState eventPortState[128];
     CCBigIntFast sharedID;
+    HKHubModuleDebugControllerEventState eventPortState[128];
+    HKHubModuleDebugControllerQueryState queryPortState[127];
 } HKHubModuleDebugControllerState;
 
 static void HKHubModuleDebugControllerDeviceEventDestructor(HKHubModuleDebugControllerDeviceEvent *Event)
@@ -291,12 +297,20 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
             if (Port & HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK)
             {
                 // query api
+                if (!State->queryPortState[Port].message)
+                {
+                    CC_SAFE_Malloc(State->queryPortState[Port].message, HKHubModuleDebugControllerEventPortMessageSize(16, State->eventPortState[Port].chunkBatchSize),
+                                   CC_LOG_ERROR("Failed to create query port message buffer, due to allocation failure (256)");
+                                   );
+                }
+                
                 HKHubArchPortResponse Response = HKHubArchPortResponseTimeout;
                 
                 switch (Message->memory[Message->offset] >> 4)
                 {
                     case 0:
                         //[0:4] device count (count:16)
+                        
                         break;
                         
                     case 1:
@@ -517,6 +531,20 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
     if (Port & HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK)
     {
         // query api
+        if ((State->queryPortState[Port].message) && (State->queryPortState[Port].size))
+        {
+            *Message = (HKHubArchPortMessage){
+                .memory = State->queryPortState[Port].message,
+                .offset = 0,
+                .size = State->queryPortState[Port].size
+            };
+            
+            State->queryPortState[Port].size = 0;
+            
+            if (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port))) return HKHubArchPortResponseDefer;
+            
+            return HKHubArchPortResponseSuccess;
+        }
     }
     
     else
@@ -691,6 +719,11 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
         if (State->eventPortState[Loop].filter.devices) CCArrayDestroy(State->eventPortState[Loop].filter.devices);
     }
     
+    for (size_t Loop = 0; Loop < sizeof(State->queryPortState) / sizeof(typeof(*State->queryPortState)); Loop++)
+    {
+        if (State->queryPortState[Loop].message) CC_SAFE_Free(State->queryPortState[Loop].message);
+    }
+    
     CCArrayDestroy(State->devices);
     CCBigIntFastDestroy(State->sharedID);
     CCFree(State);
@@ -712,6 +745,12 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
             CC_SAFE_Malloc(State->eventPortState[Loop].message, HKHubModuleDebugControllerEventPortMessageSize(16, HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE),
                            CC_LOG_ERROR("Failed to create event port message buffer, due to allocation failure (%zu)", HKHubModuleDebugControllerEventPortMessageSize(16, HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_DATA_CHUNK_DEFAULT_SIZE));
                            );
+        }
+        
+        for (size_t Loop = 0; Loop < sizeof(State->queryPortState) / sizeof(typeof(*State->queryPortState)); Loop++)
+        {
+            State->queryPortState[Loop].message = NULL;
+            State->queryPortState[Loop].size = 0;
         }
         
         State->devices = CCArrayCreate(Allocator, sizeof(HKHubModuleDebugControllerDevice), 4);
