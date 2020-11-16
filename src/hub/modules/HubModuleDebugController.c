@@ -299,7 +299,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                 // query api
                 if (!State->queryPortState[Port].message)
                 {
-                    CC_SAFE_Malloc(State->queryPortState[Port].message, HKHubModuleDebugControllerEventPortMessageSize(16, State->eventPortState[Port].chunkBatchSize),
+                    CC_SAFE_Malloc(State->queryPortState[Port].message, 256,
                                    CC_LOG_ERROR("Failed to create query port message buffer, due to allocation failure (256)");
                                    );
                 }
@@ -320,14 +320,54 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 1:
                         //[1:4] [device:12] memory size (size:16)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                switch (Device->type)
+                                {
+                                    case HKHubModuleDebugControllerDeviceTypeNone:
+                                        break;
+                                        
+                                    case HKHubModuleDebugControllerDeviceTypeProcessor:
+                                        State->queryPortState[Port].message[0] = 1;
+                                        State->queryPortState[Port].message[1] = 0;
+                                        State->queryPortState[Port].size = 2;
+                                        Response = HKHubArchPortResponseSuccess;
+                                        break;
+                                        
+                                    case HKHubModuleDebugControllerDeviceTypeModule:
+                                        if (Device->module->memory)
+                                        {
+                                            const size_t Count = CCDataGetSize(Device->module->memory);
+                                            CCAssertLog(Count <= UINT16_MAX, "Memory size exceeds 16-bits");
+                                            State->queryPortState[Port].message[0] = Count & 0xff;
+                                            State->queryPortState[Port].message[1] = (Count >> 8) & 0xff;
+                                        }
+                                        
+                                        else
+                                        {
+                                            State->queryPortState[Port].message[0] = 0;
+                                            State->queryPortState[Port].message[1] = 0;
+                                        }
+                                        
+                                        State->queryPortState[Port].size = 2;
+                                        Response = HKHubArchPortResponseSuccess;
+                                        break;
+                                }
+                            }
+                        }
                         break;
                         
                     case 2:
-                        //[2:4] [device:12] read memory [offset:8] [size:8] ...
+                        //[2:4] [device:12] read memory [offset:8] [size:8] ... (bytes:sum sizes)
                         break;
                         
                     case 3:
-                        //[3:4] [device:12] read memory [offset:16] [size:16] ...
+                        //[3:4] [device:12] read memory [offset:16] [size:8] ... (bytes:sum sizes)
                         break;
                         
                     case 4:
