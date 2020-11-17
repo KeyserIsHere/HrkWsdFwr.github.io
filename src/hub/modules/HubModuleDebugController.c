@@ -480,6 +480,24 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 14:
                         //[e:4] [device:12] mode (_:7, paused/running: 1 bit)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    _Static_assert(HKHubArchProcessorDebugModeContinue == 0 &&
+                                                   HKHubArchProcessorDebugModePause == 1, "Debug mode flags have changed");
+                                    
+                                    State->queryPortState[Port].message[0] = !Device->processor->state.debug.mode;
+                                    State->queryPortState[Port].size = 1;
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 15:
