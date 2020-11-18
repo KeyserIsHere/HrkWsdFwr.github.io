@@ -372,6 +372,26 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 4:
                         //[4:4] [device:12] read registers (48 bits)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    State->queryPortState[Port].message[0] = Device->processor->state.r[0];
+                                    State->queryPortState[Port].message[1] = Device->processor->state.r[1];
+                                    State->queryPortState[Port].message[2] = Device->processor->state.r[2];
+                                    State->queryPortState[Port].message[3] = Device->processor->state.r[3];
+                                    State->queryPortState[Port].message[4] = Device->processor->state.flags;
+                                    State->queryPortState[Port].message[5] = Device->processor->state.pc;
+                                    State->queryPortState[Port].size = 6;
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 5:
