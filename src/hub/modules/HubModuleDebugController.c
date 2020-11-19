@@ -371,7 +371,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 4:
-                        //[4:4] [device:12] read registers (48 bits)
+                        //[4:4] [device:12] read registers [_:2, r0:1?, r1:1?, r2:1?, r3:1?, flags:1?, pc:1?, defaults to 0x3f] (r0:8?, r1:8?, r2:8?, r3:8?, flags:8?, pc:8?)
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -381,13 +381,30 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                 HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
                                 if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
                                 {
-                                    State->queryPortState[Port].message[0] = Device->processor->state.r[0];
-                                    State->queryPortState[Port].message[1] = Device->processor->state.r[1];
-                                    State->queryPortState[Port].message[2] = Device->processor->state.r[2];
-                                    State->queryPortState[Port].message[3] = Device->processor->state.r[3];
-                                    State->queryPortState[Port].message[4] = Device->processor->state.flags;
-                                    State->queryPortState[Port].message[5] = Device->processor->state.pc;
-                                    State->queryPortState[Port].size = 6;
+                                    if (Message->size >= 3)
+                                    {
+                                        uint8_t Index = 0;
+                                        if (Message->memory[Message->offset + 2] & (1 << 5)) State->queryPortState[Port].message[Index++] = Device->processor->state.r[0];
+                                        if (Message->memory[Message->offset + 2] & (1 << 4)) State->queryPortState[Port].message[Index++] = Device->processor->state.r[1];
+                                        if (Message->memory[Message->offset + 2] & (1 << 3)) State->queryPortState[Port].message[Index++] = Device->processor->state.r[2];
+                                        if (Message->memory[Message->offset + 2] & (1 << 2)) State->queryPortState[Port].message[Index++] = Device->processor->state.r[3];
+                                        if (Message->memory[Message->offset + 2] & (1 << 1)) State->queryPortState[Port].message[Index++] = Device->processor->state.flags;
+                                        if (Message->memory[Message->offset + 2] & (1 << 0)) State->queryPortState[Port].message[Index++] = Device->processor->state.pc;
+                                        
+                                        State->queryPortState[Port].size = Index;
+                                    }
+                                    
+                                    else
+                                    {
+                                        State->queryPortState[Port].message[0] = Device->processor->state.r[0];
+                                        State->queryPortState[Port].message[1] = Device->processor->state.r[1];
+                                        State->queryPortState[Port].message[2] = Device->processor->state.r[2];
+                                        State->queryPortState[Port].message[3] = Device->processor->state.r[3];
+                                        State->queryPortState[Port].message[4] = Device->processor->state.flags;
+                                        State->queryPortState[Port].message[5] = Device->processor->state.pc;
+                                        State->queryPortState[Port].size = 6;
+                                    }
+                                    
                                     Response = HKHubArchPortResponseSuccess;
                                 }
                             }
@@ -395,7 +412,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 5:
-                        //[5:4] [device:12] [_:5] read registers [reg:3 ...] (8 bits ...)
+                        //[5:4] unused
                         break;
                         
                     case 6:
