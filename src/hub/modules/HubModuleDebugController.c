@@ -498,7 +498,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 13:
-                        //[d:4] [device:12] step
+                        //[d:4] [device:12] step [count:8?]
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -508,7 +508,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                 HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
                                 if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
                                 {
-                                    HKHubArchProcessorStep(Device->processor, 1);
+                                    HKHubArchProcessorStep(Device->processor, Message->size >= 3 ? Message->memory[Message->offset + 2] : 1);
                                     Response = HKHubArchPortResponseSuccess;
                                 }
                             }
