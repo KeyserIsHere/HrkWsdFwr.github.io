@@ -410,6 +410,48 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 3:
                         //[3:4] [device:12] read memory [offset:16] [size:8] ... (bytes:sum sizes)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    uint8_t Index = 0;
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 3)
+                                    {
+                                        for (uint8_t Loop2 = 0, Offset = Message->memory[Loop + 1], Size = Message->memory[Loop + 2]; Loop2 < Size; Loop2++)
+                                        {
+                                            State->queryPortState[Port].message[Index++] = Device->processor->memory[Offset + Loop2];
+                                        }
+                                    }
+                                    
+                                    State->queryPortState[Port].size = Index;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                                
+                                else if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    uint8_t Index = 0;
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 2)
+                                    {
+                                        const size_t MemorySize = CCDataGetSize(Device->module->memory);
+                                        
+                                        for (uint16_t Loop2 = 0, Offset = (Message->memory[Loop] << 8) | Message->memory[Loop + 1], Size = Message->memory[Loop + 2]; Loop2 < Size; Loop2++)
+                                        {
+                                            CCDataReadBuffer(Device->module->memory, (Offset + Loop2) % MemorySize, 1, &State->queryPortState[Port].message[Index++]);
+                                        }
+                                    }
+                                    
+                                    State->queryPortState[Port].size = Index;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 4:
