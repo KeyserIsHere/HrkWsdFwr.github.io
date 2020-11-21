@@ -363,11 +363,57 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 2:
-                        //[2:4] [device:12] read memory [offset:8-16] [size:8] ... (bytes:sum sizes)
+                        //[2:4] [device:12] read memory [offset:8] [size:8] ... (bytes:sum sizes)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    uint8_t Index = 0;
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 2)
+                                    {
+                                        for (uint8_t Loop2 = 0, Offset = Message->memory[Loop], Size = Message->memory[Loop + 1]; Loop2 < Size; Loop2++)
+                                        {
+                                            State->queryPortState[Port].message[Index++] = Device->processor->memory[Offset + Loop2];
+                                        }
+                                    }
+                                    
+                                    State->queryPortState[Port].size = Index;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                                
+                                else if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    uint8_t Index = 0;
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 2)
+                                    {
+                                        const size_t MemorySize = CCDataGetSize(Device->module->memory);
+                                        
+                                        for (uint8_t Loop2 = 0, Offset = Message->memory[Loop], Size = Message->memory[Loop + 1]; Loop2 < Size; Loop2++)
+                                        {
+                                            CCDataReadBuffer(Device->module->memory, (Offset + Loop2) % MemorySize, 1, &State->queryPortState[Port].message[Index++]);
+                                        }
+                                    }
+                                    
+                                    State->queryPortState[Port].size = Index;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 3:
-                        //[3:4] [device:12] read registers [_:2, r0:1?, r1:1?, r2:1?, r3:1?, flags:1?, pc:1?, defaults to 0x3f] (r0:8?, r1:8?, r2:8?, r3:8?, flags:8?, pc:8?)
+                        //[3:4] [device:12] read memory [offset:16] [size:8] ... (bytes:sum sizes)
+                        break;
+                        
+                    case 4:
+                        //[4:4] [device:12] read registers [_:2, r0:1?, r1:1?, r2:1?, r3:1?, flags:1?, pc:1?, defaults to 0x3f] (r0:8?, r1:8?, r2:8?, r3:8?, flags:8?, pc:8?)
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -407,17 +453,17 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         }
                         break;
                         
-                    case 4:
-                        //[4:4] [device:12] read breakpoints [offset:8? ... defaults to every offset] (r:1 ..., w:1 ...)
-                        break;
-                        
                     case 5:
-                        //[5:4] [device:12] read ports (256 bits)
-                        //[5:4] [device:12] read ports [port:8 ...] (receiving port:8, device:12)
+                        //[5:4] [device:12] read breakpoints [offset:8? ... defaults to every offset] (r:1 ..., w:1 ...)
                         break;
                         
                     case 6:
-                        //[6:4] [device:12] toggle break [offset:8] [_:6] [rw:2] ... (xors rw)
+                        //[6:4] [device:12] read ports (256 bits)
+                        //[6:4] [device:12] read ports [port:8 ...] (receiving port:8, device:12)
+                        break;
+                        
+                    case 7:
+                        //[7:4] [device:12] toggle break [offset:8] [_:6] [rw:2] ... (xors rw)
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -445,8 +491,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         }
                         break;
                         
-                    case 7:
-                        //[7:4] [device:12] pause
+                    case 8:
+                        //[8:4] [device:12] pause
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -463,8 +509,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         }
                         break;
                         
-                    case 8:
-                        //[8:4] [device:12] continue
+                    case 9:
+                        //[9:4] [device:12] continue
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -482,8 +528,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         }
                         break;
                         
-                    case 9:
-                        //[9:4] [device:12] step [count:8?]
+                    case 10:
+                        //[a:4] [device:12] step [count:8?]
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -500,8 +546,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         }
                         break;
                         
-                    case 10:
-                        //[a:4] [device:12] mode (_:7, paused/running: 1 bit)
+                    case 11:
+                        //[b:4] [device:12] mode (_:7, paused/running: 1 bit)
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
@@ -522,8 +568,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         }
                         break;
                         
-                    case 11:
-                        //[b:4] [device:12] name [size:8? defaults to 256] (string:256?)
+                    case 12:
+                        //[c:4] [device:12] name [size:8? defaults to 256] (string:256?)
                         break;
                 }
                 
