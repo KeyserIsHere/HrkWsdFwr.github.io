@@ -364,7 +364,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 2:
                         //[2:4] [device:12] read memory [offset:8] [size:8] ... (bytes:sum sizes)
-                        if (Message->size >= 2)
+                        if ((Message->size >= 2) && ((Message->size % 2) == 0))
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
                             
@@ -410,7 +410,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 3:
                         //[3:4] [device:12] read memory [offset:16] [size:8] ... (bytes:sum sizes)
-                        if (Message->size >= 2)
+                        if ((Message->size >= 2) && (((Message->size - 2) % 3) == 0))
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
                             
@@ -506,7 +506,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 7:
                         //[7:4] [device:12] toggle break [offset:8] [_:6] [rw:2] ... (xors rw)
-                        if (Message->size >= 2)
+                        if ((Message->size >= 2) && ((Message->size % 2) == 0))
                         {
                             const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
                             
