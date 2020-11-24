@@ -387,7 +387,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                     Response = HKHubArchPortResponseSuccess;
                                 }
                                 
-                                else if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                else if (Device->type == HKHubModuleDebugControllerDeviceTypeModule)
                                 {
                                     uint8_t Index = 0;
                                     for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 2)
@@ -433,7 +433,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                     Response = HKHubArchPortResponseSuccess;
                                 }
                                 
-                                else if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                else if (Device->type == HKHubModuleDebugControllerDeviceTypeModule)
                                 {
                                     uint8_t Index = 0;
                                     for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 2)
