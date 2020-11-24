@@ -502,6 +502,28 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                     case 6:
                         //[6:4] [device:12] read ports (256 bits)
                         //[6:4] [device:12] read ports [port:8 ...] (receiving port:8, device:12)
+                        if (Message->size == 2)
+                        {
+                            const uint16_t DeviceID = ((uint16_t)(Message->memory[Message->offset] & 0xf) << 8) | Message->memory[Message->offset + 1];
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    memset(State->queryPortState[Port].message, 0, 32);
+                                    State->queryPortState[Port].size = 32;
+                                    
+                                    CC_DICTIONARY_FOREACH_KEY(HKHubArchPortID, PortID, Device->processor->ports)
+                                    {
+                                        const size_t Index = PortID / 8;
+                                        State->queryPortState[Port].message[Index] |= 1 << (7 - (PortID - (Index * 8)));
+                                    }
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 7:
