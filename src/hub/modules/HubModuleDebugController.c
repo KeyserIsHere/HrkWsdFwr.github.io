@@ -31,6 +31,9 @@
 #define Tbuffer PTYPE(uint16_t *)
 #include <CommonC/Memory.h>
 
+#define CC_GENERIC_PRESERVE_HEADER
+#define CC_GENERIC_TEMPLATE <CommonC/DataMemoryTemplate.h>
+
 #define Tmemory CCData
 #define Tbuffer PTYPE(uint8_t *)
 #include <CommonC/Memory.h>
