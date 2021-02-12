@@ -4706,6 +4706,34 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor);
         "sdiv [128+r0], [r3+r0]\n"
         "sdiv [r3+r0], [0+r0]\n"
         "hlt\n",
+        
+        ".byte 0, 0, 0\n"
+        ".entrypoint\n"
+        "sdiv r0, 0\n"
+        "sdiv r0, 1\n"
+        "mov r0, 1\n"
+        "sdiv r0, 0\n"
+        "sdiv r0, 1\n"
+        "sdiv [0], 0\n"
+        "sdiv [0], 1\n"
+        "mov [0], 1\n"
+        "sdiv [0], 0\n"
+        "sdiv [0], 1\n"
+        "sdiv [1], [2]\n"
+        "sdiv [1], [0]\n"
+        "mov [1], 1\n"
+        "sdiv [1], [2]\n"
+        "sdiv [1], [0]\n"
+        "sdiv r1, [2]\n"
+        "sdiv r1, [0]\n"
+        "sdiv r0, [2]\n"
+        "sdiv r0, [0]\n"
+        "sdiv [2], r1\n"
+        "sdiv [2], r0\n"
+        "mov [2], 1\n"
+        "sdiv [2], r1\n"
+        "sdiv [2], r0\n"
+        "hlt\n",
     };
     
     for (size_t Loop = 0; Loop < sizeof(Sources) / sizeof(typeof(*Sources)); Loop++) [self run: Sources[Loop]];
