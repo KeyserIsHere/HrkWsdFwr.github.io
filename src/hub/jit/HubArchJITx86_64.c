@@ -2380,7 +2380,7 @@ static size_t HKHubArchJITGenerate2OperandDivisionMutator(uint8_t *Ptr, const HK
             
             Ptr[Index++] = HKHubArchJITRexRB;
             HKHubArchJITAddInstructionTestMR8(Ptr, &Index, Src, Src);
-            HKHubArchJITAddInstructionJumpRel8(Ptr, &Index, HKHubArchJITJumpZero, Signed ? 50 : 16);
+            HKHubArchJITAddInstructionJumpRel8(Ptr, &Index, HKHubArchJITJumpZero, Signed ? 50 : 17);
             
             if (Signed)
             {
