@@ -1079,7 +1079,7 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
         .type = HKHubModuleDebugControllerDeviceTypeModule,
         .module = Module,
         .events = {
-            .buffer = NULL,
+            .buffer = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubModuleDebugControllerDeviceEvent), 4),
             .count = 0
         },
         .controller = Controller
