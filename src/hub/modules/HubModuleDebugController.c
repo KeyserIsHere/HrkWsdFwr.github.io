@@ -351,8 +351,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                     {
                         //[0:4] device count (count:16)
                         const size_t Count = CCArrayGetCount(State->devices);
-                        State->queryPortState[Port].message[0] = Count & 0xff;
-                        State->queryPortState[Port].message[1] = (Count >> 8) & 0xff;
+                        State->queryPortState[Port].message[0] = (Count >> 8) & 0xff;
+                        State->queryPortState[Port].message[1] = Count & 0xff;
                         State->queryPortState[Port].size = 2;
                         break;
                     }
@@ -383,8 +383,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                         {
                                             const size_t Count = CCDataGetSize(Device->module->memory);
                                             CCAssertLog(Count <= UINT16_MAX, "Memory size exceeds 16-bits");
-                                            State->queryPortState[Port].message[0] = Count & 0xff;
-                                            State->queryPortState[Port].message[1] = (Count >> 8) & 0xff;
+                                            State->queryPortState[Port].message[0] = (Count >> 8) & 0xff;
+                                            State->queryPortState[Port].message[1] = Count & 0xff;
                                         }
                                         
                                         else
