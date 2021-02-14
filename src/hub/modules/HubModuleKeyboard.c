@@ -80,6 +80,11 @@ static void HKHubModuleKeyboardStateDestructor(HKHubModuleKeyboardState *State)
     CCFree(State);
 }
 
+static size_t HKHubModuleKeyboardBufferSize(const void *Container)
+{
+    return UINT16_MAX;
+}
+
 HKHubModule HKHubModuleKeyboardCreate(CCAllocatorType Allocator)
 {
     HKHubModuleKeyboardState *State = CCMalloc(Allocator, sizeof(HKHubModuleKeyboardState), NULL, CC_DEFAULT_ERROR_CALLBACK);
@@ -90,7 +95,7 @@ HKHubModule HKHubModuleKeyboardCreate(CCAllocatorType Allocator)
             .cleared = TRUE
         };
         
-        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleKeyboardGetKey, NULL, State, (HKHubModuleDataDestructor)HKHubModuleKeyboardStateDestructor, CCDataContainerCreate(Allocator, CCDataHintReadWrite, sizeof(uint8_t), (CCDataContainerCount)CCQueueGetCount, (CCDataContainerEnumerable)CCQueueGetEnumerable, State->input, NULL, NULL));
+        return HKHubModuleCreate(Allocator, (HKHubArchPortTransmit)HKHubModuleKeyboardGetKey, NULL, State, (HKHubModuleDataDestructor)HKHubModuleKeyboardStateDestructor, CCDataContainerCreate(Allocator, CCDataHintReadWrite, sizeof(uint8_t), HKHubModuleKeyboardBufferSize, (CCDataContainerEnumerable)CCQueueGetEnumerable, State->input, NULL, NULL));
     }
     
     else CC_LOG_ERROR("Failed to create keyboard module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleKeyboardState));
