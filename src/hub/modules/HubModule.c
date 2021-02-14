@@ -64,6 +64,7 @@ HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit S
         Module->internal = Internal;
         Module->destructor = Destructor;
         Module->memory = Memory;
+        Module->debug.context = NULL;
         
         CCMemorySetDestructor(Module, (CCMemoryDestructorCallback)HKHubModuleDestructor);
     }
