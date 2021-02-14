@@ -161,7 +161,7 @@ static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerState 
     CCBigIntFastSet(&Event->id, State->sharedID);
     CCBigIntFastAdd(&State->sharedID, 1);
     
-    if (CCArrayGetCount(Events->buffer) == HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX)
+    if (CCArrayGetCount(Events->buffer) != HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX)
     {
         CCArrayAppendElement(Events->buffer, Event);
         Events->count++;
