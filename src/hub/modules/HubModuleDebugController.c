@@ -477,7 +477,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                     const size_t MemorySize = CCDataGetSize(Device->module->memory);
                                     
                                     uint8_t Index = 0;
-                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 2)
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 3)
                                     {
                                         const size_t Offset = HKHubModuleDebugControllerMessageGetU16(Message, Loop), Size = HKHubModuleDebugControllerMessageGetU8(Message, Loop + 2);
                                         
