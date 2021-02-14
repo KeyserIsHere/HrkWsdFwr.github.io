@@ -334,6 +334,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
             
             if (Port & HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK)
             {
+                Port ^= HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK;
+                
                 // query api
                 if (!State->queryPortState[Port].message)
                 {
@@ -773,6 +775,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
     
     if (Port & HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK)
     {
+        Port ^= HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK;
+        
         // query api
         if ((State->queryPortState[Port].message) && (State->queryPortState[Port].size))
         {
