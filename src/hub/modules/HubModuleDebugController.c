@@ -635,6 +635,60 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                 }
                             }
                         }
+                        
+                        else if (Message->size >= 3)
+                        {
+                            const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    uint8_t Index = 0;
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop++)
+                                    {
+                                        const HKHubArchPortID PortID = HKHubModuleDebugControllerMessageGetU8(Message, Loop);
+                                        
+                                        HKHubArchPortConnection Conn = HKHubArchProcessorGetPortConnection(Device->processor, PortID);
+                                        if (Conn)
+                                        {
+                                            HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Conn, Device->processor, PortID);
+                                            
+                                            State->queryPortState[Port].message[Index++] = OppositePort->id;
+                                            // TODO: Add callback to HKHubArchPort to get debug context (only safe if don't allow other debug contexts)
+                                            uint16_t ConnectedDeviceID = 0xfff;
+                                            for (size_t Loop2 = 0, Count2 = CCArrayGetCount(State->devices); Loop2 < Count2; Loop2++)
+                                            {
+                                                HKHubModuleDebugControllerDevice *ConnectedDevice = CCArrayGetElementAtIndex(State->devices, Loop2);
+                                                if (ConnectedDevice)
+                                                {
+                                                    if ((ConnectedDevice->processor == OppositePort->device) || (ConnectedDevice->module == OppositePort->device))
+                                                    {
+                                                        ConnectedDeviceID = Loop2;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            
+                                            State->queryPortState[Port].message[Index++] = ConnectedDeviceID >> 8;
+                                            State->queryPortState[Port].message[Index++] = ConnectedDeviceID & 0xff;
+                                        }
+                                        
+                                        else
+                                        {
+                                            State->queryPortState[Port].message[Index++] = 0;
+                                            State->queryPortState[Port].message[Index++] = 0xf;
+                                            State->queryPortState[Port].message[Index++] = 0xff;
+                                        }
+                                    }
+                                    
+                                    State->queryPortState[Port].size = Index;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 7:
