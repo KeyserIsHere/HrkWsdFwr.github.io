@@ -56,9 +56,10 @@
     CCCollectionDestroy(AST);
     
     HKHubArchProcessor TempProcessor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
+    HKHubModuleDebugControllerConnectProcessor(DebugController, TempProcessor);
     HKHubArchSchedulerAddProcessor(Scheduler, TempProcessor);
     
-    for (int Loop = 0; Loop < 5; Loop++)
+    for (int Loop = 1; Loop < 5; Loop++)
     {
         Binary->data[2] += Loop;
         
@@ -313,6 +314,105 @@
     XCTAssertEqual(Processor->memory[17], 6, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[18], 7, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[19], 8, @"Should be the correct value");
+    
+    
+    //[4:4] [device:12] read registers [_:2, r0:1?, r1:1?, r2:1?, r3:1?, flags:1?, pc:1?, defaults to 0x3f] (r0:8?, r1:8?, r2:8?, r3:8?, flags:8?, pc:8?)
+    Source =
+        "proc_all_regs:\n"
+        ".byte -1, -2, -3, -4, -5, -6\n"
+        "mod_all_regs:\n"
+        ".byte -1, -2, -3, -4, -5, -6\n"
+        "null_all_regs:\n"
+        ".byte -1, -2, -3, -4, -5, -6\n"
+        "proc_r0_and_pc:\n"
+        ".byte -1, -2\n"
+        "mod_r0_and_pc:\n"
+        ".byte -1, -2\n"
+        "null_r0_and_pc:\n"
+        ".byte -1, -2\n"
+        "proc_all_regs_query:\n"
+        ".byte (4 << 4) | 0, 0\n"
+        "mod_all_regs_query:\n"
+        ".byte (4 << 4) | 0, 5\n"
+        "null_all_regs_query:\n"
+        ".byte (4 << 4) | 0, 0xff\n"
+        "proc_r0_and_pc_query:\n"
+        ".byte (4 << 4) | 0, 0, (1 << 5) | 1 \n"
+        "mod_r0_and_pc_query:\n"
+        ".byte (4 << 4) | 0, 5, (1 << 5) | 1 \n"
+        "null_r0_and_pc_query:\n"
+        ".byte (4 << 4) | 0, 0xff, (1 << 5) | 1 \n"
+        ".entrypoint\n"
+        "send r0, 2, [proc_all_regs_query]\n"
+        "recv r0, [proc_all_regs]\n"
+        "send r0, 2, [mod_all_regs_query]\n"
+        "recv r0, [mod_all_regs]\n"
+        "send r0, 2, [null_all_regs_query]\n"
+        "recv r0, [null_all_regs]\n"
+        "send r0, 4, [proc_r0_and_pc_query]\n"
+        "recv r0, [proc_r0_and_pc]\n"
+        "send r0, 4, [mod_r0_and_pc_query]\n"
+        "recv r0, [mod_r0_and_pc]\n"
+        "send r0, 4, [null_r0_and_pc_query]\n"
+        "recv r0, [null_r0_and_pc]\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    TempProcessor->state.r[0] = 1;
+    TempProcessor->state.r[1] = 2;
+    TempProcessor->state.r[2] = 3;
+    TempProcessor->state.r[3] = 4;
+    TempProcessor->state.flags = 5;
+    TempProcessor->state.pc = 6;
+    
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //proc_all_regs
+    XCTAssertEqual(Processor->memory[0], TempProcessor->state.r[0], @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[1], TempProcessor->state.r[1], @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[2], TempProcessor->state.r[2], @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[3], TempProcessor->state.r[3], @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[4], TempProcessor->state.flags, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[5], TempProcessor->state.pc, @"Should be the correct value");
+    //mod_all_regs
+    XCTAssertEqual(Processor->memory[6], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[7], 0xfe, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[8], 0xfd, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[9], 0xfc, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[10], 0xfb, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[11], 0xfa, @"Should be the correct value");
+    //null_all_regs
+    XCTAssertEqual(Processor->memory[12], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[13], 0xfe, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[14], 0xfd, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[15], 0xfc, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[16], 0xfb, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[17], 0xfa, @"Should be the correct value");
+    //proc_r0_and_pc
+    XCTAssertEqual(Processor->memory[18], TempProcessor->state.r[0], @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[19], TempProcessor->state.pc, @"Should be the correct value");
+    //mod_r0_and_pc
+    XCTAssertEqual(Processor->memory[20], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[21], 0xfe, @"Should be the correct value");
+    //null_r0_and_pc
+    XCTAssertEqual(Processor->memory[22], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[23], 0xfe, @"Should be the correct value");
+    
+    TempProcessor->state.r[0] = 0;
+    TempProcessor->state.r[1] = 0;
+    TempProcessor->state.r[2] = 0;
+    TempProcessor->state.r[3] = 0;
+    TempProcessor->state.flags = 0;
+    TempProcessor->state.pc = 0;
     
     HKHubArchProcessorDestroy(TempProcessor);
     HKHubArchProcessorDestroy(Processor);
