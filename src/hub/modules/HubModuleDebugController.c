@@ -539,7 +539,75 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 5:
-                        //[5:4] [device:12] read breakpoints [offset:8? ... defaults to every offset] (r:1 ..., w:1 ...)
+                        //[5:4] [device:12] read breakpoints [offset:8? ... defaults to every offset] (w:1 r:1, ...)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    size_t Index = 0;
+                                    
+                                    if (Message->size == 2)
+                                    {
+                                        if (Device->processor->state.debug.breakpoints)
+                                        {
+                                            for (size_t Loop = 0, Count = 256; Loop < Count; Loop++)
+                                            {
+                                                HKHubArchProcessorDebugBreakpoint CurrentBP = 0;
+                                                HKHubArchProcessorDebugBreakpoint *Breakpoint = CCDictionaryGetValue(Device->processor->state.debug.breakpoints, &(uint8_t){ Loop });
+                                                if (Breakpoint) CurrentBP = *Breakpoint;
+                                                
+                                                if (Index % 4 == 0) State->queryPortState[Port].message[Index / 4] = 0;
+                                                
+                                                State->queryPortState[Port].message[Index / 4] |= CurrentBP << (6 - ((Index % 4) * 2));
+                                                Index++;
+                                            }
+                                        }
+                                        
+                                        else
+                                        {
+                                            Index = 64 * 4;
+                                            memset(State->queryPortState[Port].message, 0, 64);
+                                        }
+                                    }
+                                    
+                                    else
+                                    {
+                                        if (Device->processor->state.debug.breakpoints)
+                                        {
+                                            for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop++)
+                                            {
+                                                const uint8_t Offset = HKHubModuleDebugControllerMessageGetU8(Message, Loop);
+                                                
+                                                HKHubArchProcessorDebugBreakpoint CurrentBP = 0;
+                                                HKHubArchProcessorDebugBreakpoint *Breakpoint = CCDictionaryGetValue(Device->processor->state.debug.breakpoints, &Offset);
+                                                if (Breakpoint) CurrentBP = *Breakpoint;
+                                                
+                                                if (Index % 4 == 0) State->queryPortState[Port].message[Index] = 0;
+                                                
+                                                State->queryPortState[Port].message[Index / 4] |= CurrentBP << (6 - ((Index % 4) * 2));
+                                                Index++;
+                                            }
+                                        }
+                                        
+                                        else
+                                        {
+                                            const size_t Count = ((((Message->size - 2) / 4) - 1) / 4) + 1;
+                                            Index = Count * 4;
+                                            memset(State->queryPortState[Port].message, 0, Count);
+                                        }
+                                    }
+                                    
+                                    State->queryPortState[Port].size = ((Index - 1) / 4) + 1;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
                         break;
                         
                     case 6:
