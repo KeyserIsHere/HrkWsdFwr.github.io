@@ -414,6 +414,114 @@
     TempProcessor->state.flags = 0;
     TempProcessor->state.pc = 0;
     
+    
+    //[5:4] [device:12] read breakpoints [offset:8? ... defaults to every offset] (r:1 ..., w:1 ...)
+    Source =
+        "proc_all_brks:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        "mod_all_brks:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        "null_all_brks:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        "proc_0_and_2:\n"
+        ".byte -1\n"
+        "mod_0_and_2:\n"
+        ".byte -1\n"
+        "null_0_and_2:\n"
+        ".byte -1\n"
+        "proc_all_brks_query:\n"
+        ".byte (5 << 4) | 0, 0\n"
+        "mod_all_brks_query:\n"
+        ".byte (5 << 4) | 0, 5\n"
+        "null_all_brks_query:\n"
+        ".byte (5 << 4) | 0, 0xff\n"
+        "proc_0_and_2_query:\n"
+        ".byte (5 << 4) | 0, 0, 0, 2 \n"
+        "mod_0_and_2_query:\n"
+        ".byte (5 << 4) | 0, 5, 0, 2 \n"
+        "null_0_and_2_query:\n"
+        ".byte (5 << 4) | 0, 0xff, 0, 2 \n"
+        ".entrypoint\n"
+        "send r0, 2, [proc_all_brks_query]\n"
+        "recv r0, [proc_all_brks]\n"
+        "send r0, 2, [mod_all_brks_query]\n"
+        "recv r0, [mod_all_brks]\n"
+        "send r0, 2, [null_all_brks_query]\n"
+        "recv r0, [null_all_brks]\n"
+        "send r0, 4, [proc_0_and_2_query]\n"
+        "recv r0, [proc_0_and_2]\n"
+        "send r0, 4, [mod_0_and_2_query]\n"
+        "recv r0, [mod_0_and_2]\n"
+        "send r0, 4, [null_0_and_2_query]\n"
+        "recv r0, [null_0_and_2]\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //proc_all_brks
+    for (int Loop = 0; Loop < 4; Loop++)
+    {
+        for (int Loop2 = 0; Loop2 < 16; Loop2++)
+        {
+            XCTAssertEqual(Processor->memory[(Loop * 16) + Loop2], 0, @"Should be the correct value");
+        }
+    }
+    //mod_all_brks
+    for (int Loop = 4; Loop < 8; Loop++)
+    {
+        for (int Loop2 = 0; Loop2 < 16; Loop2++)
+        {
+            XCTAssertEqual(Processor->memory[(Loop * 16) + Loop2], (uint8_t)-(Loop2 + 1), @"Should be the correct value");
+        }
+    }
+    //null_all_brks
+    for (int Loop = 8; Loop < 12; Loop++)
+    {
+        for (int Loop2 = 0; Loop2 < 16; Loop2++)
+        {
+            XCTAssertEqual(Processor->memory[(Loop * 16) + Loop2], (uint8_t)-(Loop2 + 1), @"Should be the correct value");
+        }
+    }
+    //proc_0_and_2
+    XCTAssertEqual(Processor->memory[192], 0, @"Should be the correct value");
+    //mod_0_and_2
+    XCTAssertEqual(Processor->memory[193], 0xff, @"Should be the correct value");
+    //null_0_and_2
+    XCTAssertEqual(Processor->memory[194], 0xff, @"Should be the correct value");
+    
+    HKHubArchProcessorSetBreakpoint(TempProcessor, HKHubArchProcessorDebugBreakpointRead, 0);
+    HKHubArchProcessorSetBreakpoint(TempProcessor, HKHubArchProcessorDebugBreakpointWrite | HKHubArchProcessorDebugBreakpointRead, 2);
+    HKHubArchProcessorSetBreakpoint(TempProcessor, HKHubArchProcessorDebugBreakpointRead, 255);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //proc_all_brks
+    XCTAssertEqual(Processor->memory[0], 76, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[63], 1, @"Should be the correct value");
+    //proc_0_and_2
+    XCTAssertEqual(Processor->memory[192], 112, @"Should be the correct value");
+    
     HKHubArchProcessorDestroy(TempProcessor);
     HKHubArchProcessorDestroy(Processor);
     HKHubModuleDestroy(Keyboard);
