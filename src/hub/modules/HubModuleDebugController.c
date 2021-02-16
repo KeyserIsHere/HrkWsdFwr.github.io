@@ -25,6 +25,9 @@
 
 #include "HubModuleDebugController.h"
 
+#define T size_t
+#include <CommonC/Extrema.h>
+
 #define Tbuffer PTYPE(uint8_t *)
 #include <CommonC/Memory.h>
 
@@ -118,6 +121,7 @@ typedef struct {
     HKHubModuleDebugControllerDeviceEventBuffer events;
     HKHubModule controller;
     size_t index;
+    char name[32];
 } HKHubModuleDebugControllerDevice;
 
 CC_ARRAY_DECLARE(HKHubModuleDebugControllerDevice);
@@ -1133,7 +1137,7 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
     return NULL;
 }
 
-void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor)
+void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor, CCString Name)
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Processor, "Processor must not be null");
@@ -1160,6 +1164,16 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
 //    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
+    
+    memset(Device->name, 0, sizeof(Device->name));
+    
+    if (Name)
+    {
+        CC_STRING_TEMP_BUFFER(Buffer, Name)
+        {
+            memcpy(Device->name, Buffer, CCMin(CCStringGetSize(Name), sizeof(Device->name)));
+        }
+    }
     
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
     
@@ -1194,7 +1208,7 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
 }
 
-void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule Module)
+void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule Module, CCString Name)
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Module, "Module must not be null");
@@ -1214,6 +1228,16 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
     HKHubModuleDebugControllerDevice * const Device = CCArrayGetElementAtIndex(State->devices, Index);
     
     Module->debug.context = Device;
+    
+    memset(Device->name, 0, sizeof(Device->name));
+    
+    if (Name)
+    {
+        CC_STRING_TEMP_BUFFER(Buffer, Name)
+        {
+            memcpy(Device->name, Buffer, CCMin(CCStringGetSize(Name), sizeof(Device->name)));
+        }
+    }
     
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
     

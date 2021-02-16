@@ -56,7 +56,7 @@
     CCCollectionDestroy(AST);
     
     HKHubArchProcessor TempProcessor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
-    HKHubModuleDebugControllerConnectProcessor(DebugController, TempProcessor);
+    HKHubModuleDebugControllerConnectProcessor(DebugController, TempProcessor, 0);
     HKHubArchSchedulerAddProcessor(Scheduler, TempProcessor);
     
     for (int Loop = 1; Loop < 5; Loop++)
@@ -65,7 +65,7 @@
         
         HKHubArchProcessor Processor = HKHubArchProcessorCreate(CC_STD_ALLOCATOR, Binary);
         
-        HKHubModuleDebugControllerConnectProcessor(DebugController, Processor);
+        HKHubModuleDebugControllerConnectProcessor(DebugController, Processor, 0);
         
         HKHubArchSchedulerAddProcessor(Scheduler, Processor);
         HKHubArchProcessorDestroy(Processor);
@@ -74,7 +74,7 @@
     HKHubArchBinaryDestroy(Binary);
     
     HKHubModule Keyboard = HKHubModuleKeyboardCreate(CC_STD_ALLOCATOR);
-    HKHubModuleDebugControllerConnectModule(DebugController, Keyboard);
+    HKHubModuleDebugControllerConnectModule(DebugController, Keyboard, CC_STRING("keyboard"));
     HKHubModuleKeyboardEnterKey(Keyboard, 1);
     HKHubModuleKeyboardEnterKey(Keyboard, 2);
     HKHubModuleKeyboardEnterKey(Keyboard, 3);
