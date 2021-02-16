@@ -48,7 +48,7 @@ CC_NEW HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator);
  * @param Processor The processor to be connected to.
  * @param Name The name of the processor. May be null.
  */
-void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor, CCString Name);
+void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor, CCString CC_COPY(Name));
 
 /*!
  * @brief Disconnect the debug controller from the processor.
@@ -63,7 +63,7 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
  * @param Module The module to be connected to.
  * @param Name The name of the module. May be null.
  */
-void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule Module, CCString Name);
+void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule Module, CCString CC_COPY(Name));
 
 /*!
  * @brief Disconnect the debug controller from the processor.

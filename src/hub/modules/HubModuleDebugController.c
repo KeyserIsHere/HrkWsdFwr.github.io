@@ -121,7 +121,7 @@ typedef struct {
     HKHubModuleDebugControllerDeviceEventBuffer events;
     HKHubModule controller;
     size_t index;
-    char name[32];
+    CCString name;
 } HKHubModuleDebugControllerDevice;
 
 CC_ARRAY_DECLARE(HKHubModuleDebugControllerDevice);
@@ -1083,6 +1083,7 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
         }
         
         CCArrayDestroy(Device->events.buffer);
+        CCStringDestroy(Device->name);
     }
     
     for (size_t Loop = 0; Loop < sizeof(State->eventPortState) / sizeof(typeof(*State->eventPortState)); Loop++)
@@ -1151,7 +1152,8 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
             .buffer = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubModuleDebugControllerDeviceEvent), 16),
             .count = 0
         },
-        .controller = Controller
+        .controller = Controller,
+        .name = (Name ? CCStringCopy(Name) : 0)
     });
     
     HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModePause);
@@ -1164,16 +1166,6 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
 //    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
 //    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
-    
-    memset(Device->name, 0, sizeof(Device->name));
-    
-    if (Name)
-    {
-        CC_STRING_TEMP_BUFFER(Buffer, Name)
-        {
-            memcpy(Device->name, Buffer, CCMin(CCStringGetSize(Name), sizeof(Device->name)));
-        }
-    }
     
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
     
@@ -1222,22 +1214,13 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
             .buffer = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubModuleDebugControllerDeviceEvent), 4),
             .count = 0
         },
-        .controller = Controller
+        .controller = Controller,
+        .name = (Name ? CCStringCopy(Name) : 0)
     });
     
     HKHubModuleDebugControllerDevice * const Device = CCArrayGetElementAtIndex(State->devices, Index);
     
     Module->debug.context = Device;
-    
-    memset(Device->name, 0, sizeof(Device->name));
-    
-    if (Name)
-    {
-        CC_STRING_TEMP_BUFFER(Buffer, Name)
-        {
-            memcpy(Device->name, Buffer, CCMin(CCStringGetSize(Name), sizeof(Device->name)));
-        }
-    }
     
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
     
