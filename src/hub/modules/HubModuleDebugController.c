@@ -810,6 +810,32 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 12:
                         //[c:4] [device:12] name [size:8? defaults to 256] (string:256?)
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                
+                                size_t Length = 32;
+                                if (Message->size == 3) Length = HKHubModuleDebugControllerMessageGetU8(Message, 2);
+                                
+                                memset(State->queryPortState[Port].message, 0, Length);
+                                
+                                if (Device->name)
+                                {
+                                    CC_STRING_TEMP_BUFFER(Buffer, Device->name)
+                                    {
+                                        memcpy(State->queryPortState[Port].message, Buffer, CCMin(CCStringGetSize(Device->name), Length));
+                                    }
+                                }
+                                
+                                State->queryPortState[Port].size = Length;
+                                
+                                Response = HKHubArchPortResponseSuccess;
+                            }
+                        }
                         break;
                 }
                 
