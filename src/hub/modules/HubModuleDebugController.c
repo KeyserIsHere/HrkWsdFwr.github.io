@@ -1109,7 +1109,7 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
         }
         
         CCArrayDestroy(Device->events.buffer);
-        CCStringDestroy(Device->name);
+        if (Device->name) CCStringDestroy(Device->name);
     }
     
     for (size_t Loop = 0; Loop < sizeof(State->eventPortState) / sizeof(typeof(*State->eventPortState)); Loop++)
