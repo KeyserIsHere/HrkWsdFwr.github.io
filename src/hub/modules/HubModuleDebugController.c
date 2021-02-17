@@ -1164,6 +1164,21 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
     return NULL;
 }
 
+static void HKHubModuleDebugControllerDebugModeChangeHook(HKHubArchProcessor Processor)
+{
+    CCAssertLog(Processor->state.debug.context, "Processor must be connected");
+    
+    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    
+    _Static_assert((HKHubArchProcessorDebugModePause == HKHubModuleDebugControllerDeviceEventTypePause) &&
+                   (HKHubArchProcessorDebugModeContinue == HKHubModuleDebugControllerDeviceEventTypeRun), "Expects enums to match");
+    
+    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .type = (HKHubModuleDebugControllerDeviceEventType)Processor->state.debug.mode,
+        .device = (uint16_t)Device->index
+    });
+}
+
 void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArchProcessor Processor, CCString Name)
 {
     CCAssertLog(Controller, "Controller must not be null");
@@ -1191,7 +1206,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
 //    Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
 //    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
 //    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
-//    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
+    Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
     
