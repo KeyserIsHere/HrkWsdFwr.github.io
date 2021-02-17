@@ -1164,6 +1164,22 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
     return NULL;
 }
 
+static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)
+{
+    CCAssertLog(Processor->state.debug.context, "Processor must be connected");
+    
+    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    
+    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .type = (HKHubModuleDebugControllerDeviceEventType)Processor->state.debug.mode,
+        .device = (uint16_t)Device->index,
+        .breakpoint = {
+            .offset = Offset,
+            .access = Breakpoint
+        }
+    });
+}
+
 static void HKHubModuleDebugControllerDebugModeChangeHook(HKHubArchProcessor Processor)
 {
     CCAssertLog(Processor->state.debug.context, "Processor must be connected");
@@ -1205,7 +1221,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
     
 //    Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
 //    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
-//    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
+    Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
     Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
