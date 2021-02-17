@@ -58,8 +58,8 @@ size_t HKHubModuleDebugControllerEventBufferMax = HK_HUB_MODULE_DEBUG_CONTROLLER
 #endif
 
 typedef enum {
-    HKHubModuleDebugControllerDeviceEventTypePause,
     HKHubModuleDebugControllerDeviceEventTypeRun,
+    HKHubModuleDebugControllerDeviceEventTypePause,
     HKHubModuleDebugControllerDeviceEventTypeChangeBreakpoint,
     HKHubModuleDebugControllerDeviceEventTypeChangePortConnection,
     HKHubModuleDebugControllerDeviceEventTypeExecutedOperation,
@@ -727,25 +727,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 8:
-                        //[8:4] [device:12] pause
-                        if (Message->size >= 2)
-                        {
-                            const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
-                            
-                            if (DeviceID < CCArrayGetCount(State->devices))
-                            {
-                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
-                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
-                                {
-                                    HKHubArchProcessorSetDebugMode(Device->processor, HKHubArchProcessorDebugModePause);
-                                    Response = HKHubArchPortResponseSuccess;
-                                }
-                            }
-                        }
-                        break;
-                        
-                    case 9:
-                        //[9:4] [device:12] continue
+                        //[8:4] [device:12] continue
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
@@ -757,6 +739,24 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                 {
                                     HKHubArchProcessorStep(Device->processor, 1);
                                     HKHubArchProcessorSetDebugMode(Device->processor, HKHubArchProcessorDebugModeContinue);
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                            }
+                        }
+                        break;
+                        
+                    case 9:
+                        //[9:4] [device:12] pause
+                        if (Message->size >= 2)
+                        {
+                            const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    HKHubArchProcessorSetDebugMode(Device->processor, HKHubArchProcessorDebugModePause);
                                     Response = HKHubArchPortResponseSuccess;
                                 }
                             }
@@ -787,7 +787,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 11:
-                        //[b:4] [device:12] mode (_:7, paused/running: 1 bit)
+                        //[b:4] [device:12] mode (_:7, running/paused: 1 bit)
                         if (Message->size >= 2)
                         {
                             const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
@@ -800,7 +800,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                     _Static_assert(HKHubArchProcessorDebugModeContinue == 0 &&
                                                    HKHubArchProcessorDebugModePause == 1, "Debug mode flags have changed");
                                     
-                                    State->queryPortState[Port].message[0] = !Device->processor->state.debug.mode;
+                                    State->queryPortState[Port].message[0] = Device->processor->state.debug.mode;
                                     State->queryPortState[Port].size = 1;
                                     Response = HKHubArchPortResponseSuccess;
                                 }
@@ -990,12 +990,12 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                     
                     switch (Event->type)
                     {
-                        case HKHubModuleDebugControllerDeviceEventTypePause:
-                            //[0:4] [device:12] paused
+                        case HKHubModuleDebugControllerDeviceEventTypeRun:
+                            //[0:4] [device:12] running
                             break;
                             
-                        case HKHubModuleDebugControllerDeviceEventTypeRun:
-                            //[1:4] [device:12] running
+                        case HKHubModuleDebugControllerDeviceEventTypePause:
+                            //[1:4] [device:12] paused
                             break;
                             
                         case HKHubModuleDebugControllerDeviceEventTypeChangeBreakpoint:
