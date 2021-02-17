@@ -75,8 +75,10 @@ typedef void (*HKHubArchProcessorDebugPortConnectionChangeCallback)(HKHubArchPro
 /*!
  * @brief Callback to hook any breakpoint changes.
  * @param Processor The processor that had a breakpoint changed.
+ * @param Breakpoint The type of breakpoint change.
+ * @param Offset The offset of the breapoint change.
  */
-typedef void (*HKHubArchProcessorDebugBreakpointChangeCallback)(HKHubArchProcessor Processor);
+typedef void (*HKHubArchProcessorDebugBreakpointChangeCallback)(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset);
 
 /*!
  * @brief Callback to hook any debug mode changes.

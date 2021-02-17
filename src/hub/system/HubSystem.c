@@ -321,7 +321,7 @@ static void HKHubSystemDebuggerPortConnectionChangeHook(HKHubArchProcessor Proce
     HKRapServerUpdate(Processor);
 }
 
-static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor)
+static void HKHubSystemDebuggerBreakpointChangeHook(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)
 {
     //TODO: Send update message (instead of update here/avoid locking UI)
     GUIManagerLock();

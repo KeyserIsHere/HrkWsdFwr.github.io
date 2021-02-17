@@ -155,11 +155,23 @@ void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
     
     if (Processor->state.debug.breakpoints)
     {
+        if (Processor->state.debug.breakpointChange)
+        {
+            CC_DICTIONARY_FOREACH_KEY(uint8_t, Offset, Processor->state.debug.breakpoints)
+            {
+                HKHubArchProcessorDebugBreakpoint *Bp = CCDictionaryGetValue(Processor->state.debug.breakpoints, &Offset);
+                
+                if (Bp != HKHubArchProcessorDebugBreakpointNone)
+                {
+                    Processor->state.debug.breakpointChange(Processor, HKHubArchProcessorDebugBreakpointNone, Offset);
+                }
+            }
+        }
+        
         CCDictionaryDestroy(Processor->state.debug.breakpoints);
         Processor->state.debug.breakpoints = NULL;
     }
     
-    if (Processor->state.debug.breakpointChange) Processor->state.debug.breakpointChange(Processor);
     if (Processor->state.debug.debugModeChange) Processor->state.debug.debugModeChange(Processor);
 }
 
@@ -528,7 +540,7 @@ void HKHubArchProcessorSetBreakpoint(HKHubArchProcessor Processor, HKHubArchProc
     
     CCDictionarySetValue(Processor->state.debug.breakpoints, &Offset, &Breakpoint);
     
-    if (Processor->state.debug.breakpointChange) Processor->state.debug.breakpointChange(Processor);
+    if (Processor->state.debug.breakpointChange) Processor->state.debug.breakpointChange(Processor, Breakpoint, Offset);
 }
 
 void HKHubArchProcessorClearBreakpoints(HKHubArchProcessor Processor)
