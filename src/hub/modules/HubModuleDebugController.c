@@ -85,6 +85,7 @@ typedef struct {
                 uint8_t port;
             } target;
             uint8_t port;
+            _Bool connected;
         } connection;
         struct {
             uint8_t encoding[5];
@@ -616,7 +617,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         
                     case 6:
                         //[6:4] [device:12] read ports (256 bits)
-                        //[6:4] [device:12] read ports [port:8 ...] (receiving port:8, device:12)
+                        //[6:4] [device:12] read ports [port:8 ...] (receiving port:8, connected:1, _:3, device:12)
                         if (Message->size == 2)
                         {
                             const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
@@ -675,7 +676,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                                 }
                                             }
                                             
-                                            State->queryPortState[Port].message[Index++] = ConnectedDeviceID >> 8;
+                                            State->queryPortState[Port].message[Index++] = (ConnectedDeviceID >> 8) | 0x80;
                                             State->queryPortState[Port].message[Index++] = ConnectedDeviceID & 0xff;
                                         }
                                         
@@ -1007,10 +1008,10 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                             break;
                             
                         case HKHubModuleDebugControllerDeviceEventTypeChangePortConnection:
-                            //[3:4] [device:12] change [port:8] [receiving port: 8, _:4, device:12]
+                            //[3:4] [device:12] change [port:8] [receiving port: 8, connected:1, _:3, device:12]
                             State->eventPortState[Port].message[Size++] = Event->connection.port;
                             State->eventPortState[Port].message[Size++] = Event->connection.target.port;
-                            State->eventPortState[Port].message[Size++] = (Event->connection.target.device & 0xf00) >> 8;
+                            State->eventPortState[Port].message[Size++] = ((Event->connection.target.device & 0xf00) >> 8) | (Event->connection.connected * 0x80);
                             State->eventPortState[Port].message[Size++] = Event->connection.target.device & 0xff;
                             break;
                             
@@ -1166,8 +1167,6 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
 
 static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)
 {
-    CCAssertLog(Processor->state.debug.context, "Processor must be connected");
-    
     HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
     
     HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
@@ -1182,8 +1181,6 @@ static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Pr
 
 static void HKHubModuleDebugControllerDebugModeChangeHook(HKHubArchProcessor Processor)
 {
-    CCAssertLog(Processor->state.debug.context, "Processor must be connected");
-    
     HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
     
     _Static_assert((HKHubArchProcessorDebugModePause == HKHubModuleDebugControllerDeviceEventTypePause) &&

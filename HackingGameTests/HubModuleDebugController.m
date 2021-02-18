@@ -523,7 +523,7 @@
     XCTAssertEqual(Processor->memory[192], 112, @"Should be the correct value");
     
     //[6:4] [device:12] read ports (256 bits)
-    //[6:4] [device:12] read ports [port:8 ...] (receiving port:8, device:12)
+    //[6:4] [device:12] read ports [port:8 ...] (receiving port:8, connected:1, _:3, device:12)
     Source =
         "proc_all_ports:\n"
         ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
@@ -578,7 +578,7 @@
     
     HKHubArchSchedulerRun(Scheduler, 10.0);
     
-    //proc_all_brks
+    //proc_all_ports
     for (int Loop = 0; Loop < 2; Loop++)
     {
         for (int Loop2 = 0; Loop2 < 16; Loop2++)
@@ -586,7 +586,7 @@
             XCTAssertEqual(Processor->memory[(Loop * 16) + Loop2], 0, @"Should be the correct value");
         }
     }
-    //mod_all_brks
+    //mod_all_ports
     for (int Loop = 2; Loop < 4; Loop++)
     {
         for (int Loop2 = 0; Loop2 < 16; Loop2++)
@@ -594,7 +594,7 @@
             XCTAssertEqual(Processor->memory[(Loop * 16) + Loop2], (uint8_t)-(Loop2 + 1), @"Should be the correct value");
         }
     }
-    //null_all_brks
+    //null_all_ports
     for (int Loop = 4; Loop < 6; Loop++)
     {
         for (int Loop2 = 0; Loop2 < 16; Loop2++)
@@ -641,14 +641,14 @@
     
     HKHubArchSchedulerRun(Scheduler, 10.0);
     
-    //proc_all_brks
+    //proc_all_ports
     XCTAssertEqual(Processor->memory[0], 160, @"Should be the correct value");
     //proc_0_and_2
     XCTAssertEqual(Processor->memory[96], 1, @"Should be the correct value");
-    XCTAssertEqual(Processor->memory[97], 0xf, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[97], 0x8f, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[98], 0xff, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[99], 29, @"Should be the correct value");
-    XCTAssertEqual(Processor->memory[100], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[100], 0x80, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[101], 5, @"Should be the correct value");
     
     HKHubArchProcessorDestroy(TempProcessor);
