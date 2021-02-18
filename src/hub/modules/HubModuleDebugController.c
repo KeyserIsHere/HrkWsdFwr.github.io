@@ -1165,6 +1165,51 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
     return NULL;
 }
 
+static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcessor Processor, HKHubArchPortID Port)
+{
+    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    
+    HKHubModuleDebugControllerDeviceEvent Event = {
+        .type = HKHubModuleDebugControllerDeviceEventTypeChangePortConnection,
+        .device = (uint16_t)Device->index,
+        .connection = {
+            .port = Port,
+            .target = {
+                .device = 0xfff,
+                .port = 0
+            },
+            .connected = FALSE
+        }
+    };
+    
+    HKHubArchPortConnection Conn = HKHubArchProcessorGetPortConnection(Processor, Port);
+    if (Conn)
+    {
+        const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Conn, Processor, Port);
+        
+        Event.connection.target.port = OppositePort->id;
+        // TODO: Add callback to HKHubArchPort to get debug context (only safe if don't allow other debug contexts)
+        uint16_t ConnectedDeviceID = 0xfff;
+        HKHubModuleDebugControllerState *State = Device->controller->internal;
+        for (size_t Loop2 = 0, Count2 = CCArrayGetCount(State->devices); Loop2 < Count2; Loop2++)
+        {
+            HKHubModuleDebugControllerDevice *ConnectedDevice = CCArrayGetElementAtIndex(State->devices, Loop2);
+            if (ConnectedDevice)
+            {
+                if ((ConnectedDevice->processor == OppositePort->device) || (ConnectedDevice->module == OppositePort->device))
+                {
+                    ConnectedDeviceID = Loop2;
+                    break;
+                }
+            }
+        }
+        
+        Event.connection.target.device = ConnectedDeviceID;
+    }
+    
+    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &Event);
+}
+
 static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)
 {
     HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
@@ -1217,7 +1262,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
     Processor->state.debug.context = Device;
     
 //    Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
-//    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
+    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
     Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
     Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
