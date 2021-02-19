@@ -484,6 +484,14 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
             size_t Cycles = (NextPC >= Processor->state.pc ? (NextPC - Processor->state.pc) : (NextPC + (256 - Processor->state.pc))) * HKHubArchProcessorSpeedMemoryRead;
             if (Cycles < Processor->cycles)
             {
+                uint8_t Encoding[5] = { 0, 0, 0, 0, 0 };
+                if (Processor->state.debug.operation)
+                {
+                    CCAssertLog(NextPC - Processor->state.pc <= 5, "Instruction encoding exceeds 5 bytes");
+                    
+                    for (uint8_t Loop = 0, Offset = Processor->state.pc; Offset != NextPC; Offset++, Loop++) Encoding[Loop] = Processor->memory[Offset];
+                }
+                
                 Processor->cycles -= Cycles;
                 
                 HKHubArchInstructionOperationResult Result;
@@ -500,7 +508,7 @@ void HKHubArchProcessorRun(HKHubArchProcessor Processor)
                 {
                     if (!(Result & HKHubArchInstructionOperationResultFlagSkipPC)) Processor->state.pc = NextPC;
                     
-                    if (Processor->state.debug.operation) Processor->state.debug.operation(Processor, &Instruction);
+                    if (Processor->state.debug.operation) Processor->state.debug.operation(Processor, &Instruction, Encoding);
                     
                     Processor->state.debug.modified.reg = 0;
                     Processor->state.debug.modified.size = 0;

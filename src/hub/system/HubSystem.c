@@ -212,7 +212,7 @@ static void HKHubSystemInitDebugger(GUIObject Debugger, HKHubArchProcessor Proce
     HKRapServerUpdate(Processor);
 }
 
-static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction)
+static void HKHubSystemDebuggerInstructionHook(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction, const uint8_t Encoding[5])
 {
     //TODO: Send update message (instead of update here/avoid locking UI)
     GUIManagerLock();

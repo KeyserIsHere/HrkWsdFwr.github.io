@@ -62,8 +62,9 @@ typedef struct HKHubArchProcessorInfo *HKHubArchProcessor;
  * @brief Get the current state after each executed instruction.
  * @param Processor The processor that was executed.
  * @param Instruction The instruction state of the executed operation.
+ * @param Encoding The encoded instruction.
  */
-typedef void (*HKHubArchProcessorDebugOperationCallback)(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction);
+typedef void (*HKHubArchProcessorDebugOperationCallback)(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction, const uint8_t Encoding[5]);
 
 /*!
  * @brief Callback to hook any port connection changes.
