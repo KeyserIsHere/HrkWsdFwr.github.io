@@ -96,7 +96,13 @@ typedef struct {
             uint8_t offset;
             uint8_t size;
         } memory;
-        CCArray(uint8_t) data; //TODO: union of 8/ptr size uint8_t's, or the array of uint8_t's to avoid allocations on small data
+        struct {
+            union {
+                CCData big;
+                uint8_t small[7];
+            };
+            uint8_t size;
+        } data;
     };
 } HKHubModuleDebugControllerDeviceEvent;
 
@@ -154,7 +160,7 @@ static void HKHubModuleDebugControllerDeviceEventDestructor(HKHubModuleDebugCont
 {
     if (Event->type == HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk)
     {
-        if (Event->data) CCArrayDestroy(Event->data);
+        if ((!Event->data.size) && (Event->data.big)) CCDataDestroy(Event->data.big);
     }
     
     CCBigIntFastDestroy(Event->id);
@@ -1035,17 +1041,29 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                             break;
                             
                         case HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk:
-                        {
                             //[7:4] [device:12] modified [data:8 ...] (comes in as 8 byte sequences, this can be changed)
-                            size_t ChunkSize = CCArrayGetCount(Event->data) - State->eventPortState[Port].chunks;
+                            if (Event->data.size)
+                            {
+                                size_t ChunkSize = Event->data.size - State->eventPortState[Port].chunks;
+                                
+                                if (ChunkSize > State->eventPortState[Port].chunkBatchSize) ChunkSize = State->eventPortState[Port].chunkBatchSize;
+                                
+                                memcpy(&State->eventPortState[Port].message[Size], Event->data.small + State->eventPortState[Port].chunks, ChunkSize);
+                                State->eventPortState[Port].chunks += ChunkSize;
+                                Size += ChunkSize;
+                            }
                             
-                            if (ChunkSize > State->eventPortState[Port].chunkBatchSize) ChunkSize = State->eventPortState[Port].chunkBatchSize;
-                            
-                            memcpy(&State->eventPortState[Port].message[Size], CCArrayGetData(Event->data) + State->eventPortState[Port].chunks, ChunkSize);
-                            State->eventPortState[Port].chunks += ChunkSize;
-                            Size += ChunkSize;
+                            else
+                            {
+                                size_t ChunkSize = CCDataGetSize(Event->data.big) - State->eventPortState[Port].chunks;
+                                
+                                if (ChunkSize > State->eventPortState[Port].chunkBatchSize) ChunkSize = State->eventPortState[Port].chunkBatchSize;
+                                
+                                CCDataReadBuffer(Event->data.big, State->eventPortState[Port].chunks, ChunkSize, &State->eventPortState[Port].message[Size]);
+                                State->eventPortState[Port].chunks += ChunkSize;
+                                Size += ChunkSize;
+                            }
                             break;
-                        }
                             
                         case HKHubModuleDebugControllerDeviceEventTypeDeviceConnected:
                             //[8:4] [device:12] connected
