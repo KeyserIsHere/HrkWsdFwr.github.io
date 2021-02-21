@@ -24,6 +24,7 @@
  */
 
 #include "HubModuleDebugController.h"
+#include "HubArchInstruction.h"
 
 #define T size_t
 #include <CommonC/Extrema.h>
@@ -1183,6 +1184,144 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
     return NULL;
 }
 
+static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction, const uint8_t Encoding[5])
+{
+    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    
+    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        .type = HKHubModuleDebugControllerDeviceEventTypeExecutedOperation,
+        .device = (uint16_t)Device->index,
+        .instruction = {
+            .encoding = { Encoding[0], Encoding[1], Encoding[2], Encoding[3], Encoding[4] },
+            .size = HKHubArchInstructionSizeOfEncoding(Instruction)
+        }
+    });
+    
+    if (Processor->state.debug.modified.reg & (HKHubArchInstructionRegisterGeneralPurpose | HKHubArchInstructionRegisterSpecialPurpose))
+    {
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+            .type = HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
+            .device = (uint16_t)Device->index,
+            .reg = Processor->state.debug.modified.reg
+        });
+        
+        uint8_t Value;
+        switch (Processor->state.debug.modified.reg)
+        {
+            case HKHubArchInstructionRegisterR0:
+                Value = Processor->state.r[0];
+                break;
+                
+            case HKHubArchInstructionRegisterR1:
+                Value = Processor->state.r[1];
+                break;
+                
+            case HKHubArchInstructionRegisterR2:
+                Value = Processor->state.r[2];
+                break;
+                
+            case HKHubArchInstructionRegisterR3:
+                Value = Processor->state.r[3];
+                break;
+                
+            case HKHubArchInstructionRegisterFlags:
+                Value = Processor->state.flags;
+                break;
+                
+            case HKHubArchInstructionRegisterPC:
+                Value = Processor->state.pc;
+                break;
+                
+            default:
+                CCAssertLog(0, "Unsupported register type");
+                break;
+        }
+        
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+            .type = HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
+            .device = (uint16_t)Device->index,
+            .data = {
+                .small[0] = Value,
+                .size = 1
+            }
+        });
+    }
+    
+    if (Processor->state.debug.modified.size)
+    {
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+            .type = HKHubModuleDebugControllerDeviceEventTypeModifyMemory,
+            .device = (uint16_t)Device->index,
+            .memory = {
+                .offset = Processor->state.debug.modified.offset,
+                .size = Processor->state.debug.modified.size
+            }
+        });
+        
+        HKHubModuleDebugControllerDeviceEvent Event = {
+            .type = HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
+            .device = (uint16_t)Device->index,
+            .data = {
+                .size = Processor->state.debug.modified.size
+            }
+        };
+        
+        if (Processor->state.debug.modified.size <= sizeof(Event.data.small))
+        {
+            CCMemoryRead(Processor->memory, sizeof(Processor->memory), Processor->state.debug.modified.offset, Processor->state.debug.modified.size, Event.data.small);
+        }
+        
+        else
+        {
+            uint8_t *Bytes;
+            CC_SAFE_Malloc(Bytes, Processor->state.debug.modified.size,
+                           CC_LOG_ERROR("Failed to create event data chunk, due to allocation failure (%u)", Processor->state.debug.modified.size);
+                           return;
+                           );
+            
+            Event.data.big = CCDataBufferCreate(CC_STD_ALLOCATOR, CCDataBufferHintFree | CCDataHintRead, Processor->state.debug.modified.size, Bytes, NULL, NULL);
+        }
+        
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &Event);
+    }
+    
+    if ((Processor->state.debug.modified.reg != HKHubArchInstructionRegisterFlags) && (HKHubArchInstructionGetModifiedFlags(Instruction)))
+    {
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+            .type = HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
+            .device = (uint16_t)Device->index,
+            .reg = HKHubArchInstructionRegisterFlags
+        });
+        
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+            .type = HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
+            .device = (uint16_t)Device->index,
+            .data = {
+                .small[0] = Processor->state.flags,
+                .size = 1
+            }
+        });
+    }
+    
+    if ((Processor->state.debug.modified.reg != HKHubArchInstructionRegisterPC) && (!(HKHubArchInstructionGetControlFlow(Instruction) & HKHubArchInstructionControlFlowEffectPause)))
+    {
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+            .type = HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
+            .device = (uint16_t)Device->index,
+            .reg = HKHubArchInstructionRegisterPC
+        });
+        
+        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+            .type = HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
+            .device = (uint16_t)Device->index,
+            .data = {
+                .small[0] = Processor->state.pc,
+                .size = 1
+            }
+        });
+    }
+}
+
 static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcessor Processor, HKHubArchPortID Port)
 {
     HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
@@ -1279,7 +1418,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
     
     Processor->state.debug.context = Device;
     
-//    Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
+    Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
     Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
     Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
     Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
