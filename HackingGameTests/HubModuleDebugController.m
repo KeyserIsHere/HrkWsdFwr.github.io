@@ -522,6 +522,8 @@
     //proc_0_and_2
     XCTAssertEqual(Processor->memory[192], 112, @"Should be the correct value");
     
+    HKHubArchProcessorClearBreakpoints(TempProcessor);
+    
     //[6:4] [device:12] read ports (256 bits)
     //[6:4] [device:12] read ports [port:8 ...] (receiving port:8, connected:1, _:3, device:12)
     Source =
@@ -650,6 +652,140 @@
     XCTAssertEqual(Processor->memory[99], 29, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[100], 0x80, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[101], 5, @"Should be the correct value");
+    
+    //[7:4] [device:12] toggle break [offset:8] [_:6] [wr:2] ... (xors wr)
+    //[8:4] [device:12] pause
+    //[9:4] [device:12] continue
+    //[a:4] [device:12] step [count:8?]
+    //[a:4] [device:12] step [count:16?]
+    //[b:4] [device:12] mode (_:7, paused/running: 1 bit)
+    Source =
+        "proc_r0:\n"
+        ".byte -1\n"
+        "proc_mode:\n"
+        ".byte -1, -2\n"
+        "mod_mode:\n"
+        ".byte -1, -2\n"
+        "null_mode:\n"
+        ".byte -1, -2\n"
+        "proc_r0_query:\n"
+        ".byte (4 << 4) | 0, 0, 1 << 5\n"
+        "proc_break:\n"
+        ".byte (7 << 4) | 0, 0, 0, 1\n"
+        "mod_break:\n"
+        ".byte (7 << 4) | 0, 5, 0, 1\n"
+        "null_break:\n"
+        ".byte (7 << 4) | 0, 0xff, 0, 1\n"
+        "proc_pause:\n"
+        ".byte (8 << 4) | 0, 0\n"
+        "mod_pause:\n"
+        ".byte (8 << 4) | 0, 5\n"
+        "null_pause:\n"
+        ".byte (8 << 4) | 0, 0xff\n"
+        "proc_continue:\n"
+        ".byte (9 << 4) | 0, 0\n"
+        "mod_continue:\n"
+        ".byte (9 << 4) | 0, 5\n"
+        "null_continue:\n"
+        ".byte (9 << 4) | 0, 0xff\n"
+        "proc_step1:\n"
+        ".byte (10 << 4) | 0, 0\n"
+        "mod_step1:\n"
+        ".byte (10 << 4) | 0, 5\n"
+        "null_step1:\n"
+        ".byte (10 << 4) | 0, 0xff\n"
+        "proc_step2:\n"
+        ".byte (10 << 4) | 0, 0, 2\n"
+        "mod_step2:\n"
+        ".byte (10 << 4) | 0, 5, 2\n"
+        "null_step2:\n"
+        ".byte (10 << 4) | 0, 0xff, 2\n"
+        "proc_step260:\n"
+        ".byte (10 << 4) | 0, 0, 1, 4\n"
+        "mod_step260:\n"
+        ".byte (10 << 4) | 0, 5, 1, 4\n"
+        "null_step260:\n"
+        ".byte (10 << 4) | 0, 0xff, 1, 4\n"
+        "proc_mode_query:\n"
+        ".byte (11 << 4) | 0, 0\n"
+        "mod_mode_query:\n"
+        ".byte (11 << 4) | 0, 5\n"
+        "null_mode_query:\n"
+        ".byte (11 << 4) | 0, 0xff\n"
+    
+        ".entrypoint\n"
+        "send r0, 2, [proc_step1]\n"
+        "send r0, 2, [mod_step1]\n"
+        "send r0, 2, [null_step1]\n"
+        "hlt\n"
+        "send r0, 3, [proc_step2]\n"
+        "send r0, 3, [mod_step2]\n"
+        "send r0, 3, [null_step2]\n"
+        "hlt\n"
+        "send r0, 4, [proc_step260]\n"
+        "send r0, 4, [mod_step260]\n"
+        "send r0, 4, [null_step260]\n"
+        "hlt\n"
+        "send r0, 4, [proc_break]\n"
+        "send r0, 4, [mod_break]\n"
+        "send r0, 4, [null_break]\n"
+        "send r0, 2, [proc_continue]\n"
+        "send r0, 2, [mod_continue]\n"
+        "send r0, 2, [null_continue]\n"
+        "hlt\n"
+        "send r0, 4, [proc_break]\n"
+        "send r0, 4, [mod_break]\n"
+        "send r0, 4, [null_break]\n"
+        "send r0, 3, [proc_r0_query]\n"
+        "recv r0, [proc_r0]\n"
+        "send r0, 2, [proc_continue]\n"
+        "send r0, 2, [mod_continue]\n"
+        "send r0, 2, [null_continue]\n"
+        "hlt\n"
+        "send r0, 2, [proc_mode_query]\n"
+        "recv r0, [proc_mode]\n"
+        "send r0, 2, [mod_mode_query]\n"
+        "recv r0, [mod_mode]\n"
+        "send r0, 2, [null_mode_query]\n"
+        "recv r0, [null_mode]\n"
+        "send r0, 2, [proc_pause]\n"
+        "send r0, 2, [mod_pause]\n"
+        "send r0, 2, [null_pause]\n"
+        "send r0, 2, [proc_mode_query]\n"
+        "recv r0, [proc_mode + 1]\n"
+        "send r0, 2, [mod_mode_query]\n"
+        "recv r0, [mod_mode + 1]\n"
+        "send r0, 2, [null_mode_query]\n"
+        "recv r0, [null_mode + 1]\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    
+    HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
+    HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
+    HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
+    HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
+    HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //proc_r0
+    XCTAssertEqual(Processor->memory[0], 132, @"Should be the correct value");
+    //proc_mode:
+    XCTAssertEqual(Processor->memory[1], HKHubArchProcessorDebugModePause, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[2], HKHubArchProcessorDebugModeContinue, @"Should be the correct value");
+    //mod_mode:
+    XCTAssertEqual(Processor->memory[3], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[4], 0xfe, @"Should be the correct value");
+    //null_mode:
+    XCTAssertEqual(Processor->memory[5], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[6], 0xfe, @"Should be the correct value");
     
     HKHubArchProcessorDestroy(TempProcessor);
     HKHubArchProcessorDestroy(Processor);
