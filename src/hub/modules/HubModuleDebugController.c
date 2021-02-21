@@ -704,7 +704,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                         break;
                         
                     case 7:
-                        //[7:4] [device:12] toggle break [offset:8] [_:6] [rw:2] ... (xors rw)
+                        //[7:4] [device:12] toggle break [offset:8] [_:6] [wr:2] ... (xors wr)
                         if ((Message->size >= 2) && ((Message->size % 2) == 0))
                         {
                             const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
