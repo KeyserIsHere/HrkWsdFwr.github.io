@@ -787,6 +787,77 @@
     XCTAssertEqual(Processor->memory[5], 0xff, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[6], 0xfe, @"Should be the correct value");
     
+    //[c:4] [device:12] name [size:8? defaults to 256] (string:256?)
+    Source =
+        "proc_short_name:\n"
+        ".byte -1, -2, -3, -4\n"
+        "mod_short_name:\n"
+        ".byte -1, -2, -3, -4\n"
+        "null_short_name:\n"
+        ".byte -1, -2, -3, -4\n"
+        "proc_name:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        "mod_name:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        "null_name:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7, -8, -9, -10, -11, -12, -13, -14, -15, -16\n"
+        "proc_name_query:\n"
+        ".byte (12 << 4) | 0, 0\n"
+        "mod_name_query:\n"
+        ".byte (12 << 4) | 0, 5\n"
+        "null_name_query:\n"
+        ".byte (12 << 4) | 0, 0xff\n"
+        "proc_short_name_query:\n"
+        ".byte (12 << 4) | 0, 0, 3\n"
+        "mod_short_name_query:\n"
+        ".byte (12 << 4) | 0, 5, 3\n"
+        "null_short_name_query:\n"
+        ".byte (12 << 4) | 0, 0xff, 3\n"
+        ".entrypoint\n"
+        "send r0, 2, [proc_name_query]\n"
+        "recv r0, [proc_name]\n"
+        "send r0, 2, [mod_name_query]\n"
+        "recv r0, [mod_name]\n"
+        "send r0, 2, [null_name_query]\n"
+        "recv r0, [null_name]\n"
+        "send r0, 3, [proc_short_name_query]\n"
+        "recv r0, [proc_short_name]\n"
+        "send r0, 3, [mod_short_name_query]\n"
+        "recv r0, [mod_short_name]\n"
+        "send r0, 3, [null_short_name_query]\n"
+        "recv r0, [null_short_name]\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //proc_short_name:
+    XCTAssertEqual(Processor->memory[0], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[1], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[2], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[3], 0xfc, @"Should be the correct value");
+    //mod_short_name:
+    XCTAssertEqual(Processor->memory[4], 'k', @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[5], 'e', @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[6], 'y', @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[7], 0xfc, @"Should be the correct value");
+    //null_short_name:
+    XCTAssertEqual(Processor->memory[8], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[9], 0xfe, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[10], 0xfd, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[11], 0xfc, @"Should be the correct value");
+    
     HKHubArchProcessorDestroy(TempProcessor);
     HKHubArchProcessorDestroy(Processor);
     HKHubModuleDestroy(Keyboard);
