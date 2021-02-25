@@ -176,7 +176,6 @@ static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerState 
     if (CCArrayGetCount(Events->buffer) != HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX)
     {
         CCArrayAppendElement(Events->buffer, Event);
-        Events->count++;
     }
     
     else
@@ -185,13 +184,13 @@ static void HKHubModuleDebugControllerPushEvent(HKHubModuleDebugControllerState 
         
         CCArrayReplaceElementAtIndex(Events->buffer, Events->count % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX, Event);
     }
+    
+    Events->count++;
 }
 
-static HKHubModuleDebugControllerDeviceEvent *HKHubModuleDebugControllerPopEvent(HKHubModuleDebugControllerDeviceEventBuffer *Events, size_t *Index)
+static inline size_t HKHubModuleDebugControllerGetBaseEventIndex(const HKHubModuleDebugControllerDeviceEventBuffer *Events)
 {
-    if ((*Index + HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX) <= Events->count) *Index = Events->count - HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX;
-    
-    return CCArrayGetElementAtIndex(Events->buffer, (*Index)++ % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX);
+    return CCArrayGetCount(Events->buffer) != HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX ? 0 : (Events->count + 1) % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX;
 }
 
 static inline size_t HKHubModuleDebugControllerEventPortMessageSize(size_t MinSize, size_t DefaultChunkSize)
@@ -966,9 +965,9 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                 const HKHubModuleDebugControllerDeviceEvent *Event = NULL;
                 CCComparisonResult Result = CCComparisonResultInvalid;
                 
-                for (size_t Loop2 = DebuggedDevice->index, Count2 = CCArrayGetCount(DebuggedDevice->events.buffer); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultDescending) && ((Skip1 != Loop) || (Skip2 != Loop2)); Loop2++)
+                for (size_t Loop2 = 0, Base = HKHubModuleDebugControllerGetBaseEventIndex(&DebuggedDevice->events), Count2 = CCMin(CCArrayGetCount(DebuggedDevice->events.buffer), HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultAscending) && ((Skip1 != Loop) || (Skip2 != Loop2)); Loop2++)
                 {
-                    Event = CCArrayGetElementAtIndex(DebuggedDevice->events.buffer, Loop2);
+                    Event = CCArrayGetElementAtIndex(DebuggedDevice->events.buffer, (Base + Loop2) % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX);
                     Result = CCBigIntFastCompare(State->eventPortState[Port].index, Event->id);
                     
                     if ((State->eventPortState[Port].filter.commands != 0) && ((State->eventPortState[Port].filter.commands & (1 << Event->type)) == 0))
@@ -995,6 +994,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                     size_t Size = 0;
                     State->eventPortState[Port].message[Size++] = (Event->type << 4) | ((Event->device & 0xf00) >> 8);
                     State->eventPortState[Port].message[Size++] = Event->device & 0xff;
+                    
+                    int NextIndex = 1;
                     
                     switch (Event->type)
                     {
@@ -1064,6 +1065,9 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                                 State->eventPortState[Port].chunks += ChunkSize;
                                 Size += ChunkSize;
                             }
+                            
+                            if (State->eventPortState[Port].chunks == Event->data.size) State->eventPortState[Port].chunks = 0;
+                            else NextIndex = 0;
                             break;
                             
                         case HKHubModuleDebugControllerDeviceEventTypeDeviceConnected:
@@ -1083,6 +1087,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                     };
                     
                     if (!HKHubArchPortIsReady(HKHubArchPortConnectionGetOppositePort(Connection, Device, Port))) return HKHubArchPortResponseDefer;
+                    
+                    CCBigIntFastAdd(&State->eventPortState[Port].index, NextIndex);
                     
                     return HKHubArchPortResponseSuccess;
                 }
