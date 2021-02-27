@@ -3047,8 +3047,8 @@ void HKHubArchJITCall(HKHubArchJIT JIT, HKHubArchProcessor Processor)
 #define HK_HUB_ARCH_JIT_Processor_r3 59
 #define HK_HUB_ARCH_JIT_Processor_pc 60
 #define HK_HUB_ARCH_JIT_Processor_flags 61
-#define HK_HUB_ARCH_JIT_Processor_cycles 152
-#define HK_HUB_ARCH_JIT_Processor_memory 172
+#define HK_HUB_ARCH_JIT_Processor_cycles 160
+#define HK_HUB_ARCH_JIT_Processor_memory 180
     
     _Static_assert(HK_HUB_ARCH_JIT_Processor_r0 == offsetof(typeof(*Processor), state.r[0]) &&
                    HK_HUB_ARCH_JIT_Processor_r1 == offsetof(typeof(*Processor), state.r[1]) &&
