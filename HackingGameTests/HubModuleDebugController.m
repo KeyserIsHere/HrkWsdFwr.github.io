@@ -767,6 +767,7 @@
     CCCollectionDestroy(AST);
     
     HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
     
     HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
     HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
@@ -839,6 +840,7 @@
     CCCollectionDestroy(AST);
     
     HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
     
     HKHubArchSchedulerRun(Scheduler, 10.0);
     
