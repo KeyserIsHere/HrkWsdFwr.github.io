@@ -127,7 +127,6 @@ typedef struct {
         HKHubModule module;
     };
     HKHubModuleDebugControllerDeviceEventBuffer events;
-    HKHubModule controller;
     size_t index;
     CCString name;
 } HKHubModuleDebugControllerDevice;
@@ -1122,12 +1121,14 @@ static void HKHubModuleDebugControllerStateDestructor(HKHubModuleDebugController
                 Device->processor->state.debug.debugModeChange = NULL;
                 
                 Device->processor->state.debug.context = NULL;
+                Device->processor->state.debug.extra = 0;
                 
                 HKHubArchProcessorSetDebugMode(Device->processor, HKHubArchProcessorDebugModeContinue);
                 break;
                 
             case HKHubModuleDebugControllerDeviceTypeModule:
                 Device->module->debug.context = NULL;
+                Device->module->debug.extra = 0;
                 break;
                 
             default:
@@ -1192,9 +1193,10 @@ HKHubModule HKHubModuleDebugControllerCreate(CCAllocatorType Allocator)
 
 static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Processor, const HKHubArchInstructionState *Instruction, const uint8_t Encoding[5])
 {
-    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    HKHubModuleDebugControllerState *State = ((HKHubModule)Processor->state.debug.context)->internal;
+    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Processor->state.debug.extra);
     
-    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeExecutedOperation,
         .device = (uint16_t)Device->index,
         .instruction = {
@@ -1205,7 +1207,7 @@ static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Process
     
     if (Processor->state.debug.modified.reg & (HKHubArchInstructionRegisterGeneralPurpose | HKHubArchInstructionRegisterSpecialPurpose))
     {
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
             .type = HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
             .device = (uint16_t)Device->index,
             .reg = Processor->state.debug.modified.reg
@@ -1243,7 +1245,7 @@ static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Process
                 break;
         }
         
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
             .type = HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
             .device = (uint16_t)Device->index,
             .data = {
@@ -1255,7 +1257,7 @@ static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Process
     
     if (Processor->state.debug.modified.size)
     {
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
             .type = HKHubModuleDebugControllerDeviceEventTypeModifyMemory,
             .device = (uint16_t)Device->index,
             .memory = {
@@ -1288,18 +1290,18 @@ static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Process
             Event.data.big = CCDataBufferCreate(CC_STD_ALLOCATOR, CCDataBufferHintFree | CCDataHintRead, Processor->state.debug.modified.size, Bytes, NULL, NULL);
         }
         
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &Event);
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &Event);
     }
     
     if ((Processor->state.debug.modified.reg != HKHubArchInstructionRegisterFlags) && (HKHubArchInstructionGetModifiedFlags(Instruction)))
     {
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
             .type = HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
             .device = (uint16_t)Device->index,
             .reg = HKHubArchInstructionRegisterFlags
         });
         
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
             .type = HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
             .device = (uint16_t)Device->index,
             .data = {
@@ -1311,13 +1313,13 @@ static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Process
     
     if ((Processor->state.debug.modified.reg != HKHubArchInstructionRegisterPC) && (!(HKHubArchInstructionGetControlFlow(Instruction) & HKHubArchInstructionControlFlowEffectPause)))
     {
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
             .type = HKHubModuleDebugControllerDeviceEventTypeModifyRegister,
             .device = (uint16_t)Device->index,
             .reg = HKHubArchInstructionRegisterPC
         });
         
-        HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+        HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
             .type = HKHubModuleDebugControllerDeviceEventTypeChangedDataChunk,
             .device = (uint16_t)Device->index,
             .data = {
@@ -1330,7 +1332,8 @@ static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Process
 
 static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcessor Processor, HKHubArchPortID Port)
 {
-    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    HKHubModuleDebugControllerState *State = ((HKHubModule)Processor->state.debug.context)->internal;
+    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Processor->state.debug.extra);
     
     HKHubModuleDebugControllerDeviceEvent Event = {
         .type = HKHubModuleDebugControllerDeviceEventTypeChangePortConnection,
@@ -1353,7 +1356,6 @@ static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcesso
         Event.connection.target.port = OppositePort->id;
         // TODO: Add callback to HKHubArchPort to get debug context (only safe if don't allow other debug contexts)
         uint16_t ConnectedDeviceID = 0xfff;
-        HKHubModuleDebugControllerState *State = Device->controller->internal;
         for (size_t Loop2 = 0, Count2 = CCArrayGetCount(State->devices); Loop2 < Count2; Loop2++)
         {
             HKHubModuleDebugControllerDevice *ConnectedDevice = CCArrayGetElementAtIndex(State->devices, Loop2);
@@ -1370,14 +1372,15 @@ static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcesso
         Event.connection.target.device = ConnectedDeviceID;
     }
     
-    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &Event);
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &Event);
 }
 
 static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)
 {
-    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    HKHubModuleDebugControllerState *State = ((HKHubModule)Processor->state.debug.context)->internal;
+    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Processor->state.debug.extra);
     
-    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = (HKHubModuleDebugControllerDeviceEventType)Processor->state.debug.mode,
         .device = (uint16_t)Device->index,
         .breakpoint = {
@@ -1389,12 +1392,13 @@ static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Pr
 
 static void HKHubModuleDebugControllerDebugModeChangeHook(HKHubArchProcessor Processor)
 {
-    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    HKHubModuleDebugControllerState *State = ((HKHubModule)Processor->state.debug.context)->internal;
+    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Processor->state.debug.extra);
     
     _Static_assert((HKHubArchProcessorDebugModePause == HKHubModuleDebugControllerDeviceEventTypePause) &&
                    (HKHubArchProcessorDebugModeContinue == HKHubModuleDebugControllerDeviceEventTypeRun), "Expects enums to match");
     
-    HKHubModuleDebugControllerPushEvent(Device->controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = (HKHubModuleDebugControllerDeviceEventType)Processor->state.debug.mode,
         .device = (uint16_t)Device->index
     });
@@ -1414,7 +1418,6 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
             .buffer = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubModuleDebugControllerDeviceEvent), 16),
             .count = 0
         },
-        .controller = Controller,
         .name = (Name ? CCStringCopy(Name) : 0)
     });
     
@@ -1422,7 +1425,8 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
     
     HKHubModuleDebugControllerDevice * const Device = CCArrayGetElementAtIndex(State->devices, Index);
     
-    Processor->state.debug.context = Device;
+    Processor->state.debug.context = Controller;
+    Processor->state.debug.extra = Index;
     
     Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
     Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
@@ -1441,13 +1445,14 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Processor, "Processor must not be null");
-    CCAssertLog(Processor->state.debug.context && ((HKHubModuleDebugControllerDevice*)Processor->state.debug.context)->controller == Controller, "Processor must be connected to the controller");
+    CCAssertLog(Processor->state.debug.context == Controller, "Processor must be connected to the controller");
     
-    HKHubModuleDebugControllerDevice *Device = Processor->state.debug.context;
+    HKHubModuleDebugControllerState *State = ((HKHubModule)Processor->state.debug.context)->internal;
+    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Processor->state.debug.extra);
     Device->type = HKHubModuleDebugControllerDeviceTypeNone;
     Device->processor = NULL;
     
-    HKHubModuleDebugControllerPushEvent(Controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
         .device = (uint16_t)Device->index
     });
@@ -1458,6 +1463,7 @@ void HKHubModuleDebugControllerDisconnectProcessor(HKHubModule Controller, HKHub
     Processor->state.debug.debugModeChange = NULL;
     
     Processor->state.debug.context = NULL;
+    Processor->state.debug.extra = 0;
     
     HKHubArchProcessorSetDebugMode(Processor, HKHubArchProcessorDebugModeContinue);
 }
@@ -1476,13 +1482,13 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
             .buffer = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubModuleDebugControllerDeviceEvent), 4),
             .count = 0
         },
-        .controller = Controller,
         .name = (Name ? CCStringCopy(Name) : 0)
     });
     
     HKHubModuleDebugControllerDevice * const Device = CCArrayGetElementAtIndex(State->devices, Index);
     
-    Module->debug.context = Device;
+    Module->debug.context = Controller;
+    Module->debug.extra = Index;
     
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
     
@@ -1496,14 +1502,18 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
 {
     CCAssertLog(Controller, "Controller must not be null");
     CCAssertLog(Module, "Module must not be null");
-    CCAssertLog(Module->debug.context && ((HKHubModuleDebugControllerDevice*)Module->debug.context)->controller == Controller, "Module must be connected to the controller");
+    CCAssertLog(Module->debug.context == Controller, "Module must be connected to the controller");
     
-    HKHubModuleDebugControllerDevice *Device = Module->debug.context;
+    HKHubModuleDebugControllerState *State = ((HKHubModule)Module->debug.context)->internal;
+    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Module->debug.extra);
     Device->type = HKHubModuleDebugControllerDeviceTypeNone;
     Device->module = NULL;
     
-    HKHubModuleDebugControllerPushEvent(Controller->internal, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
+    HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
         .device = (uint16_t)Device->index
     });
+    
+    Module->debug.context = NULL;
+    Module->debug.extra = 0;
 }
