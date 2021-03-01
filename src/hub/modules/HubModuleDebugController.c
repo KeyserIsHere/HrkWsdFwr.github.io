@@ -1381,7 +1381,7 @@ static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Pr
     HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Processor->state.debug.extra);
     
     HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
-        .type = (HKHubModuleDebugControllerDeviceEventType)Processor->state.debug.mode,
+        .type = HKHubModuleDebugControllerDeviceEventTypeChangeBreakpoint,
         .device = (uint16_t)Device->index,
         .breakpoint = {
             .offset = Offset,
