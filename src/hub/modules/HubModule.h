@@ -42,6 +42,7 @@ typedef struct {
     CCData memory;
     struct {
         void *context;
+        uintptr_t extra;
     } debug;
 } HKHubModuleInfo;
 

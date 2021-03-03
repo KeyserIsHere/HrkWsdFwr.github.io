@@ -152,6 +152,7 @@ void HKHubArchProcessorDebugReset(HKHubArchProcessor Processor)
     Processor->state.debug.modified.size = 0;
     Processor->state.debug.operation = NULL;
     Processor->state.debug.context = NULL;
+    Processor->state.debug.extra = 0;
     
     if (Processor->state.debug.breakpoints)
     {

@@ -117,6 +117,7 @@ typedef struct HKHubArchProcessorInfo {
             } modified;
             struct {
                 void *context;
+                uintptr_t extra;
                 HKHubArchProcessorDebugOperationCallback operation;
                 HKHubArchProcessorDebugPortConnectionChangeCallback portConnectionChange;
                 HKHubArchProcessorDebugBreakpointChangeCallback breakpointChange;
