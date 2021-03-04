@@ -103,12 +103,12 @@ void HKHubModuleKeyboardComponenDeserializer(CCComponent Component, CCExpression
                             }
 
                         }
-
+                        
                         else CC_LOG_ERROR("Expect value for argument (buffer:) to be a list");
                     }
-
+                    
                     else CC_LOG_ERROR("Expect value for argument (buffer:) to be a list");
-
+                    
                     return;
                 }
             }
