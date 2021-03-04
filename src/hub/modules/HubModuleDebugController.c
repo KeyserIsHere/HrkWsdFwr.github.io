@@ -1370,6 +1370,7 @@ static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcesso
         }
         
         Event.connection.target.device = ConnectedDeviceID;
+        Event.connection.connected = TRUE;
     }
     
     HKHubModuleDebugControllerPushEvent(State, &Device->events, &Event);
