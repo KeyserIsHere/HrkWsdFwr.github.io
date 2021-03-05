@@ -1053,6 +1053,90 @@
     XCTAssertEqual(Processor->memory[52], 0xff, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[53], 0xfe, @"Should be the correct value");
     
+    //[2:4] [device:12] change breakpoint [offset:8] [_:6] [w:1] [r:1]
+    //[3:4] [device:12] change [port:8] [receiving port: 8, connected:1, _:3, device:12]
+    Source =
+        "break1:\n"
+        ".byte -1, -2, -3, -4\n"
+        "break2:\n"
+        ".byte -1, -2, -3, -4\n"
+        "break3:\n"
+        ".byte -1, -2, -3, -4\n"
+        "port1:\n"
+        ".byte -1, -2, -3, -4, -5, -6\n"
+        "port2:\n"
+        ".byte -1, -2, -3, -4, -5, -6\n"
+        "leftover:\n"
+        ".byte -1, -2\n"
+        ".entrypoint\n"
+        "recv r0, [break1]\n"
+        "recv r0, [break2]\n"
+        "recv r0, [break3]\n"
+        "recv r0, [port1]\n"
+        "recv r0, [port2]\n"
+        "recv r0, [leftover]\n"
+        "hlt\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubArchProcessorReset(Processor, Binary);
+    HKHubArchBinaryDestroy(Binary);
+    
+    HKHubArchProcessorSetBreakpoint(TempProcessor, HKHubArchProcessorDebugBreakpointRead, 0);
+    HKHubArchProcessorSetBreakpoint(TempProcessor, HKHubArchProcessorDebugBreakpointWrite | HKHubArchProcessorDebugBreakpointRead, 2);
+    HKHubArchProcessorSetBreakpoint(TempProcessor, HKHubArchProcessorDebugBreakpointRead, 255);
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubArchProcessorGetPort(Processor, 1), HKHubArchProcessorGetPort(TempProcessor, 0));
+    
+    HKHubArchProcessorConnect(Processor, 1, Conn);
+    HKHubArchProcessorConnect(TempProcessor, 0, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    Conn = HKHubArchPortConnectionCreate(CC_STD_ALLOCATOR, HKHubModuleGetPort(Keyboard, 29), HKHubArchProcessorGetPort(TempProcessor, 2));
+    
+    HKHubModuleConnect(Keyboard, 29, Conn);
+    HKHubArchProcessorConnect(TempProcessor, 2, Conn);
+    HKHubArchPortConnectionDestroy(Conn);
+    
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //break1
+    XCTAssertEqual(Processor->memory[0], 0x20, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[1], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[2], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[3], HKHubArchProcessorDebugBreakpointRead, @"Should be the correct value");
+    //break2
+    XCTAssertEqual(Processor->memory[4], 0x20, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[5], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[6], 2, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[7], HKHubArchProcessorDebugBreakpointWrite | HKHubArchProcessorDebugBreakpointRead, @"Should be the correct value");
+    //break3
+    XCTAssertEqual(Processor->memory[8], 0x20, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[9], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[10], 255, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[11], HKHubArchProcessorDebugBreakpointRead, @"Should be the correct value");
+    //port1
+    XCTAssertEqual(Processor->memory[12], 0x30, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[13], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[14], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[15], 1, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[16], 0x8f, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[17], 0xff, @"Should be the correct value");
+    //port2
+    XCTAssertEqual(Processor->memory[18], 0x30, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[19], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[20], 2, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[21], 29, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[22], 0x80, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[23], 5, @"Should be the correct value");
+    //leftover
+    XCTAssertEqual(Processor->memory[24], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[25], 0xfe, @"Should be the correct value");
+    
     HKHubArchProcessorDestroy(TempProcessor);
     HKHubArchProcessorDestroy(Processor);
     HKHubModuleDestroy(Keyboard);
