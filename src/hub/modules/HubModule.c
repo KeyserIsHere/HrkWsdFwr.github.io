@@ -64,6 +64,7 @@ HKHubModule HKHubModuleCreate(CCAllocatorType Allocator, HKHubArchPortTransmit S
         Module->internal = Internal;
         Module->destructor = Destructor;
         Module->memory = Memory;
+        Module->debug.portConnectionChange = NULL;
         Module->debug.context = NULL;
         Module->debug.extra = 0;
         
@@ -85,6 +86,8 @@ void HKHubModuleDestroy(HKHubModule Module)
 static void HKHubModuleDisconnectPort(HKHubModule Module, HKHubArchPortID Port)
 {
     CCDictionaryRemoveValue(Module->ports, &Port);
+    
+    if (Module->debug.portConnectionChange) Module->debug.portConnectionChange(Module, Port);
 }
 
 static inline void HKHubModuleSetConnectionDisconnectCallback(HKHubModule Module, HKHubArchPortID Port, HKHubArchPortConnection Connection, HKHubArchPortDisconnect Disconnect)
@@ -115,6 +118,8 @@ void HKHubModuleConnect(HKHubModule Module, HKHubArchPortID Port, HKHubArchPortC
     HKHubModuleSetConnectionDisconnectCallback(Module, Port, Connection, (HKHubArchPortDisconnect)HKHubModuleDisconnectPort);
     
     CCDictionarySetEntry(Module->ports, Entry, &(HKHubArchPortConnection){ CCRetain(Connection) });
+    
+    if (Module->debug.portConnectionChange) Module->debug.portConnectionChange(Module, Port);
 }
 
 void HKHubModuleDisconnect(HKHubModule Module, HKHubArchPortID Port)

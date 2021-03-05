@@ -29,11 +29,24 @@
 #include "HubArchPort.h"
 
 /*!
+ * @brief The module.
+ * @description Allows @b CCRetain.
+ */
+typedef struct HKHubModuleInfo *HKHubModule;
+
+/*!
+ * @brief Callback to hook any port connection changes.
+ * @param Module The module whose port changed.
+ * @param Port The port of the module that was changed.
+ */
+typedef void (*HKHubModuleDebugPortConnectionChangeCallback)(HKHubModule Module, HKHubArchPortID Port);
+
+/*!
  * @brief Callback to destroy the internal data.
  */
 typedef void (*HKHubModuleDataDestructor)(void *Internal);
 
-typedef struct {
+typedef struct HKHubModuleInfo {
     void *internal;
     CCDictionary(HKHubArchPortID, HKHubArchPortConnection) ports;
     HKHubArchPortTransmit send;
@@ -43,15 +56,9 @@ typedef struct {
     struct {
         void *context;
         uintptr_t extra;
+        HKHubModuleDebugPortConnectionChangeCallback portConnectionChange;
     } debug;
 } HKHubModuleInfo;
-
-
-/*!
- * @brief The module.
- * @description Allows @b CCRetain.
- */
-typedef HKHubModuleInfo *HKHubModule;
 
 
 /*!
