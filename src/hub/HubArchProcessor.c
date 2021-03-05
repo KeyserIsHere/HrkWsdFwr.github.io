@@ -85,6 +85,7 @@ HKHubArchProcessor HKHubArchProcessorCreate(CCAllocatorType Allocator, HKHubArch
         Processor->state.debug.breakpointChange = NULL;
         Processor->state.debug.debugModeChange = NULL;
         Processor->state.debug.context = NULL;
+        Processor->state.debug.extra = 0;
         Processor->cache.graph = NULL;
         Processor->cache.jit = NULL;
         Processor->cycles = 0;
