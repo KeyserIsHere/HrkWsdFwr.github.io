@@ -1330,10 +1330,9 @@ static void HKHubModuleDebugControllerInstructionHook(HKHubArchProcessor Process
     }
 }
 
-static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcessor Processor, HKHubArchPortID Port)
+static void HKHubModuleDebugControllerPortConnectionChangeHook(void *DebuggedDevice, HKHubArchPortID Port, HKHubModuleDebugControllerState *State, size_t Index, HKHubArchPortConnection Conn)
 {
-    HKHubModuleDebugControllerState *State = ((HKHubModule)Processor->state.debug.context)->internal;
-    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Processor->state.debug.extra);
+    HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, Index);
     
     HKHubModuleDebugControllerDeviceEvent Event = {
         .type = HKHubModuleDebugControllerDeviceEventTypeChangePortConnection,
@@ -1348,10 +1347,9 @@ static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcesso
         }
     };
     
-    HKHubArchPortConnection Conn = HKHubArchProcessorGetPortConnection(Processor, Port);
     if (Conn)
     {
-        const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Conn, Processor, Port);
+        const HKHubArchPort *OppositePort = HKHubArchPortConnectionGetOppositePort(Conn, DebuggedDevice, Port);
         
         Event.connection.target.port = OppositePort->id;
         // TODO: Add callback to HKHubArchPort to get debug context (only safe if don't allow other debug contexts)
@@ -1374,6 +1372,16 @@ static void HKHubModuleDebugControllerPortConnectionChangeHook(HKHubArchProcesso
     }
     
     HKHubModuleDebugControllerPushEvent(State, &Device->events, &Event);
+}
+
+static void HKHubModuleDebugControllerProcessorPortConnectionChangeHook(HKHubArchProcessor Processor, HKHubArchPortID Port)
+{
+    HKHubModuleDebugControllerPortConnectionChangeHook(Processor, Port, ((HKHubModule)Processor->state.debug.context)->internal, Processor->state.debug.extra, HKHubArchProcessorGetPortConnection(Processor, Port));
+}
+
+static void HKHubModuleDebugControllerModulePortConnectionChangeHook(HKHubModule Module, HKHubArchPortID Port)
+{
+    HKHubModuleDebugControllerPortConnectionChangeHook(Module, Port, ((HKHubModule)Module->debug.context)->internal, Module->debug.extra, HKHubModuleGetPortConnection(Module, Port));
 }
 
 static void HKHubModuleDebugControllerBreakpointChangeHook(HKHubArchProcessor Processor, HKHubArchProcessorDebugBreakpoint Breakpoint, uint8_t Offset)
@@ -1430,7 +1438,7 @@ void HKHubModuleDebugControllerConnectProcessor(HKHubModule Controller, HKHubArc
     Processor->state.debug.extra = Index;
     
     Processor->state.debug.operation = HKHubModuleDebugControllerInstructionHook;
-    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerPortConnectionChangeHook;
+    Processor->state.debug.portConnectionChange = HKHubModuleDebugControllerProcessorPortConnectionChangeHook;
     Processor->state.debug.breakpointChange = HKHubModuleDebugControllerBreakpointChangeHook;
     Processor->state.debug.debugModeChange = HKHubModuleDebugControllerDebugModeChangeHook;
     
@@ -1491,6 +1499,8 @@ void HKHubModuleDebugControllerConnectModule(HKHubModule Controller, HKHubModule
     Module->debug.context = Controller;
     Module->debug.extra = Index;
     
+    Module->debug.portConnectionChange = HKHubModuleDebugControllerModulePortConnectionChangeHook;
+    
     CCAssertLog(Index == (uint16_t)Index, "Too many devices connected");
     
     HKHubModuleDebugControllerPushEvent(State, &Device->events, &(HKHubModuleDebugControllerDeviceEvent){
@@ -1514,6 +1524,8 @@ void HKHubModuleDebugControllerDisconnectModule(HKHubModule Controller, HKHubMod
         .type = HKHubModuleDebugControllerDeviceEventTypeDeviceDisconnected,
         .device = (uint16_t)Device->index
     });
+    
+    Module->debug.portConnectionChange = NULL;
     
     Module->debug.context = NULL;
     Module->debug.extra = 0;
