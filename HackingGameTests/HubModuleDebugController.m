@@ -1066,6 +1066,8 @@
         ".byte -1, -2, -3, -4, -5, -6\n"
         "port2:\n"
         ".byte -1, -2, -3, -4, -5, -6\n"
+        "port3:\n"
+        ".byte -1, -2, -3, -4, -5, -6\n"
         "leftover:\n"
         ".byte -1, -2\n"
         ".entrypoint\n"
@@ -1074,6 +1076,7 @@
         "recv r0, [break3]\n"
         "recv r0, [port1]\n"
         "recv r0, [port2]\n"
+        "recv r0, [port3]\n"
         "recv r0, [leftover]\n"
         "hlt\n"
     ;
@@ -1128,14 +1131,21 @@
     XCTAssertEqual(Processor->memory[17], 0xff, @"Should be the correct value");
     //port2
     XCTAssertEqual(Processor->memory[18], 0x30, @"Should be the correct value");
-    XCTAssertEqual(Processor->memory[19], 0, @"Should be the correct value");
-    XCTAssertEqual(Processor->memory[20], 2, @"Should be the correct value");
-    XCTAssertEqual(Processor->memory[21], 29, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[19], 5, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[20], 29, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[21], 2, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[22], 0x80, @"Should be the correct value");
-    XCTAssertEqual(Processor->memory[23], 5, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[23], 0, @"Should be the correct value");
+    //port3
+    XCTAssertEqual(Processor->memory[24], 0x30, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[25], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[26], 2, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[27], 29, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[28], 0x80, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[29], 5, @"Should be the correct value");
     //leftover
-    XCTAssertEqual(Processor->memory[24], 0xff, @"Should be the correct value");
-    XCTAssertEqual(Processor->memory[25], 0xfe, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[30], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[31], 0xfe, @"Should be the correct value");
     
     HKHubArchProcessorDestroy(TempProcessor);
     HKHubArchProcessorDestroy(Processor);
