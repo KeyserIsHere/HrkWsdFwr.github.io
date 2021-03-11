@@ -964,27 +964,30 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                 const HKHubModuleDebugControllerDeviceEvent *Event = NULL;
                 CCComparisonResult Result = CCComparisonResultInvalid;
                 
-                for (size_t Loop2 = 0, Base = HKHubModuleDebugControllerGetBaseEventIndex(&DebuggedDevice->events), Count2 = CCMin(CCArrayGetCount(DebuggedDevice->events.buffer), HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultAscending) && ((Skip1 != Loop) || (Skip2 != Loop2)); Loop2++)
+                for (size_t Loop2 = (Skip1 == Loop ? Skip2 : 0), Base = HKHubModuleDebugControllerGetBaseEventIndex(&DebuggedDevice->events), Count2 = CCMin(CCArrayGetCount(DebuggedDevice->events.buffer), HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultAscending); Loop2++)
                 {
                     Event = CCArrayGetElementAtIndex(DebuggedDevice->events.buffer, (Base + Loop2) % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX);
                     Result = CCBigIntFastCompare(State->eventPortState[Port].index, Event->id);
                     
-                    if ((State->eventPortState[Port].filter.commands != 0) && ((State->eventPortState[Port].filter.commands & (1 << Event->type)) == 0))
+                    if (Result == CCComparisonResultEqual)
                     {
-                        CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
-                        Result = CCComparisonResultInvalid;
-                        Skip1 = Loop;
-                        Skip2 = Loop2;
-                        Loop = 0;
-                    }
-                    
-                    else if ((State->eventPortState[Port].filter.devices) && (CCArrayGetCount(State->eventPortState[Port].filter.devices)) && (!HKHubModuleDebugControllerFindDevice(State->eventPortState[Port].filter.devices, (uint16_t)Event->device, NULL, NULL, NULL)))
-                    {
-                        CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
-                        Result = CCComparisonResultInvalid;
-                        Skip1 = Loop;
-                        Skip2 = Loop2;
-                        Loop = 0;
+                        if ((State->eventPortState[Port].filter.commands != 0) && ((State->eventPortState[Port].filter.commands & (1 << Event->type)) == 0))
+                        {
+                            CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
+                            Result = CCComparisonResultInvalid;
+                            Skip1 = Loop;
+                            Skip2 = Loop2;
+                            Loop = SIZE_MAX;
+                        }
+                        
+                        else if ((State->eventPortState[Port].filter.devices) && (CCArrayGetCount(State->eventPortState[Port].filter.devices)) && (!HKHubModuleDebugControllerFindDevice(State->eventPortState[Port].filter.devices, (uint16_t)Event->device, NULL, NULL, NULL)))
+                        {
+                            CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
+                            Result = CCComparisonResultInvalid;
+                            Skip1 = Loop;
+                            Skip2 = Loop2;
+                            Loop = SIZE_MAX;
+                        }
                     }
                 }
                 
