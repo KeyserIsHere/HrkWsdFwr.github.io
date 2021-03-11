@@ -56,6 +56,24 @@
 size_t HKHubModuleDebugControllerEventBufferMax = HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX;
 #undef HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX
 #define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX HKHubModuleDebugControllerEventBufferMax
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_SKIP_FLAG ~(UINT64_MAX >> 1)
+typedef uint64_t HKHubModuleDebugControllerEventBufferIndex;
+#else
+#if HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX <= (UINT8_MAX >> 1)
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_SKIP_FLAG ~(UINT8_MAX >> 1)
+typedef uint8_t HKHubModuleDebugControllerEventBufferIndex;
+#elif HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX <= (UINT16_MAX >> 1)
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_SKIP_FLAG ~(UINT16_MAX >> 1)
+typedef uint16_t HKHubModuleDebugControllerEventBufferIndex;
+#elif HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX <= (UINT32_MAX >> 1)
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_SKIP_FLAG ~(UINT32_MAX >> 1)
+typedef uint32_t HKHubModuleDebugControllerEventBufferIndex;
+#elif HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX <= (UINT64_MAX >> 1)
+#define HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_SKIP_FLAG ~(UINT64_MAX >> 1)
+typedef uint64_t HKHubModuleDebugControllerEventBufferIndex;
+#else
+#error Event buffer is too large
+#endif
 #endif
 
 typedef enum {
@@ -955,8 +973,18 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
     else
     {
         // event api
-        for (size_t Loop = 0, Skip1 = SIZE_MAX, Skip2 = SIZE_MAX, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
+        const size_t Count = CCArrayGetCount(State->devices);
+        HKHubModuleDebugControllerEventBufferIndex *Skip;
+        
+        CC_TEMP_Malloc(Skip, sizeof(*Skip) * Count);
+        memset(Skip, 0, sizeof(*Skip) * Count);
+        
+        _Static_assert(sizeof(HKHubModuleDebugControllerEventBufferIndex) <= sizeof(size_t), "Buffer index should not exceed size_t");
+        
+        for (size_t Loop = 0, Count = CCArrayGetCount(State->devices); Loop < Count; Loop++)
         {
+            if (Skip[Loop] & HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_SKIP_FLAG) continue;
+            
             const HKHubModuleDebugControllerDevice *DebuggedDevice = CCArrayGetElementAtIndex(State->devices, Loop);
             
             if (DebuggedDevice->events.buffer)
@@ -964,7 +992,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                 const HKHubModuleDebugControllerDeviceEvent *Event = NULL;
                 CCComparisonResult Result = CCComparisonResultInvalid;
                 
-                for (size_t Loop2 = (Skip1 == Loop ? Skip2 : 0), Base = HKHubModuleDebugControllerGetBaseEventIndex(&DebuggedDevice->events), Count2 = CCMin(CCArrayGetCount(DebuggedDevice->events.buffer), HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultAscending); Loop2++)
+                for (size_t Loop2 = Skip[Loop], Base = HKHubModuleDebugControllerGetBaseEventIndex(&DebuggedDevice->events), Count2 = CCMin(CCArrayGetCount(DebuggedDevice->events.buffer), HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX); (Loop2 < Count2) && (Result != CCComparisonResultEqual) && (Result != CCComparisonResultAscending); Loop2++)
                 {
                     Event = CCArrayGetElementAtIndex(DebuggedDevice->events.buffer, (Base + Loop2) % HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_MAX);
                     Result = CCBigIntFastCompare(State->eventPortState[Port].index, Event->id);
@@ -975,8 +1003,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                         {
                             CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
                             Result = CCComparisonResultInvalid;
-                            Skip1 = Loop;
-                            Skip2 = Loop2;
+                            Skip[Loop] = Loop2;
                             Loop = SIZE_MAX;
                         }
                         
@@ -984,8 +1011,7 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                         {
                             CCBigIntFastAdd(&State->eventPortState[Port].index, 1);
                             Result = CCComparisonResultInvalid;
-                            Skip1 = Loop;
-                            Skip2 = Loop2;
+                            Skip[Loop] = Loop2;
                             Loop = SIZE_MAX;
                         }
                     }
@@ -993,6 +1019,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                 
                 if (Result == CCComparisonResultEqual)
                 {
+                    CC_TEMP_Free(Skip);
+                    
                     size_t Size = 0;
                     State->eventPortState[Port].message[Size++] = (Event->type << 4) | ((Event->device & 0xf00) >> 8);
                     State->eventPortState[Port].message[Size++] = Event->device & 0xff;
@@ -1096,6 +1124,8 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                 }
             }
         }
+        
+        CC_TEMP_Free(Skip);
     }
     
     return HKHubArchPortResponseTimeout;
