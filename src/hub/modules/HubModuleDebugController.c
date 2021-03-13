@@ -1122,6 +1122,11 @@ static HKHubArchPortResponse HKHubModuleDebugControllerSend(HKHubArchPortConnect
                     
                     return HKHubArchPortResponseSuccess;
                 }
+                
+                else if (Result == CCComparisonResultDescending)
+                {
+                    Skip[Loop] |= HK_HUB_MODULE_DEBUG_CONTROLLER_EVENT_BUFFER_SKIP_FLAG;
+                }
             }
         }
         
