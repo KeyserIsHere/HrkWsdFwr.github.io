@@ -1255,6 +1255,14 @@
         ".byte -1, -2, -3, -4, -5, -6, -7\n"
         "leftover:\n"
         ".byte -1, -2\n"
+        "op4:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7\n"
+        "op5:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7\n"
+        "op6:\n"
+        ".byte -1, -2, -3, -4, -5, -6, -7\n"
+        "modify:\n"
+        ".byte -1, -2, -3\n"
         "cmd_filter1:\n"
         ".byte (0 << 4) | 8\n"
         "cmd_filter2:\n"
@@ -1280,6 +1288,16 @@
         "recv r0, [op2]\n"
         "recv r0, [op3]\n"
         "recv r0, [leftover]\n"
+        "hlt\n"
+        "or [cmd_filter2], (1 << 4)\n"
+        "send r0, 1, [cmd_filter2]\n"
+        "recv r0, [op4]\n"
+        "or [cmd_filter1], (1 << 4)\n"
+        "send r0, 1, [cmd_filter1]\n"
+        "recv r0, [op5]\n"
+        "hlt\n"
+        "recv r0, [op6]\n"
+        "recv r0, [modify]\n"
         "hlt\n"
     ;
     
@@ -1348,6 +1366,44 @@
     //leftover
     XCTAssertEqual(Processor->memory[35], 0xff, @"Should be the correct value");
     XCTAssertEqual(Processor->memory[36], 0xfe, @"Should be the correct value");
+    
+    HKHubArchProcessorStep(TempProcessor, 2);
+    HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //op4
+    XCTAssertEqual(Processor->memory[37], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[38], 0xfe, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[39], 0xfd, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[40], 0xfc, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[41], 0xfb, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[42], 0xfa, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[43], 0xf9, @"Should be the correct value");
+    //op5
+    XCTAssertEqual(Processor->memory[44], 0xff, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[45], 0xfe, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[46], 0xfd, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[47], 0xfc, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[48], 0xfb, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[49], 0xfa, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[50], 0xf9, @"Should be the correct value");
+    
+    HKHubArchProcessorStep(TempProcessor, 1);
+    HKHubArchSchedulerRun(Scheduler, 10.0); Processor->memory[Processor->state.pc] = 0xf8; Processor->status = HKHubArchProcessorStatusRunning;
+    HKHubArchSchedulerRun(Scheduler, 10.0);
+    
+    //op6
+    XCTAssertEqual(Processor->memory[51], 0x40, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[52], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[53], TempProcessor->memory[6], @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[54], TempProcessor->memory[7], @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[55], 0xfb, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[56], 0xfa, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[57], 0xf9, @"Should be the correct value");
+    //modify
+    XCTAssertEqual(Processor->memory[58], 0x50, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[59], 0, @"Should be the correct value");
+    XCTAssertEqual(Processor->memory[60], HKHubArchInstructionRegisterPC, @"Should be the correct value");
     
     HKHubArchProcessorDestroy(TempProcessor);
     HKHubArchProcessorDestroy(Processor);
