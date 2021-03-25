@@ -35,6 +35,9 @@
 #define Tbuffer PTYPE(uint16_t *)
 #include <CommonC/Memory.h>
 
+#define Tbuffer PTYPE(uint32_t *)
+#include <CommonC/Memory.h>
+
 #define CC_GENERIC_PRESERVE_HEADER
 #define CC_GENERIC_TEMPLATE <CommonC/DataMemoryTemplate.h>
 
@@ -44,6 +47,10 @@
 
 #define Tmemory CCData
 #define Tbuffer PTYPE(uint16_t *)
+#include <CommonC/Memory.h>
+
+#define Tmemory CCData
+#define Tbuffer PTYPE(uint32_t *)
 #include <CommonC/Memory.h>
 
 #define HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT_MASK HK_HUB_MODULE_DEBUG_CONTROLLER_QUERY_PORT
@@ -340,6 +347,14 @@ static CC_FORCE_INLINE uint8_t HKHubModuleDebugControllerMessageGetU8(const HKHu
 static CC_FORCE_INLINE uint16_t HKHubModuleDebugControllerMessageGetU16(const HKHubArchPortMessage * const Message, const size_t Offset)
 {
     uint16_t Value;
+    CCMemoryReadBig(Message->memory, 256, Message->offset + Offset, sizeof(Value), &Value);
+    
+    return Value;
+}
+
+static CC_FORCE_INLINE uint32_t HKHubModuleDebugControllerMessageGetU32(const HKHubArchPortMessage * const Message, const size_t Offset)
+{
+    uint32_t Value;
     CCMemoryReadBig(Message->memory, 256, Message->offset + Offset, sizeof(Value), &Value);
     
     return Value;
@@ -858,6 +873,52 @@ static HKHubArchPortResponse HKHubModuleDebugControllerReceive(HKHubArchPortConn
                                 State->queryPortState[Port].size = Length;
                                 
                                 Response = HKHubArchPortResponseSuccess;
+                            }
+                        }
+                        break;
+                        
+                    case 13:
+                        //[d:4] [device:12] read memory [offset:32] [size:8] ... (bytes:sum sizes)
+                        if ((Message->size >= 2) && (((Message->size - 2) % 5) == 0))
+                        {
+                            const uint16_t DeviceID = HKHubModuleDebugControllerMessageGetDeviceID(Message, 0);
+                            
+                            if (DeviceID < CCArrayGetCount(State->devices))
+                            {
+                                HKHubModuleDebugControllerDevice *Device = CCArrayGetElementAtIndex(State->devices, DeviceID);
+                                if (Device->type == HKHubModuleDebugControllerDeviceTypeProcessor)
+                                {
+                                    uint8_t Index = 0;
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 5)
+                                    {
+                                        const size_t Offset = HKHubModuleDebugControllerMessageGetU32(Message, Loop), Size = HKHubModuleDebugControllerMessageGetU8(Message, Loop + 4);
+                                        
+                                        CCMemoryReadBig(Device->processor->memory, 256, Offset, Size, &State->queryPortState[Port].message[Index]);
+                                        Index += Size;
+                                    }
+                                    
+                                    State->queryPortState[Port].size = Index;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
+                                
+                                else if (Device->type == HKHubModuleDebugControllerDeviceTypeModule)
+                                {
+                                    const size_t MemorySize = CCDataGetSize(Device->module->memory);
+                                    
+                                    uint8_t Index = 0;
+                                    for (size_t Loop = 2, Count = Message->size; Loop < Count; Loop += 5)
+                                    {
+                                        const size_t Offset = HKHubModuleDebugControllerMessageGetU32(Message, Loop), Size = HKHubModuleDebugControllerMessageGetU8(Message, Loop + 4);
+                                        
+                                        CCMemoryReadBig(Device->module->memory, MemorySize, Offset, Size, &State->queryPortState[Port].message[Index]);
+                                        Index += Size;
+                                    }
+                                    
+                                    State->queryPortState[Port].size = Index;
+                                    
+                                    Response = HKHubArchPortResponseSuccess;
+                                }
                             }
                         }
                         break;
