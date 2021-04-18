@@ -26,17 +26,14 @@
 #include "HubModuleGraphicsAdapter.h"
 
 #define CC_TYPE_HKHubModuleGraphicsAdapterCell(...) HKHubModuleGraphicsAdapterCell
-#define CC_TYPE_0_HKHubModuleGraphicsAdapterCell CC_TYPE_HKHubModuleGraphicsAdapterCell,
+#define CC_TYPE_1_HKHubModuleGraphicsAdapterCell CC_TYPE_HKHubModuleGraphicsAdapterCell,
 
 #define CC_PRESERVE_CC_TYPE_HKHubModuleGraphicsAdapterCell CC_TYPE_HKHubModuleGraphicsAdapterCell
 
 #define CC_TYPE_DECL_HKHubModuleGraphicsAdapterCell(...) HKHubModuleGraphicsAdapterCell, __VA_ARGS__
-#define CC_TYPE_DECL_0_HKHubModuleGraphicsAdapterCell CC_TYPE_DECL_HKHubModuleGraphicsAdapterCell,
+#define CC_TYPE_DECL_1_HKHubModuleGraphicsAdapterCell CC_TYPE_DECL_HKHubModuleGraphicsAdapterCell,
 
-#define CC_MANGLE_TYPE_0_HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCell
-
-#define Tbuffer PTYPE(HKHubModuleGraphicsAdapterCell *)
-#include <CommonC/Memory.h>
+#define CC_MANGLE_TYPE_1_HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCell
 
 typedef struct {
     uint8_t x, y, width, height;
@@ -80,6 +77,9 @@ typedef struct {
     uint8_t palettes[HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT][256];
     uint8_t layers[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH * HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT * sizeof(HKHubModuleGraphicsAdapterCell)];
 } HKHubModuleGraphicsAdapterMemory;
+
+#define Tbuffer PTYPE(HKHubModuleGraphicsAdapterCell *)
+#include <CommonC/Memory.h>
 
 static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCellMode(HKHubModuleGraphicsAdapterCell Cell)
 {
