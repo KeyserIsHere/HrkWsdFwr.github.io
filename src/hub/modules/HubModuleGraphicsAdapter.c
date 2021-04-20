@@ -68,7 +68,9 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint32_t) {
     
     //y = y position
     HKHubModuleGraphicsAdapterCellPositionYIndex = 8,
-    HKHubModuleGraphicsAdapterCellPositionYMask = (0xff << HKHubModuleGraphicsAdapterCellPositionYIndex)
+    HKHubModuleGraphicsAdapterCellPositionYMask = (0xff << HKHubModuleGraphicsAdapterCellPositionYIndex),
+    
+    CC_RESERVED_BITS(HKHubModuleGraphicsAdapterCell, 0, 32)
 };
 
 typedef struct {
