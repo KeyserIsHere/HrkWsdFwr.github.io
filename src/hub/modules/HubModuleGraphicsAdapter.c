@@ -55,7 +55,7 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint32_t) {
     HKHubModuleGraphicsAdapterCellAnimationOffsetIndex = 24,
     HKHubModuleGraphicsAdapterCellAnimationOffsetMask = (7 << HKHubModuleGraphicsAdapterCellAnimationOffsetIndex),
     
-    //i = bitmap index
+    //i = glyph index
     HKHubModuleGraphicsAdapterCellGlyphIndexMask = 0x1fffff,
     
     //r = reference layer
@@ -121,4 +121,33 @@ static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetX(HKHubModuleGra
 static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetY(HKHubModuleGraphicsAdapterCell Cell)
 {
     return (Cell & HKHubModuleGraphicsAdapterCellPositionYMask) >> HKHubModuleGraphicsAdapterCellPositionYIndex;
+}
+
+static int32_t HKHubModuleGraphicsAdapterCellIndex(HKHubModuleGraphicsAdapterMemory *Memory, size_t Layer, size_t X, size_t Y, HKHubModuleGraphicsAdapterCell *Attributes)
+{
+    //TODO: Handle infinite recursion case
+    
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    CCAssertLog(X < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH, "X must not exceed layer width");
+    CCAssertLog(Y < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT, "Y must not exceed layer height");
+    
+    HKHubModuleGraphicsAdapterCell Glyph;
+    
+    CCMemoryReadBig(&Memory->layers[Layer][(X + (Y * HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH)) * sizeof(Glyph)], sizeof(Glyph), 0, sizeof(Glyph), &Glyph);
+    
+    if (Attributes) *Attributes = Glyph;
+    
+    switch (HKHubModuleGraphicsAdapterCellMode(Glyph))
+    {
+        case HKHubModuleGraphicsAdapterCellModeBitmap:
+            return HKHubModuleGraphicsAdapterCellGetGlyphIndex(Glyph);
+            
+        case HKHubModuleGraphicsAdapterCellModeReference:
+            return HKHubModuleGraphicsAdapterCellIndex(Memory, HKHubModuleGraphicsAdapterCellGetReferenceLayer(Glyph), HKHubModuleGraphicsAdapterCellGetX(Glyph), HKHubModuleGraphicsAdapterCellGetY(Glyph), NULL);
+            
+        default:
+            break;
+    }
+    
+    return -1;
 }
