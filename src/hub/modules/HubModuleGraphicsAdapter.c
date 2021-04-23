@@ -185,3 +185,14 @@ void HKHubModuleGraphicsAdapterStaticGlyphSet(CCChar Character, uint8_t Width, u
         }
     }
 }
+
+const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
+{
+    const uint32_t Index = Character < CCArrayGetCount(HKHubModuleGraphicsAdapterGlyphIndexes) ? *(uint32_t*)CCArrayGetElementAtIndex(HKHubModuleGraphicsAdapterGlyphIndexes, Character) : HK_HUB_MODULE_GRAPHICS_ADAPTER_NULL_GLYPH;
+    
+    *Width = Index >> 28;
+    *Height = (Index >> 24) & 0xf;
+    *PaletteSize = (Index >> 21) & 0x7;
+    
+    return CCArrayGetElementAtIndex(HKHubModuleGraphicsAdapterGlyphBitmaps[Index >> 21], Index & 0x1fffff);
+}
