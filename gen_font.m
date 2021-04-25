@@ -88,3 +88,23 @@ static void InitDefaults(void)
         }
     }
 }
+
+static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
+{
+    NSMutableArray *Fonts = [NSMutableArray array];
+    
+    char FontName[256] = {0};
+    for (float FontSize = 12.0f; fscanf(Input, "%*1[ ]\"%255[^\"\n]\":%f", FontName, &FontSize); FontSize = 12.0f)
+    {
+        CGFontRef Font = CGFontCreateWithFontName([NSString stringWithUTF8String: FontName]);
+        if (Font)
+        {
+            [Fonts addObject: CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL)];
+            CGFontRelease(Font);
+        }
+        
+        else if (Verbose) fprintf(stderr, "No font for name: %s\n", FontName);
+    }
+    
+    return Fonts;
+}
