@@ -108,3 +108,22 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
     
     return Fonts;
 }
+
+static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose)
+{
+    uint32_t Start = 0, Stop = 0;
+    switch (fscanf(Input, "U+%x-%x", &Start, &Stop))
+    {
+        case 0:
+            fscanf(Input, "%lc", &Start);
+        case 1:
+            Stop = Start;
+            break;
+            
+        default:
+            break;
+    }
+    
+    NSArray *Fonts = ParseFonts(Input, Verbose);
+    if (!Fonts.count) Fonts = DefaultFonts;
+}
