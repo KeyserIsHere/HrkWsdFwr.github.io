@@ -126,4 +126,19 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose)
     
     NSArray *Fonts = ParseFonts(Input, Verbose);
     if (!Fonts.count) Fonts = DefaultFonts;
+    
+    int Next = Start < Stop ? 1 : -1;
+    
+    for ( ; Start; Start += Next)
+    {
+        NSString *String = [[NSString alloc] initWithBytes: &(uint32_t){ NSSwapHostIntToLittle(Start) } length: sizeof(Start) encoding: NSUTF32LittleEndianStringEncoding];
+        
+        if (String.length)
+        {
+            CGContextSetRGBFillColor(Ctx, 0.0, 0.0, 0.0, 1.0);
+            CGContextFillRect(Ctx, Rect);
+        }
+        
+        if (Start == Stop) break;
+    }
 }
