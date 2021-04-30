@@ -137,6 +137,35 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose)
         {
             CGContextSetRGBFillColor(Ctx, 0.0, 0.0, 0.0, 1.0);
             CGContextFillRect(Ctx, Rect);
+            
+            CFMutableAttributedStringRef AttributedString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
+            
+            CFAttributedStringReplaceString(AttributedString, (CFRange){ 0, 0 }, (CFStringRef)String);
+            NSUInteger Location = 0;
+            CFRange CurrentRange = { Location, 1 };
+            Location += CurrentRange.length;
+            
+            CGColorRef Colour = CGColorCreateGenericRGB(1.0f, 0.0f, 0.0f, 1.0f);
+            CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTForegroundColorAttributeName, Colour);
+            CGColorRelease(Colour);
+            
+            for (id Font in Fonts)
+            {
+                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTFontAttributeName, Font);
+                
+                CGMutablePathRef Path = CGPathCreateMutable();
+                CGPathAddRect(Path, NULL, Rect);
+                
+                CTFramesetterRef Framesetter = CTFramesetterCreateWithAttributedString(AttributedString);
+                CTFrameRef Frame = CTFramesetterCreateFrame(Framesetter, CurrentRange, Path, NULL);
+                CTFrameDraw(Frame, Ctx);
+                
+                CFRelease(Path);
+                CFRelease(Framesetter);
+                CFRelease(Frame);
+            }
+            
+            CFRelease(AttributedString);
         }
         
         if (Start == Stop) break;
