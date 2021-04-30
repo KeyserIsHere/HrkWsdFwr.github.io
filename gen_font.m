@@ -163,7 +163,19 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose)
                 CFRelease(Path);
                 CFRelease(Framesetter);
                 CFRelease(Frame);
+                
+                for (size_t Loop2 = 0; Loop2 < sizeof(Data) / 4; Loop2 += 4)
+                {
+                    if (Data[Loop2] != 0)
+                    {
+                        goto Rendered;
+                    }
+                }
             }
+            
+            if (Verbose) fprintf(stderr, "No font with glyph for character: U+%.4x\n", Start);
+            
+        Rendered:
             
             CFRelease(AttributedString);
         }
