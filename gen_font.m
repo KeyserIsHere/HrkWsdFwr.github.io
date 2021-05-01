@@ -168,6 +168,10 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose)
                 {
                     if (Data[Loop2] != 0)
                     {
+                        CGImageRef Image = CGBitmapContextCreateImage(Ctx);
+                        [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
+                        CGImageRelease(Image);
+                        
                         goto Rendered;
                     }
                 }
