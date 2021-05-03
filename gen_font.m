@@ -190,3 +190,29 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, 
         if (Start == Stop) break;
     }
 }
+
+int main(int argc, const char * argv[])
+{
+    @autoreleasepool {
+        InitDefaults();
+        
+        _Bool Verbose = TRUE, SaveImage = TRUE;
+        
+        CGColorSpaceRef ColourSpace = CGColorSpaceCreateDeviceRGB();
+        
+        CGContextRef Ctx = CGBitmapContextCreate(Data, Width, Height, 8, Width * 4, ColourSpace, kCGImageAlphaPremultipliedLast);
+        CGColorSpaceRelease(ColourSpace);
+        
+        CGContextSetAllowsFontSmoothing(Ctx, FALSE);
+        CGContextSetShouldAntialias(Ctx, FALSE);
+        CGContextSetAllowsAntialiasing(Ctx, FALSE);
+        
+        CGContextSetRGBFillColor(Ctx, 0.0, 0.0, 0.0, 1.0);
+        
+        const CGRect Rect = CGRectMake(0.0f, 0.0f, Width, Height);
+        
+        ParseMap(Ctx, Rect, stdin, Verbose, SaveImage);
+    }
+    
+    return 0;
+}
