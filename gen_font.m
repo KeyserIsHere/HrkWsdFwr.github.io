@@ -109,7 +109,7 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
     return Fonts;
 }
 
-static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose)
+static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, _Bool SaveImage)
 {
     uint32_t Start = 0, Stop = 0;
     switch (fscanf(Input, "U+%x-%x", &Start, &Stop))
@@ -168,9 +168,12 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose)
                 {
                     if (Data[Loop2] != 0)
                     {
-                        CGImageRef Image = CGBitmapContextCreateImage(Ctx);
-                        [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
-                        CGImageRelease(Image);
+                        if (SaveImage)
+                        {
+                            CGImageRef Image = CGBitmapContextCreateImage(Ctx);
+                            [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
+                            CGImageRelease(Image);
+                        }
                         
                         goto Rendered;
                     }
