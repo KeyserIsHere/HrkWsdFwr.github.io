@@ -164,9 +164,9 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, 
                 CFRelease(Framesetter);
                 CFRelease(Frame);
                 
-                for (size_t Loop2 = 0; Loop2 < sizeof(Data) / 4; Loop2 += 4)
+                for (size_t Loop = 0; Loop < sizeof(Data) / 4; Loop += 4)
                 {
-                    if (Data[Loop2] != 0)
+                    if (Data[Loop] != 0)
                     {
                         if (SaveImage)
                         {
