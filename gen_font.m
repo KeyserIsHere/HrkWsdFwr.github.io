@@ -83,7 +83,7 @@ static void InitDefaults(void)
         CGFontRef Font = CGFontCreateWithFontName(FontNames[Loop]);
         if (Font)
         {
-            [DefaultFonts addObject: CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL)];
+            [DefaultFonts addObject: @[CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL), @0.0f]];
             CGFontRelease(Font);
         }
     }
@@ -94,12 +94,12 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
     NSMutableArray *Fonts = [NSMutableArray array];
     
     char FontName[256] = {0};
-    for (float FontSize = 12.0f; fscanf(Input, "%*1[ ]\"%255[^\"\n]\":%f", FontName, &FontSize); FontSize = 12.0f)
+    for (float FontSize = 12.0f, BaselineOffset = 0.0f; fscanf(Input, "%*1[ ]\"%255[^\"\n]\":%f,%f", FontName, &FontSize, &BaselineOffset); FontSize = 12.0f, BaselineOffset = 0.0f)
     {
         CGFontRef Font = CGFontCreateWithFontName([NSString stringWithUTF8String: FontName]);
         if (Font)
         {
-            [Fonts addObject: CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL)];
+            [Fonts addObject: @[CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL), @(BaselineOffset)]];
             CGFontRelease(Font);
         }
         
@@ -155,7 +155,8 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, 
             
             for (id Font in Fonts)
             {
-                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTFontAttributeName, Font);
+                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTFontAttributeName, Font[0]);
+                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTBaselineOffsetAttributeName, Font[1]);
                 
                 CGMutablePathRef Path = CGPathCreateMutable();
                 CGPathAddRect(Path, NULL, Rect);
