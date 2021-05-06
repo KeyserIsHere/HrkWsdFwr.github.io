@@ -121,15 +121,19 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, 
             break;
             
         default:
+            if (Start > Stop)
+            {
+                if (Verbose) fprintf(stderr, "Invalid character range (must be ascending): U+%.4x-%.4x\n", Start, Stop);
+                
+                return;
+            }
             break;
     }
     
     NSArray *Fonts = ParseFonts(Input, Verbose);
     if (!Fonts.count) Fonts = DefaultFonts;
     
-    int Next = Start < Stop ? 1 : -1;
-    
-    for ( ; Start; Start += Next)
+    for ( ; Start; Start++)
     {
         NSString *String = [[NSString alloc] initWithBytes: &(uint32_t){ NSSwapHostIntToLittle(Start) } length: sizeof(Start) encoding: NSUTF32LittleEndianStringEncoding];
         
