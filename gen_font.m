@@ -153,6 +153,10 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, 
             CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTForegroundColorAttributeName, Colour);
             CGColorRelease(Colour);
             
+            Colour = CGColorCreateGenericRGB(0.0f, 0.0f, 1.0f, 1.0f);
+            CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTBackgroundColorAttributeName, Colour);
+            CGColorRelease(Colour);
+            
             for (id Font in Fonts)
             {
                 CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTFontAttributeName, Font[0]);
@@ -171,7 +175,7 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, 
                 
                 for (size_t Loop = 0; Loop < sizeof(Data) / 4; Loop += 4)
                 {
-                    if (Data[Loop] != 0)
+                    if (Data[Loop + 2] != 0)
                     {
                         if (SaveImage)
                         {
