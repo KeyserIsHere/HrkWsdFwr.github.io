@@ -109,7 +109,12 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
     return Fonts;
 }
 
-static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, _Bool Verbose, _Bool SaveImage)
+typedef struct {
+    FILE *file;
+    size_t count;
+} Resource;
+
+static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Indexes, Resource *Bitmaps, _Bool Verbose, _Bool SaveImage)
 {
     uint32_t Start = 0, Stop = 0;
     switch (fscanf(Input, "U+%x-%x", &Start, &Stop))
@@ -239,7 +244,21 @@ int main(int argc, const char * argv[])
         
         const CGRect Rect = CGRectMake(0.0f, 0.0f, Width, Height);
         
-        ParseMap(Ctx, Rect, stdin, Verbose, SaveImage);
+        Resource Indexes[2] = {
+            { .file = fopen("glyphset.little.index", "wb"), .count = 0 },
+            { .file = fopen("glyphset.big.index", "wb"), .count = 0 }
+        };
+        Resource Bitmaps[2] = {
+            { .file = fopen("unicode.1.2.1.glyphset", "wb"), .count = 0 },
+            { .file = fopen("unicode.2.2.1.glyphset", "wb"), .count = 0 }
+        };
+        
+        ParseMap(Ctx, Rect, stdin, Indexes, Bitmaps, Verbose, SaveImage);
+        
+        fclose(Indexes[0].file);
+        fclose(Indexes[1].file);
+        fclose(Bitmaps[0].file);
+        fclose(Bitmaps[1].file);
     }
     
     return 0;
