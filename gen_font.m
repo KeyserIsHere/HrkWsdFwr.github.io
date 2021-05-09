@@ -178,9 +178,9 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                 CFRelease(Framesetter);
                 CFRelease(Frame);
                 
-                for (size_t Loop = 0; Loop < sizeof(Data) / 4; Loop += 4)
+                for (size_t Loop = 0; Loop < sizeof(Data) / 4; Loop++)
                 {
-                    if (Data[Loop + 2] != 0)
+                    if (Data[(Loop * 4) + 2] != 0)
                     {
                         if (SaveImage)
                         {
@@ -189,16 +189,16 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                             CGImageRelease(Image);
                         }
                         
-                        size_t Y = (Loop / 4) / Width;
-                        size_t X = (Loop / 4) - (Y * Width);
+                        size_t Y = Loop / Width;
+                        size_t X = Loop - (Y * Width);
                         size_t MaxX = X, MaxY = Y;
                         
-                        for ( ; Loop < sizeof(Data) / 4; Loop += 4)
+                        for ( ; Loop < sizeof(Data) / 4; Loop++)
                         {
-                            if (Data[Loop] != 0)
+                            if (Data[(Loop * 4) + 2] != 0)
                             {
-                                Y = (Loop / 4) / Width;
-                                X = (Loop / 4) - (Y * Width);
+                                Y = Loop / Width;
+                                X = Loop - (Y * Width);
                                 
                                 if (X > MaxX) MaxX = X;
                                 if (Y > MaxY) MaxY = Y;
@@ -206,7 +206,6 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                         }
                         
                         const size_t MaxWidth = (MaxX / Cell) + 1, MaxHeight = (MaxY / Cell) + 1;
-                        
                         
                         goto Rendered;
                     }
