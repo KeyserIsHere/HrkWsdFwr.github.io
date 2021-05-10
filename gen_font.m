@@ -27,6 +27,7 @@
 @import CoreText;
 @import CoreGraphics;
 @import AppKit;
+#import <unicode/uchar.h> // install icu4c
 
 static const size_t Cell = 7 * 2;
 static const size_t Width = Cell * 2, Height = Cell * 2;
@@ -189,23 +190,44 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                             CGImageRelease(Image);
                         }
                         
-                        size_t Y = Loop / Width;
-                        size_t X = Loop - (Y * Width);
-                        size_t MaxX = X, MaxY = Y;
-                        
-                        for ( ; Loop < sizeof(Data) / 4; Loop++)
+                        size_t MaxWidth = 0, MaxHeight = 2;
+                        switch (u_getIntPropertyValue(Start, UCHAR_EAST_ASIAN_WIDTH))
                         {
-                            if (Data[(Loop * 4) + 2] != 0)
+                            case U_EA_NEUTRAL:
+                            case U_EA_AMBIGUOUS:
                             {
-                                Y = Loop / Width;
-                                X = Loop - (Y * Width);
+                                size_t Y = Loop / Width;
+                                size_t X = Loop - (Y * Width);
+                                size_t MaxX = X, MaxY = Y;
                                 
-                                if (X > MaxX) MaxX = X;
-                                if (Y > MaxY) MaxY = Y;
+                                for ( ; Loop < sizeof(Data) / 4; Loop++)
+                                {
+                                    if (Data[(Loop * 4) + 2] != 0)
+                                    {
+                                        Y = Loop / Width;
+                                        X = Loop - (Y * Width);
+                                        
+                                        if (X > MaxX) MaxX = X;
+                                        if (Y > MaxY) MaxY = Y;
+                                    }
+                                }
+                                
+                                MaxWidth = (MaxX / Cell) + 1;
+                                if (MaxWidth > 2) MaxWidth = 2;
+                                
+                                break;
                             }
+                                
+                            case U_EA_HALFWIDTH:
+                            case U_EA_NARROW:
+                                MaxWidth = 1;
+                                break;
+                                
+                            case U_EA_FULLWIDTH:
+                            case U_EA_WIDE:
+                                MaxWidth = 2;
+                                break;
                         }
-                        
-                        const size_t MaxWidth = (MaxX / Cell) + 1, MaxHeight = (MaxY / Cell) + 1;
                         
                         goto Rendered;
                     }
