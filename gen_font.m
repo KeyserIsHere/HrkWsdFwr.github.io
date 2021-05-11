@@ -29,8 +29,11 @@
 @import AppKit;
 #import <unicode/uchar.h> // install icu4c
 
-static const size_t Cell = 7 * 2;
-static const size_t Width = Cell * 2, Height = Cell * 2;
+#define BUFFER_PAD 14
+
+static const size_t ScaleFactor = 1;
+static const size_t Cell = 7 * ScaleFactor;
+static const size_t Width = Cell * 2 + BUFFER_PAD, Height = Cell * 2 + BUFFER_PAD;
 static uint8_t Data[Width * 4 * Height];
 
 static __strong NSMutableArray *DefaultFonts = nil;
