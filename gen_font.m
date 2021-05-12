@@ -87,7 +87,7 @@ static void InitDefaults(void)
         CGFontRef Font = CGFontCreateWithFontName(FontNames[Loop]);
         if (Font)
         {
-            [DefaultFonts addObject: @[CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL), @0.0f]];
+            [DefaultFonts addObject: @[(id)CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL), @0.0f]];
             CGFontRelease(Font);
         }
     }
@@ -103,7 +103,7 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
         CGFontRef Font = CGFontCreateWithFontName([NSString stringWithUTF8String: FontName]);
         if (Font)
         {
-            [Fonts addObject: @[CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL), @(BaselineOffset)]];
+            [Fonts addObject: @[(id)CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL), @(BaselineOffset)]];
             CGFontRelease(Font);
         }
         
