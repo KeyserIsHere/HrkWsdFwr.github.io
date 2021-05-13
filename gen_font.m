@@ -232,6 +232,17 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                                 break;
                         }
                         
+                        Resource *Bitmap = &Bitmaps[MaxWidth - 1];
+                        uint32_t Index = ((MaxWidth - 1) << 28) | ((MaxHeight - 1) << 24) | (uint32_t)Bitmap->count;
+                        
+                        _Static_assert(sizeof(unsigned int) == sizeof(uint32_t), "NSSwapInt is the wrong size");
+                        
+                        fwrite(&(uint32_t){ NSSwapHostIntToLittle(Index) }, sizeof(Index), 1, Indexes[0].file);
+                        fwrite(&(uint32_t){ NSSwapHostIntToBig(Index) }, sizeof(Index), 1, Indexes[1].file);
+                        
+                        Indexes[0].count++;
+                        Indexes[1].count++;
+                        
                         goto Rendered;
                     }
                 }
