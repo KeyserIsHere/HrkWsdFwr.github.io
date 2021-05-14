@@ -243,6 +243,27 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                         Indexes[0].count++;
                         Indexes[1].count++;
                         
+                        uint8_t BitmapData[(16 * 16) / 8]; //32
+                        memset(BitmapData, 0, sizeof(BitmapData));
+                        
+                        for (size_t LoopY = 0; LoopY < (MaxHeight * Cell); LoopY++)
+                        {
+                            for (size_t LoopX = 0; LoopX < (MaxWidth * Cell); LoopX++)
+                            {
+                                const size_t Pixel = (LoopY * Width) + LoopX;
+                                if (Data[Pixel * 4] == 255)
+                                {
+                                    const size_t BitPixel = (LoopY * (MaxWidth * Cell)) + LoopX;
+                                    BitmapData[BitPixel / 8] |= 0x80 >> (BitPixel % 8);
+                                }
+                                
+                            }
+                        }
+                        
+                        fwrite(BitmapData, sizeof(uint8_t), (((MaxHeight * Cell) * (MaxWidth * Cell)) + 7) / 8, Bitmap->file);
+                        
+                        Bitmap->count++;
+                        
                         goto Rendered;
                     }
                 }
