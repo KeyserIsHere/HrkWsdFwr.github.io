@@ -237,6 +237,15 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                         
                         _Static_assert(sizeof(unsigned int) == sizeof(uint32_t), "NSSwapInt is the wrong size");
                         
+                        while (Indexes[0].count < Start)
+                        {
+                            fwrite(&(uint32_t){ 0 }, sizeof(uint32_t), 1, Indexes[0].file);
+                            fwrite(&(uint32_t){ 0 }, sizeof(uint32_t), 1, Indexes[1].file);
+                            
+                            Indexes[0].count++;
+                            Indexes[1].count++;
+                        }
+                        
                         fwrite(&(uint32_t){ NSSwapHostIntToLittle(Index) }, sizeof(Index), 1, Indexes[0].file);
                         fwrite(&(uint32_t){ NSSwapHostIntToBig(Index) }, sizeof(Index), 1, Indexes[1].file);
                         
