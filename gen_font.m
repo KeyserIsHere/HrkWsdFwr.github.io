@@ -36,6 +36,10 @@ static const size_t Cell = 7 * ScaleFactor;
 static const size_t Width = Cell * 2 + BUFFER_PAD, Height = Cell * 2 + BUFFER_PAD;
 static uint8_t Data[Width * 4 * Height];
 
+#define MISSING_GLYPH_INDEX (1 << 24)
+
+static const uint8_t MissingGlyphBitmapData[(((2 * Cell) * (1 * Cell)) + 7) / 8];
+
 static __strong NSMutableArray *DefaultFonts = nil;
 
 static void InitDefaults(void)
@@ -239,8 +243,8 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                         
                         while (Indexes[0].count < Start)
                         {
-                            fwrite(&(uint32_t){ 0 }, sizeof(uint32_t), 1, Indexes[0].file);
-                            fwrite(&(uint32_t){ 0 }, sizeof(uint32_t), 1, Indexes[1].file);
+                            fwrite(&(uint32_t){ MISSING_GLYPH_INDEX }, sizeof(uint32_t), 1, Indexes[0].file);
+                            fwrite(&(uint32_t){ MISSING_GLYPH_INDEX }, sizeof(uint32_t), 1, Indexes[1].file);
                             
                             Indexes[0].count++;
                             Indexes[1].count++;
@@ -314,9 +318,11 @@ int main(int argc, const char * argv[])
             { .file = fopen("glyphset.big.index", "wb"), .count = 0 }
         };
         Resource Bitmaps[2] = {
-            { .file = fopen("unicode.1.2.1.glyphset", "wb"), .count = 0 },
+            { .file = fopen("unicode.1.2.1.glyphset", "wb"), .count = 1 },
             { .file = fopen("unicode.2.2.1.glyphset", "wb"), .count = 0 }
         };
+        
+        fwrite(MissingGlyphBitmapData, sizeof(uint8_t), sizeof(MissingGlyphBitmapData), Bitmaps[0].file);
         
         ParseMap(Ctx, Rect, stdin, Indexes, Bitmaps, Verbose, SaveImage);
         
