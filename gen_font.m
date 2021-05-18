@@ -38,7 +38,21 @@ static uint8_t Data[Width * 4 * Height];
 
 #define MISSING_GLYPH_INDEX (1 << 24)
 
-static const uint8_t MissingGlyphBitmapData[(((2 * Cell) * (1 * Cell)) + 7) / 8];
+static const uint8_t MissingGlyphBitmapData[(((2 * Cell) * (1 * Cell)) + 7) / 8] = {
+    0xff,
+    0x06,
+    0x0c,
+    0x18,
+    0x30,
+    0x60,
+    0xc1,
+    0x83,
+    0x06,
+    0x0c,
+    0x18,
+    0x3f,
+    0xc0
+};
 
 static __strong NSMutableArray *DefaultFonts = nil;
 
