@@ -38,7 +38,13 @@ static uint8_t Data[Width * 4 * Height];
 
 #define MISSING_GLYPH_INDEX (1 << 24)
 
+#define MISSING_GLYPH_BITMAP_BORDER 0
+#define MISSING_GLYPH_BITMAP_BORDER_INSET_1 1
+
+#define MISSING_GLYPH_BITMAP MISSING_GLYPH_BITMAP_BORDER_INSET_1
+
 static const uint8_t MissingGlyphBitmapData[(((2 * Cell) * (1 * Cell)) + 7) / 8] = {
+#if MISSING_GLYPH_BITMAP == MISSING_GLYPH_BITMAP_BORDER
     0xff,
     0x06,
     0x0c,
@@ -52,6 +58,21 @@ static const uint8_t MissingGlyphBitmapData[(((2 * Cell) * (1 * Cell)) + 7) / 8]
     0x18,
     0x3f,
     0xc0
+#elif MISSING_GLYPH_BITMAP == MISSING_GLYPH_BITMAP_BORDER_INSET_1
+    0x00,
+    0xf9,
+    0x12,
+    0x24,
+    0x48,
+    0x91,
+    0x22,
+    0x44,
+    0x89,
+    0x12,
+    0x27,
+    0xc0,
+    0x00
+#endif
 };
 
 static __strong NSMutableArray *DefaultFonts = nil;
