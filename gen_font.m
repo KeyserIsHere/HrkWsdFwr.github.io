@@ -41,6 +41,7 @@ static uint8_t Data[Width * 4 * Height];
 #define MISSING_GLYPH_BITMAP_BORDER 0
 #define MISSING_GLYPH_BITMAP_BORDER_INSET_1 1
 #define MISSING_GLYPH_BITMAP_QUESTION_MARK 2
+#define MISSING_GLYPH_BITMAP_INVERTED_QUESTION_MARK 3
 
 #define MISSING_GLYPH_BITMAP MISSING_GLYPH_BITMAP_BORDER_INSET_1
 
@@ -86,6 +87,19 @@ static const uint8_t MissingGlyphBitmapData[(((2 * Cell) * (1 * Cell)) + 7) / 8]
     0x00,
     0x00,
     0x00
+#elif MISSING_GLYPH_BITMAP == MISSING_GLYPH_BITMAP_INVERTED_QUESTION_MARK
+    0xff,
+    0xff,
+    0xff,
+    0xfe,
+    0x7b,
+    0x7e,
+    0xfb,
+    0xef,
+    0xff,
+    0xbf,
+    0x7f,
+    0xe0
 #endif
 };
 
