@@ -306,8 +306,8 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                         
                         while (Indexes[0].count < Start)
                         {
-                            fwrite(&(uint32_t){ MISSING_GLYPH_INDEX }, sizeof(uint32_t), 1, Indexes[0].file);
-                            fwrite(&(uint32_t){ MISSING_GLYPH_INDEX }, sizeof(uint32_t), 1, Indexes[1].file);
+                            fwrite(&(uint32_t){ NSSwapHostIntToLittle(MISSING_GLYPH_INDEX) }, sizeof(uint32_t), 1, Indexes[0].file);
+                            fwrite(&(uint32_t){ NSSwapHostIntToBig(MISSING_GLYPH_INDEX) }, sizeof(uint32_t), 1, Indexes[1].file);
                             
                             Indexes[0].count++;
                             Indexes[1].count++;
