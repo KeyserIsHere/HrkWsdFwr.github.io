@@ -37,6 +37,7 @@ static const size_t Width = Cell * 2 + BUFFER_PAD, Height = Cell * 2 + BUFFER_PA
 static uint8_t Data[Width * 4 * Height];
 
 #define MISSING_GLYPH_INDEX (1 << 24)
+#define NON_RENDERABLE_GLYPH_INDEX 0
 
 #define MISSING_GLYPH_BITMAP_BORDER 0
 #define MISSING_GLYPH_BITMAP_BORDER_INSET_1 1
@@ -185,6 +186,26 @@ typedef struct {
     size_t count;
 } Resource;
 
+static void WriteIndex(uint32_t Index, Resource *Indexes, uint32_t Char)
+{
+    _Static_assert(sizeof(unsigned int) == sizeof(uint32_t), "NSSwapInt is the wrong size");
+    
+    while (Indexes[0].count < Char)
+    {
+        fwrite(&(uint32_t){ NSSwapHostIntToLittle(MISSING_GLYPH_INDEX) }, sizeof(uint32_t), 1, Indexes[0].file);
+        fwrite(&(uint32_t){ NSSwapHostIntToBig(MISSING_GLYPH_INDEX) }, sizeof(uint32_t), 1, Indexes[1].file);
+        
+        Indexes[0].count++;
+        Indexes[1].count++;
+    }
+    
+    fwrite(&(uint32_t){ NSSwapHostIntToLittle(Index) }, sizeof(Index), 1, Indexes[0].file);
+    fwrite(&(uint32_t){ NSSwapHostIntToBig(Index) }, sizeof(Index), 1, Indexes[1].file);
+    
+    Indexes[0].count++;
+    Indexes[1].count++;
+}
+
 static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Indexes, Resource *Bitmaps, _Bool Verbose, _Bool SaveImage)
 {
     uint32_t Start = 0, Stop = 0;
@@ -206,150 +227,145 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
             break;
     }
     
+    const _Bool Control = fscanf(Input, "%*1[ ]control");
+    
     NSArray *Fonts = ParseFonts(Input, Verbose);
     if (!Fonts.count) Fonts = DefaultFonts;
     
     for ( ; Start; Start++)
     {
-        NSString *String = [[NSString alloc] initWithBytes: &(uint32_t){ NSSwapHostIntToLittle(Start) } length: sizeof(Start) encoding: NSUTF32LittleEndianStringEncoding];
-        
-        if (String.length)
+        if (Control)
         {
-            CGContextSetRGBFillColor(Ctx, 0.0, 0.0, 0.0, 1.0);
-            CGContextFillRect(Ctx, Rect);
+            WriteIndex(NON_RENDERABLE_GLYPH_INDEX, Indexes, Start);
+        }
+        
+        else
+        {
+            NSString *String = [[NSString alloc] initWithBytes: &(uint32_t){ NSSwapHostIntToLittle(Start) } length: sizeof(Start) encoding: NSUTF32LittleEndianStringEncoding];
             
-            CFMutableAttributedStringRef AttributedString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
-            
-            CFAttributedStringReplaceString(AttributedString, (CFRange){ 0, 0 }, (CFStringRef)String);
-            NSUInteger Location = 0;
-            CFRange CurrentRange = { Location, 1 };
-            Location += CurrentRange.length;
-            
-            CGColorRef Colour = CGColorCreateGenericRGB(1.0f, 0.0f, 0.0f, 1.0f);
-            CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTForegroundColorAttributeName, Colour);
-            CGColorRelease(Colour);
-            
-            Colour = CGColorCreateGenericRGB(0.0f, 0.0f, 1.0f, 1.0f);
-            CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTBackgroundColorAttributeName, Colour);
-            CGColorRelease(Colour);
-            
-            for (id Font in Fonts)
+            if (String.length)
             {
-                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTFontAttributeName, Font[0]);
-                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTBaselineOffsetAttributeName, Font[1]);
+                CGContextSetRGBFillColor(Ctx, 0.0, 0.0, 0.0, 1.0);
+                CGContextFillRect(Ctx, Rect);
                 
-                CGMutablePathRef Path = CGPathCreateMutable();
-                CGPathAddRect(Path, NULL, Rect);
+                CFMutableAttributedStringRef AttributedString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
                 
-                CTFramesetterRef Framesetter = CTFramesetterCreateWithAttributedString(AttributedString);
-                CTFrameRef Frame = CTFramesetterCreateFrame(Framesetter, CurrentRange, Path, NULL);
-                CTFrameDraw(Frame, Ctx);
+                CFAttributedStringReplaceString(AttributedString, (CFRange){ 0, 0 }, (CFStringRef)String);
+                NSUInteger Location = 0;
+                CFRange CurrentRange = { Location, 1 };
+                Location += CurrentRange.length;
                 
-                CFRelease(Path);
-                CFRelease(Framesetter);
-                CFRelease(Frame);
+                CGColorRef Colour = CGColorCreateGenericRGB(1.0f, 0.0f, 0.0f, 1.0f);
+                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTForegroundColorAttributeName, Colour);
+                CGColorRelease(Colour);
                 
-                for (size_t Loop = 0; Loop < sizeof(Data) / 4; Loop++)
+                Colour = CGColorCreateGenericRGB(0.0f, 0.0f, 1.0f, 1.0f);
+                CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTBackgroundColorAttributeName, Colour);
+                CGColorRelease(Colour);
+                
+                for (id Font in Fonts)
                 {
-                    if (Data[(Loop * 4) + 2] != 0)
+                    CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTFontAttributeName, Font[0]);
+                    CFAttributedStringSetAttribute(AttributedString, CurrentRange, kCTBaselineOffsetAttributeName, Font[1]);
+                    
+                    CGMutablePathRef Path = CGPathCreateMutable();
+                    CGPathAddRect(Path, NULL, Rect);
+                    
+                    CTFramesetterRef Framesetter = CTFramesetterCreateWithAttributedString(AttributedString);
+                    CTFrameRef Frame = CTFramesetterCreateFrame(Framesetter, CurrentRange, Path, NULL);
+                    CTFrameDraw(Frame, Ctx);
+                    
+                    CFRelease(Path);
+                    CFRelease(Framesetter);
+                    CFRelease(Frame);
+                    
+                    for (size_t Loop = 0; Loop < sizeof(Data) / 4; Loop++)
                     {
-                        if (SaveImage)
+                        if (Data[(Loop * 4) + 2] != 0)
                         {
-                            CGImageRef Image = CGBitmapContextCreateImage(Ctx);
-                            [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
-                            CGImageRelease(Image);
-                        }
-                        
-                        size_t MaxWidth = 0, MaxHeight = 2;
-                        switch (u_getIntPropertyValue(Start, UCHAR_EAST_ASIAN_WIDTH))
-                        {
-                            case U_EA_NEUTRAL:
-                            case U_EA_AMBIGUOUS:
+                            if (SaveImage)
                             {
-                                size_t Y = Loop / Width;
-                                size_t X = Loop - (Y * Width);
-                                size_t MaxX = X, MaxY = Y;
-                                
-                                for ( ; Loop < sizeof(Data) / 4; Loop++)
-                                {
-                                    if (Data[(Loop * 4) + 2] != 0)
-                                    {
-                                        Y = Loop / Width;
-                                        X = Loop - (Y * Width);
-                                        
-                                        if (X > MaxX) MaxX = X;
-                                        if (Y > MaxY) MaxY = Y;
-                                    }
-                                }
-                                
-                                MaxWidth = (MaxX / Cell) + 1;
-                                if (MaxWidth > 2) MaxWidth = 2;
-                                
-                                break;
+                                CGImageRef Image = CGBitmapContextCreateImage(Ctx);
+                                [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
+                                CGImageRelease(Image);
                             }
-                                
-                            case U_EA_HALFWIDTH:
-                            case U_EA_NARROW:
-                                MaxWidth = 1;
-                                break;
-                                
-                            case U_EA_FULLWIDTH:
-                            case U_EA_WIDE:
-                                MaxWidth = 2;
-                                break;
-                        }
-                        
-                        Resource *Bitmap = &Bitmaps[MaxWidth - 1];
-                        uint32_t Index = ((MaxWidth - 1) << 28) | ((MaxHeight - 1) << 24) | (uint32_t)Bitmap->count;
-                        
-                        _Static_assert(sizeof(unsigned int) == sizeof(uint32_t), "NSSwapInt is the wrong size");
-                        
-                        while (Indexes[0].count < Start)
-                        {
-                            fwrite(&(uint32_t){ NSSwapHostIntToLittle(MISSING_GLYPH_INDEX) }, sizeof(uint32_t), 1, Indexes[0].file);
-                            fwrite(&(uint32_t){ NSSwapHostIntToBig(MISSING_GLYPH_INDEX) }, sizeof(uint32_t), 1, Indexes[1].file);
                             
-                            Indexes[0].count++;
-                            Indexes[1].count++;
-                        }
-                        
-                        fwrite(&(uint32_t){ NSSwapHostIntToLittle(Index) }, sizeof(Index), 1, Indexes[0].file);
-                        fwrite(&(uint32_t){ NSSwapHostIntToBig(Index) }, sizeof(Index), 1, Indexes[1].file);
-                        
-                        Indexes[0].count++;
-                        Indexes[1].count++;
-                        
-                        uint8_t BitmapData[(16 * 16) / 8]; //32
-                        memset(BitmapData, 0, sizeof(BitmapData));
-                        
-                        for (size_t LoopY = 0; LoopY < (MaxHeight * Cell); LoopY++)
-                        {
-                            for (size_t LoopX = 0; LoopX < (MaxWidth * Cell); LoopX++)
+                            size_t MaxWidth = 0, MaxHeight = 2;
+                            switch (u_getIntPropertyValue(Start, UCHAR_EAST_ASIAN_WIDTH))
                             {
-                                const size_t Pixel = (LoopY * Width) + LoopX;
-                                if (Data[Pixel * 4] == 255)
+                                case U_EA_NEUTRAL:
+                                case U_EA_AMBIGUOUS:
                                 {
-                                    const size_t BitPixel = (LoopY * (MaxWidth * Cell)) + LoopX;
-                                    BitmapData[BitPixel / 8] |= 0x80 >> (BitPixel % 8);
+                                    size_t Y = Loop / Width;
+                                    size_t X = Loop - (Y * Width);
+                                    size_t MaxX = X, MaxY = Y;
+                                    
+                                    for ( ; Loop < sizeof(Data) / 4; Loop++)
+                                    {
+                                        if (Data[(Loop * 4) + 2] != 0)
+                                        {
+                                            Y = Loop / Width;
+                                            X = Loop - (Y * Width);
+                                            
+                                            if (X > MaxX) MaxX = X;
+                                            if (Y > MaxY) MaxY = Y;
+                                        }
+                                    }
+                                    
+                                    MaxWidth = (MaxX / Cell) + 1;
+                                    if (MaxWidth > 2) MaxWidth = 2;
+                                    
+                                    break;
                                 }
-                                
+                                    
+                                case U_EA_HALFWIDTH:
+                                case U_EA_NARROW:
+                                    MaxWidth = 1;
+                                    break;
+                                    
+                                case U_EA_FULLWIDTH:
+                                case U_EA_WIDE:
+                                    MaxWidth = 2;
+                                    break;
                             }
+                            
+                            Resource *Bitmap = &Bitmaps[MaxWidth - 1];
+                            uint32_t Index = ((MaxWidth - 1) << 28) | ((MaxHeight - 1) << 24) | (uint32_t)Bitmap->count;
+                            
+                            WriteIndex(Index, Indexes, Start);
+                            
+                            uint8_t BitmapData[(16 * 16) / 8]; //32
+                            memset(BitmapData, 0, sizeof(BitmapData));
+                            
+                            for (size_t LoopY = 0; LoopY < (MaxHeight * Cell); LoopY++)
+                            {
+                                for (size_t LoopX = 0; LoopX < (MaxWidth * Cell); LoopX++)
+                                {
+                                    const size_t Pixel = (LoopY * Width) + LoopX;
+                                    if (Data[Pixel * 4] == 255)
+                                    {
+                                        const size_t BitPixel = (LoopY * (MaxWidth * Cell)) + LoopX;
+                                        BitmapData[BitPixel / 8] |= 0x80 >> (BitPixel % 8);
+                                    }
+                                    
+                                }
+                            }
+                            
+                            fwrite(BitmapData, sizeof(uint8_t), (((MaxHeight * Cell) * (MaxWidth * Cell)) + 7) / 8, Bitmap->file);
+                            
+                            Bitmap->count++;
+                            
+                            goto Rendered;
                         }
-                        
-                        fwrite(BitmapData, sizeof(uint8_t), (((MaxHeight * Cell) * (MaxWidth * Cell)) + 7) / 8, Bitmap->file);
-                        
-                        Bitmap->count++;
-                        
-                        goto Rendered;
                     }
                 }
+                
+                if (Verbose) fprintf(stderr, "No font with glyph for character: U+%.4x\n", Start);
+                
+            Rendered:
+                
+                CFRelease(AttributedString);
             }
-            
-            if (Verbose) fprintf(stderr, "No font with glyph for character: U+%.4x\n", Start);
-            
-        Rendered:
-            
-            CFRelease(AttributedString);
         }
         
         if (Start == Stop) break;
