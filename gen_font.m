@@ -182,6 +182,38 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
 }
 
 typedef struct {
+    _Bool control;
+    _Bool verbose;
+} Options;
+
+static Options ParseOptions(FILE *Input, _Bool Verbose)
+{
+    Options Opts = {
+        .control = FALSE,
+        .verbose = Verbose
+    };
+    
+    struct {
+        const char *name;
+        _Bool *option;
+    } Tags[] = {
+        { "%*1[ ]control", &Opts.control },
+        { "%*1[ ]verbose", &Opts.verbose }
+    };
+    
+    for (size_t Loop = 0; Loop < sizeof(Tags) / sizeof(typeof(*Tags)); Loop++)
+    {
+        if (fscanf(Input, Tags[Loop].name))
+        {
+            Tags[Loop].option = TRUE;
+            Loop = 0;
+        }
+    }
+    
+    return Opts;
+}
+
+typedef struct {
     FILE *file;
     size_t count;
 } Resource;
@@ -227,14 +259,15 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
             break;
     }
     
-    const _Bool Control = fscanf(Input, "%*1[ ]control");
+    const Options Opts = ParseOptions(Input, Verbose);
+    Verbose = Opts.verbose;
     
     NSArray *Fonts = ParseFonts(Input, Verbose);
     if (!Fonts.count) Fonts = DefaultFonts;
     
     for ( ; Start; Start++)
     {
-        if (Control)
+        if (Opts.control)
         {
             WriteIndex(NON_RENDERABLE_GLYPH_INDEX, Indexes, Start);
         }
