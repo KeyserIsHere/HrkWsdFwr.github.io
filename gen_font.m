@@ -401,6 +401,8 @@ int main(int argc, const char * argv[])
             { .file = fopen("unicode.2.2.1.glyphset", "wb"), .count = 0 }
         };
         
+        WriteIndex(NON_RENDERABLE_GLYPH_INDEX, Indexes, 0);
+        
         fwrite(MissingGlyphBitmapData, sizeof(uint8_t), sizeof(MissingGlyphBitmapData), Bitmaps[0].file);
         
         ParseMap(Ctx, Rect, stdin, Indexes, Bitmaps, Verbose, SaveImage);
