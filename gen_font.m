@@ -184,13 +184,15 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
 typedef struct {
     _Bool control;
     _Bool verbose;
+    _Bool image;
 } Options;
 
-static Options ParseOptions(FILE *Input, _Bool Verbose)
+static Options ParseOptions(FILE *Input, _Bool Verbose, _Bool SaveImage)
 {
     Options Opts = {
         .control = FALSE,
-        .verbose = Verbose
+        .verbose = Verbose,
+        .image = SaveImage
     };
     
     struct {
@@ -198,7 +200,8 @@ static Options ParseOptions(FILE *Input, _Bool Verbose)
         _Bool *option;
     } Tags[] = {
         { "%*1[ ]control", &Opts.control },
-        { "%*1[ ]verbose", &Opts.verbose }
+        { "%*1[ ]verbose", &Opts.verbose },
+        { "%*1[ ]image", &Opts.image }
     };
     
     for (size_t Loop = 0; Loop < sizeof(Tags) / sizeof(typeof(*Tags)); Loop++)
@@ -259,8 +262,9 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
             break;
     }
     
-    const Options Opts = ParseOptions(Input, Verbose);
+    const Options Opts = ParseOptions(Input, Verbose, SaveImage);
     Verbose = Opts.verbose;
+    SaveImage = Opts.image;
     
     NSArray *Fonts = ParseFonts(Input, Verbose);
     if (!Fonts.count) Fonts = DefaultFonts;
