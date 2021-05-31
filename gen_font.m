@@ -269,7 +269,7 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
     NSArray *Fonts = ParseFonts(Input, Verbose);
     if (!Fonts.count) Fonts = DefaultFonts;
     
-    fscanf(Input, "#%*1[^\n]");
+    fscanf(Input, "%*1[ ]#%*1[^\n]");
     
     for ( ; Start; Start++)
     {
