@@ -208,7 +208,7 @@ static Options ParseOptions(FILE *Input, _Bool Verbose, _Bool SaveImage)
     {
         if (fscanf(Input, Tags[Loop].name))
         {
-            Tags[Loop].option = TRUE;
+            *Tags[Loop].option = TRUE;
             Loop = 0;
         }
     }
