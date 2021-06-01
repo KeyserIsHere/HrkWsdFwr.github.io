@@ -166,7 +166,7 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
     NSMutableArray *Fonts = [NSMutableArray array];
     
     char FontName[256] = {0};
-    for (float FontSize = 12.0f, BaselineOffset = 0.0f; fscanf(Input, "%*1[ ]\"%255[^\"\n]\":%f,%f", FontName, &FontSize, &BaselineOffset); FontSize = 12.0f, BaselineOffset = 0.0f)
+    for (float FontSize = 12.0f, BaselineOffset = 0.0f; fscanf(Input, "\"%255[^\"\n]\":%f,%f", FontName, &FontSize, &BaselineOffset); FontSize = 12.0f, BaselineOffset = 0.0f, fscanf(Input, "%*[ \t]"))
     {
         CGFontRef Font = CGFontCreateWithFontName([NSString stringWithUTF8String: FontName]);
         if (Font)
@@ -199,17 +199,22 @@ static Options ParseOptions(FILE *Input, _Bool Verbose, _Bool SaveImage)
         const char *name;
         _Bool *option;
     } Tags[] = {
-        { "%*1[ ]control", &Opts.control },
-        { "%*1[ ]verbose", &Opts.verbose },
-        { "%*1[ ]image", &Opts.image }
+        { "control", &Opts.control },
+        { "verbose", &Opts.verbose },
+        { "image", &Opts.image }
     };
+    
+    char OptionName[256] = {0};
+Scan:
+    fscanf(Input, "%255[a-z]%*[ \t]", OptionName);
     
     for (size_t Loop = 0; Loop < sizeof(Tags) / sizeof(typeof(*Tags)); Loop++)
     {
-        if (fscanf(Input, Tags[Loop].name))
+        if (!strcmp(OptionName, Tags[Loop].name))
         {
             *Tags[Loop].option = TRUE;
-            Loop = 0;
+            OptionName[0] = 0;
+            goto Scan;
         }
     }
     
@@ -246,21 +251,26 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
     uint32_t Start = 0, Stop = 0;
     switch (fscanf(Input, "U+%x-%x", &Start, &Stop))
     {
-        case 0:
-            fscanf(Input, "%lc", &Start);
         case 1:
             Stop = Start;
             break;
+            
+        case -1:
+            return;
             
         default:
             if (Start > Stop)
             {
                 if (Verbose) fprintf(stderr, "Invalid character range (must be ascending): U+%.4x-%.4x\n", Start, Stop);
                 
+                fscanf(Input, "%*[^\n]");
+                
                 return;
             }
             break;
     }
+    
+    fscanf(Input, "%*[ \t]");
     
     const Options Opts = ParseOptions(Input, Verbose, SaveImage);
     Verbose = Opts.verbose;
@@ -269,7 +279,8 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
     NSArray *Fonts = ParseFonts(Input, Verbose);
     if (!Fonts.count) Fonts = DefaultFonts;
     
-    fscanf(Input, "%*1[ ]#%*1[^\n]");
+    fscanf(Input, "%*[ \t]");
+    fscanf(Input, "#%*[^\n]");
     
     for ( ; Start; Start++)
     {
@@ -444,7 +455,9 @@ int main(int argc, const char * argv[])
         
         fwrite(MissingGlyphBitmapData, sizeof(uint8_t), sizeof(MissingGlyphBitmapData), Bitmaps[0].file);
         
-        ParseMap(Ctx, Rect, stdin, Indexes, Bitmaps, Verbose, SaveImage);
+        do {
+            ParseMap(Ctx, Rect, stdin, Indexes, Bitmaps, Verbose, SaveImage);
+        } while (fgetc(stdin) != EOF);
         
         fclose(Indexes[0].file);
         fclose(Indexes[1].file);
