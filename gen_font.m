@@ -201,7 +201,7 @@ static Options ParseOptions(FILE *Input, _Bool Verbose, _Bool SaveImage)
     } Tags[] = {
         { "control", &Opts.control },
         { "verbose", &Opts.verbose },
-        { "image", &Opts.image }
+        { "debug", &Opts.image }
     };
     
     char OptionName[256] = {0};
