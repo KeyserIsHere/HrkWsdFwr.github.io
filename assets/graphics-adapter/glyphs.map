@@ -1,0 +1,953 @@
+# C0 control codes
+U+0001-001f control
+
+# Basic Latin
+U+0020-002f "Andale Mono":12 		# ASCII Punctuation & Symbols
+U+0030-0039 "Andale Mono":12 		# ASCII Digits
+U+003a-0040 "Andale Mono":12 		# ASCII Punctuation & Symbols
+U+0041-005a "Andale Mono":12 		# Latin Alphabet: Uppercase
+U+005b-0060 "Andale Mono":12 		# ASCII Punctuation & Symbols
+U+0061-007a "Andale Mono":12 		# Latin Alphabet: Lowercase
+U+007b-007e "Andale Mono":12 		# ASCII Punctuation & Symbols
+
+# DEL
+U+007f control
+
+# C1 control codes
+U+0080-009f control
+
+# Latin-1 Supplement
+U+00a0-00bf "Andale Mono":12 		# Latin-1 Punctuation & Symbols
+U+00c0-00d6 "Andale Mono":12 		# Letters: Uppercase
+U+00d7 		"Andale Mono":12 		# Math
+U+00d8-00de "Andale Mono":12 		# Letters: Uppercase
+U+00df-00f6 "Andale Mono":12 		# Letters: Lowercase
+U+00f7 		"Andale Mono":12 		# Math
+U+00f8-00ff "Andale Mono":12 		# Letters: Lowercase
+
+# Latin Extended-A
+U+0100-0148 "Andale Mono":12 		# European Latin
+U+0149 		"Andale Mono":12 		# Latin Small Letter N preceded by apostrophe (deprecated)
+U+014a-017f "Andale Mono":12 		# European Latin
+
+# Latin Extended-B
+U+0180-01bf "Andale Mono":12 		# Non-European & historic Latin
+U+01c0-01c3 "Andale Mono":12 		# African clicks
+U+01c4-01cc "Andale Mono":12 		# Croatian
+U+01cd-01dc "Andale Mono":12 		# Pinyin
+U+01dd-01ff "Andale Mono":12 		# Phonetic & historic letters
+U+0200-0217 "Andale Mono":12 		# Slovenian & Croatian
+U+0218-021b "Andale Mono":12 		# Romanian
+U+021c-0229 "Andale Mono":12 		# Miscellaneous
+U+022a-0233 "Andale Mono":12 		# Livonian
+U+0234-0236 "Andale Mono":12 		# Sinology
+U+0237-024f "Andale Mono":12 		# Miscellaneous
+
+# IPA Extensions
+U+0250-02af "Andale Mono":12
+
+# Spacing Modifier Letters
+U+02b0-02ff "Andale Mono":12
+
+# Combining Diacritical Marks
+U+0300-036f "Andale Mono":12
+
+# Greek and Coptic
+U+0370-03ff "Andale Mono":12
+
+# Cyrillic
+U+0400-04ff "Andale Mono":12
+
+# Cyrillic Supplement
+U+0500-052f "Andale Mono":12
+
+# Armenian
+U+0530-058f "Andale Mono":12
+
+# Hebrew
+U+0590-05ff "Andale Mono":12
+
+# Arabic
+U+0600-06ff "Andale Mono":12
+
+# Syriac
+U+0700-074f "Andale Mono":12
+
+# Arabic Supplement
+U+0750-077f "Andale Mono":12
+
+# Thaana
+U+0780-07bf "Andale Mono":12
+
+# NKo
+U+07c0-07ff "Andale Mono":12
+
+# Samaritan
+U+0800-083f "Andale Mono":12
+
+# Mandaic
+U+0840-085f "Andale Mono":12
+
+# Syriac Supplement
+U+0860-086f "Andale Mono":12
+
+# Arabic Extended-A
+U+08a0-08ff "Andale Mono":12
+
+# Devanagari
+U+0900-097f "Andale Mono":12
+
+# Bengali
+U+0980-09ff "Andale Mono":12
+
+# Gurmukhi
+U+0a00-0a7f "Andale Mono":12
+
+# Gujarati
+U+0a80-0aff "Andale Mono":12
+
+# Oriya
+U+0b00-0b7f "Andale Mono":12
+
+# Tamil
+U+0b80-0bff "Andale Mono":12
+
+# Telugu
+U+0c00-0c7f "Andale Mono":12
+
+# Kannada
+U+0c80-0cff "Andale Mono":12
+
+# Malayalam
+U+0d00-0d7f "Andale Mono":12
+
+# Sinhala
+U+0d80-0dff "Andale Mono":12
+
+# Thai
+U+0e00-0e7f "Andale Mono":12
+
+# Lao
+U+0e80-0eff "Andale Mono":12
+
+# Tibetan
+U+0f00-0fff "Andale Mono":12
+
+# Myanmar
+U+1000-109f "Andale Mono":12
+
+# Georgian
+U+10a0-10ff "Andale Mono":12
+
+# Hangul Jamo
+U+1100-11ff "Andale Mono":12
+
+# Ethiopic
+U+1200-137f "Andale Mono":12
+
+# Ethiopic Supplement
+U+1380-139f "Andale Mono":12
+
+# Cherokee
+U+13a0-13ff "Andale Mono":12
+
+# Unified Canadian Aboriginal Syllabics
+U+1400-167f "Andale Mono":12
+
+# Ogham
+U+1680-169f "Andale Mono":12
+
+# Runic
+U+16a0-16ff "Andale Mono":12
+
+# Tagalog
+U+1700-171f "Andale Mono":12
+
+# Hanunoo
+U+1720-173f "Andale Mono":12
+
+# Buhid
+U+1740-175f "Andale Mono":12
+
+# Tagbanwa
+U+1760-177f "Andale Mono":12
+
+# Khmer
+U+1780-17ff "Andale Mono":12
+
+# Mongolian
+U+1800-18af "Andale Mono":12
+
+# Unified Canadian Aboriginal Syllabics Extended
+U+18b0-18ff "Andale Mono":12
+
+# Limbu
+U+1900-194f "Andale Mono":12
+
+# Tai Le
+U+1950-197f "Andale Mono":12
+
+# New Tai Lue
+U+1980-19df "Andale Mono":12
+
+# Khmer Symbols
+U+19e0-19ff "Andale Mono":12
+
+# Buginese
+U+1a00-1a1f "Andale Mono":12
+
+# Tai Tham
+U+1a20-1aaf "Andale Mono":12
+
+# Combining Diacritical Marks Extended
+U+1ab0-1aff "Andale Mono":12
+
+# Balinese
+U+1b00-1b7f "Andale Mono":12
+
+# Sundanese
+U+1b80-1bbf "Andale Mono":12
+
+# Batak
+U+1bc0-1bff "Andale Mono":12
+
+# Lepcha
+U+1c00-1c4f "Andale Mono":12
+
+# Ol Chiki
+U+1c50-1c7f "Andale Mono":12
+
+# Cyrillic Extended-C
+U+1c80-1c8f "Andale Mono":12
+
+# Georgian Extended
+U+1c90-1cbf "Andale Mono":12
+
+# Sundanese Supplement
+U+1cc0-1ccf "Andale Mono":12
+
+# Vedic Extensions
+U+1cd0-1cff "Andale Mono":12
+
+# Phonetic Extensions
+U+1d00-1d7f "Andale Mono":12
+
+# Phonetic Extensions Supplement
+U+1d80-1dbf "Andale Mono":12
+
+# Combining Diacritical Marks Supplement
+U+1dc0-1dff "Andale Mono":12
+
+# Latin Extended Additional
+U+1e00-1eff "Andale Mono":12
+
+# Greek Extended
+U+1f00-1fff "Andale Mono":12
+
+# General Punctuation
+U+2000-206f "Andale Mono":12
+
+# Superscripts and Subscripts
+U+2070-209f "Andale Mono":12
+
+# Currency Symbols
+U+20a0-20cf "Andale Mono":12
+
+# Combining Diacritical Marks for Symbols
+U+20d0-20ff "Andale Mono":12
+
+# Letterlike Symbols
+U+2100-214f "Andale Mono":12
+
+# Number Forms
+U+2150-218f "Andale Mono":12
+
+# Arrows
+U+2190-21ff "Andale Mono":12
+
+# Mathematical Operators
+U+2200-22ff "Andale Mono":12
+
+# Miscellaneous Technical
+U+2300-23ff "Andale Mono":12
+
+# Control Pictures
+U+2400-243f "Andale Mono":12
+
+# Optical Character Recognition
+U+2440-245f "Andale Mono":12
+
+# Enclosed Alphanumerics
+U+2460-24ff "Andale Mono":12
+
+# Box Drawing
+U+2500-257f "Andale Mono":12
+
+# Block Elements
+U+2580-259f "Andale Mono":12
+
+# Geometric Shapes
+U+25a0-25ff "Andale Mono":12
+
+# Miscellaneous Symbols
+U+2600-26ff "Andale Mono":12
+
+# Dingbats
+U+2700-27bf "Andale Mono":12
+
+# Miscellaneous Mathematical Symbols-A
+U+27c0-27ef "Andale Mono":12
+
+# Supplemental Arrows-A
+U+27f0-27ff "Andale Mono":12
+
+# Braille Patterns
+U+2800-28ff "Andale Mono":12
+
+# Supplemental Arrows-B
+U+2900-297f "Andale Mono":12
+
+# Miscellaneous Mathematical Symbols-B
+U+2980-29ff "Andale Mono":12
+
+# Supplemental Mathematical Operators
+U+2a00-2aff "Andale Mono":12
+
+# Miscellaneous Symbols and Arrows
+U+2b00-2bff "Andale Mono":12
+
+# Glagolitic
+U+2c00-2c5f "Andale Mono":12
+
+# Latin Extended-C
+U+2c60-2c7f "Andale Mono":12
+
+# Coptic
+U+2c80-2cff "Andale Mono":12
+
+# Georgian Supplement
+U+2d00-2d2f "Andale Mono":12
+
+# Tifinagh
+U+2d30-2d7f "Andale Mono":12
+
+# Ethiopic Extended
+U+2d80-2ddf "Andale Mono":12
+
+# Cyrillic Extended-A
+U+2de0-2dff "Andale Mono":12
+
+# Supplemental Punctuation
+U+2e00-2e7f "Andale Mono":12
+
+# CJK Radicals Supplement
+U+2e80-2eff "Andale Mono":12
+
+# Kangxi Radicals
+U+2f00-2fdf "Andale Mono":12
+
+# Ideographic Description Characters
+U+2ff0-2fff "Andale Mono":12
+
+# CJK Symbols and Punctuation
+U+3000-303f "Andale Mono":12
+
+# Hiragana
+U+3040-309f "Andale Mono":12
+
+# Katakana
+U+30a0-30ff "Andale Mono":12
+
+# Bopomofo
+U+3100-312f "Andale Mono":12
+
+# Hangul Compatibility Jamo
+U+3130-318f "Andale Mono":12
+
+# Kanbun
+U+3190-319f "Andale Mono":12
+
+# Bopomofo Extended
+U+31a0-31bf "Andale Mono":12
+
+# CJK Strokes
+U+31c0-31ef "Andale Mono":12
+
+# Katakana Phonetic Extensions
+U+31f0-31ff "Andale Mono":12
+
+# Enclosed CJK Letters and Months
+U+3200-32ff "Andale Mono":12
+
+# CJK Compatibility
+U+3300-33ff "Andale Mono":12
+
+# CJK Unified Ideographs Extension A
+U+3400-4dbf "Andale Mono":12
+
+# Yijing Hexagram Symbols
+U+4dc0-4dff "Andale Mono":12
+
+# CJK Unified Ideographs
+U+4e00-9fff "Andale Mono":12
+
+# Yi Syllables
+U+a000-a48f "Andale Mono":12
+
+# Yi Radicals
+U+a490-a4cf "Andale Mono":12
+
+# Lisu
+U+a4d0-a4ff "Andale Mono":12
+
+# Vai
+U+a500-a63f "Andale Mono":12
+
+# Cyrillic Extended-B
+U+a640-a69f "Andale Mono":12
+
+# Bamum
+U+a6a0-a6ff "Andale Mono":12
+
+# Modifier Tone Letters
+U+a700-a71f "Andale Mono":12
+
+# Latin Extended-D
+U+a720-a7ff "Andale Mono":12
+
+# Syloti Nagri
+U+a800-a82f "Andale Mono":12
+
+# Common Indic Number Forms
+U+a830-a83f "Andale Mono":12
+
+# Phags-pa
+U+a840-a87f "Andale Mono":12
+
+# Saurashtra
+U+a880-a8df "Andale Mono":12
+
+# Devanagari Extended
+U+a8e0-a8ff "Andale Mono":12
+
+# Kayah Li
+U+a900-a92f "Andale Mono":12
+
+# Rejang
+U+a930-a95f "Andale Mono":12
+
+# Hangul Jamo Extended-A
+U+a960-a97f "Andale Mono":12
+
+# Javanese
+U+a980-a9df "Andale Mono":12
+
+# Myanmar Extended-B
+U+a9e0-a9ff "Andale Mono":12
+
+# Cham
+U+aa00-aa5f "Andale Mono":12
+
+# Myanmar Extended-A
+U+aa60-aa7f "Andale Mono":12
+
+# Tai Viet
+U+aa80-aadf "Andale Mono":12
+
+# Meetei Mayek Extensions
+U+aae0-aaff "Andale Mono":12
+
+# Ethiopic Extended-A
+U+ab00-ab2f "Andale Mono":12
+
+# Latin Extended-E
+U+ab30-ab6f "Andale Mono":12
+
+# Cherokee Supplement
+U+ab70-abbf "Andale Mono":12
+
+# Meetei Mayek
+U+abc0-abff "Andale Mono":12
+
+# Hangul Syllables
+U+ac00-d7af "Andale Mono":12
+
+# Hangul Jamo Extended-B
+U+d7b0-d7ff "Andale Mono":12
+
+# High Surrogates
+U+d800-db7f "Andale Mono":12
+
+# High Private Use Surrogates
+U+db80-dbff "Andale Mono":12
+
+# Low Surrogates
+U+dc00-dfff "Andale Mono":12
+
+# Private Use Area
+U+e000-f8ff "Andale Mono":12
+
+# CJK Compatibility Ideographs
+U+f900-faff "Andale Mono":12
+
+# Alphabetic Presentation Forms
+U+fb00-fb4f "Andale Mono":12
+
+# Arabic Presentation Forms-A
+U+fb50-fdff "Andale Mono":12
+
+# Variation Selectors
+U+fe00-fe0f control
+
+# Vertical Forms
+U+fe10-fe1f "Andale Mono":12
+
+# Combining Half Marks
+U+fe20-fe2f "Andale Mono":12
+
+# CJK Compatibility Forms
+U+fe30-fe4f "Andale Mono":12
+
+# Small Form Variants
+U+fe50-fe6f "Andale Mono":12
+
+# Arabic Presentation Forms-B
+U+fe70-feff "Andale Mono":12
+
+# Halfwidth and Fullwidth Forms
+U+ff00-ffef "Andale Mono":12
+
+# Specials
+U+fff0-ffff "Andale Mono":12
+
+# Linear B Syllabary
+U+10000-1007f "Andale Mono":12
+
+# Linear B Ideograms
+U+10080-100ff "Andale Mono":12
+
+# Aegean Numbers
+U+10100-1013f "Andale Mono":12
+
+# Ancient Greek Numbers
+U+10140-1018f "Andale Mono":12
+
+# Ancient Symbols
+U+10190-101cf "Andale Mono":12
+
+# Phaistos Disc
+U+101d0-101ff "Andale Mono":12
+
+# Lycian
+U+10280-1029f "Andale Mono":12
+
+# Carian
+U+102a0-102df "Andale Mono":12
+
+# Coptic Epact Numbers
+U+102e0-102ff "Andale Mono":12
+
+# Old Italic
+U+10300-1032f "Andale Mono":12
+
+# Gothic
+U+10330-1034f "Andale Mono":12
+
+# Old Permic
+U+10350-1037f "Andale Mono":12
+
+# Ugaritic
+U+10380-1039f "Andale Mono":12
+
+# Old Persian
+U+103a0-103df "Andale Mono":12
+
+# Deseret
+U+10400-1044f "Andale Mono":12
+
+# Shavian
+U+10450-1047f "Andale Mono":12
+
+# Osmanya
+U+10480-104af "Andale Mono":12
+
+# Osage
+U+104b0-104ff "Andale Mono":12
+
+# Elbasan
+U+10500-1052f "Andale Mono":12
+
+# Caucasian Albanian
+U+10530-1056f "Andale Mono":12
+
+# Linear A
+U+10600-1077f "Andale Mono":12
+
+# Cypriot Syllabary
+U+10800-1083f "Andale Mono":12
+
+# Imperial Aramaic
+U+10840-1085f "Andale Mono":12
+
+# Palmyrene
+U+10860-1087f "Andale Mono":12
+
+# Nabataean
+U+10880-108af "Andale Mono":12
+
+# Hatran
+U+108e0-108ff "Andale Mono":12
+
+# Phoenician
+U+10900-1091f "Andale Mono":12
+
+# Lydian
+U+10920-1093f "Andale Mono":12
+
+# Meroitic Hieroglyphs
+U+10980-1099f "Andale Mono":12
+
+# Meroitic Cursive
+U+109a0-109ff "Andale Mono":12
+
+# Kharoshthi
+U+10a00-10a5f "Andale Mono":12
+
+# Old South Arabian
+U+10a60-10a7f "Andale Mono":12
+
+# Old North Arabian
+U+10a80-10a9f "Andale Mono":12
+
+# Manichaean
+U+10ac0-10aff "Andale Mono":12
+
+# Avestan
+U+10b00-10b3f "Andale Mono":12
+
+# Inscriptional Parthian
+U+10b40-10b5f "Andale Mono":12
+
+# Inscriptional Pahlavi
+U+10b60-10b7f "Andale Mono":12
+
+# Psalter Pahlavi
+U+10b80-10baf "Andale Mono":12
+
+# Old Turkic
+U+10c00-10c4f "Andale Mono":12
+
+# Old Hungarian
+U+10c80-10cff "Andale Mono":12
+
+# Hanifi Rohingya
+U+10d00-10d3f "Andale Mono":12
+
+# Rumi Numeral Symbols
+U+10e60-10e7f "Andale Mono":12
+
+# Yezidi
+U+10e80-10ebf "Andale Mono":12
+
+# Old Sogdian
+U+10f00-10f2f "Andale Mono":12
+
+# Sogdian
+U+10f30-10f6f "Andale Mono":12
+
+# Chorasmian
+U+10fb0-10fdf "Andale Mono":12
+
+# Elymaic
+U+10fe0-10fff "Andale Mono":12
+
+# Brahmi
+U+11000-1107f "Andale Mono":12
+
+# Kaithi
+U+11080-110cf "Andale Mono":12
+
+# Sora Sompeng
+U+110d0-110ff "Andale Mono":12
+
+# Chakma
+U+11100-1114f "Andale Mono":12
+
+# Mahajani
+U+11150-1117f "Andale Mono":12
+
+# Sharada
+U+11180-111df "Andale Mono":12
+
+# Sinhala Archaic Numbers
+U+111e0-111ff "Andale Mono":12
+
+# Khojki
+U+11200-1124f "Andale Mono":12
+
+# Multani
+U+11280-112af "Andale Mono":12
+
+# Khudawadi
+U+112b0-112ff "Andale Mono":12
+
+# Grantha
+U+11300-1137f "Andale Mono":12
+
+# Newa
+U+11400-1147f "Andale Mono":12
+
+# Tirhuta
+U+11480-114df "Andale Mono":12
+
+# Siddham
+U+11580-115ff "Andale Mono":12
+
+# Modi
+U+11600-1165f "Andale Mono":12
+
+# Mongolian Supplement
+U+11660-1167f "Andale Mono":12
+
+# Takri
+U+11680-116cf "Andale Mono":12
+
+# Ahom
+U+11700-1173f "Andale Mono":12
+
+# Dogra
+U+11800-1184f "Andale Mono":12
+
+# Warang Citi
+U+118a0-118ff "Andale Mono":12
+
+# Dives Akuru
+U+11900-1195f "Andale Mono":12
+
+# Nandinagari
+U+119a0-119ff "Andale Mono":12
+
+# Zanabazar Square
+U+11a00-11a4f "Andale Mono":12
+
+# Soyombo
+U+11a50-11aaf "Andale Mono":12
+
+# Pau Cin Hau
+U+11ac0-11aff "Andale Mono":12
+
+# Bhaiksuki
+U+11c00-11c6f "Andale Mono":12
+
+# Marchen
+U+11c70-11cbf "Andale Mono":12
+
+# Masaram Gondi
+U+11d00-11d5f "Andale Mono":12
+
+# Gunjala Gondi
+U+11d60-11daf "Andale Mono":12
+
+# Makasar
+U+11ee0-11eff "Andale Mono":12
+
+# Lisu Supplement
+U+11fb0-11fbf "Andale Mono":12
+
+# Tamil Supplement
+U+11fc0-11fff "Andale Mono":12
+
+# Cuneiform
+U+12000-123ff "Andale Mono":12
+
+# Cuneiform Numbers and Punctuation
+U+12400-1247f "Andale Mono":12
+
+# Early Dynastic Cuneiform
+U+12480-1254f "Andale Mono":12
+
+# Egyptian Hieroglyphs
+U+13000-1342f "Andale Mono":12
+
+# Egyptian Hieroglyph Format Controls
+U+13430-1343f "Andale Mono":12
+
+# Anatolian Hieroglyphs
+U+14400-1467f "Andale Mono":12
+
+# Bamum Supplement
+U+16800-16a3f "Andale Mono":12
+
+# Mro
+U+16a40-16a6f "Andale Mono":12
+
+# Bassa Vah
+U+16ad0-16aff "Andale Mono":12
+
+# Pahawh Hmong
+U+16b00-16b8f "Andale Mono":12
+
+# Medefaidrin
+U+16e40-16e9f "Andale Mono":12
+
+# Miao
+U+16f00-16f9f "Andale Mono":12
+
+# Ideographic Symbols and Punctuation
+U+16fe0-16fff "Andale Mono":12
+
+# Tangut
+U+17000-187ff "Andale Mono":12
+
+# Tangut Components
+U+18800-18aff "Andale Mono":12
+
+# Khitan Small Script
+U+18b00-18cff "Andale Mono":12
+
+# Tangut Supplement
+U+18d00-18d8f "Andale Mono":12
+
+# Kana Supplement
+U+1b000-1b0ff "Andale Mono":12
+
+# Kana Extended-A
+U+1b100-1b12f "Andale Mono":12
+
+# Small Kana Extension
+U+1b130-1b16f "Andale Mono":12
+
+# Nushu
+U+1b170-1b2ff "Andale Mono":12
+
+# Duployan
+U+1bc00-1bc9f "Andale Mono":12
+
+# Shorthand Format Controls
+U+1bca0-1bcaf "Andale Mono":12
+
+# Byzantine Musical Symbols
+U+1d000-1d0ff "Andale Mono":12
+
+# Musical Symbols
+U+1d100-1d1ff "Andale Mono":12
+
+# Ancient Greek Musical Notation
+U+1d200-1d24f "Andale Mono":12
+
+# Mayan Numerals
+U+1d2e0-1d2ff "Andale Mono":12
+
+# Tai Xuan Jing Symbols
+U+1d300-1d35f "Andale Mono":12
+
+# Counting Rod Numerals
+U+1d360-1d37f "Andale Mono":12
+
+# Mathematical Alphanumeric Symbols
+U+1d400-1d7ff "Andale Mono":12
+
+# Sutton SignWriting
+U+1d800-1daaf "Andale Mono":12
+
+# Glagolitic Supplement
+U+1e000-1e02f "Andale Mono":12
+
+# Nyiakeng Puachue Hmong
+U+1e100-1e14f "Andale Mono":12
+
+# Wancho
+U+1e2c0-1e2ff "Andale Mono":12
+
+# Mende Kikakui
+U+1e800-1e8df "Andale Mono":12
+
+# Adlam
+U+1e900-1e95f "Andale Mono":12
+
+# Indic Siyaq Numbers
+U+1ec70-1ecbf "Andale Mono":12
+
+# Ottoman Siyaq Numbers
+U+1ed00-1ed4f "Andale Mono":12
+
+# Arabic Mathematical Alphabetic Symbols
+U+1ee00-1eeff "Andale Mono":12
+
+# Mahjong Tiles
+U+1f000-1f02f "Andale Mono":12
+
+# Domino Tiles
+U+1f030-1f09f "Andale Mono":12
+
+# Playing Cards
+U+1f0a0-1f0ff "Andale Mono":12
+
+# Enclosed Alphanumeric Supplement
+U+1f100-1f1ff "Andale Mono":12
+
+# Enclosed Ideographic Supplement
+U+1f200-1f2ff "Andale Mono":12
+
+# Miscellaneous Symbols and Pictographs
+U+1f300-1f5ff "Andale Mono":12
+
+# Emoticons
+U+1f600-1f64f "Andale Mono":12 # TODO: Get emoji
+
+# Ornamental Dingbats
+U+1f650-1f67f "Andale Mono":12
+
+# Transport and Map Symbols
+U+1f680-1f6ff "Andale Mono":12
+
+# Alchemical Symbols
+U+1f700-1f77f "Andale Mono":12
+
+# Geometric Shapes Extended
+U+1f780-1f7ff "Andale Mono":12
+
+# Supplemental Arrows-C
+U+1f800-1f8ff "Andale Mono":12
+
+# Supplemental Symbols and Pictographs
+U+1f900-1f9ff "Andale Mono":12
+
+# Chess Symbols
+U+1fa00-1fa6f "Andale Mono":12
+
+# Symbols and Pictographs Extended-A
+U+1fa70-1faff "Andale Mono":12
+
+# Symbols for Legacy Computing
+U+1fb00-1fbff "Andale Mono":12
+
+# CJK Unified Ideographs Extension B
+U+20000-2a6df "Andale Mono":12
+
+# CJK Unified Ideographs Extension C
+U+2a700-2b73f "Andale Mono":12
+
+# CJK Unified Ideographs Extension D
+U+2b740-2b81f "Andale Mono":12
+
+# CJK Unified Ideographs Extension E
+U+2b820-2ceaf "Andale Mono":12
+
+# CJK Unified Ideographs Extension F
+U+2ceb0-2ebef "Andale Mono":12
+
+# CJK Compatibility Ideographs Supplement
+U+2f800-2fa1f "Andale Mono":12
+
+# CJK Unified Ideographs Extension G
+U+30000-3134f "Andale Mono":12
+
+# Tags
+U+e0000-e007f control
+
+# Variation Selectors Supplement
+U+e0100-e01ef control
+
+# f0000..fffff; Supplementary Private Use Area-A
+# 100000..10ffff; Supplementary Private Use Area-B
