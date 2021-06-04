@@ -341,25 +341,25 @@ U+2de0-2dff "Andale Mono":12
 U+2e00-2e7f "Andale Mono":12
 
 # CJK Radicals Supplement
-U+2e80-2eff "Andale Mono":12
+U+2e80-2eff "Andale Mono":12,2
 
 # Kangxi Radicals
-U+2f00-2fdf "Andale Mono":12
+U+2f00-2fdf "Andale Mono":12,2
 
 # Ideographic Description Characters
 U+2ff0-2fff "Andale Mono":12
 
 # CJK Symbols and Punctuation
-U+3000-303f "Andale Mono":12
+U+3000-303f "Andale Mono":12,2
 
 # Hiragana
-U+3040-309f "Andale Mono":12
+U+3040-309f "Andale Mono":12,2
 
 # Katakana
-U+30a0-30ff "Andale Mono":12
+U+30a0-30ff "Andale Mono":12,2
 
 # Bopomofo
-U+3100-312f "Andale Mono":12
+U+3100-312f "Andale Mono":12,2
 
 # Hangul Compatibility Jamo
 U+3130-318f "Andale Mono":12
@@ -371,7 +371,7 @@ U+3190-319f "Andale Mono":12
 U+31a0-31bf "Andale Mono":12
 
 # CJK Strokes
-U+31c0-31ef "Andale Mono":12
+U+31c0-31ef "Andale Mono":12,2
 
 # Katakana Phonetic Extensions
 U+31f0-31ff "Andale Mono":12
@@ -383,13 +383,13 @@ U+3200-32ff "Andale Mono":12
 U+3300-33ff "Andale Mono":12
 
 # CJK Unified Ideographs Extension A
-U+3400-4dbf "Andale Mono":12
+U+3400-4dbf "Andale Mono":12,2
 
 # Yijing Hexagram Symbols
 U+4dc0-4dff "Andale Mono":12
 
 # CJK Unified Ideographs
-U+4e00-9fff "Andale Mono":12
+U+4e00-9fff "Andale Mono":12,2
 
 # Yi Syllables
 U+a000-a48f "Andale Mono":12
@@ -488,7 +488,7 @@ U+dc00-dfff "Andale Mono":12
 U+e000-f8ff "Andale Mono":12
 
 # CJK Compatibility Ideographs
-U+f900-faff "Andale Mono":12
+U+f900-faff "Andale Mono":12,2
 
 # Alphabetic Presentation Forms
 U+fb00-fb4f "Andale Mono":12
@@ -506,7 +506,7 @@ U+fe10-fe1f "Andale Mono":12
 U+fe20-fe2f "Andale Mono":12
 
 # CJK Compatibility Forms
-U+fe30-fe4f "Andale Mono":12
+U+fe30-fe4f "Andale Mono":12,2
 
 # Small Form Variants
 U+fe50-fe6f "Andale Mono":12
@@ -923,25 +923,25 @@ U+1fa70-1faff "Andale Mono":12
 U+1fb00-1fbff "Andale Mono":12
 
 # CJK Unified Ideographs Extension B
-U+20000-2a6df "Andale Mono":12
+U+20000-2a6df "Andale Mono":12,2
 
 # CJK Unified Ideographs Extension C
-U+2a700-2b73f "Andale Mono":12
+U+2a700-2b73f "Andale Mono":12,2
 
 # CJK Unified Ideographs Extension D
-U+2b740-2b81f "Andale Mono":12
+U+2b740-2b81f "Andale Mono":12,2
 
 # CJK Unified Ideographs Extension E
-U+2b820-2ceaf "Andale Mono":12
+U+2b820-2ceaf "Andale Mono":12,2
 
 # CJK Unified Ideographs Extension F
-U+2ceb0-2ebef "Andale Mono":12
+U+2ceb0-2ebef "Andale Mono":12,2
 
 # CJK Compatibility Ideographs Supplement
-U+2f800-2fa1f "Andale Mono":12
+U+2f800-2fa1f "Andale Mono":12,2
 
 # CJK Unified Ideographs Extension G
-U+30000-3134f "Andale Mono":12
+U+30000-3134f "Andale Mono":12,2
 
 # Tags
 U+e0000-e007f control
