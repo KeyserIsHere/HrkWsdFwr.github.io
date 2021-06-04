@@ -226,8 +226,15 @@ typedef struct {
     size_t count;
 } Resource;
 
-static void WriteIndex(uint32_t Index, Resource *Indexes, uint32_t Char)
+static void WriteIndex(uint32_t Index, Resource *Indexes, uint32_t Char, _Bool Verbose)
 {
+    if (Indexes[0].count > Char)
+    {
+        if (Verbose) fprintf(stderr, "Invalid character range (must be ascending): U+%.4x\n", Char);
+        
+        return;
+    }
+    
     _Static_assert(sizeof(unsigned int) == sizeof(uint32_t), "NSSwapInt is the wrong size");
     
     while (Indexes[0].count < Char)
@@ -286,7 +293,7 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
     {
         if (Opts.control)
         {
-            WriteIndex(NON_RENDERABLE_GLYPH_INDEX, Indexes, Start);
+            WriteIndex(NON_RENDERABLE_GLYPH_INDEX, Indexes, Start, Verbose);
         }
         
         else
@@ -382,7 +389,7 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                             Resource *Bitmap = &Bitmaps[MaxWidth - 1];
                             uint32_t Index = ((MaxWidth - 1) << 28) | ((MaxHeight - 1) << 24) | (uint32_t)Bitmap->count;
                             
-                            WriteIndex(Index, Indexes, Start);
+                            WriteIndex(Index, Indexes, Start, Verbose);
                             
                             uint8_t BitmapData[(16 * 16) / 8]; //32
                             memset(BitmapData, 0, sizeof(BitmapData));
@@ -427,7 +434,7 @@ int main(int argc, const char * argv[])
     @autoreleasepool {
         InitDefaults();
         
-        _Bool Verbose = TRUE, SaveImage = TRUE;
+        _Bool Verbose = TRUE, SaveImage = FALSE;
         
         CGColorSpaceRef ColourSpace = CGColorSpaceCreateDeviceRGB();
         
@@ -451,7 +458,7 @@ int main(int argc, const char * argv[])
             { .file = fopen("unicode.2.2.1.glyphset", "wb"), .count = 0 }
         };
         
-        WriteIndex(NON_RENDERABLE_GLYPH_INDEX, Indexes, 0);
+        WriteIndex(NON_RENDERABLE_GLYPH_INDEX, Indexes, 0, Verbose);
         
         fwrite(MissingGlyphBitmapData, sizeof(uint8_t), sizeof(MissingGlyphBitmapData), Bitmaps[0].file);
         
