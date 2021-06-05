@@ -302,7 +302,7 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
             
             if (String.length)
             {
-                CGContextSetRGBFillColor(Ctx, 0.0, 0.0, 0.0, 1.0);
+                CGContextSetRGBFillColor(Ctx, 0.0f, 0.0f, 0.0f, 1.0f);
                 CGContextFillRect(Ctx, Rect);
                 
                 CFMutableAttributedStringRef AttributedString = CFAttributedStringCreateMutable(kCFAllocatorDefault, 0);
@@ -342,6 +342,21 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                         {
                             if (SaveImage)
                             {
+                                for (size_t LoopY = 0; LoopY < 14; LoopY++)
+                                {
+                                    for (size_t LoopX = 0; LoopX < 7; LoopX++)
+                                    {
+                                        const size_t Pixel = (LoopY * Width) + LoopX;
+                                        if (Data[Pixel * 4] != 255) Data[(Pixel * 4) + 1] = 150;
+                                    }
+                                    
+                                    for (size_t LoopX = 7; LoopX < 14; LoopX++)
+                                    {
+                                        const size_t Pixel = (LoopY * Width) + LoopX;
+                                        if (Data[Pixel * 4] != 255) Data[(Pixel * 4) + 1] = 200;
+                                    }
+                                }
+                                
                                 CGImageRef Image = CGBitmapContextCreateImage(Ctx);
                                 [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
                                 CGImageRelease(Image);
@@ -444,8 +459,6 @@ int main(int argc, const char * argv[])
         CGContextSetAllowsFontSmoothing(Ctx, FALSE);
         CGContextSetShouldAntialias(Ctx, FALSE);
         CGContextSetAllowsAntialiasing(Ctx, FALSE);
-        
-        CGContextSetRGBFillColor(Ctx, 0.0, 0.0, 0.0, 1.0);
         
         const CGRect Rect = CGRectMake(0.0f, 0.0f, Width, Height);
         
