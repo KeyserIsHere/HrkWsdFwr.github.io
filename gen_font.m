@@ -23,6 +23,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ Setup (with homebrew):
+ brew install icu4c
+ clang gen_font.m -o gen_font -fmodules -L/usr/local/opt/icu4c/lib -I/usr/local/opt/icu4c/include -licuuc
+ 
+ Usage:
+ cat glyphs.map | ./gen_font
+ */
+
 @import Foundation;
 @import CoreText;
 @import CoreGraphics;
