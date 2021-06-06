@@ -340,28 +340,6 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                     {
                         if (Data[(Loop * 4) + 2] != 0)
                         {
-                            if (SaveImage)
-                            {
-                                for (size_t LoopY = 0; LoopY < 14; LoopY++)
-                                {
-                                    for (size_t LoopX = 0; LoopX < 7; LoopX++)
-                                    {
-                                        const size_t Pixel = (LoopY * Width) + LoopX;
-                                        if (Data[Pixel * 4] != 255) Data[(Pixel * 4) + 1] = 150;
-                                    }
-                                    
-                                    for (size_t LoopX = 7; LoopX < 14; LoopX++)
-                                    {
-                                        const size_t Pixel = (LoopY * Width) + LoopX;
-                                        if (Data[Pixel * 4] != 255) Data[(Pixel * 4) + 1] = 200;
-                                    }
-                                }
-                                
-                                CGImageRef Image = CGBitmapContextCreateImage(Ctx);
-                                [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
-                                CGImageRelease(Image);
-                            }
-                            
                             size_t MaxWidth = 0, MaxHeight = 2;
                             switch (u_getIntPropertyValue(Start, UCHAR_EAST_ASIAN_WIDTH))
                             {
@@ -399,6 +377,31 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                                 case U_EA_WIDE:
                                     MaxWidth = 2;
                                     break;
+                            }
+                            
+                            if (SaveImage)
+                            {
+                                for (size_t LoopY = 0; LoopY < 14; LoopY++)
+                                {
+                                    for (size_t LoopX = 0; LoopX < 7; LoopX++)
+                                    {
+                                        const size_t Pixel = (LoopY * Width) + LoopX;
+                                        if (Data[Pixel * 4] != 255) Data[(Pixel * 4) + 1] = 150;
+                                    }
+                                    
+                                    if (MaxWidth == 2)
+                                    {
+                                        for (size_t LoopX = 7; LoopX < 14; LoopX++)
+                                        {
+                                            const size_t Pixel = (LoopY * Width) + LoopX;
+                                            if (Data[Pixel * 4] != 255) Data[(Pixel * 4) + 1] = 200;
+                                        }
+                                    }
+                                }
+                                
+                                CGImageRef Image = CGBitmapContextCreateImage(Ctx);
+                                [((NSImage*)[[NSImage alloc] initWithCGImage: Image size: NSZeroSize]).TIFFRepresentation writeToFile: [NSString stringWithFormat: @"U+%.4x.tiff", Start] atomically: NO];
+                                CGImageRelease(Image);
                             }
                             
                             Resource *Bitmap = &Bitmaps[MaxWidth - 1];
