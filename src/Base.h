@@ -112,4 +112,10 @@ func(__VA_ARGS__, HKHubArchScheduler);
 
 #include <Blob2D/Blob2D.h>
 
+/*!
+ * @brief The game's asset path.
+ * @note This should only be set if using a different project structure.
+ */
+extern FSPath HKAssetPath;
+
 #endif

@@ -399,9 +399,7 @@ static int RapServerLoop(void *Arg)
                         
                         if (CCStringEqual(Cmd, CC_STRING("drp")))
                         {
-                            FSPath Path = FSPathCopy(B2EngineConfiguration.project);
-                            FSPathRemoveComponentLast(Path);
-                            FSPathRemoveComponentLast(Path);
+                            FSPath Path = FSPathCopy(HKAssetPath);
                             FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "radare"));
                             FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, "register-profile"));
                             

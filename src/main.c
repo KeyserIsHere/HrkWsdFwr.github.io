@@ -42,6 +42,8 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+FSPath HKAssetPath = NULL;
+
 static void PreSetup(void)
 {
     char Path[] = __FILE__;
@@ -76,10 +78,7 @@ static void Setup(void)
     
     HKHubArchAssemblyIncludeSearchPaths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(FSPath), FSPathComponentDestructorForCollection);
     
-    FSPath IncludeSearchPath = FSPathCopy(B2EngineConfiguration.project);
-    
-    FSPathRemoveComponentLast(IncludeSearchPath);
-    FSPathRemoveComponentLast(IncludeSearchPath);
+    FSPath IncludeSearchPath = FSPathCopy(HKAssetPath);
     
     FSPathAppendComponent(IncludeSearchPath, FSPathComponentCreate(FSPathComponentTypeDirectory, "logic"));
     FSPathAppendComponent(IncludeSearchPath, FSPathComponentCreate(FSPathComponentTypeDirectory, "programs"));
@@ -109,7 +108,7 @@ int main(int argc, const char *argv[])
         
         CFRelease(ResourceURL);
         
-        B2EngineConfiguration.project = FSPathCreateFromSystemPath(ResourcePath);
+        HKAssetPath = FSPathCreateFromSystemPath(ResourcePath);
     }
 
     else
@@ -117,10 +116,12 @@ int main(int argc, const char *argv[])
     {
         CCOrderedCollection(FSPathComponent) Path = FSPathConvertSystemPathToComponents(argv[0], TRUE);
         CCOrderedCollectionRemoveLastElement(Path);
-        B2EngineConfiguration.project = FSPathCreateFromComponents(Path);
+        HKAssetPath = FSPathCreateFromComponents(Path);
     }
     
-    FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeDirectory, "assets"));
+    FSPathAppendComponent(HKAssetPath, FSPathComponentCreate(FSPathComponentTypeDirectory, "assets"));
+    
+    B2EngineConfiguration.project = FSPathCopy(HKAssetPath);
     FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeFile, "game"));
     FSPathAppendComponent(B2EngineConfiguration.project, FSPathComponentCreate(FSPathComponentTypeExtension, "gamepkg"));
     
