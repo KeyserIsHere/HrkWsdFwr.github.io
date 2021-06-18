@@ -80,6 +80,9 @@ typedef struct {
     uint8_t layers[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH * HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT * sizeof(HKHubModuleGraphicsAdapterCell)];
 } HKHubModuleGraphicsAdapterMemory;
 
+typedef struct {
+} HKHubModuleGraphicsAdapterState;
+
 #define Tbuffer PTYPE(HKHubModuleGraphicsAdapterCell *)
 #include <CommonC/Memory.h>
 
@@ -154,22 +157,60 @@ static int32_t HKHubModuleGraphicsAdapterCellIndex(HKHubModuleGraphicsAdapterMem
 
 CC_ARRAY_DECLARE(uint32_t);
 
-static CCArray(uint32_t) HKHubModuleGraphicsAdapterGlyphIndexes;
+static CCArray(uint32_t) HKHubModuleGraphicsAdapterGlyphIndexes = CC_STATIC_ARRAY(sizeof(uint32_t), HKHubModuleGraphicsAdapterCellGlyphIndexMask + 1, 0, CC_STATIC_ALLOC_BSS(uint32_t[HKHubModuleGraphicsAdapterCellGlyphIndexMask + 1]));
 
-static CCArray HKHubModuleGraphicsAdapterGlyphBitmaps[16 * 16 * 8];
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_HALF_WIDTH_GLYPH_BITMAPS ((0 << 7) | (1 << 3) | 0)
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAPS ((1 << 7) | (1 << 3) | 0)
 
-#define HK_HUB_MODULE_GRAPHICS_ADAPTER_NULL_GLYPH_INDEX (1 << 28) | (1 << 24)
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_HALF_WIDTH_GLYPH_BITMAP_SIZE HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(1, 2, 1)
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAP_SIZE HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(2, 2, 1)
+
+static CCArray HKHubModuleGraphicsAdapterGlyphBitmaps[16 * 16 * 8][2] = {
+    [0] = { CC_STATIC_ARRAY(HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(1, 1, 1), 1, 1, CC_STATIC_ALLOC_BSS(uint8_t[HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(1, 1, 1)])), NULL },
+    [HK_HUB_MODULE_GRAPHICS_ADAPTER_HALF_WIDTH_GLYPH_BITMAPS] = { CC_STATIC_ARRAY(HK_HUB_MODULE_GRAPHICS_ADAPTER_HALF_WIDTH_GLYPH_BITMAP_SIZE, 2040, 0, CC_STATIC_ALLOC_BSS(uint8_t[HK_HUB_MODULE_GRAPHICS_ADAPTER_HALF_WIDTH_GLYPH_BITMAP_SIZE])), NULL },
+    [HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAPS] = { CC_STATIC_ARRAY(HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAP_SIZE, 151660, 0, CC_STATIC_ALLOC_BSS(uint8_t[HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAP_SIZE])), NULL }
+};
+
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_NULL_GLYPH_INDEX 0
 
 void HKHubModuleGraphicsAdapterStaticGlyphSet(CCChar Character, uint8_t Width, uint8_t Height, uint8_t PaletteSize, const uint8_t *Bitmap, size_t Count)
 {
     CCAssertLog(Width <= 0xf, "Width must not exceed maximum width");
     CCAssertLog(Height <= 0xf, "Height must not exceed maximum height");
     CCAssertLog(PaletteSize <= 0x7, "PaletteSize must not exceed maximum palette size");
+    CCAssertLog(Count <= HKHubModuleGraphicsAdapterCellGlyphIndexMask, "Count must not exceed maximum character count");
     
     if (Bitmap)
     {
         uint32_t Index = (Width << 7) | (Height << 3)| PaletteSize;
-        Index = (Index << 21) | (uint32_t)CCArrayAppendElements(HKHubModuleGraphicsAdapterGlyphBitmaps[Index], Bitmap, Count);
+        
+        if (!HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0])
+        {
+            HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0] = CCArrayCreate(CC_STD_ALLOCATOR, HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(Width + 1, Height + 1, PaletteSize + 1), 16);
+        }
+        
+        size_t First = CCArrayAppendElements(HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0], Bitmap, Count);
+        
+        if (First == SIZE_MAX)
+        {
+            if (!HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1])
+            {
+                HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1] = CCArrayCreate(CC_STD_ALLOCATOR, HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(Width + 1, Height + 1, PaletteSize + 1), 16);
+            }
+            
+            First = CCArrayAppendElements(HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1], Bitmap, Count);
+            if (First == SIZE_MAX) return;
+            
+            First += CCArrayGetChunkSize(HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0]);
+        }
+        
+        if ((First & ~HKHubModuleGraphicsAdapterCellGlyphIndexMask) || ((First + Count) & ~HKHubModuleGraphicsAdapterCellGlyphIndexMask))
+        {
+            CC_LOG_ERROR("Exceeded static glyph count: (%d, %d, %d) %zu %zu", Width, Height, PaletteSize, CCArrayGetCount(HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0]), HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1] ? CCArrayGetCount(HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1]) : 0);
+            return;
+        }
+        
+        Index = (Index << 21) | (uint32_t)First;
         
         for (size_t Loop = 0; Loop < Count; Loop++)
         {
@@ -194,5 +235,31 @@ const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_
     *Height = (Index >> 24) & 0xf;
     *PaletteSize = (Index >> 21) & 0x7;
     
-    return CCArrayGetElementAtIndex(HKHubModuleGraphicsAdapterGlyphBitmaps[Index >> 21], Index & 0x1fffff);
+    CCArray *Bitmaps = HKHubModuleGraphicsAdapterGlyphBitmaps[Index >> 21];
+    uint32_t BitmapIndex = Index & HKHubModuleGraphicsAdapterCellGlyphIndexMask;
+    
+    if (!Bitmaps[0]) goto NotFound;
+    
+    if (BitmapIndex < CCArrayGetCount(Bitmaps[0]))
+    {
+        return CCArrayGetElementAtIndex(Bitmaps[0], BitmapIndex);
+    }
+    
+    const size_t ChunkSize = CCArrayGetChunkSize(Bitmaps[0]);
+    
+    if (BitmapIndex >= ChunkSize) goto NotFound;
+    
+    BitmapIndex -= CCArrayGetChunkSize(Bitmaps[0]);
+    
+    if (!Bitmaps[1]) goto NotFound;
+    
+    if (BitmapIndex < CCArrayGetCount(Bitmaps[1]))
+    {
+        return CCArrayGetElementAtIndex(Bitmaps[1], BitmapIndex);
+    }
+    
+NotFound:
+    CC_LOG_ERROR("Bitmap does not exist: no bitmap at index (%u) in bitmaps (%p:%zu, %p:%zu)", Index, Bitmaps[0], CCArrayGetCount(Bitmaps[0]), Bitmaps[1], CCArrayGetCount(Bitmaps[1]));
+    
+    return HK_HUB_MODULE_GRAPHICS_ADAPTER_NULL_GLYPH_INDEX;
 }
