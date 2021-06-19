@@ -42,4 +42,9 @@
 
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT 8
 
+/*!
+ * @brief Initialise the static glyphs.
+ */
+void HKHubModuleGraphicsAdapterStaticGlyphInit(void);
+
 #endif

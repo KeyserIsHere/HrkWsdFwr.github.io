@@ -171,6 +171,127 @@ static CCArray HKHubModuleGraphicsAdapterGlyphBitmaps[16 * 16 * 8][2] = {
     [HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAPS] = { CC_STATIC_ARRAY(HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAP_SIZE, 151660, 0, CC_STATIC_ALLOC_BSS(uint8_t[HK_HUB_MODULE_GRAPHICS_ADAPTER_FULL_WIDTH_GLYPH_BITMAP_SIZE])), NULL }
 };
 
+void HKHubModuleGraphicsAdapterStaticGlyphInit(void)
+{
+    FSPath Path = FSPathCopy(HKAssetPath);
+    FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeDirectory, "graphics-adapter"));
+    
+    CCCollection Paths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeSmall, sizeof(FSPath), FSPathDestructorForCollection);
+    CCCollectionInsertElement(Paths, &(FSPath){ FSPathCreate(".glyphset") });
+    CCOrderedCollection GlyphSets = FSManagerGetContentsAtPath(Path, Paths, FSMatchDefault);
+    
+    if (GlyphSets)
+    {
+        CC_COLLECTION_FOREACH(FSPath, GlyphSet, GlyphSets)
+        {
+            const size_t ComponentCount = FSPathGetComponentCount(GlyphSet);
+            if (ComponentCount >= 4)
+            {
+                FSPathComponent PaletteComponent = FSPathGetComponentAtIndex(GlyphSet, ComponentCount - 2);
+                FSPathComponent HeightComponent = FSPathGetComponentAtIndex(GlyphSet, ComponentCount - 3);
+                FSPathComponent WidthComponent = FSPathGetComponentAtIndex(GlyphSet, ComponentCount - 4);
+                
+                if ((FSPathComponentGetType(WidthComponent) == FSPathComponentTypeExtension) &&
+                    (FSPathComponentGetType(HeightComponent) == FSPathComponentTypeExtension) &&
+                    (FSPathComponentGetType(PaletteComponent) == FSPathComponentTypeExtension))
+                {
+                    const char *WidthStr = FSPathComponentGetString(WidthComponent);
+                    const char *HeightStr = FSPathComponentGetString(HeightComponent);
+                    const char *PaletteStr = FSPathComponentGetString(PaletteComponent);
+                    
+                    size_t Width = WidthStr[0] - '0';
+                    size_t Height = HeightStr[0] - '0';
+                    size_t Palette = PaletteStr[0] - '0';
+                    
+                    if ((Width < 10) && (Height < 10) && (Palette < 10))
+                    {
+                        if (WidthStr[1]) Width = (Width * 10) + (WidthStr[1] - '0');
+                        if (HeightStr[1]) Height = (Height * 10) + (HeightStr[1] - '0');
+                        if (PaletteStr[1]) Palette = (Palette * 10) + (PaletteStr[1] - '0');
+                        
+                        const size_t BitmapSize = HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(Width, Height, Palette);
+                        
+                        if ((--Width < 16) && (--Height < 16) && (--Palette < 8))
+                        {
+                            const size_t Index = (Width << 7) | (Height << 3) | Palette;
+                            
+                            if (!HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0])
+                            {
+                                HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0] = CCArrayCreate(CC_STD_ALLOCATOR, BitmapSize, 16);
+                            }
+                            
+                            FSHandle Handle;
+                            if (FSHandleOpen(GlyphSet, FSHandleTypeRead, &Handle) == FSOperationSuccess)
+                            {
+#define MAX_BATCH_SIZE 16384
+                                uint8_t Bitmaps[MAX_BATCH_SIZE];
+                                size_t MaxCount = MAX_BATCH_SIZE / BitmapSize;
+                                
+                                for ( ; ; )
+                                {
+                                    size_t Size = BitmapSize * MaxCount;
+                                    FSHandleRead(Handle, &Size, Bitmaps, FSBehaviourUpdateOffset);
+                                    
+                                    const size_t Count = Size / BitmapSize;
+                                    if (!Count) break;
+                                    
+                                    if (CCArrayAppendElements(HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0], Bitmaps, Count) == SIZE_MAX)
+                                    {
+                                        if (!HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1])
+                                        {
+                                            HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1] = CCArrayCreate(CC_STD_ALLOCATOR, BitmapSize, 16);
+                                        }
+                                        
+                                        CCArrayAppendElements(HKHubModuleGraphicsAdapterGlyphBitmaps[Index][1], Bitmaps, Count);
+                                    }
+                                }
+                                
+                                FSHandleClose(Handle);
+                            }
+                            
+                            else CC_LOG_ERROR("Failed to open glyphset file: %s", FSPathGetFullPathString(Path));
+                        }
+                    }
+                }
+            }
+        }
+        
+        CCCollectionDestroy(GlyphSets);
+    }
+    
+    FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, "glyphset"));
+    
+#if CC_HARDWARE_ENDIAN_LITTLE
+    FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeExtension, "little"));
+#elif CC_HARDWARE_ENDIAN_BIG
+    FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeExtension, "big"));
+#else
+#error Unknown endianness
+#endif
+    
+    FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeExtension, "index"));
+    
+    if (FSManagerExists(Path))
+    {
+        FSHandle Handle;
+        if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
+        {
+            const size_t IndexSize = CCArrayGetElementSize(HKHubModuleGraphicsAdapterGlyphIndexes);
+            size_t Size = IndexSize * CCArrayGetChunkSize(HKHubModuleGraphicsAdapterGlyphIndexes);
+            
+            FSHandleRead(Handle, &Size, CCArrayGetData(HKHubModuleGraphicsAdapterGlyphIndexes), FSBehaviourDefault);
+            FSHandleClose(Handle);
+            
+            HKHubModuleGraphicsAdapterGlyphIndexes->count = Size / IndexSize;
+        }
+        
+        else CC_LOG_ERROR("Failed to open glyphset index file: %s", FSPathGetFullPathString(Path));
+    }
+    
+    CCCollectionDestroy(GlyphSets);
+    FSPathDestroy(Path);
+}
+
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_NULL_GLYPH_INDEX 0
 
 void HKHubModuleGraphicsAdapterStaticGlyphSet(CCChar Character, uint8_t Width, uint8_t Height, uint8_t PaletteSize, const uint8_t *Bitmap, size_t Count)
