@@ -42,9 +42,14 @@
 
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT 8
 
+const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize);
+
 /*!
  * @brief Initialise the static glyphs.
  */
 void HKHubModuleGraphicsAdapterStaticGlyphInit(void);
+
+void HKHubModuleGraphicsAdapterStaticGlyphSet(CCChar Character, uint8_t Width, uint8_t Height, uint8_t PaletteSize, const uint8_t *Bitmap, size_t Count);
+const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize);
 
 #endif

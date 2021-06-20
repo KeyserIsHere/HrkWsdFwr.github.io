@@ -81,6 +81,8 @@ typedef struct {
 } HKHubModuleGraphicsAdapterMemory;
 
 typedef struct {
+    uint8_t frame;
+    HKHubModuleGraphicsAdapterMemory memory;
 } HKHubModuleGraphicsAdapterState;
 
 #define Tbuffer PTYPE(HKHubModuleGraphicsAdapterCell *)
@@ -153,6 +155,50 @@ static int32_t HKHubModuleGraphicsAdapterCellIndex(HKHubModuleGraphicsAdapterMem
     }
     
     return -1;
+}
+
+const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
+{
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
+    const uint8_t Frame = State->frame;
+    //TODO: Maintain a lookup for dynamic glyph bitmaps
+    for (size_t Offset = 0; (Offset + 3) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER; )
+    {
+        uint8_t BitmapWidth = (Memory->glyphs[Offset] >> 4);
+        uint8_t BitmapHeight = (Memory->glyphs[Offset] & 0xf);
+        uint8_t BitmapPalette = (Memory->glyphs[Offset + 1] >> 5);
+        uint32_t Index = ((Memory->glyphs[Offset + 1] << 16) | (Memory->glyphs[Offset + 2] << 8) | Memory->glyphs[Offset + 3]) & HKHubModuleGraphicsAdapterCellGlyphIndexMask;
+        const size_t BitmapSize = HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(BitmapWidth + 1, BitmapHeight + 1, BitmapPalette + 1);
+        
+        Offset += 4;
+        
+        if (Index == Character)
+        {
+            *Width = BitmapWidth;
+            *Height = BitmapHeight;
+            *PaletteSize = BitmapPalette;
+            
+            for (uint8_t Frames = 0, Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); Animation |= Frames)
+            {
+                Frames = Memory->glyphs[Offset++];
+                
+                if (Frames & Frame) return &Memory->glyphs[Offset];
+                
+                Offset += BitmapSize;
+            }
+            
+            return NULL;
+        }
+        
+        for (uint8_t Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); )
+        {
+            Animation |= Memory->glyphs[Offset++];
+            Offset += BitmapSize;
+        }
+    }
+    
+    return HKHubModuleGraphicsAdapterStaticGlyphGet(Character, Width, Height, PaletteSize);
 }
 
 CC_ARRAY_DECLARE(uint32_t);
