@@ -25,24 +25,32 @@
 
 #include "HubModuleGraphicsAdapter.h"
 
-#define CC_TYPE_HKHubModuleGraphicsAdapterCell(...) HKHubModuleGraphicsAdapterCell
-#define CC_TYPE_1_HKHubModuleGraphicsAdapterCell CC_TYPE_HKHubModuleGraphicsAdapterCell,
-
-#define CC_PRESERVE_CC_TYPE_HKHubModuleGraphicsAdapterCell CC_TYPE_HKHubModuleGraphicsAdapterCell
-
-#define CC_TYPE_DECL_HKHubModuleGraphicsAdapterCell(...) HKHubModuleGraphicsAdapterCell, __VA_ARGS__
-#define CC_TYPE_DECL_1_HKHubModuleGraphicsAdapterCell CC_TYPE_DECL_HKHubModuleGraphicsAdapterCell,
-
-#define CC_MANGLE_TYPE_1_HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCell
+#define T size_t
+#include <CommonC/Extrema.h>
 
 typedef struct {
     uint8_t x, y, width, height;
 } HKHubModuleGraphicsAdapterViewport;
 
-typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint32_t) {
+typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
     HKHubModuleGraphicsAdapterCellModeMask = 0x80000000,
     HKHubModuleGraphicsAdapterCellModeBitmap = 0,
     HKHubModuleGraphicsAdapterCellModeReference = 0x80000000,
+    
+    //ttttssss 0pppbaaa iffggggg gggggggg gggggggg
+    //cccccccc 1pppbaaa iffmmrrr yyyyyyyy xxxxxxxx
+    
+    //c = palette index offset
+    HKHubModuleGraphicsAdapterCellPaletteOffsetIndex = 32,
+    HKHubModuleGraphicsAdapterCellPaletteOffsetMask = (0xff << HKHubModuleGraphicsAdapterCellPaletteOffsetIndex),
+    
+    //t = y-relative position of glyph
+    HKHubModuleGraphicsAdapterCellPositionTIndex = 36,
+    HKHubModuleGraphicsAdapterCellPositionTMask = (0xf << HKHubModuleGraphicsAdapterCellPositionTIndex),
+    
+    //s = x-relative position of glyph
+    HKHubModuleGraphicsAdapterCellPositionSIndex = 32,
+    HKHubModuleGraphicsAdapterCellPositionSMask = (0xf << HKHubModuleGraphicsAdapterCellPositionSIndex),
     
     //p = palette page
     HKHubModuleGraphicsAdapterCellPalettePageIndex = 28,
@@ -51,12 +59,23 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint32_t) {
     //b = bold
     HKHubModuleGraphicsAdapterCellBoldFlag = (1 << 27),
     
+    //i = italic
+    HKHubModuleGraphicsAdapterCellItalicFlag = (1 << 23),
+    
+    //f = animation filter (0 = rrrr rrrr, 1 = rxrx rxrx, 2 = rrxx rrxx, 3 = rrrr xxxx)
+    HKHubModuleGraphicsAdapterCellAnimationFilterIndex = 21,
+    HKHubModuleGraphicsAdapterCellAnimationFilterMask = (3 << HKHubModuleGraphicsAdapterCellAnimationFilterIndex),
+    
     //a = animation offset (current frame + anim offset = anim index)
     HKHubModuleGraphicsAdapterCellAnimationOffsetIndex = 24,
     HKHubModuleGraphicsAdapterCellAnimationOffsetMask = (7 << HKHubModuleGraphicsAdapterCellAnimationOffsetIndex),
     
-    //i = glyph index
+    //g = glyph index
     HKHubModuleGraphicsAdapterCellGlyphIndexMask = 0x1fffff,
+    
+    //m = attribute modifier (0 = ref.cpbaif + v; 1 = ref.baif + v, cp = v; 2 = ref.cpbi + v, af = v; 3 = cpbaif = v)
+    HKHubModuleGraphicsAdapterCellAttributeModifierIndex = 19,
+    HKHubModuleGraphicsAdapterCellAttributeModifierMask = (3 << HKHubModuleGraphicsAdapterCellAttributeModifierIndex),
     
     //r = reference layer
     HKHubModuleGraphicsAdapterCellReferenceLayerIndex = 16,
@@ -70,14 +89,19 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint32_t) {
     HKHubModuleGraphicsAdapterCellPositionYIndex = 8,
     HKHubModuleGraphicsAdapterCellPositionYMask = (0xff << HKHubModuleGraphicsAdapterCellPositionYIndex),
     
-    CC_RESERVED_BITS(HKHubModuleGraphicsAdapterCell, 0, 32)
+    HKHubModuleGraphicsAdapterCellAttributeMask = ~(HKHubModuleGraphicsAdapterCellGlyphIndexMask | HKHubModuleGraphicsAdapterCellPositionSMask | HKHubModuleGraphicsAdapterCellPositionTMask),
+    HKHubModuleGraphicsAdapterCellReferenceAttributeMask = HKHubModuleGraphicsAdapterCellAttributeMask | HKHubModuleGraphicsAdapterCellPaletteOffsetMask,
+    
+    CC_RESERVED_BITS(HKHubModuleGraphicsAdapterCell, 0, 40)
 };
+
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE 5
 
 typedef struct {
     HKHubModuleGraphicsAdapterViewport viewports[256];
     uint8_t glyphs[HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER];
     uint8_t palettes[HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT][256];
-    uint8_t layers[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH * HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT * sizeof(HKHubModuleGraphicsAdapterCell)];
+    uint8_t layers[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE];
 } HKHubModuleGraphicsAdapterMemory;
 
 typedef struct {
@@ -85,12 +109,24 @@ typedef struct {
     HKHubModuleGraphicsAdapterMemory memory;
 } HKHubModuleGraphicsAdapterState;
 
-#define Tbuffer PTYPE(HKHubModuleGraphicsAdapterCell *)
-#include <CommonC/Memory.h>
-
 static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCellMode(HKHubModuleGraphicsAdapterCell Cell)
 {
     return Cell & HKHubModuleGraphicsAdapterCellModeMask;
+}
+
+static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetPaletteOffset(HKHubModuleGraphicsAdapterCell Cell)
+{
+    return (Cell & HKHubModuleGraphicsAdapterCellPaletteOffsetMask) >> HKHubModuleGraphicsAdapterCellPaletteOffsetIndex;
+}
+
+static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetS(HKHubModuleGraphicsAdapterCell Cell)
+{
+    return (Cell & HKHubModuleGraphicsAdapterCellPositionSMask) >> HKHubModuleGraphicsAdapterCellPositionSIndex;
+}
+
+static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetT(HKHubModuleGraphicsAdapterCell Cell)
+{
+    return (Cell & HKHubModuleGraphicsAdapterCellPositionTMask) >> HKHubModuleGraphicsAdapterCellPositionTIndex;
 }
 
 static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetPalettePage(HKHubModuleGraphicsAdapterCell Cell)
@@ -101,6 +137,36 @@ static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetPalettePage(HKHu
 static CC_FORCE_INLINE _Bool HKHubModuleGraphicsAdapterCellIsBold(HKHubModuleGraphicsAdapterCell Cell)
 {
     return Cell & HKHubModuleGraphicsAdapterCellBoldFlag;
+}
+
+static CC_FORCE_INLINE _Bool HKHubModuleGraphicsAdapterCellIsItalic(HKHubModuleGraphicsAdapterCell Cell)
+{
+    return Cell & HKHubModuleGraphicsAdapterCellItalicFlag;
+}
+
+static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetAnimationFilter(HKHubModuleGraphicsAdapterCell Cell)
+{
+    switch ((Cell & HKHubModuleGraphicsAdapterCellAnimationFilterMask) >> HKHubModuleGraphicsAdapterCellAnimationFilterIndex)
+    {
+        case 0:
+            return 0xff;
+            
+        case 1:
+            return 0xaa;
+            
+        case 2:
+            return 0xcc;
+            
+        case 3:
+            return 0xf0;
+    }
+    
+    CCAssertLog(0, "Unsupported animation filter");
+}
+
+static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetAttributeModifier(HKHubModuleGraphicsAdapterCell Cell)
+{
+    return (Cell & HKHubModuleGraphicsAdapterCellAttributeModifierMask) >> HKHubModuleGraphicsAdapterCellAttributeModifierIndex;
 }
 
 static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetAnimationOffset(HKHubModuleGraphicsAdapterCell Cell)
@@ -128,27 +194,79 @@ static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterCellGetY(HKHubModuleGra
     return (Cell & HKHubModuleGraphicsAdapterCellPositionYMask) >> HKHubModuleGraphicsAdapterCellPositionYIndex;
 }
 
-static int32_t HKHubModuleGraphicsAdapterCellIndex(HKHubModuleGraphicsAdapterMemory *Memory, size_t Layer, size_t X, size_t Y, HKHubModuleGraphicsAdapterCell *Attributes)
+static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCellCombineAttributes(HKHubModuleGraphicsAdapterCell Attr, HKHubModuleGraphicsAdapterCell RefAttr)
 {
-    //TODO: Handle infinite recursion case
+#define ATTR_ADD(attribute) ((Attr & ~attribute) | (((Attr & attribute) + (RefAttr & attribute)) & attribute))
     
+    switch (HKHubModuleGraphicsAdapterCellGetAttributeModifier(Attr))
+    {
+        case 0:
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellBoldFlag);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellItalicFlag);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellAnimationOffsetMask);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellAnimationFilterMask);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellPalettePageMask);
+            
+            if (HKHubModuleGraphicsAdapterCellMode(RefAttr) == HKHubModuleGraphicsAdapterCellModeReference) Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellPaletteOffsetMask);
+            break;
+            
+        case 1:
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellBoldFlag);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellItalicFlag);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellAnimationOffsetMask);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellAnimationFilterMask);
+            break;
+            
+        case 2:
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellBoldFlag);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellItalicFlag);
+            Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellPalettePageMask);
+            
+            if (HKHubModuleGraphicsAdapterCellMode(RefAttr) == HKHubModuleGraphicsAdapterCellModeReference) Attr = ATTR_ADD(HKHubModuleGraphicsAdapterCellPaletteOffsetMask);
+            break;
+            
+        default:
+            break;
+    }
+    
+    return Attr;
+}
+
+static int32_t HKHubModuleGraphicsAdapterCellIndex(HKHubModuleGraphicsAdapterMemory *Memory, size_t Layer, size_t X, size_t Y, HKHubModuleGraphicsAdapterCell *Attributes, uint8_t *S, uint8_t *T)
+{
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     CCAssertLog(X < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH, "X must not exceed layer width");
     CCAssertLog(Y < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT, "Y must not exceed layer height");
     
-    HKHubModuleGraphicsAdapterCell Glyph;
-    
-    CCMemoryReadBig(&Memory->layers[Layer][(X + (Y * HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH)) * sizeof(Glyph)], sizeof(Glyph), 0, sizeof(Glyph), &Glyph);
+    HKHubModuleGraphicsAdapterCell Glyph = ((HKHubModuleGraphicsAdapterCell)Memory->layers[Layer][Y][X][0] << 32)
+                                         | ((HKHubModuleGraphicsAdapterCell)Memory->layers[Layer][Y][X][1] << 24)
+                                         | ((HKHubModuleGraphicsAdapterCell)Memory->layers[Layer][Y][X][2] << 16)
+                                         | ((HKHubModuleGraphicsAdapterCell)Memory->layers[Layer][Y][X][3] << 8)
+                                         | Memory->layers[Layer][Y][X][4];
     
     if (Attributes) *Attributes = Glyph;
     
     switch (HKHubModuleGraphicsAdapterCellMode(Glyph))
     {
         case HKHubModuleGraphicsAdapterCellModeBitmap:
+            if (S) *S = HKHubModuleGraphicsAdapterCellGetS(Glyph);
+            if (T) *T = HKHubModuleGraphicsAdapterCellGetT(Glyph);
+            if (Attributes) *Attributes = *Attributes & ~HKHubModuleGraphicsAdapterCellPaletteOffsetMask;
             return HKHubModuleGraphicsAdapterCellGetGlyphIndex(Glyph);
             
         case HKHubModuleGraphicsAdapterCellModeReference:
-            return HKHubModuleGraphicsAdapterCellIndex(Memory, HKHubModuleGraphicsAdapterCellGetReferenceLayer(Glyph), HKHubModuleGraphicsAdapterCellGetX(Glyph), HKHubModuleGraphicsAdapterCellGetY(Glyph), NULL);
+        {
+            const size_t RefLayer = HKHubModuleGraphicsAdapterCellGetReferenceLayer(Glyph);
+            if (RefLayer > Layer)
+            {
+                HKHubModuleGraphicsAdapterCell RefAttrs = 0;
+                const int32_t Index = HKHubModuleGraphicsAdapterCellIndex(Memory, RefLayer, HKHubModuleGraphicsAdapterCellGetX(Glyph), HKHubModuleGraphicsAdapterCellGetY(Glyph), &RefAttrs, S, T);
+                
+                if (Attributes) *Attributes = HKHubModuleGraphicsAdapterCellCombineAttributes(Glyph, RefAttrs);
+                
+                return Index;
+            }
+        }
             
         default:
             break;
@@ -157,11 +275,14 @@ static int32_t HKHubModuleGraphicsAdapterCellIndex(HKHubModuleGraphicsAdapterMem
     return -1;
 }
 
-const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
+const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
 {
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
-    const uint8_t Frame = State->frame;
+    const uint8_t Frame = State->frame + AnimationOffset;
+    
+    if (!(Frame & AnimationFilter)) return NULL;
+    
     //TODO: Maintain a lookup for dynamic glyph bitmaps
     for (size_t Offset = 0; (Offset + 3) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER; )
     {
