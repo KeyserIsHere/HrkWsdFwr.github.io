@@ -322,6 +322,65 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
     return HKHubModuleGraphicsAdapterStaticGlyphGet(Character, Width, Height, PaletteSize);
 }
 
+void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, uint8_t *Framebuffer, size_t Size)
+{
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
+    
+    for (size_t Y = Memory->viewports[Port].y, ViewportHeight = (size_t)Memory->viewports[Port].height + 1; Y < ViewportHeight; Y++)
+    {
+        for (size_t X = Memory->viewports[Port].x, ViewportWidth = (size_t)Memory->viewports[Port].width + 1; X < ViewportWidth; X++)
+        {
+            HKHubModuleGraphicsAdapterCell Glyph;
+            uint8_t S, T;
+            const int32_t Index = HKHubModuleGraphicsAdapterCellIndex(Memory, Port % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, X % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH, Y % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT, &Glyph, &S, &T);
+            
+            if (Index != -1)
+            {
+                uint8_t Width, Height, PaletteSize;
+                const uint8_t *Bitmap = HKHubModuleGraphicsAdapterGetGlyphBitmap(Adapter, Index, HKHubModuleGraphicsAdapterCellGetAnimationOffset(Glyph), HKHubModuleGraphicsAdapterCellGetAnimationFilter(Glyph), &Width, &Height, &PaletteSize);
+                
+                if (Bitmap)
+                {
+                    Width++;
+                    Height++;
+                    PaletteSize++;
+                    
+                    uint8_t PaletteMask = CCBitSet(PaletteSize);
+                    size_t SampleBase = (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * T * PaletteSize * Width) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * S * PaletteSize);
+                    
+                    for (size_t FramebufferY = Y - Memory->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE), SampleIndex = 0; FramebufferY < MaxY; FramebufferY++)
+                    {
+                        for (size_t FramebufferX = X - Memory->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferX < MaxX; FramebufferX++, SampleIndex++)
+                        {
+                            const size_t Pixel = (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferY * ViewportWidth) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferX);
+                            
+                            if (Pixel < Size)
+                            {
+                                const uint8_t Sample = Bitmap[(SampleBase + SampleIndex) / 8];
+                                const uint8_t PaletteIndex = (Sample >> (((SampleIndex % 8) / PaletteSize) * PaletteSize)) & PaletteMask;
+                                Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
+                            }
+                        }
+                    }
+                    
+                    continue;
+                }
+            }
+            
+            for (size_t FramebufferY = Y - Memory->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferY < MaxY; FramebufferY++)
+            {
+                for (size_t FramebufferX = X - Memory->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferX < MaxX; FramebufferX++)
+                {
+                    const size_t Pixel = (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferY * ViewportWidth) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferX);
+                    
+                    if (Pixel < Size) Framebuffer[Pixel] = 0;
+                }
+            }
+        }
+    }
+}
+
 CC_ARRAY_DECLARE(uint32_t);
 
 static CCArray(uint32_t) HKHubModuleGraphicsAdapterGlyphIndexes = CC_STATIC_ARRAY(sizeof(uint32_t), HKHubModuleGraphicsAdapterCellGlyphIndexMask + 1, 0, CC_STATIC_ALLOC_BSS(uint32_t[HKHubModuleGraphicsAdapterCellGlyphIndexMask + 1]));
