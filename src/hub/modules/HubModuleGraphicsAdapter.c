@@ -32,6 +32,10 @@ typedef struct {
     uint8_t x, y, width, height;
 } HKHubModuleGraphicsAdapterViewport;
 
+typedef struct {
+    uint8_t x, y;
+} HKHubModuleGraphicsAdapterCursor;
+
 typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
     HKHubModuleGraphicsAdapterCellModeMask = 0x80000000,
     HKHubModuleGraphicsAdapterCellModeBitmap = 0,
@@ -98,7 +102,6 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE 5
 
 typedef struct {
-    HKHubModuleGraphicsAdapterViewport viewports[256];
     uint8_t glyphs[HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER];
     uint8_t palettes[HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT][256];
     uint8_t layers[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE];
@@ -106,6 +109,8 @@ typedef struct {
 
 typedef struct {
     uint8_t frame;
+    HKHubModuleGraphicsAdapterCursor cursors[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
+    HKHubModuleGraphicsAdapterViewport viewports[256];
     HKHubModuleGraphicsAdapterMemory memory;
 } HKHubModuleGraphicsAdapterState;
 
@@ -327,9 +332,9 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
     
-    for (size_t Y = Memory->viewports[Port].y, ViewportHeight = (size_t)Memory->viewports[Port].height + 1; Y < ViewportHeight; Y++)
+    for (size_t Y = State->viewports[Port].y, ViewportHeight = (size_t)State->viewports[Port].height + 1; Y < ViewportHeight; Y++)
     {
-        for (size_t X = Memory->viewports[Port].x, ViewportWidth = (size_t)Memory->viewports[Port].width + 1; X < ViewportWidth; X++)
+        for (size_t X = State->viewports[Port].x, ViewportWidth = (size_t)State->viewports[Port].width + 1; X < ViewportWidth; X++)
         {
             HKHubModuleGraphicsAdapterCell Glyph;
             uint8_t S, T;
@@ -349,9 +354,9 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                     uint8_t PaletteMask = CCBitSet(PaletteSize);
                     size_t SampleBase = (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * T * PaletteSize * Width) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * S * PaletteSize);
                     
-                    for (size_t FramebufferY = Y - Memory->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE), SampleIndex = 0; FramebufferY < MaxY; FramebufferY++)
+                    for (size_t FramebufferY = Y - State->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE), SampleIndex = 0; FramebufferY < MaxY; FramebufferY++)
                     {
-                        for (size_t FramebufferX = X - Memory->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferX < MaxX; FramebufferX++, SampleIndex++)
+                        for (size_t FramebufferX = X - State->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferX < MaxX; FramebufferX++, SampleIndex++)
                         {
                             const size_t Pixel = (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferY * ViewportWidth) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferX);
                             
@@ -368,9 +373,9 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                 }
             }
             
-            for (size_t FramebufferY = Y - Memory->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferY < MaxY; FramebufferY++)
+            for (size_t FramebufferY = Y - State->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferY < MaxY; FramebufferY++)
             {
-                for (size_t FramebufferX = X - Memory->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferX < MaxX; FramebufferX++)
+                for (size_t FramebufferX = X - State->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE); FramebufferX < MaxX; FramebufferX++)
                 {
                     const size_t Pixel = (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferY * ViewportWidth) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE * FramebufferX);
                     
