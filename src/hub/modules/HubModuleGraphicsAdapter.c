@@ -34,6 +34,12 @@ typedef struct {
 
 typedef struct {
     uint8_t x, y;
+    uint8_t visibility;
+    HKHubModuleGraphicsAdapterViewport bounds;
+    CCChar tab;
+    CCChar newline;
+    uint8_t tabOffset;
+    uint8_t newlineOffset;
 } HKHubModuleGraphicsAdapterCursor;
 
 typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
@@ -109,7 +115,9 @@ typedef struct {
 
 typedef struct {
     uint8_t frame;
-    HKHubModuleGraphicsAdapterCursor cursors[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
+    struct {
+        HKHubModuleGraphicsAdapterCursor cursor;
+    } attributes[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
     HKHubModuleGraphicsAdapterViewport viewports[256];
     HKHubModuleGraphicsAdapterMemory memory;
 } HKHubModuleGraphicsAdapterState;
@@ -278,6 +286,15 @@ static int32_t HKHubModuleGraphicsAdapterCellIndex(HKHubModuleGraphicsAdapterMem
     }
     
     return -1;
+}
+
+void HKHubModuleGraphicsAdapterSetCursor(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y)
+{
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.x = X;
+    State->attributes[Layer].cursor.y = Y;
 }
 
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
