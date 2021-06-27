@@ -305,6 +305,14 @@ void HKHubModuleGraphicsAdapterSetCursorVisibility(HKHubModule Adapter, uint8_t 
     State->attributes[Layer].cursor.visibility = Visibility;
 }
 
+void HKHubModuleGraphicsAdapterSetCursorBounds(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height)
+{
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.bounds = (HKHubModuleGraphicsAdapterViewport){ .x = X, .y = Y, .width = Width, .height = Height };
+}
+
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
 {
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
