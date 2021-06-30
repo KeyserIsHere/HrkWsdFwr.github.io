@@ -321,6 +321,14 @@ void HKHubModuleGraphicsAdapterSetCursorTab(HKHubModule Adapter, uint8_t Layer, 
     State->attributes[Layer].cursor.tab = Tab;
 }
 
+void HKHubModuleGraphicsAdapterSetCursorNewline(HKHubModule Adapter, uint8_t Layer, CCChar Newline)
+{
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.newline = Newline;
+}
+
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
 {
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
