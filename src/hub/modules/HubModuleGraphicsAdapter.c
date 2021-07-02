@@ -117,6 +117,18 @@ typedef struct {
     uint8_t frame;
     struct {
         HKHubModuleGraphicsAdapterCursor cursor;
+        struct {
+            uint8_t page;
+            uint8_t offset;
+        } palette;
+        struct {
+            _Bool bold;
+            _Bool italic;
+        } style;
+        struct {
+            uint8_t offset;
+            uint8_t filter;
+        } animation;
     } attributes[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
     HKHubModuleGraphicsAdapterViewport viewports[256];
     HKHubModuleGraphicsAdapterMemory memory;
