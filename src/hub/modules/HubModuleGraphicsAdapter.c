@@ -357,6 +357,15 @@ void HKHubModuleGraphicsAdapterSetCursorNewlineOffset(HKHubModule Adapter, uint8
     State->attributes[Layer].cursor.newlineOffset = Offset;
 }
 
+void HKHubModuleGraphicsAdapterSetPalettePage(HKHubModule Adapter, uint8_t Layer, uint8_t Page)
+{
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    CCAssertLog(Page < HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT, "Page must not exceed palette page count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].palette.page = Page;
+}
+
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
 {
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
