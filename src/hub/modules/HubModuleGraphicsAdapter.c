@@ -398,6 +398,14 @@ void HKHubModuleGraphicsAdapterSetAnimationOffset(HKHubModule Adapter, uint8_t L
     State->attributes[Layer].animation.offset = Offset;
 }
 
+void HKHubModuleGraphicsAdapterSetAnimationFilter(HKHubModule Adapter, uint8_t Layer, uint8_t Filter)
+{
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].animation.filter = Filter;
+}
+
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
 {
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
