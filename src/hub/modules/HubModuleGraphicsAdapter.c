@@ -33,13 +33,20 @@ typedef struct {
 } HKHubModuleGraphicsAdapterViewport;
 
 typedef struct {
+    CCChar character;
+    struct {
+        uint8_t x;
+        uint8_t y;
+    } offset;
+} HKHubModuleGraphicsAdapterCursorControl;
+
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT 16
+
+typedef struct {
     uint8_t x, y;
     uint8_t visibility;
     HKHubModuleGraphicsAdapterViewport bounds;
-    CCChar tab;
-    CCChar newline;
-    uint8_t tabOffset;
-    uint8_t newlineOffset;
+    HKHubModuleGraphicsAdapterCursorControl control[HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT];
 } HKHubModuleGraphicsAdapterCursor;
 
 typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
@@ -325,36 +332,15 @@ void HKHubModuleGraphicsAdapterSetCursorBounds(HKHubModule Adapter, uint8_t Laye
     State->attributes[Layer].cursor.bounds = (HKHubModuleGraphicsAdapterViewport){ .x = X, .y = Y, .width = Width, .height = Height };
 }
 
-void HKHubModuleGraphicsAdapterSetCursorTab(HKHubModule Adapter, uint8_t Layer, CCChar Tab)
+void HKHubModuleGraphicsAdapterSetCursorControl(HKHubModule Adapter, uint8_t Layer, uint8_t Index, CCChar Character, uint8_t X, uint8_t Y)
 {
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    CCAssertLog(Index < HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT, "Index must not exceed cursor control count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
-    State->attributes[Layer].cursor.tab = Tab;
-}
-
-void HKHubModuleGraphicsAdapterSetCursorNewline(HKHubModule Adapter, uint8_t Layer, CCChar Newline)
-{
-    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
-    
-    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
-    State->attributes[Layer].cursor.newline = Newline;
-}
-
-void HKHubModuleGraphicsAdapterSetCursorTabOffset(HKHubModule Adapter, uint8_t Layer, uint8_t Offset)
-{
-    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
-    
-    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
-    State->attributes[Layer].cursor.tabOffset = Offset;
-}
-
-void HKHubModuleGraphicsAdapterSetCursorNewlineOffset(HKHubModule Adapter, uint8_t Layer, uint8_t Offset)
-{
-    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
-    
-    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
-    State->attributes[Layer].cursor.newlineOffset = Offset;
+    State->attributes[Layer].cursor.control[Index].character = Character;
+    State->attributes[Layer].cursor.control[Index].offset.x = X;
+    State->attributes[Layer].cursor.control[Index].offset.y = Y;
 }
 
 void HKHubModuleGraphicsAdapterSetPalettePage(HKHubModule Adapter, uint8_t Layer, uint8_t Page)
@@ -405,6 +391,9 @@ void HKHubModuleGraphicsAdapterSetAnimationFilter(HKHubModule Adapter, uint8_t L
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     State->attributes[Layer].animation.filter = Filter;
 }
+
+void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer, CCChar Character);
+void HKHubModuleGraphicsAdapterDrawRef(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, uint8_t RefLayer);
 
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
 {
