@@ -428,7 +428,7 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                                     const size_t Pixel = (LoopY * Width) + LoopX;
                                     if (Data[Pixel * 4] == 255)
                                     {
-                                        const size_t BitPixel = (LoopY * (MaxWidth * Cell)) + LoopX;
+                                        const size_t BitPixel = (((LoopY / Cell) * Cell * Cell * MaxWidth) + ((LoopY % Cell) * Cell)) + ((LoopX / Cell) * Cell * Cell) + (LoopX % Cell);
                                         BitmapData[BitPixel / 8] |= 0x80 >> (BitPixel % 8);
                                     }
                                     
