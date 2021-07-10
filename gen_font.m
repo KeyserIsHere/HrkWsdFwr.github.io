@@ -371,7 +371,7 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                                         }
                                     }
                                     
-                                    MaxWidth = (MaxX / Cell) + 1;
+                                    MaxWidth = ((MaxX - 1) / Cell) + 1;
                                     if (MaxWidth > 2) MaxWidth = 2;
                                     
                                     break;
