@@ -59,25 +59,27 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
     
     //c = palette index offset
     HKHubModuleGraphicsAdapterCellPaletteOffsetIndex = 32,
-    HKHubModuleGraphicsAdapterCellPaletteOffsetMask = (0xff << HKHubModuleGraphicsAdapterCellPaletteOffsetIndex),
+    HKHubModuleGraphicsAdapterCellPaletteOffsetMask = (0xffULL << HKHubModuleGraphicsAdapterCellPaletteOffsetIndex),
     
     //t = y-relative position of glyph
     HKHubModuleGraphicsAdapterCellPositionTIndex = 36,
-    HKHubModuleGraphicsAdapterCellPositionTMask = (0xf << HKHubModuleGraphicsAdapterCellPositionTIndex),
+    HKHubModuleGraphicsAdapterCellPositionTMask = (0xfULL << HKHubModuleGraphicsAdapterCellPositionTIndex),
     
     //s = x-relative position of glyph
     HKHubModuleGraphicsAdapterCellPositionSIndex = 32,
-    HKHubModuleGraphicsAdapterCellPositionSMask = (0xf << HKHubModuleGraphicsAdapterCellPositionSIndex),
+    HKHubModuleGraphicsAdapterCellPositionSMask = (0xfULL << HKHubModuleGraphicsAdapterCellPositionSIndex),
     
     //p = palette page
     HKHubModuleGraphicsAdapterCellPalettePageIndex = 28,
     HKHubModuleGraphicsAdapterCellPalettePageMask = (7 << HKHubModuleGraphicsAdapterCellPalettePageIndex),
     
     //b = bold
-    HKHubModuleGraphicsAdapterCellBoldFlag = (1 << 27),
+    HKHubModuleGraphicsAdapterCellBoldIndex = 27,
+    HKHubModuleGraphicsAdapterCellBoldFlag = (1 << HKHubModuleGraphicsAdapterCellBoldIndex),
     
     //i = italic
-    HKHubModuleGraphicsAdapterCellItalicFlag = (1 << 23),
+    HKHubModuleGraphicsAdapterCellItalicIndex = 23,
+    HKHubModuleGraphicsAdapterCellItalicFlag = (1 << HKHubModuleGraphicsAdapterCellItalicIndex),
     
     //f = animation filter (0 = rrrr rrrr, 1 = rxrx rxrx, 2 = rrxx rrxx, 3 = rrrr xxxx)
     HKHubModuleGraphicsAdapterCellAnimationFilterIndex = 21,
