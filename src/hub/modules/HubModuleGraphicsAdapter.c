@@ -131,8 +131,9 @@ typedef struct {
             uint8_t offset;
         } palette;
         struct {
-            _Bool bold;
-            _Bool italic;
+            _Bool bold : 1;
+            _Bool italic : 1;
+            uint8_t slope : 3;
         } style;
         struct {
             uint8_t offset;
