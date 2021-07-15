@@ -366,6 +366,7 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
 
 void HKHubModuleGraphicsAdapterSetCursor(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
@@ -375,6 +376,7 @@ void HKHubModuleGraphicsAdapterSetCursor(HKHubModule Adapter, uint8_t Layer, uin
 
 void HKHubModuleGraphicsAdapterSetCursorVisibility(HKHubModule Adapter, uint8_t Layer, uint8_t Visibility)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
@@ -383,6 +385,7 @@ void HKHubModuleGraphicsAdapterSetCursorVisibility(HKHubModule Adapter, uint8_t 
 
 void HKHubModuleGraphicsAdapterSetCursorBounds(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
@@ -391,6 +394,7 @@ void HKHubModuleGraphicsAdapterSetCursorBounds(HKHubModule Adapter, uint8_t Laye
 
 void HKHubModuleGraphicsAdapterSetCursorControl(HKHubModule Adapter, uint8_t Layer, uint8_t Index, CCChar Character, uint8_t X, uint8_t Y)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     CCAssertLog(Index < HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT, "Index must not exceed cursor control count");
     
@@ -402,6 +406,7 @@ void HKHubModuleGraphicsAdapterSetCursorControl(HKHubModule Adapter, uint8_t Lay
 
 void HKHubModuleGraphicsAdapterSetPalettePage(HKHubModule Adapter, uint8_t Layer, uint8_t Page)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     CCAssertLog(Page < HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT, "Page must not exceed palette page count");
     
@@ -411,6 +416,7 @@ void HKHubModuleGraphicsAdapterSetPalettePage(HKHubModule Adapter, uint8_t Layer
 
 void HKHubModuleGraphicsAdapterSetPaletteOffset(HKHubModule Adapter, uint8_t Layer, uint8_t Offset)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
@@ -419,6 +425,7 @@ void HKHubModuleGraphicsAdapterSetPaletteOffset(HKHubModule Adapter, uint8_t Lay
 
 void HKHubModuleGraphicsAdapterSetBold(HKHubModule Adapter, uint8_t Layer, _Bool Enable)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
@@ -427,6 +434,7 @@ void HKHubModuleGraphicsAdapterSetBold(HKHubModule Adapter, uint8_t Layer, _Bool
 
 void HKHubModuleGraphicsAdapterSetItalic(HKHubModule Adapter, uint8_t Layer, _Bool Enable)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
@@ -435,6 +443,7 @@ void HKHubModuleGraphicsAdapterSetItalic(HKHubModule Adapter, uint8_t Layer, _Bo
 
 void HKHubModuleGraphicsAdapterSetAnimationOffset(HKHubModule Adapter, uint8_t Layer, uint8_t Offset)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
@@ -443,6 +452,7 @@ void HKHubModuleGraphicsAdapterSetAnimationOffset(HKHubModule Adapter, uint8_t L
 
 void HKHubModuleGraphicsAdapterSetAnimationFilter(HKHubModule Adapter, uint8_t Layer, uint8_t Filter)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
