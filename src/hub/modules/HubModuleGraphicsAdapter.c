@@ -329,6 +329,41 @@ static const uint8_t HKHubModuleGraphicsAdapterDefaultPalette[256] = {
     0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff
 };
 
+HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
+{
+    HKHubModuleGraphicsAdapterState *State = CCMalloc(Allocator, sizeof(HKHubModuleGraphicsAdapterState), NULL, CC_DEFAULT_ERROR_CALLBACK);
+    if (State)
+    {
+        memset(State, 0, sizeof(HKHubModuleGraphicsAdapterState));
+        
+        State->frame = 128;
+        
+        for (size_t Loop = 0; Loop < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT; Loop++)
+        {
+            State->attributes[Loop].cursor.visibility = 0xff;
+            State->attributes[Loop].cursor.bounds.width = 0xff;
+            State->attributes[Loop].cursor.bounds.height = 0xff;
+            State->attributes[Loop].cursor.control[0].character = '\t';
+            State->attributes[Loop].cursor.control[0].offset.x = 4;
+            State->attributes[Loop].cursor.control[1].character = '\n';
+            State->attributes[Loop].cursor.control[1].offset.y = 2;
+            
+            State->attributes[Loop].style.slope = 3;
+        }
+        
+        for (size_t Loop = 0; Loop < HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT; Loop++)
+        {
+            memcpy(State->memory.palettes[Loop], HKHubModuleGraphicsAdapterDefaultPalette, sizeof(HKHubModuleGraphicsAdapterDefaultPalette));
+        }
+        
+        return HKHubModuleCreate(Allocator, NULL, NULL, State, NULL, NULL);
+    }
+    
+    else CC_LOG_ERROR("Failed to create graphics adapter module due to allocation failure: allocation of size (%zu)", sizeof(HKHubModuleGraphicsAdapterState));
+    
+    return NULL;
+}
+
 void HKHubModuleGraphicsAdapterSetCursor(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y)
 {
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
