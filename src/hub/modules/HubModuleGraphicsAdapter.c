@@ -467,6 +467,21 @@ void HKHubModuleGraphicsAdapterSetAnimationFilter(HKHubModule Adapter, uint8_t L
     State->attributes[Layer].animation.filter = Filter;
 }
 
+static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCellBitmap(uint8_t T, uint8_t S, uint8_t PalettePage, _Bool Bold, _Bool Italic, uint8_t AnimationOffset, uint8_t AnimationFilter, CCChar Character)
+{
+    HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellModeBitmap
+                                        | ((uint64_t)T << HKHubModuleGraphicsAdapterCellPositionTIndex)
+                                        | ((uint64_t)S << HKHubModuleGraphicsAdapterCellPositionSIndex)
+                                        | (PalettePage << HKHubModuleGraphicsAdapterCellPalettePageIndex)
+                                        | (Bold << HKHubModuleGraphicsAdapterCellBoldIndex)
+                                        | (AnimationOffset << HKHubModuleGraphicsAdapterCellAnimationOffsetIndex)
+                                        | (Italic << HKHubModuleGraphicsAdapterCellItalicIndex)
+                                        | (AnimationFilter << HKHubModuleGraphicsAdapterCellAnimationFilterIndex)
+                                        | Character;
+    
+    return Cell;
+}
+
 void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer, CCChar Character);
 void HKHubModuleGraphicsAdapterDrawRef(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, uint8_t RefLayer);
 
