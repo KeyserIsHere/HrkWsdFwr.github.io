@@ -487,9 +487,11 @@ void HKHubModuleGraphicsAdapterDrawRef(HKHubModule Adapter, uint8_t Layer, uint8
 
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
+    
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
-    const uint8_t Frame = State->frame + AnimationOffset;
+    const uint8_t Frame = (State->frame << AnimationOffset) | (State->frame >> (8 - AnimationOffset));
     
     if (!(Frame & AnimationFilter)) return NULL;
     
