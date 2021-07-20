@@ -536,16 +536,19 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
 
 void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, uint8_t *Framebuffer, size_t Size)
 {
+    CCAssertLog(Adapter, "Adapter must not be null");
+    
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
     
-    for (size_t Y = State->viewports[Port].y, ViewportHeight = (size_t)State->viewports[Port].height + 1; Y < ViewportHeight; Y++)
+    for (size_t Y = State->viewports[Port].y, ViewportHeight = (size_t)State->viewports[Port].height + 1, MaxViewportY = ViewportHeight + Y; Y < MaxViewportY; Y++)
     {
-        for (size_t X = State->viewports[Port].x, ViewportWidth = (size_t)State->viewports[Port].width + 1; X < ViewportWidth; X++)
+        for (size_t X = State->viewports[Port].x, ViewportWidth = (size_t)State->viewports[Port].width + 1, MaxViewportX = ViewportWidth + X; X < MaxViewportX; X++)
         {
             HKHubModuleGraphicsAdapterCell Glyph;
             uint8_t S, T;
-            const int32_t Index = HKHubModuleGraphicsAdapterCellIndex(Memory, Port % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, X % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH, Y % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT, &Glyph, &S, &T);
+            const uint8_t Layer = Port % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT;
+            const int32_t Index = HKHubModuleGraphicsAdapterCellIndex(Memory, Layer, X % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH, Y % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT, &Glyph, &S, &T);
             
             if (Index != -1)
             {
@@ -559,32 +562,51 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                     PaletteSize++;
                     
                     uint8_t PaletteMask = CCBitSet(PaletteSize);
-                    size_t SampleBase = (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * T * PaletteSize * Width) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * S * PaletteSize);
+                    size_t SampleBase = (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * T * PaletteSize * Width) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * S * PaletteSize);
                     
-                    for (size_t FramebufferY = Y - State->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL), SampleIndex = 0; FramebufferY < MaxY; FramebufferY++)
+                    const size_t PixelHeight = Height * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL;
+                    const size_t Slope = HKHubModuleGraphicsAdapterCellIsItalic(Glyph) && State->attributes[Layer].style.slope ? State->attributes[Layer].style.slope : PixelHeight;
+                    const size_t HalfSlope = (PixelHeight / Slope) / 2; // 1
+                    const size_t CenterPad = (PixelHeight % Slope) + (Slope * (HalfSlope % 2)); // 6
+                    
+                    for (size_t FramebufferY = (Y - State->viewports[Port].y) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, RelY = T * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, MaxY = CCMin(ViewportHeight * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL), SampleIndex = 0; FramebufferY < MaxY; FramebufferY++, RelY++)
                     {
-                        for (size_t FramebufferX = X - State->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferX < MaxX; FramebufferX++, SampleIndex++)
+                        ptrdiff_t Adjust = HalfSlope - (RelY / Slope);
+                        if (Adjust < 0) Adjust = HalfSlope - ((RelY - (CenterPad - Slope)) / Slope);
+                        
+                        for (size_t FramebufferX = (X - State->viewports[Port].x) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, MaxX = CCMin(ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferX < MaxX; FramebufferX++, SampleIndex++)
                         {
-                            const size_t Pixel = (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * FramebufferY * ViewportWidth) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * FramebufferX);
+                            const ptrdiff_t OffsetX = FramebufferX + Adjust;
                             
-                            if (Pixel < Size)
+                            if (OffsetX >= 0)
                             {
-                                const uint8_t Sample = Bitmap[(SampleBase + SampleIndex) / 8];
-                                const uint8_t PaletteIndex = (Sample >> (((SampleIndex % 8) / PaletteSize) * PaletteSize)) & PaletteMask;
-                                Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
+                                const size_t Pixel = (FramebufferY * ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL) + OffsetX;
+                                
+                                if (Pixel < Size)
+                                {
+                                    const uint8_t Sample = Bitmap[(SampleBase + SampleIndex) / 8];
+                                    const uint8_t PaletteIndex = (Sample >> (((7 - ((SampleBase + SampleIndex) % 8)) / PaletteSize) * PaletteSize)) & PaletteMask;
+                                    
+                                    Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
+                                }
                             }
                         }
+                        
+                        //TODO: adjust sampleindex when MaxX is ViewportWidth
+                        //TODO: eliminate redundant iterations (cause of adjust) and adjust sampleindex to account for missing iterations
+                        //but test this first
+                        //TODO: add bold/repeat
                     }
                     
                     continue;
                 }
             }
             
-            for (size_t FramebufferY = Y - State->viewports[Port].y, MaxY = CCMin(ViewportHeight, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferY < MaxY; FramebufferY++)
+            for (size_t FramebufferY = (Y - State->viewports[Port].y) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, MaxY = CCMin(ViewportHeight * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferY < MaxY; FramebufferY++)
             {
-                for (size_t FramebufferX = X - State->viewports[Port].x, MaxX = CCMin(ViewportWidth, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferX < MaxX; FramebufferX++)
+                for (size_t FramebufferX = (X - State->viewports[Port].x) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, MaxX = CCMin(ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferX < MaxX; FramebufferX++)
                 {
-                    const size_t Pixel = (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * FramebufferY * ViewportWidth) + (HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL * FramebufferX);
+                    const size_t Pixel = (FramebufferY * ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL) + FramebufferX;
                     
                     if (Pixel < Size) Framebuffer[Pixel] = 0;
                 }
