@@ -641,6 +641,7 @@ void HKHubModuleGraphicsAdapterStaticGlyphInit(void)
     CCCollection Paths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintSizeSmall, sizeof(FSPath), FSPathDestructorForCollection);
     CCCollectionInsertElement(Paths, &(FSPath){ FSPathCreate(".glyphset") });
     CCOrderedCollection GlyphSets = FSManagerGetContentsAtPath(Path, Paths, FSMatchDefault);
+    CCCollectionDestroy(Paths);
     
     if (GlyphSets)
     {
@@ -750,7 +751,6 @@ void HKHubModuleGraphicsAdapterStaticGlyphInit(void)
         else CC_LOG_ERROR("Failed to open glyphset index file: %s", FSPathGetFullPathString(Path));
     }
     
-    CCCollectionDestroy(GlyphSets);
     FSPathDestroy(Path);
 }
 
