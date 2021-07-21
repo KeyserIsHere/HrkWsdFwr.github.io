@@ -844,5 +844,5 @@ const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_
 NotFound:
     CC_LOG_ERROR("Bitmap does not exist: no bitmap at index (%u) in bitmaps (%p:%zu, %p:%zu)", Index, Bitmaps[0], CCArrayGetCount(Bitmaps[0]), Bitmaps[1], CCArrayGetCount(Bitmaps[1]));
     
-    return HK_HUB_MODULE_GRAPHICS_ADAPTER_NULL_GLYPH_INDEX;
+    return NULL;
 }
