@@ -482,7 +482,39 @@ static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapter
     return Cell;
 }
 
-void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer, CCChar Character);
+void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer, CCChar Character)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
+    
+    uint8_t Width = UINT8_MAX, Height, PaletteSize;
+    HKHubModuleGraphicsAdapterGetGlyphBitmap(Adapter, Character, 0, 0xff, &Width, &Height, &PaletteSize);
+    
+    if (Width != UINT8_MAX)
+    {
+        //TODO: render partial
+        for (size_t Y = 0; Y <= Height; Y++)
+        {
+            for (size_t X = 0; X <= Width; X++)
+            {
+                HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap(Y, X, State->attributes[Layer].palette.page, State->attributes[Layer].style.bold, State->attributes[Layer].style.italic, State->attributes[Layer].animation.offset, State->attributes[Layer].animation.filter, Character);
+                
+                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][0] = (Cell >> 32) & 0xff;
+                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][1] = (Cell >> 24) & 0xff;
+                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][2] = (Cell >> 16) & 0xff;
+                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][3] = (Cell >> 8) & 0xff;
+                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][4] = Cell & 0xff;
+            }
+        }
+        
+        State->attributes[Layer].cursor.x += Width + 1;
+        //TODO: optional wrap
+    }
+}
+
 void HKHubModuleGraphicsAdapterDrawRef(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, uint8_t RefLayer);
 
 const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t AnimationOffset, uint8_t AnimationFilter, uint8_t *Width, uint8_t *Height, uint8_t *PaletteSize)
