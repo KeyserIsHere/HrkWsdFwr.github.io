@@ -45,6 +45,26 @@ typedef struct {
 typedef struct {
     uint8_t x, y;
     uint8_t visibility;
+    struct {
+        struct {
+            int8_t originX : 1;
+            int8_t originY : 1;
+            int8_t advance : 1;
+            int8_t wrap : 1;
+        } mode;
+        struct {
+            int8_t x;
+            int8_t y;
+            int8_t width : 4;
+            int8_t height : 4;
+        } advance;
+        struct {
+            int8_t x;
+            int8_t y;
+            int8_t width : 4;
+            int8_t height : 4;
+        } wrap;
+    } render;
     HKHubModuleGraphicsAdapterViewport bounds;
     HKHubModuleGraphicsAdapterCursorControl control[HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT];
 } HKHubModuleGraphicsAdapterCursor;
@@ -341,6 +361,10 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
         for (size_t Loop = 0; Loop < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT; Loop++)
         {
             State->attributes[Loop].cursor.visibility = 0xff;
+            State->attributes[Loop].cursor.render.mode.advance = TRUE;
+            State->attributes[Loop].cursor.render.advance.width = 1;
+            State->attributes[Loop].cursor.render.mode.wrap = TRUE;
+            State->attributes[Loop].cursor.render.wrap.height = 1;
             State->attributes[Loop].cursor.bounds.width = 0xff;
             State->attributes[Loop].cursor.bounds.height = 0xff;
             State->attributes[Loop].cursor.control[0].character = '\t';
@@ -389,6 +413,74 @@ void HKHubModuleGraphicsAdapterSetCursorVisibility(HKHubModule Adapter, uint8_t 
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     State->attributes[Layer].cursor.visibility = Visibility;
+}
+
+void HKHubModuleGraphicsAdapterSetCursorOrigin(HKHubModule Adapter, uint8_t Layer, uint8_t OriginX, uint8_t OriginY)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.render.mode.originX = OriginX;
+    State->attributes[Layer].cursor.render.mode.originY = OriginY;
+}
+
+void HKHubModuleGraphicsAdapterSetCursorAdvance(HKHubModule Adapter, uint8_t Layer, _Bool Enable)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.render.mode.advance = Enable;
+}
+
+void HKHubModuleGraphicsAdapterSetCursorAdvanceSource(HKHubModule Adapter, uint8_t Layer, int8_t Width, int8_t Height)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.render.advance.width = Width;
+    State->attributes[Layer].cursor.render.advance.height = Height;
+}
+
+void HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(HKHubModule Adapter, uint8_t Layer, int8_t X, int8_t Y)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.render.advance.x = X;
+    State->attributes[Layer].cursor.render.advance.y = Y;
+}
+
+void HKHubModuleGraphicsAdapterSetCursorWrap(HKHubModule Adapter, uint8_t Layer, _Bool Enable)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.render.mode.wrap = Enable;
+}
+
+void HKHubModuleGraphicsAdapterSetCursorWrapSource(HKHubModule Adapter, uint8_t Layer, int8_t Width, int8_t Height)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.render.wrap.width = Width;
+    State->attributes[Layer].cursor.render.wrap.height = Height;
+}
+
+void HKHubModuleGraphicsAdapterSetCursorWrapOffset(HKHubModule Adapter, uint8_t Layer, int8_t X, int8_t Y)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].cursor.render.wrap.x = X;
+    State->attributes[Layer].cursor.render.wrap.y = Y;
 }
 
 void HKHubModuleGraphicsAdapterSetCursorBounds(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height)
@@ -495,23 +587,64 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
     
     if (Width != UINT8_MAX)
     {
+        Width++;
+        Height++;
+        
         //TODO: render partial
-        for (size_t Y = 0; Y <= Height; Y++)
+        for (ptrdiff_t Y = 0, OriginY = (State->attributes[Layer].cursor.render.mode.originY ? -1 : 1), CellBaseY = (State->attributes[Layer].cursor.render.mode.originY ? (Height - 1) : 0); Y < Height; Y++)
         {
-            for (size_t X = 0; X <= Width; X++)
+            for (ptrdiff_t X = 0, OriginX = (State->attributes[Layer].cursor.render.mode.originX ? -1 : 1); X < Width; X++)
             {
-                HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap(Y, X, State->attributes[Layer].palette.page, State->attributes[Layer].style.bold, State->attributes[Layer].style.italic, State->attributes[Layer].animation.offset, State->attributes[Layer].animation.filter, Character);
+                const HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap((CellBaseY - Y) * OriginY * -1, X, State->attributes[Layer].palette.page, State->attributes[Layer].style.bold, State->attributes[Layer].style.italic, State->attributes[Layer].animation.offset, State->attributes[Layer].animation.filter, Character);
                 
-                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][0] = (Cell >> 32) & 0xff;
-                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][1] = (Cell >> 24) & 0xff;
-                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][2] = (Cell >> 16) & 0xff;
-                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][3] = (Cell >> 8) & 0xff;
-                Memory->layers[Layer][State->attributes[Layer].cursor.y + Y][State->attributes[Layer].cursor.x + X][4] = Cell & 0xff;
+                const uint8_t LayerX = State->attributes[Layer].cursor.x + (X * OriginX), LayerY = State->attributes[Layer].cursor.y + (Y * OriginY);
+                Memory->layers[Layer][LayerY][LayerX][0] = (Cell >> 32) & 0xff;
+                Memory->layers[Layer][LayerY][LayerX][1] = (Cell >> 24) & 0xff;
+                Memory->layers[Layer][LayerY][LayerX][2] = (Cell >> 16) & 0xff;
+                Memory->layers[Layer][LayerY][LayerX][3] = (Cell >> 8) & 0xff;
+                Memory->layers[Layer][LayerY][LayerX][4] = Cell & 0xff;
             }
         }
         
-        State->attributes[Layer].cursor.x += Width + 1;
-        //TODO: optional wrap
+        int X = State->attributes[Layer].cursor.x, Y = State->attributes[Layer].cursor.y;
+        if (State->attributes[Layer].cursor.render.mode.advance)
+        {
+            X += ((int)Width * State->attributes[Layer].cursor.render.advance.width) + State->attributes[Layer].cursor.render.advance.x;
+            Y += ((int)Height * State->attributes[Layer].cursor.render.advance.height) + State->attributes[Layer].cursor.render.advance.y;
+        }
+        
+        if (State->attributes[Layer].cursor.render.mode.wrap)
+        {
+            for (int Loop = 0; Loop < 2; Loop++)
+            {
+                if (X >= ((int)State->attributes[Layer].cursor.bounds.x + State->attributes[Layer].cursor.bounds.width + 1))
+                {
+                    X = (int)State->attributes[Layer].cursor.bounds.x + State->attributes[Layer].cursor.render.wrap.x;
+                    Y += ((int)Height * State->attributes[Layer].cursor.render.wrap.height) + State->attributes[Layer].cursor.render.wrap.y;
+                }
+                
+                else if (X < State->attributes[Layer].cursor.bounds.x)
+                {
+                    X = ((int)State->attributes[Layer].cursor.bounds.x + State->attributes[Layer].cursor.bounds.width) + State->attributes[Layer].cursor.render.wrap.x;
+                    Y += ((int)Height * State->attributes[Layer].cursor.render.wrap.height) + State->attributes[Layer].cursor.render.wrap.y;
+                }
+                
+                if (Y >= ((int)State->attributes[Layer].cursor.bounds.y + State->attributes[Layer].cursor.bounds.height + 1))
+                {
+                    X += ((int)Width * State->attributes[Layer].cursor.render.wrap.width) + State->attributes[Layer].cursor.render.wrap.x;
+                    Y = (int)State->attributes[Layer].cursor.bounds.y + State->attributes[Layer].cursor.render.wrap.y;
+                }
+                
+                else if (Y < State->attributes[Layer].cursor.bounds.y)
+                {
+                    X += ((int)Width * State->attributes[Layer].cursor.render.wrap.width) + State->attributes[Layer].cursor.render.wrap.x;
+                    Y = ((int)State->attributes[Layer].cursor.bounds.y + State->attributes[Layer].cursor.bounds.height) + State->attributes[Layer].cursor.render.wrap.y;
+                }
+            }
+        }
+        
+        State->attributes[Layer].cursor.x = X;
+        State->attributes[Layer].cursor.y = Y;
     }
 }
 
