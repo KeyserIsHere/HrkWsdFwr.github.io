@@ -128,7 +128,7 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
     HKHubModuleGraphicsAdapterCellPositionYIndex = 8,
     HKHubModuleGraphicsAdapterCellPositionYMask = (0xff << HKHubModuleGraphicsAdapterCellPositionYIndex),
     
-    HKHubModuleGraphicsAdapterCellAttributeMask = ~(HKHubModuleGraphicsAdapterCellGlyphIndexMask | HKHubModuleGraphicsAdapterCellPositionSMask | HKHubModuleGraphicsAdapterCellPositionTMask),
+    HKHubModuleGraphicsAdapterCellAttributeMask = ~(HKHubModuleGraphicsAdapterCellGlyphIndexMask | HKHubModuleGraphicsAdapterCellPositionSMask | HKHubModuleGraphicsAdapterCellPositionTMask) & 0xffffffffffULL,
     HKHubModuleGraphicsAdapterCellReferenceAttributeMask = HKHubModuleGraphicsAdapterCellAttributeMask | HKHubModuleGraphicsAdapterCellPaletteOffsetMask,
     
     CC_RESERVED_BITS(HKHubModuleGraphicsAdapterCell, 0, 40)
