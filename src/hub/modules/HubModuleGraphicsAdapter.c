@@ -590,14 +590,20 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
         Width++;
         Height++;
         
-        //TODO: render partial
-        for (ptrdiff_t Y = 0, OriginY = (State->attributes[Layer].cursor.render.mode.originY ? -1 : 1), CellBaseY = (State->attributes[Layer].cursor.render.mode.originY ? (Height - 1) : 0); Y < Height; Y++)
+        HKHubModuleGraphicsAdapterCursor *Cursor = &State->attributes[Layer].cursor;
+        
+        const int RelX = CCMax((int)Cursor->bounds.x - Cursor->x, 0);
+        const int RelY = CCMax((int)Cursor->bounds.y - Cursor->y, 0);
+        const int RelW = CCMin(CCMax((int)Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + Width)), Width);
+        const int RelH = CCMin(CCMax((int)Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + Height)), Height);
+        
+        for (int Y = RelY, OriginY = (Cursor->render.mode.originY ? -1 : 1), CellBaseY = (Cursor->render.mode.originY ? (Height - 1) : 0); Y < RelH; Y++)
         {
-            for (ptrdiff_t X = 0, OriginX = (State->attributes[Layer].cursor.render.mode.originX ? -1 : 1); X < Width; X++)
+            for (int X = RelX, OriginX = (Cursor->render.mode.originX ? -1 : 1), CellBaseX = (Cursor->render.mode.originX ? (Width - 1) : 0); X < RelW; X++)
             {
-                const HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap((CellBaseY - Y) * OriginY * -1, X, State->attributes[Layer].palette.page, State->attributes[Layer].style.bold, State->attributes[Layer].style.italic, State->attributes[Layer].animation.offset, State->attributes[Layer].animation.filter, Character);
+                const HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap((CellBaseY - Y) * OriginY * -1, (CellBaseX - X) * OriginX * -1, State->attributes[Layer].palette.page, State->attributes[Layer].style.bold, State->attributes[Layer].style.italic, State->attributes[Layer].animation.offset, State->attributes[Layer].animation.filter, Character);
                 
-                const uint8_t LayerX = State->attributes[Layer].cursor.x + (X * OriginX), LayerY = State->attributes[Layer].cursor.y + (Y * OriginY);
+                const uint8_t LayerX = Cursor->x + (X * OriginX), LayerY = Cursor->y + (Y * OriginY);
                 Memory->layers[Layer][LayerY][LayerX][0] = (Cell >> 32) & 0xff;
                 Memory->layers[Layer][LayerY][LayerX][1] = (Cell >> 24) & 0xff;
                 Memory->layers[Layer][LayerY][LayerX][2] = (Cell >> 16) & 0xff;
@@ -606,45 +612,45 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
             }
         }
         
-        int X = State->attributes[Layer].cursor.x, Y = State->attributes[Layer].cursor.y;
-        if (State->attributes[Layer].cursor.render.mode.advance)
+        int X = Cursor->x, Y = Cursor->y;
+        if (Cursor->render.mode.advance)
         {
-            X += ((int)Width * State->attributes[Layer].cursor.render.advance.width) + State->attributes[Layer].cursor.render.advance.x;
-            Y += ((int)Height * State->attributes[Layer].cursor.render.advance.height) + State->attributes[Layer].cursor.render.advance.y;
+            X += ((int)Width * Cursor->render.advance.width) + Cursor->render.advance.x;
+            Y += ((int)Height * Cursor->render.advance.height) + Cursor->render.advance.y;
         }
         
-        if (State->attributes[Layer].cursor.render.mode.wrap)
+        if (Cursor->render.mode.wrap)
         {
             for (int Loop = 0; Loop < 2; Loop++)
             {
-                if (X >= ((int)State->attributes[Layer].cursor.bounds.x + State->attributes[Layer].cursor.bounds.width + 1))
+                if (X >= ((int)Cursor->bounds.x + Cursor->bounds.width + 1))
                 {
-                    X = (int)State->attributes[Layer].cursor.bounds.x + State->attributes[Layer].cursor.render.wrap.x;
-                    Y += ((int)Height * State->attributes[Layer].cursor.render.wrap.height) + State->attributes[Layer].cursor.render.wrap.y;
+                    X = (int)Cursor->bounds.x + Cursor->render.wrap.x;
+                    Y += ((int)Height * Cursor->render.wrap.height) + Cursor->render.wrap.y;
                 }
                 
-                else if (X < State->attributes[Layer].cursor.bounds.x)
+                else if (X < Cursor->bounds.x)
                 {
-                    X = ((int)State->attributes[Layer].cursor.bounds.x + State->attributes[Layer].cursor.bounds.width) + State->attributes[Layer].cursor.render.wrap.x;
-                    Y += ((int)Height * State->attributes[Layer].cursor.render.wrap.height) + State->attributes[Layer].cursor.render.wrap.y;
+                    X = ((int)Cursor->bounds.x + Cursor->bounds.width) + Cursor->render.wrap.x;
+                    Y += ((int)Height * Cursor->render.wrap.height) + Cursor->render.wrap.y;
                 }
                 
-                if (Y >= ((int)State->attributes[Layer].cursor.bounds.y + State->attributes[Layer].cursor.bounds.height + 1))
+                if (Y >= ((int)Cursor->bounds.y + Cursor->bounds.height + 1))
                 {
-                    X += ((int)Width * State->attributes[Layer].cursor.render.wrap.width) + State->attributes[Layer].cursor.render.wrap.x;
-                    Y = (int)State->attributes[Layer].cursor.bounds.y + State->attributes[Layer].cursor.render.wrap.y;
+                    X += ((int)Width * Cursor->render.wrap.width) + Cursor->render.wrap.x;
+                    Y = (int)Cursor->bounds.y + Cursor->render.wrap.y;
                 }
                 
-                else if (Y < State->attributes[Layer].cursor.bounds.y)
+                else if (Y < Cursor->bounds.y)
                 {
-                    X += ((int)Width * State->attributes[Layer].cursor.render.wrap.width) + State->attributes[Layer].cursor.render.wrap.x;
-                    Y = ((int)State->attributes[Layer].cursor.bounds.y + State->attributes[Layer].cursor.bounds.height) + State->attributes[Layer].cursor.render.wrap.y;
+                    X += ((int)Width * Cursor->render.wrap.width) + Cursor->render.wrap.x;
+                    Y = ((int)Cursor->bounds.y + Cursor->bounds.height) + Cursor->render.wrap.y;
                 }
             }
         }
         
-        State->attributes[Layer].cursor.x = X;
-        State->attributes[Layer].cursor.y = Y;
+        Cursor->x = X;
+        Cursor->y = Y;
     }
 }
 
