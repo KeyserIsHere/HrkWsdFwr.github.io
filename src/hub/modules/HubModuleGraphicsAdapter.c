@@ -990,7 +990,7 @@ const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_
     *PaletteSize = (Index >> 21) & 0x7;
     
     CCArray *Bitmaps = HKHubModuleGraphicsAdapterGlyphBitmaps[Index >> 21];
-    uint32_t BitmapIndex = Index & HKHubModuleGraphicsAdapterCellGlyphIndexMask;
+    size_t BitmapIndex = Index & HKHubModuleGraphicsAdapterCellGlyphIndexMask;
     
     if (!Bitmaps[0]) goto NotFound;
     
@@ -998,10 +998,6 @@ const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_
     {
         return CCArrayGetElementAtIndex(Bitmaps[0], BitmapIndex);
     }
-    
-    const size_t ChunkSize = CCArrayGetChunkSize(Bitmaps[0]);
-    
-    if (BitmapIndex >= ChunkSize) goto NotFound;
     
     BitmapIndex -= CCArrayGetChunkSize(Bitmaps[0]);
     
