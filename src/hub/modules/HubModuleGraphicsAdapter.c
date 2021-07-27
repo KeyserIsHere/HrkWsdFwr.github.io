@@ -745,7 +745,7 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                         ptrdiff_t Adjust = HalfSlope - (RelY / Slope);
                         if (Adjust < 0) Adjust = HalfSlope - ((RelY - (CenterPad - Slope)) / Slope);
                         
-                        for (size_t FramebufferX = (X - State->viewports[Port].x) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, MaxX = CCMin(ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferX < MaxX; FramebufferX++, SampleIndex++)
+                        for (size_t FramebufferX = (X - State->viewports[Port].x) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, MaxX = CCMin(ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, FramebufferX + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL); FramebufferX < MaxX; FramebufferX++, SampleIndex += PaletteSize)
                         {
                             const ptrdiff_t OffsetX = FramebufferX + Adjust;
                             
