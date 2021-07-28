@@ -726,7 +726,7 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                 uint8_t Width, Height, PaletteSize;
                 const uint8_t *Bitmap = HKHubModuleGraphicsAdapterGetGlyphBitmap(Adapter, Index, HKHubModuleGraphicsAdapterCellGetAnimationOffset(Glyph), HKHubModuleGraphicsAdapterCellGetAnimationFilter(Glyph), &Width, &Height, &PaletteSize);
                 
-                if (Bitmap)
+                if ((Bitmap) && (S <= Width) && (T <= Height))
                 {
                     Width++;
                     Height++;
