@@ -1852,4 +1852,65 @@
     XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
 }
 
+-(void) testIfBlocks
+{
+    const char *Source =
+        ".if 1 == 1\n"
+        ".byte 1\n"
+        ".endif\n"
+        ".if 1 != 1\n"
+        ".byte -1\n"
+        ".endif\n"
+        ".define foo, .\n"
+        ".if foo == 1\n"
+        ".byte 2\n"
+        ".endif\n"
+        ".define bar, .\n"
+        ".define baz, foo + .\n"
+        ".if bar == 1\n"
+        ".byte -3\n"
+        ".else\n"
+        ".byte 3\n"
+        ".endif\n"
+        ".if baz == 1\n"
+        ".byte -4\n"
+        ".elseif baz == 3\n"
+        ".byte 4\n"
+        ".else\n"
+        ".byte -4\n"
+        ".endif\n"
+    
+        ".if baz\n"
+        ".if bar\n"
+        ".byte 5\n"
+        ".endif\n"
+        ".byte 6\n"
+        ".if !foo\n"
+        ".byte -7\n"
+        ".endif\n"
+        ".byte 7\n"
+        ".endif\n"
+    
+        ".byte 8\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 1);
+    XCTAssertEqual(Binary->data[1], 2);
+    XCTAssertEqual(Binary->data[2], 3);
+    XCTAssertEqual(Binary->data[3], 4);
+    XCTAssertEqual(Binary->data[4], 5);
+    XCTAssertEqual(Binary->data[5], 6);
+    XCTAssertEqual(Binary->data[6], 7);
+    XCTAssertEqual(Binary->data[7], 8);
+    
+    HKHubArchBinaryDestroy(Binary);
+}
+
 @end
