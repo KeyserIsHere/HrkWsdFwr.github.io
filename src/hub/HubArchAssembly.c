@@ -619,8 +619,8 @@ static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBi
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
-    const size_t Count = CCCollectionGetCount(Command->childNodes);
-    if ((Command->childNodes) && (Count >= 1) && (Count <= 2))
+    size_t Count;
+    if ((Command->childNodes) && ((Count = CCCollectionGetCount(Command->childNodes)) >= 1) && (Count <= 2))
     {
         HKHubArchAssemblyASTNode *ExpressionOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
         
@@ -672,8 +672,8 @@ static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBina
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
-    const size_t Count = CCCollectionGetCount(Command->childNodes);
-    if ((Command->childNodes) && (Count >= 2) && (Count <= 3))
+    size_t Count;
+    if ((Command->childNodes) && ((Count = CCCollectionGetCount(Command->childNodes)) >= 2) && (Count <= 3))
     {
         HKHubArchAssemblyASTNode *NameOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
         
