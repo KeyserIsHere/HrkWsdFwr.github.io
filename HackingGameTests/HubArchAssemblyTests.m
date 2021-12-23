@@ -1913,4 +1913,60 @@
     HKHubArchBinaryDestroy(Binary);
 }
 
+-(void) testMacros
+{
+    const char *Source =
+        ".macro foo\n"
+        ".macro bar\n"
+        ".byte 2\n"
+        ".endm\n"
+        ".byte 1\n"
+        "bar\n"
+        ".endm\n"
+    
+        ".macro foo, x, y, z\n"
+        ".byte x, y, z\n"
+        ".endm\n"
+    
+        "foo\n"
+        "foo 3, 4, 5\n"
+    
+        ".macro seq, n\n"
+        ".if n != 0\n"
+        "seq n - 1\n"
+        ".endif\n"
+        ".byte n\n"
+        ".endm\n"
+    
+        "seq 10\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 1);
+    XCTAssertEqual(Binary->data[1], 2);
+    XCTAssertEqual(Binary->data[2], 3);
+    XCTAssertEqual(Binary->data[3], 4);
+    XCTAssertEqual(Binary->data[4], 5);
+    
+    XCTAssertEqual(Binary->data[5], 0);
+    XCTAssertEqual(Binary->data[6], 1);
+    XCTAssertEqual(Binary->data[7], 2);
+    XCTAssertEqual(Binary->data[8], 3);
+    XCTAssertEqual(Binary->data[9], 4);
+    XCTAssertEqual(Binary->data[10], 5);
+    XCTAssertEqual(Binary->data[11], 6);
+    XCTAssertEqual(Binary->data[12], 7);
+    XCTAssertEqual(Binary->data[13], 8);
+    XCTAssertEqual(Binary->data[14], 9);
+    XCTAssertEqual(Binary->data[15], 10);
+    
+    HKHubArchBinaryDestroy(Binary);
+}
+
 @end
