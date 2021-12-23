@@ -26,6 +26,8 @@
 #include "HubArchAssembly.h"
 #include "HubArchInstruction.h"
 
+#define HK_HUB_ARCH_ASSEMBLY_COMPILE_DEPTH_MAX 512
+
 typedef enum {
     HKHubArchAssemblyIfBlockTaken,
     HKHubArchAssemblyIfBlockNotTaken,
@@ -56,7 +58,7 @@ typedef struct {
 
 CC_DICTIONARY_DECLARE(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro);
 
-static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, int Pass, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros);
+static size_t HKHubArchAssemblySafeCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, int Pass, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, HKHubArchAssemblyASTNode *Command);
 
 static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssemblyASTNode *Node)
 {
@@ -509,6 +511,7 @@ static const CCString HKHubArchAssemblyErrorMessageMin2Max3Operands = CC_STRING(
 static const CCString HKHubArchAssemblyErrorMessageMin1Max1Operands = CC_STRING("expects 1 operand");
 static const CCString HKHubArchAssemblyErrorMessageMin2Max2Operands = CC_STRING("expects 2 operands");
 static const CCString HKHubArchAssemblyErrorMessageSizeLimit = CC_STRING("exceeded size limit");
+static const CCString HKHubArchAssemblyErrorMessageCompileDepthLimit = CC_STRING("exceeded compile depth limit");
 static const CCString HKHubArchAssemblyErrorMessageUnknownCommand = CC_STRING("unknown command");
 
 #pragma mark - Directives
@@ -516,7 +519,7 @@ CCOrderedCollection(FSPath) HKHubArchAssemblyIncludeSearchPaths = NULL;
 static const CCString HKHubArchAssemblyErrorMessageFile = CC_STRING("could not find file");
 static const CCString HKHubArchAssemblyErrorMessageSearchPaths = CC_STRING("no include search paths specified");
 
-static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -560,7 +563,7 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
                                 CCOrderedCollection(HKHubArchAssemblyASTNode) AST = HKHubArchAssemblyParse(Source);
                                 CC_SAFE_Free(Source);
                                 
-                                Offset = HKHubArchAssemblyCompile(Offset, Binary, AST, Errors, Labels, Defines, !Binary, IfBlocks, Macros);
+                                Offset = HKHubArchAssemblySafeCompile(Offset, Binary, AST, Errors, Labels, Defines, !Binary, IfBlocks, Macros, Depth, Command);
                                 
                                 if (Command->string) CCStringDestroy(Command->string);
                                 if (Command->childNodes) CCCollectionDestroy(Command->childNodes);
@@ -628,7 +631,7 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
 
 static const CCString HKHubArchAssemblyErrorAssertion = CC_STRING("assertion failed");
 
-static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -681,7 +684,7 @@ static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBi
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -801,7 +804,7 @@ static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBina
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -857,7 +860,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -889,7 +892,7 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -903,7 +906,7 @@ static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubAr
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveBreakRW(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveBreakRW(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -943,7 +946,7 @@ static size_t HKHubArchAssemblyCompileDirectiveBreakRW(size_t Offset, HKHubArchB
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -978,7 +981,7 @@ static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary
 
 static const CCString HKHubArchAssemblyErrorMessageNoIfBlock = CC_STRING("used outside of if block");
 
-static size_t HKHubArchAssemblyCompileDirectiveElseIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveElseIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     const size_t Count = CCArrayGetCount(IfBlocks);
     if (Count)
@@ -1025,7 +1028,7 @@ static size_t HKHubArchAssemblyCompileDirectiveElseIf(size_t Offset, HKHubArchBi
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveElse(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveElse(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     const size_t Count = CCArrayGetCount(IfBlocks);
     if (Count)
@@ -1053,7 +1056,7 @@ static size_t HKHubArchAssemblyCompileDirectiveElse(size_t Offset, HKHubArchBina
     return Offset;
 }
 
-static size_t HKHubArchAssemblyCompileDirectiveEndIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveEndIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     
     const size_t Count = CCArrayGetCount(IfBlocks);
@@ -1077,7 +1080,7 @@ static size_t HKHubArchAssemblyCompileDirectiveEndIf(size_t Offset, HKHubArchBin
 
 static const CCString HKHubArchAssemblyErrorMessageMacroNotTerminated = CC_STRING("missing .endm");
 
-static size_t HKHubArchAssemblyCompileDirectiveMacro(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveMacro(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -1181,7 +1184,7 @@ static size_t HKHubArchAssemblyCompileDirectiveMacro(size_t Offset, HKHubArchBin
 
 static const CCString HKHubArchAssemblyErrorMessageMissingMacro = CC_STRING("expected .macro definition");
 
-static size_t HKHubArchAssemblyCompileDirectiveEndMacro(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, CCEnumerator *Enumerator)
+static size_t HKHubArchAssemblyCompileDirectiveEndMacro(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(IfBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
     
@@ -1194,7 +1197,7 @@ static size_t HKHubArchAssemblyCompileDirectiveEndMacro(size_t Offset, HKHubArch
 
 static const struct {
     CCString mnemonic;
-    size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection(HKHubArchAssemblyASTError), CCDictionary(CCString, uint8_t), CCDictionary(CCString, uint8_t), CCArray(HKHubArchAssemblyIfBlock), CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro), CCEnumerator *);
+    size_t (*compile)(size_t, HKHubArchBinary, HKHubArchAssemblyASTNode *, CCOrderedCollection(HKHubArchAssemblyASTError), CCDictionary(CCString, uint8_t), CCDictionary(CCString, uint8_t), CCArray(HKHubArchAssemblyIfBlock), CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro), size_t, CCEnumerator *);
 } Directives[] = {
     { CC_STRING(".define"), HKHubArchAssemblyCompileDirectiveDefine },
     { CC_STRING(".byte"), HKHubArchAssemblyCompileDirectiveByte },
@@ -1438,8 +1441,14 @@ static CCComparisonResult HKHubArchAssemblyMacroNameComparator(HKHubArchAssembly
     return (Left->count == Right->count) && CCStringEqual(Left->name, Right->name) ? CCComparisonResultEqual : CCComparisonResultInvalid;
 }
 
-static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, int Pass, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros)
+static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, int Pass, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth)
 {
+    if (Depth++ > HK_HUB_ARCH_ASSEMBLY_COMPILE_DEPTH_MAX)
+    {
+        HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageCompileDepthLimit, NULL, NULL, NULL);
+        return Offset;
+    }
+    
     CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
     {
         switch (Command->type)
@@ -1494,7 +1503,7 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                             Index++;
                         }
                         
-                        Offset = HKHubArchAssemblyCompile(Offset, Binary, Macro->ast, Errors, CopiedLabels, CopiedDefines, Pass, IfBlocks, CopiedMacros);
+                        Offset = HKHubArchAssemblySafeCompile(Offset, Binary, Macro->ast, Errors, CopiedLabels, CopiedDefines, Pass, IfBlocks, CopiedMacros, Depth, Command);
                         
                         CCDictionaryDestroy(CopiedLabels);
                         CCDictionaryDestroy(CopiedDefines);
@@ -1510,14 +1519,14 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                 {
                     if (CCStringEqual(Directives[Loop].mnemonic, Command->string))
                     {
-                        Offset = Directives[Loop].compile(Offset, (Pass ? NULL : Binary), Command, (Pass ? NULL : Errors), Labels, Defines, IfBlocks, Macros, &CC_COLLECTION_CURRENT_ENUMERATOR);
+                        Offset = Directives[Loop].compile(Offset, (Pass ? NULL : Binary), Command, (Pass ? NULL : Errors), Labels, Defines, IfBlocks, Macros, Depth, &CC_COLLECTION_CURRENT_ENUMERATOR);
                         break;
                     }
                 }
                 break;
                 
             case HKHubArchAssemblyASTTypeAST:
-                Offset = HKHubArchAssemblyCompile(Offset, Binary, Command->childNodes, Errors, Labels, Defines, Pass, IfBlocks, Macros);
+                Offset = HKHubArchAssemblySafeCompile(Offset, Binary, Command->childNodes, Errors, Labels, Defines, Pass, IfBlocks, Macros, Depth, Command);
                 break;
                 
             default:
@@ -1532,6 +1541,14 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
             break;
         }
     }
+    
+    return Offset;
+}
+
+static size_t HKHubArchAssemblySafeCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, int Pass, CCArray(HKHubArchAssemblyIfBlock) IfBlocks, CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) Macros, size_t Depth, HKHubArchAssemblyASTNode *Command)
+{
+    if (++Depth < HK_HUB_ARCH_ASSEMBLY_COMPILE_DEPTH_MAX) Offset = HKHubArchAssemblyCompile(Offset, Binary, AST, Errors, Labels, Defines, Pass, IfBlocks, Macros, Depth);
+    else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageCompileDepthLimit, Command, NULL, NULL);
     
     return Offset;
 }
@@ -1568,7 +1585,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
             .valueDestructor = (CCDictionaryElementDestructor)HKHubArchAssemblyMacroDestructor
         });
         
-        HKHubArchAssemblyCompile(0, Binary, AST, Err, Labels, Defines, Pass, IfBlocks, Macros);
+        HKHubArchAssemblyCompile(0, Binary, AST, Err, Labels, Defines, Pass, IfBlocks, Macros, 0);
         
         CCDictionaryDestroy(Defines);
         CCDictionaryDestroy(Macros);
