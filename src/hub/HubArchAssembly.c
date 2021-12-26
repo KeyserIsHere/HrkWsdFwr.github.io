@@ -76,6 +76,7 @@ typedef struct {
         CCDictionary(CCString, HKHubArchAssemblySymbolExpansionRules) symbols;
         HKHubArchAssemblySymbolExpansionRules defaults;
     } expand;
+    _Bool *stop;
 } HKHubArchAssemblyCompilationContext;
 
 static size_t HKHubArchAssemblyRecursiveCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, HKHubArchAssemblyCompilationContext *Context, int Pass, size_t Depth, HKHubArchAssemblyASTNode *Command);
@@ -1597,6 +1598,8 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
 {
     CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
     {
+        if (*Context->stop) return Offset;
+        
         switch (Command->type)
         {
             case HKHubArchAssemblyASTTypeLabel:
@@ -1700,6 +1703,7 @@ static size_t HKHubArchAssemblyRecursiveCompile(size_t Offset, HKHubArchBinary B
     else
     {
         HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageCompileDepthLimit, Command, NULL, NULL);
+        *Context->stop = TRUE;
     }
     
     return Offset;
@@ -1722,10 +1726,11 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
             .compareKeys = CCStringComparatorForDictionary
         }),
         .errors = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor),
-        .ifBlocks = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyIfBlock), 16)
+        .ifBlocks = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyIfBlock), 16),
+        .stop = &(_Bool){ FALSE }
     };
     
-    for (int Pass = 1; Pass >= 0; Pass--)
+    for (int Pass = 1; (Pass >= 0) && (!*Global.stop); Pass--)
     {
         Global.defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
             .getHash = CCStringHasherForDictionary,
