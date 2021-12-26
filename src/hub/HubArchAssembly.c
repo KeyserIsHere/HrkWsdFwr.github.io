@@ -59,11 +59,23 @@ typedef struct {
 CC_DICTIONARY_DECLARE(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro);
 
 typedef struct {
+    _Bool macro;
+    _Bool define;
+    _Bool label;
+} HKHubArchAssemblySymbolExpansionRules;
+
+CC_DICTIONARY_DECLARE(CCString, HKHubArchAssemblySymbolExpansionRules);
+
+typedef struct {
     CCOrderedCollection(HKHubArchAssemblyASTError) errors;
     CCDictionary(CCString, uint8_t) labels;
     CCDictionary(CCString, uint8_t) defines;
     CCArray(HKHubArchAssemblyIfBlock) ifBlocks;
     CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) macros;
+    struct {
+        CCDictionary(CCString, HKHubArchAssemblySymbolExpansionRules) symbols;
+        HKHubArchAssemblySymbolExpansionRules defaults;
+    } expand;
 } HKHubArchAssemblyCompilationContext;
 
 static size_t HKHubArchAssemblyRecursiveCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, HKHubArchAssemblyCompilationContext *Context, int Pass, size_t Depth, HKHubArchAssemblyASTNode *Command);
@@ -1201,6 +1213,133 @@ static size_t HKHubArchAssemblyCompileDirectiveEndMacro(size_t Offset, HKHubArch
     return Offset;
 }
 
+static size_t HKHubArchAssemblyCompileSetIndividualExpansionRule(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator, size_t RuleOffset, _Bool Value)
+{
+    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
+    
+    if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes)))
+    {
+        CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
+        {
+            if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes) && (CCCollectionGetCount(Operand->childNodes) == 1))
+            {
+                HKHubArchAssemblyASTNode *Symbol = CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 0);
+                
+                if (Symbol->type == HKHubArchAssemblyASTTypeSymbol)
+                {
+                    CCDictionaryEntry Entry = CCDictionaryFindKey(Context->expand.symbols, &Symbol->string);
+                    if (CCDictionaryEntryIsInitialized(Context->expand.symbols, Entry))
+                    {
+                        *(_Bool*)(CCDictionaryGetEntry(Context->expand.symbols, Entry) + RuleOffset) = Value;
+                    }
+                    
+                    else
+                    {
+                        HKHubArchAssemblySymbolExpansionRules ExpansionRules = Context->expand.defaults;
+                        *(_Bool*)((void*)&ExpansionRules + RuleOffset) = Value;
+                        CCDictionarySetEntry(Context->expand.symbols, Entry, &ExpansionRules);
+                    }
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandSymbol, Command, Operand, Symbol);
+                    break;
+                }
+            }
+            
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandSymbol, Command, Operand, NULL);
+                break;
+            }
+        }
+    }
+    
+    else
+    {
+        *(_Bool*)((void*)&Context->expand.defaults.macro + RuleOffset) = Value;
+        CC_DICTIONARY_FOREACH_VALUE_PTR(void, Symbol, Context->expand.symbols) *(_Bool*)(Symbol + RuleOffset) = Value;
+    }
+    
+    return Offset;
+}
+
+static size_t HKHubArchAssemblyCompileSetAllExpansionRules(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator, HKHubArchAssemblySymbolExpansionRules Rules)
+{
+    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
+    
+    if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes)))
+    {
+        CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
+        {
+            if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes) && (CCCollectionGetCount(Operand->childNodes) == 1))
+            {
+                HKHubArchAssemblyASTNode *Symbol = CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 0);
+                
+                if (Symbol->type == HKHubArchAssemblyASTTypeSymbol)
+                {
+                    CCDictionaryEntry Entry = CCDictionaryFindKey(Context->expand.symbols, &Symbol->string);
+                    if (CCDictionaryEntryIsInitialized(Context->expand.symbols, Entry))
+                    {
+                        *((HKHubArchAssemblySymbolExpansionRules*)CCDictionaryGetEntry(Context->expand.symbols, Entry)) = Rules;
+                    }
+                    
+                    else
+                    {
+                        CCDictionarySetEntry(Context->expand.symbols, Entry, &Rules);
+                    }
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandSymbol, Command, Operand, Symbol);
+                    break;
+                }
+            }
+            
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandSymbol, Command, Operand, NULL);
+                break;
+            }
+        }
+    }
+    
+    else
+    {
+        Context->expand.defaults = Rules;
+        CC_DICTIONARY_FOREACH_VALUE_PTR(HKHubArchAssemblySymbolExpansionRules, Symbol, Context->expand.symbols) *Symbol = Rules;
+    }
+    
+    return Offset;
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveNoMacro(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSetIndividualExpansionRule(Offset, Binary, Command, Context, Depth, Enumerator, offsetof(HKHubArchAssemblySymbolExpansionRules, macro), FALSE);
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveNoDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSetIndividualExpansionRule(Offset, Binary, Command, Context, Depth, Enumerator, offsetof(HKHubArchAssemblySymbolExpansionRules, define), FALSE);
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveNoLabel(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSetIndividualExpansionRule(Offset, Binary, Command, Context, Depth, Enumerator, offsetof(HKHubArchAssemblySymbolExpansionRules, label), FALSE);
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveNoExpand(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSetAllExpansionRules(Offset, Binary, Command, Context, Depth, Enumerator, (HKHubArchAssemblySymbolExpansionRules){ .macro = FALSE, .define = FALSE, .label = FALSE });
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveExpand(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSetAllExpansionRules(Offset, Binary, Command, Context, Depth, Enumerator, (HKHubArchAssemblySymbolExpansionRules){ .macro = TRUE, .define = TRUE, .label = TRUE });
+}
+
 #pragma mark -
 
 static const struct {
@@ -1219,7 +1358,12 @@ static const struct {
     { CC_STRING(".else"), HKHubArchAssemblyCompileDirectiveElse },
     { CC_STRING(".endif"), HKHubArchAssemblyCompileDirectiveEndIf },
     { CC_STRING(".macro"), HKHubArchAssemblyCompileDirectiveMacro },
-    { CC_STRING(".endm"), HKHubArchAssemblyCompileDirectiveEndMacro }
+    { CC_STRING(".endm"), HKHubArchAssemblyCompileDirectiveEndMacro },
+    { CC_STRING(".nomacro"), HKHubArchAssemblyCompileDirectiveNoMacro },
+    { CC_STRING(".nodefine"), HKHubArchAssemblyCompileDirectiveNoDefine },
+    { CC_STRING(".nolabel"), HKHubArchAssemblyCompileDirectiveNoLabel },
+    { CC_STRING(".noexpand"), HKHubArchAssemblyCompileDirectiveNoExpand },
+    { CC_STRING(".expand"), HKHubArchAssemblyCompileDirectiveExpand }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray(HKHubArchAssemblyASTType) Modifiers, HKHubArchAssemblyASTType Operation)
@@ -1553,7 +1697,10 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
 static size_t HKHubArchAssemblyRecursiveCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, HKHubArchAssemblyCompilationContext *Context, int Pass, size_t Depth, HKHubArchAssemblyASTNode *Command)
 {
     if (++Depth < HK_HUB_ARCH_ASSEMBLY_COMPILE_DEPTH_MAX) Offset = HKHubArchAssemblyCompile(Offset, Binary, AST, Context, Pass, Depth);
-    else HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageCompileDepthLimit, Command, NULL, NULL);
+    else
+    {
+        HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageCompileDepthLimit, Command, NULL, NULL);
+    }
     
     return Offset;
 }
@@ -1591,10 +1738,17 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
             .valueDestructor = (CCDictionaryElementDestructor)HKHubArchAssemblyMacroDestructor
         });
         
+        Global.expand.symbols = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(HKHubArchAssemblySymbolExpansionRules), &(CCDictionaryCallbacks){
+            .getHash = CCStringHasherForDictionary,
+            .compareKeys = CCStringComparatorForDictionary
+        });
+        Global.expand.defaults = (HKHubArchAssemblySymbolExpansionRules){ .macro = TRUE, .define = TRUE, .label = TRUE };
+        
         HKHubArchAssemblyCompile(0, Binary, AST, &Global, Pass, 0);
         
         CCDictionaryDestroy(Global.defines);
         CCDictionaryDestroy(Global.macros);
+        CCDictionaryDestroy(Global.expand.symbols);
     }
     
     CCDictionaryDestroy(Global.labels);
