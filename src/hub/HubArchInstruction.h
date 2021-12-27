@@ -51,9 +51,10 @@ typedef HKHubArchInstructionOperationResult (*HKHubArchInstructionOperation)(HKH
  * @param Errors The collection of errors.
  * @param Labels The labels.
  * @param Defines The defined symbols.
+ * @param Expansion The symbol expansion behaviour.
  * @return The offset after the instruction.
  */
-size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines);
+size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, const HKHubArchAssemblySymbolExpansion *Expansion);
 
 /*!
  * @brief Decode an instruction from binary.

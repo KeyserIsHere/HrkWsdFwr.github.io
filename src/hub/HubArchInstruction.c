@@ -223,7 +223,7 @@ static CCComparisonResult HKHubArchInstructionKeyComparator(const HKHubArchInstr
 }
 
 static _Atomic(int) InitStatus = ATOMIC_VAR_INIT(0);
-size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines)
+size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAssemblyASTNode *Command, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, const HKHubArchAssemblySymbolExpansion *Expansion)
 {
     CCAssertLog(Command, "Command must not be null");
     
@@ -318,7 +318,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                 if (Op->childNodes)
                 {
                     uint8_t Result;
-                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
+                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL, Expansion))
                     {
                         if (Instructions[*InstructionIndex].operands[Index] == HKHubArchInstructionOperandRel) Result -= Offset;
                         
@@ -415,7 +415,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                     FreeBits = 8 - (BitCount % 8);
                                     
                                     uint8_t Result;
-                                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL))
+                                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, NULL, Expansion))
                                     {
                                         Bytes[Count++] |= Result >> (8 - FreeBits);
                                         Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;
@@ -459,7 +459,7 @@ size_t HKHubArchInstructionEncode(size_t Offset, uint8_t Data[256], HKHubArchAss
                                         FreeBits = 8 - (BitCount % 8);
                                         
                                         uint8_t Result;
-                                        if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, MemoryRegisters))
+                                        if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Op, Errors, Labels, Defines, MemoryRegisters, Expansion))
                                         {
                                             Bytes[Count++] |= Result >> (8 - FreeBits);
                                             Bytes[Count] = (Result & CCBitSet(8 - FreeBits)) << FreeBits;

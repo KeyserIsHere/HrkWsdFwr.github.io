@@ -8,6 +8,7 @@ CC_CONTAINER_DECLARE(CCArray, HKHubArchExecutionGraphRange); \
 CC_CONTAINER_DECLARE(CCArray, HKHubArchInstructionState); \
 CC_CONTAINER_DECLARE(CCArray, HKHubArchJITBlockRelativeEntry); \
 CC_CONTAINER_DECLARE(CCArray, uint16_t); \
+CC_CONTAINER_DECLARE(CCArray, uint32_t); \
 CC_CONTAINER_DECLARE(CCArray, uint8_t);
 
 #define CC_CONTAINER_DECLARE_PRESET_CCCollection() \
@@ -39,6 +40,7 @@ CC_CONTAINER_DECLARE(CCDictionary, CCString, CFTypeRef); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, GLShaderAttributeInfo); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, GLShaderLibrarySource); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, GLShaderUniformInfo); \
+CC_CONTAINER_DECLARE(CCDictionary, CCString, HKHubArchAssemblySymbolExpansionRules); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, HKHubModuleDisplayBufferConverter); \
 CC_CONTAINER_DECLARE(CCDictionary, CCString, uint8_t); \
 CC_CONTAINER_DECLARE(CCDictionary, HKHubArchPortID, HKHubArchPortConnection); \

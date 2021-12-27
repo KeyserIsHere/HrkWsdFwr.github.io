@@ -87,6 +87,23 @@ typedef struct {
     HKHubArchAssemblyASTNode *value;
 } HKHubArchAssemblyASTError;
 
+typedef struct {
+    _Bool macro;
+    _Bool define;
+    _Bool label;
+} HKHubArchAssemblySymbolExpansionRules;
+
+typedef struct {
+    CCDictionary(CCString, HKHubArchAssemblySymbolExpansionRules) symbols;
+    HKHubArchAssemblySymbolExpansionRules defaults;
+} HKHubArchAssemblySymbolExpansion;
+
+typedef enum {
+    HKHubArchAssemblySymbolExpansionTypeMacro = offsetof(HKHubArchAssemblySymbolExpansionRules, macro),
+    HKHubArchAssemblySymbolExpansionTypeDefine = offsetof(HKHubArchAssemblySymbolExpansionRules, define),
+    HKHubArchAssemblySymbolExpansionTypeLabel = offsetof(HKHubArchAssemblySymbolExpansionRules, label)
+} HKHubArchAssemblySymbolExpansionType;
+
 /*!
  * @brief Stores the paths that will be searched when using the include directive.
  * @description This should be an ordered collection of @b FSPath paths for all
@@ -130,14 +147,24 @@ void HKHubArchAssemblyPrintAST(CCOrderedCollection(HKHubArchAssemblyASTNode) AST
 void HKHubArchAssemblyPrintError(CCOrderedCollection(HKHubArchAssemblyASTError) Errors);
 
 /*!
+ * @brief Determine whether the symbol should be expanded for the given rule.
+ * @param Symbol The name of the symbol to see if it should be expanded.
+ * @param Expansion The pointer to the expansion rules.
+ * @param Type The symbol type.
+ * @return TRUE if the symbol should be expanded, otherwise FALSE if it should not.
+ */
+_Bool HKHubArchAssemblyExpandSymbol(CCString Symbol, const HKHubArchAssemblySymbolExpansion *Expansion, HKHubArchAssemblySymbolExpansionType Type);
+
+/*!
  * @brief Convenience function for resolving symbols to literal values.
  * @param Value The value to resolve.
  * @param Result The pointer to store the literal result.
  * @param Labels The labels.
  * @param Defines The defines.
+ * @param Expansion The symbol expansion behaviour.
  * @return TRUE if it was resolved to a literal value otherwise FALSE.
  */
-_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines);
+_Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *Result, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, const HKHubArchAssemblySymbolExpansion *Expansion);
 
 /*!
  * @brief Convenience function for resolving integers from arithmetic operations.
@@ -148,9 +175,10 @@ _Bool HKHubArchAssemblyResolveSymbol(HKHubArchAssemblyASTNode *Value, uint8_t *R
  * @param Labels The labels.
  * @param Defines The defines.
  * @param Variables The optional unknown variable names.
+ * @param Expansion The symbol expansion behaviour.
  * @return TRUE if it was resolved to a literal value otherwise FALSE.
  */
-_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCDictionary(CCString, uint8_t) Variables);
+_Bool HKHubArchAssemblyResolveInteger(size_t Offset, uint8_t *Result, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *Operand, CCOrderedCollection(HKHubArchAssemblyASTError) Errors, CCDictionary(CCString, uint8_t) Labels, CCDictionary(CCString, uint8_t) Defines, CCDictionary(CCString, uint8_t) Variables, const HKHubArchAssemblySymbolExpansion *Expansion);
 
 /*!
  * @brief Convenience function for adding error messages.
