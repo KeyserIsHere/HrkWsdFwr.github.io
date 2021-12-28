@@ -1939,6 +1939,66 @@
         ".endm\n"
     
         "seq 10\n"
+    
+        ".macro addr\n"
+        ".byte .\n"
+        "L:\n"
+        ".byte L\n"
+        ".endm\n"
+    
+        ".define baz, 1\n"
+        "L:\n"
+    
+        ".macro scope\n"
+        ".define baz, 0\n"
+        ".endm\n"
+    
+        "scope\n"
+        ".byte baz\n"
+        "addr\n"
+        ".byte L\n"
+    
+        ".macro empty\n"
+        ".endm\n"
+    
+        "empty\n"
+    
+        ".macro nop\n"
+        ".byte 1\n"
+        ".endm\n"
+    
+        ".nomacro nop_\n"
+        "nop\n"
+        ".nomacro nop\n"
+        "nop\n"
+        ".expand nop_\n"
+        "nop\n"
+        ".expand nop\n"
+        "nop\n"
+        ".nomacro\n"
+        "nop\n"
+        ".expand\n"
+        "nop\n"
+        ".define nop, 5\n"
+        "nop:\n"
+        ".nodefine nop\n"
+        "nop\n"
+        ".byte nop\n"
+        ".expand\n"
+        ".nolabel nop\n"
+        ".byte nop\n"
+    
+        ".macro nop3\n"
+        ".nomacro nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        ".endm\n"
+        ".macro nop\n"
+        "nop3\n"
+        ".endm\n"
+    
+        "nop\n"
     ;
     
     CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
@@ -1965,6 +2025,25 @@
     XCTAssertEqual(Binary->data[13], 8);
     XCTAssertEqual(Binary->data[14], 9);
     XCTAssertEqual(Binary->data[15], 10);
+    
+    XCTAssertEqual(Binary->data[16], 1);
+    XCTAssertEqual(Binary->data[17], 17);
+    XCTAssertEqual(Binary->data[18], 18);
+    XCTAssertEqual(Binary->data[19], 16);
+    
+    XCTAssertEqual(Binary->data[20], 1);
+    XCTAssertEqual(Binary->data[21], 0xf8);
+    XCTAssertEqual(Binary->data[22], 0xf8);
+    XCTAssertEqual(Binary->data[23], 1);
+    XCTAssertEqual(Binary->data[24], 0xf8);
+    XCTAssertEqual(Binary->data[25], 1);
+    XCTAssertEqual(Binary->data[26], 1);
+    XCTAssertEqual(Binary->data[27], 26);
+    XCTAssertEqual(Binary->data[28], 5);
+    
+    XCTAssertEqual(Binary->data[29], 0xf8);
+    XCTAssertEqual(Binary->data[30], 0xf8);
+    XCTAssertEqual(Binary->data[31], 0xf8);
     
     HKHubArchBinaryDestroy(Binary);
 }
