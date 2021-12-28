@@ -66,6 +66,10 @@ typedef struct {
     CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) macros;
     HKHubArchAssemblySymbolExpansion expand;
     _Bool *stop;
+    struct {
+        uint16_t count;
+        uint8_t offset;
+    } bits;
 } HKHubArchAssemblyCompilationContext;
 
 static size_t HKHubArchAssemblyRecursiveCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, HKHubArchAssemblyCompilationContext *Context, int Pass, size_t Depth, HKHubArchAssemblyASTNode *Command);
@@ -911,6 +915,66 @@ static size_t HKHubArchAssemblyCompileDirectiveByte(size_t Offset, HKHubArchBina
     return Offset;
 }
 
+static size_t HKHubArchAssemblyCompileDirectiveBits(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
+    
+    if (Command->childNodes)
+    {
+        if (!((Context->bits.count) && (Context->bits.offset == (Offset - ((Context->bits.count + 7) / 8)))))
+        {
+            Context->bits.count = 0;
+            Context->bits.offset = Offset;
+        }
+        
+        if (Binary)
+        {
+            CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
+            {
+                if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes))
+                {
+                    uint8_t Result = 0;
+                    HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Operand, Context->errors, Context->labels, Context->defines, NULL, &Context->expand);
+                    
+                    const uint8_t Index = Context->bits.count / 8;
+                    const uint8_t Bit = 7 - (Context->bits.count % 8);
+                    
+                    switch (Bit)
+                    {
+                        case 7:
+                            Binary->data[Context->bits.offset + Index] = 0;
+                            break;
+                            
+                        case 0:
+                            Offset++;
+                            break;
+                    }
+                    
+                    Binary->data[Context->bits.offset + Index] |= (_Bool)Result << Bit;
+                    
+                    Context->bits.count++;
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandInteger, Command, Operand, NULL);
+                }
+            }
+        }
+        
+        else Context->bits.count += CCCollectionGetCount(Command->childNodes);
+        
+        Offset = (size_t)Context->bits.offset + ((Context->bits.count + 7) / 8);
+    }
+    
+    else
+    {
+        HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageMin1MaxNOperands, Command, NULL, NULL);
+    }
+    
+    return Offset;
+}
+
 static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
@@ -1362,7 +1426,8 @@ static const struct {
     { CC_STRING(".nodefine"), HKHubArchAssemblyCompileDirectiveNoDefine },
     { CC_STRING(".nolabel"), HKHubArchAssemblyCompileDirectiveNoLabel },
     { CC_STRING(".noexpand"), HKHubArchAssemblyCompileDirectiveNoExpand },
-    { CC_STRING(".expand"), HKHubArchAssemblyCompileDirectiveExpand }
+    { CC_STRING(".expand"), HKHubArchAssemblyCompileDirectiveExpand },
+    { CC_STRING(".bits"), HKHubArchAssemblyCompileDirectiveBits }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray(HKHubArchAssemblyASTType) Modifiers, HKHubArchAssemblyASTType Operation)
@@ -1754,6 +1819,9 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
             .compareKeys = CCStringComparatorForDictionary
         });
         Global.expand.defaults = (HKHubArchAssemblySymbolExpansionRules){ .macro = TRUE, .define = TRUE, .label = TRUE };
+        
+        Global.bits.count = 0;
+        Global.bits.offset = 0;
         
         HKHubArchAssemblyCompile(0, Binary, AST, &Global, Pass, 0);
         
