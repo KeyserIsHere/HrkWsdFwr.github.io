@@ -2052,13 +2052,15 @@
 {
     const char *Source =
         ".bits .,.,.,.,.,.,.,., .,.,.,.,.,.,.,.\n"
+        ".bits . == 2,0,0,0,0,0,0\n"
+        ".bits . == 2, . == 3,0,0,0,0,0,0,0\n"
     
         ".byte 0\n"
     
         ".bits 1, 1, 1, 1\n"
         ".bits 1, 1, 1, 1\n"
         "L:\n"
-        ".assert L == 4\n"
+        ".assert L == 6\n"
     
         ".byte 0\n"
     
@@ -2066,7 +2068,7 @@
         ".byte 0\n"
         ".bits 1, 1, 1, 1\n"
         "L:\n"
-        ".assert L == 8\n"
+        ".assert L == 10\n"
     
         ".bits 1\n"
     ;
@@ -2080,12 +2082,14 @@
     XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
     XCTAssertEqual(Binary->data[0], 0);
     XCTAssertEqual(Binary->data[1], 0xff);
-    XCTAssertEqual(Binary->data[2], 0);
-    XCTAssertEqual(Binary->data[3], 0xff);
+    XCTAssertEqual(Binary->data[2], 0x81);
+    XCTAssertEqual(Binary->data[3], 0x80);
     XCTAssertEqual(Binary->data[4], 0);
-    XCTAssertEqual(Binary->data[5], 0xf0);
+    XCTAssertEqual(Binary->data[5], 0xff);
     XCTAssertEqual(Binary->data[6], 0);
-    XCTAssertEqual(Binary->data[7], 0xf8);
+    XCTAssertEqual(Binary->data[7], 0xf0);
+    XCTAssertEqual(Binary->data[8], 0);
+    XCTAssertEqual(Binary->data[9], 0xf8);
     
     HKHubArchBinaryDestroy(Binary);
 }

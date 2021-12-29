@@ -933,24 +933,16 @@ static size_t HKHubArchAssemblyCompileDirectiveBits(size_t Offset, HKHubArchBina
             {
                 if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes))
                 {
+                    const uint8_t Index = Context->bits.count / 8;
+                    Offset = Context->bits.offset + Index;
+                    
                     uint8_t Result = 0;
                     HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Operand, Context->errors, Context->labels, Context->defines, NULL, &Context->expand);
                     
-                    const uint8_t Index = Context->bits.count / 8;
                     const uint8_t Bit = 7 - (Context->bits.count % 8);
+                    if (Bit == 7) Binary->data[Context->bits.offset + Index] = 0;
                     
-                    switch (Bit)
-                    {
-                        case 7:
-                            Binary->data[Context->bits.offset + Index] = 0;
-                            break;
-                            
-                        case 0:
-                            Offset++;
-                            break;
-                    }
-                    
-                    Binary->data[Context->bits.offset + Index] |= (_Bool)Result << Bit;
+                    Binary->data[Offset] |= (_Bool)Result << Bit;
                     
                     Context->bits.count++;
                 }
