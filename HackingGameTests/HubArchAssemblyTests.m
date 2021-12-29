@@ -2048,4 +2048,46 @@
     HKHubArchBinaryDestroy(Binary);
 }
 
+-(void) testBits
+{
+    const char *Source =
+        ".bits .,.,.,.,.,.,.,., .,.,.,.,.,.,.,.\n"
+    
+        ".byte 0\n"
+    
+        ".bits 1, 1, 1, 1\n"
+        ".bits 1, 1, 1, 1\n"
+        "L:\n"
+        ".assert L == 4\n"
+    
+        ".byte 0\n"
+    
+        ".bits 1, 1, 1, 1\n"
+        ".byte 0\n"
+        ".bits 1, 1, 1, 1\n"
+        "L:\n"
+        ".assert L == 8\n"
+    
+        ".bits 1\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 0);
+    XCTAssertEqual(Binary->data[1], 0xff);
+    XCTAssertEqual(Binary->data[2], 0);
+    XCTAssertEqual(Binary->data[3], 0xff);
+    XCTAssertEqual(Binary->data[4], 0);
+    XCTAssertEqual(Binary->data[5], 0xf0);
+    XCTAssertEqual(Binary->data[6], 0);
+    XCTAssertEqual(Binary->data[7], 0xf8);
+    
+    HKHubArchBinaryDestroy(Binary);
+}
+
 @end
