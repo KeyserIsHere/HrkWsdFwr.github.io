@@ -1720,6 +1720,8 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                         CCDictionaryDestroy(Local.defines);
                         CCDictionaryDestroy(Local.macros);
                         CCDictionaryDestroy(Local.expand.symbols);
+                        
+                        Context->bits = Local.bits;
                     }
                     
                     else Offset = HKHubArchInstructionEncode(Offset, (Pass ? NULL : Binary->data), Command, (Pass ? NULL : Context->errors), Context->labels, Context->defines, &Context->expand);

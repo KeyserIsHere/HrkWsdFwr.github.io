@@ -2071,6 +2071,15 @@
         ".assert L == 10\n"
     
         ".bits 1\n"
+    
+        ".byte 0\n"
+    
+        ".macro foo\n"
+        ".bits 0,0,0,1\n"
+        ".endm\n"
+    
+        "foo\n"
+        "foo\n"
     ;
     
     CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
@@ -2090,6 +2099,8 @@
     XCTAssertEqual(Binary->data[7], 0xf0);
     XCTAssertEqual(Binary->data[8], 0);
     XCTAssertEqual(Binary->data[9], 0xf8);
+    XCTAssertEqual(Binary->data[10], 0);
+    XCTAssertEqual(Binary->data[11], 0x11);
     
     HKHubArchBinaryDestroy(Binary);
 }
