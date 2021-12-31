@@ -665,8 +665,6 @@ static size_t HKHubArchAssemblyCompileDirectiveAssert(size_t Offset, HKHubArchBi
         
         if ((ExpressionOp->type == HKHubArchAssemblyASTTypeOperand) && (ExpressionOp->childNodes))
         {
-            HKHubArchAssemblyASTNode *ExpressionOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
-            
             uint8_t Result;
             if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Context->errors, Context->labels, Context->defines, NULL, &Context->expand))
             {
@@ -1071,8 +1069,6 @@ static size_t HKHubArchAssemblyCompileDirectiveElseIf(size_t Offset, HKHubArchBi
                 
                 if ((ExpressionOp->type == HKHubArchAssemblyASTTypeOperand) && (ExpressionOp->childNodes))
                 {
-                    HKHubArchAssemblyASTNode *ExpressionOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
-                    
                     uint8_t Result;
                     if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Context->errors, Context->labels, Context->defines, NULL, &Context->expand))
                     {
