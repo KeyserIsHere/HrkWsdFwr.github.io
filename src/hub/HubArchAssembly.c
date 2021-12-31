@@ -965,6 +965,94 @@ static size_t HKHubArchAssemblyCompileDirectiveBits(size_t Offset, HKHubArchBina
     return Offset;
 }
 
+static size_t HKHubArchAssemblyCompileDirectivePadBits(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
+    
+    const size_t Count = Command->childNodes ? CCCollectionGetCount(Command->childNodes) : 0;
+    
+    uint8_t Value = 0;
+    uint8_t Size = 0;
+    _Bool LastByte = TRUE;
+    
+    switch (Count)
+    {
+        case 2:
+        {
+            LastByte = FALSE;
+            
+            HKHubArchAssemblyASTNode *SizeOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 1);
+            
+            if ((SizeOp->type == HKHubArchAssemblyASTTypeOperand) && (SizeOp->childNodes))
+            {
+                if (!HKHubArchAssemblyResolveInteger(Offset, &Size, Command, SizeOp, Context->errors, Context->labels, Context->defines, NULL, &Context->expand)) return Offset;
+            }
+            
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandInteger, Command, SizeOp, NULL);
+            }
+        }
+        case 1:
+        {
+            HKHubArchAssemblyASTNode *ValueOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+            
+            if ((ValueOp->type == HKHubArchAssemblyASTTypeOperand) && (ValueOp->childNodes))
+            {
+                if (!HKHubArchAssemblyResolveInteger(Offset, &Value, Command, ValueOp, Context->errors, Context->labels, Context->defines, NULL, &Context->expand)) return Offset;
+            }
+            
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandInteger, Command, ValueOp, NULL);
+            }
+        }
+        case 0:
+            break;
+            
+        default:
+            HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageMin0Max2Operands, Command, NULL, NULL);
+            return Offset;
+    }
+    
+    if ((Context->bits.count) && (Context->bits.offset == (Offset - ((Context->bits.count + 7) / 8))))
+    {
+        const uint8_t Index = Context->bits.count / 8;
+        Size = Index < Size ? (Size - Index) : 0;
+        
+        if ((Size) || (LastByte))
+        {
+            Offset = Context->bits.offset + Index;
+            
+            const uint8_t Bit = 8 - (Context->bits.count % 8);
+            
+            if (Binary)
+            {
+                if (Bit < 8)
+                {
+                    Binary->data[Offset++] |= Value & CCBitSet(Bit);
+                    
+                    if (Size) Size--;
+                }
+                
+                while (Size--) Binary->data[Offset++] = Value;
+            }
+            
+            else
+            {
+                if (Bit < 7) Offset++;
+                
+                Offset += Size;
+            }
+        }
+        
+        Context->bits.count = 0;
+        Context->bits.offset = 0;
+    }
+    
+    return Offset;
+}
+
 static size_t HKHubArchAssemblyCompileDirectiveEntrypoint(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
@@ -1415,7 +1503,8 @@ static const struct {
     { CC_STRING(".nolabel"), HKHubArchAssemblyCompileDirectiveNoLabel },
     { CC_STRING(".noexpand"), HKHubArchAssemblyCompileDirectiveNoExpand },
     { CC_STRING(".expand"), HKHubArchAssemblyCompileDirectiveExpand },
-    { CC_STRING(".bits"), HKHubArchAssemblyCompileDirectiveBits }
+    { CC_STRING(".bits"), HKHubArchAssemblyCompileDirectiveBits },
+    { CC_STRING(".padbits"), HKHubArchAssemblyCompileDirectivePadBits }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray(HKHubArchAssemblyASTType) Modifiers, HKHubArchAssemblyASTType Operation)
