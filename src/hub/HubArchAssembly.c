@@ -1787,14 +1787,16 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                             });
                         }
                         
+                        CCOrderedCollection(HKHubArchAssemblyASTError) Errors = (Pass ? NULL : Context->errors);
+                        
                         size_t Index = 0;
                         CC_COLLECTION_FOREACH_PTR(CCString, ArgName, Macro->args)
                         {
                             HKHubArchAssemblyASTNode *Operand = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Index);
                             
                             uint8_t Result = 0;
-                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Operand, Context->errors, Context->labels, Context->defines, NULL, &Context->expand)) CCDictionarySetValue(Local.defines, ArgName, &Result);
-                            else HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, NULL);
+                            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, Operand, Errors, Context->labels, Context->defines, NULL, &Context->expand)) CCDictionarySetValue(Local.defines, ArgName, &Result);
+                            else HKHubArchAssemblyErrorAddMessage(Errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, Operand, NULL);
                             
                             Index++;
                         }
