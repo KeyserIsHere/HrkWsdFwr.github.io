@@ -2046,6 +2046,96 @@
     XCTAssertEqual(Binary->data[31], 0xf8);
     
     HKHubArchBinaryDestroy(Binary);
+    
+    
+    Source =
+        ".macro foo\n"
+        ".byte A\n"
+        "A:\n"
+        ".endm\n"
+    
+        ".macro bar\n"
+        ".byte B\n"
+        "foo\n"
+        "B:\n"
+        ".endm\n"
+    
+        ".macro baz\n"
+        ".byte A\n"
+        ".macro baz2\n"
+        ".byte A\n"
+        "A:\n"
+        ".endm\n"
+        "baz2\n"
+        "A:\n"
+        ".endm\n"
+    
+        ".macro foo2\n"
+        ".byte A, C\n"
+        "A:\n"
+        ".endm\n"
+    
+        ".macro seq, n\n"
+        ".if n != 0\n"
+        "seq n - 1\n"
+        ".endif\n"
+        ".byte L\n"
+        "L:\n"
+        ".endm\n"
+    
+        ".macro seq2, n\n"
+        ".byte L\n"
+        ".if n != 0\n"
+        "seq2 n - 1\n"
+        ".endif\n"
+        "L:\n"
+        ".endm\n"
+
+        "foo\n"
+        "foo\n"
+        "bar\n"
+        "bar\n"
+        "baz\n"
+        "baz\n"
+        "foo2\n"
+        "seq 3\n"
+        "seq2 3\n"
+
+        "A:\n"
+        "B:\n"
+        "C:\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 1);
+    XCTAssertEqual(Binary->data[1], 2);
+    XCTAssertEqual(Binary->data[2], 4);
+    XCTAssertEqual(Binary->data[3], 4);
+    XCTAssertEqual(Binary->data[4], 6);
+    XCTAssertEqual(Binary->data[5], 6);
+    XCTAssertEqual(Binary->data[6], 8);
+    XCTAssertEqual(Binary->data[7], 8);
+    XCTAssertEqual(Binary->data[8], 10);
+    XCTAssertEqual(Binary->data[9], 10);
+    XCTAssertEqual(Binary->data[10], 12);
+    XCTAssertEqual(Binary->data[11], 20);
+    XCTAssertEqual(Binary->data[12], 13);
+    XCTAssertEqual(Binary->data[13], 14);
+    XCTAssertEqual(Binary->data[14], 15);
+    XCTAssertEqual(Binary->data[15], 16);
+    XCTAssertEqual(Binary->data[16], 20);
+    XCTAssertEqual(Binary->data[17], 20);
+    XCTAssertEqual(Binary->data[18], 20);
+    XCTAssertEqual(Binary->data[19], 20);
+    XCTAssertEqual(Binary->data[20], 0);
+    
+    HKHubArchBinaryDestroy(Binary);
 }
 
 -(void) testBits
