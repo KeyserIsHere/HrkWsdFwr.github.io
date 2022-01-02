@@ -2193,6 +2193,78 @@
     XCTAssertEqual(Binary->data[11], 0x11);
     
     HKHubArchBinaryDestroy(Binary);
+    
+    
+    Source =
+        ".padbits\n"
+        ".padbits 1\n"
+        ".padbits 1, 10\n"
+    
+        ".bits 1\n"
+        ".padbits\n"
+    
+        ".bits 0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0,0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0,0,0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0,0,0,0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0,0,0,0,0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0,0,0,0,0,0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0,0,0,0,0,0,0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0,0,0,0,0,0,0,0\n"
+        ".padbits 0xff\n"
+    
+        ".bits 0\n"
+        ".padbits 0xff, 2\n"
+    
+        ".bits 0,0,0,0,0,0,0,1\n"
+        ".bits 0\n"
+        ".padbits 0xff, 2\n"
+    
+        ".bits 0,0,0,0,0,0,0,1\n"
+        ".bits 0,0,0,0,0,0,1,0\n"
+        ".bits 1\n"
+        ".padbits 0xff, 2\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 0x80);
+    XCTAssertEqual(Binary->data[1], 0x7f);
+    XCTAssertEqual(Binary->data[2], 0x3f);
+    XCTAssertEqual(Binary->data[3], 0x1f);
+    XCTAssertEqual(Binary->data[4], 0xf);
+    XCTAssertEqual(Binary->data[5], 0x7);
+    XCTAssertEqual(Binary->data[6], 0x3);
+    XCTAssertEqual(Binary->data[7], 0x1);
+    XCTAssertEqual(Binary->data[8], 0);
+    XCTAssertEqual(Binary->data[9], 0x7f);
+    XCTAssertEqual(Binary->data[10], 0xff);
+    XCTAssertEqual(Binary->data[11], 1);
+    XCTAssertEqual(Binary->data[12], 0x7f);
+    XCTAssertEqual(Binary->data[13], 1);
+    XCTAssertEqual(Binary->data[14], 2);
+    XCTAssertEqual(Binary->data[15], 0x80);
+    
+    HKHubArchBinaryDestroy(Binary);
 }
 
 @end
