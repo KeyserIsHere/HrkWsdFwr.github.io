@@ -62,6 +62,7 @@ CC_DICTIONARY_DECLARE(CCOrderedCollection(HKHubArchAssemblyASTNode), CCDictionar
 
 typedef struct {
     CCOrderedCollection(HKHubArchAssemblyASTError) errors;
+    CCOrderedCollection(HKHubArchAssemblyASTError) hardErrors;
     CCDictionary(CCString, uint8_t) labels;
     CCDictionary(CCString, uint8_t) defines;
     CCArray(HKHubArchAssemblyIfBlock) ifBlocks;
@@ -1111,6 +1112,8 @@ static size_t HKHubArchAssemblyCompileDirectiveBreakRW(size_t Offset, HKHubArchB
     return Offset;
 }
 
+static const CCString HKHubArchAssemblyErrorMessageAbsoluteExpression = CC_STRING("must be an absolute expression");
+
 static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
@@ -1124,9 +1127,14 @@ static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary
             HKHubArchAssemblyASTNode *ExpressionOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
             
             uint8_t Result;
-            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Context->errors, Context->labels, Context->defines, NULL, &Context->expand))
+            if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Context->hardErrors, Context->labels, Context->defines, NULL, &Context->expand))
             {
                 CCArrayAppendElement(Context->ifBlocks, &(HKHubArchAssemblyIfBlock){ Result ? HKHubArchAssemblyIfBlockTaken : HKHubArchAssemblyIfBlockNotTaken });
+            }
+            
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Context->hardErrors, HKHubArchAssemblyErrorMessageAbsoluteExpression, Command, ExpressionOp, NULL);
             }
         }
         
@@ -1162,9 +1170,14 @@ static size_t HKHubArchAssemblyCompileDirectiveElseIf(size_t Offset, HKHubArchBi
                 if ((ExpressionOp->type == HKHubArchAssemblyASTTypeOperand) && (ExpressionOp->childNodes))
                 {
                     uint8_t Result;
-                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Context->errors, Context->labels, Context->defines, NULL, &Context->expand))
+                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Context->hardErrors, Context->labels, Context->defines, NULL, &Context->expand))
                     {
                         if (Result) *CurentBlock = HKHubArchAssemblyIfBlockTaken;
+                    }
+                    
+                    else
+                    {
+                        HKHubArchAssemblyErrorAddMessage(Context->hardErrors, HKHubArchAssemblyErrorMessageAbsoluteExpression, Command, ExpressionOp, NULL);
                     }
                 }
                 
@@ -1903,6 +1916,8 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
         .ifBlocks = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyIfBlock), 16),
         .stop = &(_Bool){ FALSE }
     };
+    
+    Global.hardErrors = Global.errors;
     
     for (int Pass = 1; (Pass >= 0) && (!*Global.stop); Pass--)
     {
