@@ -58,14 +58,18 @@ typedef struct {
 
 CC_DICTIONARY_DECLARE(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro);
 
+CC_DICTIONARY_DECLARE(CCOrderedCollection(HKHubArchAssemblyASTNode), CCDictionary(CCString, uint8_t));
+
 typedef struct {
     CCOrderedCollection(HKHubArchAssemblyASTError) errors;
     CCDictionary(CCString, uint8_t) labels;
     CCDictionary(CCString, uint8_t) defines;
     CCArray(HKHubArchAssemblyIfBlock) ifBlocks;
     CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) macros;
+    CCDictionary(CCOrderedCollection(HKHubArchAssemblyASTNode), CCDictionary(CCString, uint8_t)) scopedLabels;
     HKHubArchAssemblySymbolExpansion expand;
     _Bool *stop;
+    size_t *counter;
     struct {
         uint16_t count;
         uint8_t offset;
@@ -1217,7 +1221,6 @@ static size_t HKHubArchAssemblyCompileDirectiveElse(size_t Offset, HKHubArchBina
 
 static size_t HKHubArchAssemblyCompileDirectiveEndIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
 {
-    
     const size_t Count = CCArrayGetCount(Context->ifBlocks);
     if (Count)
     {
@@ -1738,6 +1741,8 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
 {
     CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Command, AST)
     {
+        (*Context->counter)++;
+        
         if (*Context->stop) return Offset;
         
         switch (Command->type)
@@ -1754,10 +1759,18 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                     {
                         HKHubArchAssemblyCompilationContext Local = *Context;
                         
-                        Local.labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
-                            .getHash = CCStringHasherForDictionary,
-                            .compareKeys = CCStringComparatorForDictionary
-                        });
+                        CCDictionaryEntry Entry = CCDictionaryEntryForKey(Local.scopedLabels, &(size_t){ *Context->counter });
+                        if (!CCDictionaryEntryIsInitialized(Local.scopedLabels, Entry))
+                        {
+                            Local.labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+                                .getHash = CCStringHasherForDictionary,
+                                .compareKeys = CCStringComparatorForDictionary
+                            });
+                            
+                            CCDictionarySetEntry(Local.scopedLabels, Entry, &Local.labels);
+                        }
+                        
+                        else Local.labels = *(CCDictionary*)CCDictionaryGetEntry(Local.scopedLabels, Entry);
                         
                         Local.defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
                             .getHash = CCStringHasherForDictionary,
@@ -1776,7 +1789,14 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                         });
                         
                         CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Context->expand.symbols) CCDictionarySetValue(Local.expand.symbols, Key, CCDictionaryGetValue(Context->expand.symbols, Key));
-                        CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Context->labels) CCDictionarySetValue(Local.labels, Key, CCDictionaryGetValue(Context->labels, Key));
+                        CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Context->labels)
+                        {
+                            CCDictionaryEntry Entry = CCDictionaryEntryForKey(Local.labels, Key);
+                            if (!CCDictionaryEntryIsInitialized(Local.labels, Entry))
+                            {
+                                CCDictionarySetEntry(Local.labels, Entry, CCDictionaryGetValue(Context->labels, Key));
+                            }
+                        }
                         CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Context->defines) CCDictionarySetValue(Local.defines, Key, CCDictionaryGetValue(Context->defines, Key));
                         CC_DICTIONARY_FOREACH_KEY_PTR(HKHubArchAssemblyMacroName, Key, Context->macros)
                         {
@@ -1803,7 +1823,6 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                         
                         Offset = HKHubArchAssemblyRecursiveCompile(Offset, Binary, Macro->ast, &Local, Pass, Depth, Command);
                         
-                        CCDictionaryDestroy(Local.labels);
                         CCDictionaryDestroy(Local.defines);
                         CCDictionaryDestroy(Local.macros);
                         CCDictionaryDestroy(Local.expand.symbols);
@@ -1877,6 +1896,9 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
             .getHash = CCStringHasherForDictionary,
             .compareKeys = CCStringComparatorForDictionary
         }),
+        .scopedLabels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCOrderedCollection(HKHubArchAssemblyASTNode)), sizeof(CCDictionary(CCString, uint8_t)), &(CCDictionaryCallbacks){
+            .valueDestructor = CCDictionaryDestructorForDictionary
+        }),
         .errors = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor),
         .ifBlocks = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyIfBlock), 16),
         .stop = &(_Bool){ FALSE }
@@ -1903,6 +1925,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
         
         Global.bits.count = 0;
         Global.bits.offset = 0;
+        Global.counter = &(size_t){ 0 };
         
         HKHubArchAssemblyCompile(0, Binary, AST, &Global, Pass, 0);
         
@@ -1911,6 +1934,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
         CCDictionaryDestroy(Global.expand.symbols);
     }
     
+    CCDictionaryDestroy(Global.scopedLabels);
     CCDictionaryDestroy(Global.labels);
     
     if (CCCollectionGetCount(Global.errors))
