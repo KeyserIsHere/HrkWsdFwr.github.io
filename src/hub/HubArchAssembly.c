@@ -526,6 +526,7 @@ static const CCString HKHubArchAssemblyErrorMessageOperand2Symbol = CC_STRING("o
 static const CCString HKHubArchAssemblyErrorMessageOperand1SymbolOrInteger = CC_STRING("operand 1 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger = CC_STRING("operand 2 should be a symbol or integer");
 static const CCString HKHubArchAssemblyErrorMessageOperand3SymbolOrInteger = CC_STRING("operand 3 should be a symbol or integer");
+static const CCString HKHubArchAssemblyErrorMessageOperand1String = CC_STRING("operand 1 should be a string");
 static const CCString HKHubArchAssemblyErrorMessageOperandInteger = CC_STRING("operand should be an integer");
 static const CCString HKHubArchAssemblyErrorMessageOperandString = CC_STRING("operand should be a string");
 static const CCString HKHubArchAssemblyErrorMessageOperandSymbol = CC_STRING("operand should be a symbol");
@@ -751,7 +752,7 @@ static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBina
                             
                             else
                             {
-                                HKHubArchAssemblyErrorAddMessage(Context->errors,HKHubArchAssemblyErrorMessageOperand3SymbolOrInteger, Command, PortCountOp, NULL);
+                                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperand3SymbolOrInteger, Command, PortCountOp, NULL);
                             }
                         }
                         
@@ -812,7 +813,7 @@ static size_t HKHubArchAssemblyCompileDirectivePort(size_t Offset, HKHubArchBina
             
             else
             {
-                HKHubArchAssemblyErrorAddMessage(Context->errors,HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, PortOp, NULL);
+                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, PortOp, NULL);
             }
         }
         
@@ -868,7 +869,7 @@ static size_t HKHubArchAssemblyCompileDirectiveDefine(size_t Offset, HKHubArchBi
             
             else
             {
-                HKHubArchAssemblyErrorAddMessage(Context->errors,HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, AliasOp, NULL);
+                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, AliasOp, NULL);
             }
         }
         
@@ -1124,8 +1125,6 @@ static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary
         
         if ((ExpressionOp->type == HKHubArchAssemblyASTTypeOperand) && (ExpressionOp->childNodes))
         {
-            HKHubArchAssemblyASTNode *ExpressionOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
-            
             uint8_t Result;
             if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ExpressionOp, Context->hardErrors, Context->labels, Context->defines, NULL, &Context->expand))
             {
@@ -1495,6 +1494,106 @@ static size_t HKHubArchAssemblyCompileDirectiveExpand(size_t Offset, HKHubArchBi
     return HKHubArchAssemblyCompileSetAllExpansionRules(Offset, Binary, Command, Context, Depth, Enumerator, (HKHubArchAssemblySymbolExpansionRules){ .macro = TRUE, .define = TRUE, .label = TRUE });
 }
 
+static const CCString HKHubArchAssemblyErrorMessageEncoding = CC_STRING("unable to encode argument");
+
+static size_t HKHubArchAssemblyCompileDirectiveError(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
+    
+    size_t Count;
+    if ((Command->childNodes) && ((Count = CCCollectionGetCount(Command->childNodes)) >= 1))
+    {
+        HKHubArchAssemblyASTNode *String = CCOrderedCollectionGetElementAtIndex(Command->childNodes, 0);
+        
+        if (String->type == HKHubArchAssemblyASTTypeString)
+        {
+            CCString *Replacements;
+            CC_TEMP_Malloc(Replacements, sizeof(CCString) * Count,
+                           CC_LOG_ERROR("Failed to create error message due to allocation failure. Allocation size: %zu", sizeof(CCString) * Count);
+                           HKHubArchAssemblyErrorAddMessage(Context->errors, CCStringCopy(String->string), Command, NULL, NULL);
+                           return Offset;
+                           );
+            
+            CCString *Occurrences;
+            CC_TEMP_Malloc(Occurrences, sizeof(CCString) * Count,
+                           CC_LOG_ERROR("Failed to create error message due to allocation failure. Allocation size: %zu", sizeof(CCString) * Count);
+                           HKHubArchAssemblyErrorAddMessage(Context->errors, CCStringCopy(String->string), Command, NULL, NULL);
+                           CC_TEMP_Free(Replacements);
+                           return Offset;
+                           );
+            
+            Replacements[0] = CC_STRING("%");
+            Occurrences[0] = CC_STRING("%%");
+            
+            for (size_t Loop = Count - 1; Loop >= 1; Loop--)
+            {
+                Replacements[Loop] = 0;
+                Occurrences[Loop] = 0;
+                
+                char Index[22];
+                const int IndexLength = snprintf(Index, sizeof(Index), "%%%zu", Loop - 1);
+                
+                HKHubArchAssemblyASTNode *ArgOp = CCOrderedCollectionGetElementAtIndex(Command->childNodes, Loop);
+                
+                if ((ArgOp->type == HKHubArchAssemblyASTTypeOperand) && (ArgOp->childNodes))
+                {
+                    uint8_t Result;
+                    if (HKHubArchAssemblyResolveInteger(Offset, &Result, Command, ArgOp, Context->errors, Context->labels, Context->defines, NULL, &Context->expand))
+                    {
+                        char Value[4];
+                        const int ValueLength = snprintf(Value, sizeof(Value), "%u", Result);
+                        
+                        if ((IndexLength >= 0) && (ValueLength >= 0) && (IndexLength < sizeof(Index)) && (ValueLength < sizeof(Value)))
+                        {
+                            Replacements[Loop] = CCStringCreateWithSize(CC_STD_ALLOCATOR, CCStringHintCopy | CCStringEncodingASCII, Value, ValueLength);
+                            Occurrences[Loop] = CCStringCreateWithSize(CC_STD_ALLOCATOR, CCStringHintCopy | CCStringEncodingASCII, Index, IndexLength);
+                        }
+                        
+                        else
+                        {
+                            HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageEncoding, Command, ArgOp, NULL);
+                        }
+                    }
+                    
+                    else
+                    {
+                        HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandResolveInteger, Command, ArgOp, NULL);
+                    }
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperand2SymbolOrInteger, Command, ArgOp, NULL);
+                }
+            }
+            
+            CCString Message = CCStringCreateByReplacingOccurrencesOfGroupedStrings(String->string, Occurrences, Replacements, Count);
+            HKHubArchAssemblyErrorAddMessage(Context->errors, Message, Command, NULL, NULL);
+            
+            for (size_t Loop = 1; Loop < Count; Loop++)
+            {
+                if (Replacements[Loop]) CCStringDestroy(Replacements[Loop]);
+                if (Occurrences[Loop]) CCStringDestroy(Occurrences[Loop]);
+            }
+            
+            CC_TEMP_Free(Occurrences);
+            CC_TEMP_Free(Replacements);
+        }
+        
+        else
+        {
+            HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperand1String, Command, String, NULL);
+        }
+    }
+    
+    else
+    {
+        HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageMin1MaxNOperands, Command, NULL, NULL);
+    }
+    
+    return Offset;
+}
+
 #pragma mark -
 
 static const struct {
@@ -1520,7 +1619,8 @@ static const struct {
     { CC_STRING(".noexpand"), HKHubArchAssemblyCompileDirectiveNoExpand },
     { CC_STRING(".expand"), HKHubArchAssemblyCompileDirectiveExpand },
     { CC_STRING(".bits"), HKHubArchAssemblyCompileDirectiveBits },
-    { CC_STRING(".padbits"), HKHubArchAssemblyCompileDirectivePadBits }
+    { CC_STRING(".padbits"), HKHubArchAssemblyCompileDirectivePadBits },
+    { CC_STRING(".error"), HKHubArchAssemblyCompileDirectiveError }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray(HKHubArchAssemblyASTType) Modifiers, HKHubArchAssemblyASTType Operation)
