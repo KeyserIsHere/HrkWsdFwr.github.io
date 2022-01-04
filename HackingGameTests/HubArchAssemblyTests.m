@@ -2353,4 +2353,30 @@
     HKHubArchBinaryDestroy(Binary);
 }
 
+-(void) testCustomError
+{
+    const char *Source =
+        ".error \"foo\"\n"
+        ".error \"bar %0\", 2\n"
+        ".byte 0\n"
+        "L:\n"
+        ".error \"baz %1 %%0 %0\", L + 1, -1\n"
+    ;
+    
+    CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors);
+    
+    XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
+    XCTAssertNotEqual(Errors, NULL, @"Should contain errors");
+    XCTAssertEqual(CCCollectionGetCount(Errors), 3, @"Should contain 3 errors");
+    XCTAssertTrue(CCStringEqual(((HKHubArchAssemblyASTError*)CCOrderedCollectionGetElementAtIndex(Errors, 0))->message, CC_STRING("foo")), @"Should format message correctly");
+    XCTAssertTrue(CCStringEqual(((HKHubArchAssemblyASTError*)CCOrderedCollectionGetElementAtIndex(Errors, 1))->message, CC_STRING("bar 2")), @"Should format message correctly");
+    XCTAssertTrue(CCStringEqual(((HKHubArchAssemblyASTError*)CCOrderedCollectionGetElementAtIndex(Errors, 2))->message, CC_STRING("baz 255 %0 2")), @"Should format message correctly");
+    
+    CCCollectionDestroy(Errors);
+    CCCollectionDestroy(AST);
+}
+
 @end
