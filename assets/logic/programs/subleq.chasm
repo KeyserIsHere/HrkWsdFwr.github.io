@@ -1,0 +1,28 @@
+.define Z, 0
+
+.macro subleq, dst, src, loc
+    .nomacro sub, jsle
+
+    sub [dst], [src]
+    jsle loc
+.endm
+
+.macro subleq, dst, src
+    subleq dst, src, loc
+loc:
+.endm
+
+.macro jmp, loc
+    subleq Z, Z, loc
+.endm
+
+.macro add, dst, src
+    subleq Z, src
+    subleq dst, Z
+    subleq Z, Z
+.endm
+
+.macro mov, dst, src
+    subleq dst, dst
+    add dst, src
+.endm
