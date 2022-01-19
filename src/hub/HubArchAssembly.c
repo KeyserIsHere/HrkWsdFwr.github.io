@@ -548,6 +548,100 @@ CCOrderedCollection(FSPath) HKHubArchAssemblyIncludeSearchPaths = NULL;
 static const CCString HKHubArchAssemblyErrorMessageFile = CC_STRING("could not find file");
 static const CCString HKHubArchAssemblyErrorMessageSearchPaths = CC_STRING("no include search paths specified");
 
+static size_t HKHubArchAssemblyCompileInclude(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyASTNode *ProcOp, HKHubArchAssemblyASTNode *Proc, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCString IncludePath)
+{
+    if ((HKHubArchAssemblyIncludeSearchPaths) && (CCCollectionGetCount(HKHubArchAssemblyIncludeSearchPaths)))
+    {
+        CCOrderedCollection(FSPathComponent) FileComponents = NULL;
+        CC_STRING_TEMP_BUFFER(Name, IncludePath) FileComponents = FSPathConvertPathToComponents(Name, FALSE);
+        CCOrderedCollectionAppendElement(FileComponents, &(FSPathComponent){ FSPathComponentCreate(FSPathComponentTypeExtension, "chasm") });
+        
+        const FSPathComponentType PathType = FSPathComponentGetType(*(FSPathComponent*)CCOrderedCollectionGetElementAtIndex(FileComponents, 0));
+        _Bool Found = FALSE;
+        FSPath Path = NULL;
+        
+        if ((PathType != FSPathComponentTypeVolume) && (PathType != FSPathComponentTypeRoot))
+        {
+            CC_COLLECTION_FOREACH(FSPath, SearchPath, HKHubArchAssemblyIncludeSearchPaths)
+            {
+                Path = FSPathCopy(SearchPath);
+                
+                CC_COLLECTION_FOREACH(FSPathComponent, Component, FileComponents) FSPathAppendComponent(Path, FSPathComponentCopy(Component));
+                
+                if ((Found = FSManagerExists(Path))) break;
+                
+                FSPathDestroy(Path);
+                Path = NULL;
+            }
+        }
+        
+        else
+        {
+            Path = FSPathCreateFromComponents(FileComponents);
+            Found = FSManagerExists(Path);
+        }
+        
+        if (Found)
+        {
+            FSHandle Handle;
+            if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
+            {
+                size_t Size = FSManagerGetSize(Path);
+                char *Source;
+                CC_SAFE_Malloc(Source, sizeof(char) * (Size + 2));
+                
+                FSHandleRead(Handle, &Size, Source, FSBehaviourDefault);
+                Source[Size] = '\n';
+                Source[Size + 1] = 0;
+                
+                FSHandleClose(Handle);
+                
+                CCOrderedCollection(HKHubArchAssemblyASTNode) AST = HKHubArchAssemblyParse(Source);
+                CC_SAFE_Free(Source);
+                
+                Offset = HKHubArchAssemblyRecursiveCompile(Offset, Binary, AST, Context, !Binary, Depth, Command);
+                
+                if (Command->string) CCStringDestroy(Command->string);
+                if (Command->childNodes) CCCollectionDestroy(Command->childNodes);
+                
+                Command->type = HKHubArchAssemblyASTTypeAST;
+                Command->string = 0;
+                Command->childNodes = AST;
+            }
+            
+            else
+            {
+                CC_LOG_ERROR("Could not open file (%s)", FSPathGetPathString(Path));
+                
+                CCString File = CCStringCreate(CC_STD_ALLOCATOR, 0, FSPathGetPathString(Path));
+                CCString ErrMsg = CCStringCreateByJoiningStrings((CCString[]){
+                    CC_STRING("unable to open file ("),
+                    File,
+                    CC_STRING(")")
+                }, 3, 0);
+                
+                CCStringDestroy(File);
+                
+                HKHubArchAssemblyErrorAddMessage(Context->errors, ErrMsg, Command, ProcOp, Proc);
+            }
+        }
+        
+        else
+        {
+            HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageFile, Command, ProcOp, Proc);
+        }
+        
+        if (Path) FSPathDestroy(Path);
+    }
+    
+    else
+    {
+        HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageSearchPaths, Command, ProcOp, Proc);
+    }
+    
+    return Offset;
+}
+
 static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
 {
     if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
@@ -562,80 +656,7 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
 
             if (Proc->type == HKHubArchAssemblyASTTypeSymbol)
             {
-                if ((HKHubArchAssemblyIncludeSearchPaths) && (CCCollectionGetCount(HKHubArchAssemblyIncludeSearchPaths)))
-                {
-                    _Bool Found = FALSE;
-                    CC_COLLECTION_FOREACH(FSPath, SearchPath, HKHubArchAssemblyIncludeSearchPaths)
-                    {
-                        FSPath Path = FSPathCopy(SearchPath);
-                        
-                        CC_STRING_TEMP_BUFFER(Name, Proc->string) FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeFile, Name));
-                        FSPathAppendComponent(Path, FSPathComponentCreate(FSPathComponentTypeExtension, "chasm"));
-                        
-                        if (FSManagerExists(Path))
-                        {
-                            Found = TRUE;
-                            
-                            FSHandle Handle;
-                            if (FSHandleOpen(Path, FSHandleTypeRead, &Handle) == FSOperationSuccess)
-                            {
-                                size_t Size = FSManagerGetSize(Path);
-                                char *Source;
-                                CC_SAFE_Malloc(Source, sizeof(char) * (Size + 2));
-                                
-                                FSHandleRead(Handle, &Size, Source, FSBehaviourDefault);
-                                Source[Size] = '\n';
-                                Source[Size + 1] = 0;
-                                
-                                FSHandleClose(Handle);
-                                
-                                CCOrderedCollection(HKHubArchAssemblyASTNode) AST = HKHubArchAssemblyParse(Source);
-                                CC_SAFE_Free(Source);
-                                
-                                Offset = HKHubArchAssemblyRecursiveCompile(Offset, Binary, AST, Context, !Binary, Depth, Command);
-                                
-                                if (Command->string) CCStringDestroy(Command->string);
-                                if (Command->childNodes) CCCollectionDestroy(Command->childNodes);
-                                
-                                Command->type = HKHubArchAssemblyASTTypeAST;
-                                Command->string = 0;
-                                Command->childNodes = AST;
-                            }
-                            
-                            else
-                            {
-                                CC_LOG_ERROR("Could not open file (%s)", FSPathGetPathString(Path));
-                                
-                                CCString File = CCStringCreate(CC_STD_ALLOCATOR, 0, FSPathGetPathString(Path));
-                                CCString ErrMsg = CCStringCreateByJoiningStrings((CCString[]){
-                                    CC_STRING("unable to open file ("),
-                                    File,
-                                    CC_STRING(")")
-                                }, 3, 0);
-                                
-                                CCStringDestroy(File);
-                                
-                                HKHubArchAssemblyErrorAddMessage(Context->errors, ErrMsg, Command, ProcOp, Proc);
-                            }
-                            
-                            FSPathDestroy(Path);
-                            
-                            break;
-                        }
-                        
-                        FSPathDestroy(Path);
-                    }
-                    
-                    if (!Found)
-                    {
-                        HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageFile, Command, ProcOp, Proc);
-                    }
-                }
-                
-                else
-                {
-                    HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageSearchPaths, Command, ProcOp, Proc);
-                }
+                Offset = HKHubArchAssemblyCompileInclude(Offset, Binary, Command, ProcOp, Proc, Context, Depth, Proc->string);
             }
 
             else
@@ -643,7 +664,12 @@ static size_t HKHubArchAssemblyCompileDirectiveInclude(size_t Offset, HKHubArchB
                 HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, ProcOp, Proc);
             }
         }
-
+        
+        else if (ProcOp->type == HKHubArchAssemblyASTTypeString)
+        {
+            Offset = HKHubArchAssemblyCompileInclude(Offset, Binary, Command, ProcOp, NULL, Context, Depth, ProcOp->string);
+        }
+        
         else
         {
             HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperand1Symbol, Command, ProcOp, NULL);
