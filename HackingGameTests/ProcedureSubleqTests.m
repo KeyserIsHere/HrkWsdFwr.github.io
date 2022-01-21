@@ -35,7 +35,7 @@
 -(const char*) source
 {
     return
-        ".include subleq\n"
+        ".include \"private/subleq\"\n"
         ".byte 0\n"
         "counter: .byte 0\n"
         "inc: .byte 1\n"
