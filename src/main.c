@@ -84,6 +84,11 @@ static void Setup(void)
     FSPathAppendComponent(IncludeSearchPath, FSPathComponentCreate(FSPathComponentTypeDirectory, "programs"));
     
     CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &IncludeSearchPath);
+    
+    IncludeSearchPath = FSPathCopy(IncludeSearchPath);
+    FSPathSetComponentAtIndex(IncludeSearchPath, FSPathComponentCreate(FSPathComponentTypeDirectory, "procedures"), FSPathGetComponentCount(IncludeSearchPath) - 1);
+    
+    CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &IncludeSearchPath);
 }
 
 int main(int argc, const char *argv[])
