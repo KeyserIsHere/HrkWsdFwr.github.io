@@ -2085,6 +2085,38 @@
         ".endm\n"
     
         "nop\n"
+    
+        ".macro glob1\n"
+        ".define baz, 100\n"
+        "baz:\n"
+        ".save baz\n"
+        ".byte baz\n"
+        ".define baz, 101\n"
+        ".byte baz\n"
+        ".endm\n"
+    
+        ".byte baz\n"
+        "glob1\n"
+        ".byte baz\n"
+        ".nodefine baz\n"
+        ".byte baz\n"
+    
+        ".expand baz\n"
+        ".define baz, 1\n"
+        ".macro glob2\n"
+        ".define baz, 100\n"
+        "baz:\n"
+        ".savelabel baz\n"
+        ".byte baz\n"
+        ".define baz, 101\n"
+        ".byte baz\n"
+        ".endm\n"
+    
+        ".byte baz\n"
+        "glob2\n"
+        ".byte baz\n"
+        ".nodefine baz\n"
+        ".byte baz\n"
     ;
     
     CCOrderedCollection AST = HKHubArchAssemblyParse(Source);
@@ -2130,6 +2162,18 @@
     XCTAssertEqual(Binary->data[29], 0xf8);
     XCTAssertEqual(Binary->data[30], 0xf8);
     XCTAssertEqual(Binary->data[31], 0xf8);
+    
+    XCTAssertEqual(Binary->data[32], 1);
+    XCTAssertEqual(Binary->data[33], 100);
+    XCTAssertEqual(Binary->data[34], 101);
+    XCTAssertEqual(Binary->data[35], 100);
+    XCTAssertEqual(Binary->data[36], 33);
+    
+    XCTAssertEqual(Binary->data[37], 1);
+    XCTAssertEqual(Binary->data[38], 100);
+    XCTAssertEqual(Binary->data[39], 101);
+    XCTAssertEqual(Binary->data[40], 1);
+    XCTAssertEqual(Binary->data[41], 38);
     
     HKHubArchBinaryDestroy(Binary);
     
@@ -2220,6 +2264,86 @@
     XCTAssertEqual(Binary->data[18], 20);
     XCTAssertEqual(Binary->data[19], 20);
     XCTAssertEqual(Binary->data[20], 0);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Source =
+        ".macro foo, x\n"
+        ".macro bar, y\n"
+        ".macro baz, z\n"
+        ".byte x + y + z\n"
+        ".endm\n"
+        ".save baz, y\n"
+        ".endm\n"
+        "bar 2\n"
+        ".endm\n"
+    
+        "foo 1\n"
+        "baz 3\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertEqual(Binary, NULL, @"Should fail to create binary");
+    
+    
+    Source =
+        ".macro foo, x\n"
+        ".macro bar, y\n"
+        ".macro baz, z\n"
+        ".byte x + y + z\n"
+        ".endm\n"
+        ".save baz, y\n"
+        ".endm\n"
+        "bar 2\n"
+        ".save\n"
+        ".endm\n"
+    
+        "foo 1\n"
+        "baz 3\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 6);
+    
+    HKHubArchBinaryDestroy(Binary);
+    
+    
+    Source =
+        ".macro foo, x\n"
+        ".macro bar, y\n"
+        ".macro baz, z\n"
+        ".byte x + y + z\n"
+        ".endm\n"
+        ".save\n"
+        ".endm\n"
+        "bar 2\n"
+        ".save\n"
+        ".endm\n"
+    
+        "foo 1\n"
+        "baz 3\n"
+    ;
+    
+    AST = HKHubArchAssemblyParse(Source);
+    
+    Errors = NULL;
+    Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    XCTAssertNotEqual(Binary, NULL, @"Should not fail to create binary");
+    XCTAssertEqual(Binary->data[0], 6);
     
     HKHubArchBinaryDestroy(Binary);
 }
