@@ -340,7 +340,7 @@ static void HKHubArchAssemblyParseOperand(HKHubArchAssemblyASTNode *Node)
                         Sym = FALSE;
                         Dec = FALSE;
                         CreateNode = FALSE;
-                        Index = 0;
+                        Index = -1;
                         
                         Buffer += HKHubArchAssemblyResolveLiteralValue(Parents, Buffer - 1, 1, Hex, Sym, Dec, c);
                         Start = Buffer;
