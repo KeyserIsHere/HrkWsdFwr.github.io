@@ -69,6 +69,11 @@ typedef struct {
     CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) macros;
     CCDictionary(CCOrderedCollection(HKHubArchAssemblyASTNode), CCDictionary(CCString, uint8_t)) scopedLabels;
     HKHubArchAssemblySymbolExpansion expand;
+    struct {
+        CCDictionary(CCString, uint8_t) labels;
+        CCDictionary(CCString, uint8_t) defines;
+        CCDictionary(HKHubArchAssemblyMacroName, HKHubArchAssemblyMacro) macros;
+    } saved;
     _Bool *stop;
     size_t *counter;
     struct {
@@ -78,6 +83,10 @@ typedef struct {
 } HKHubArchAssemblyCompilationContext;
 
 static size_t HKHubArchAssemblyRecursiveCompile(size_t Offset, HKHubArchBinary Binary, CCOrderedCollection(HKHubArchAssemblyASTNode) AST, HKHubArchAssemblyCompilationContext *Context, int Pass, size_t Depth, HKHubArchAssemblyASTNode *Command);
+
+static void HKHubArchAssemblyMacroDestructor(void *Container, HKHubArchAssemblyMacro *Macro);
+static uintmax_t HKHubArchAssemblyMacroNameHasher(HKHubArchAssemblyMacroName *Key);
+static CCComparisonResult HKHubArchAssemblyMacroNameComparator(HKHubArchAssemblyMacroName *Left, HKHubArchAssemblyMacroName *Right);
 
 static void HKHubArchAssemblyASTNodeDestructor(void *Container, HKHubArchAssemblyASTNode *Node)
 {
@@ -1620,6 +1629,163 @@ static size_t HKHubArchAssemblyCompileDirectiveError(size_t Offset, HKHubArchBin
     return Offset;
 }
 
+typedef HKHubArchAssemblySymbolExpansionRules HKHubArchAssemblySymbolSelection;
+
+static size_t HKHubArchAssemblyCompileSaveSymbol(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator, HKHubArchAssemblySymbolSelection Include)
+{
+    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
+    
+    if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes)))
+    {
+        CC_COLLECTION_FOREACH_PTR(HKHubArchAssemblyASTNode, Operand, Command->childNodes)
+        {
+            if ((Operand->type == HKHubArchAssemblyASTTypeOperand) && (Operand->childNodes) && (CCCollectionGetCount(Operand->childNodes) == 1))
+            {
+                HKHubArchAssemblyASTNode *Symbol = CCOrderedCollectionGetElementAtIndex(Operand->childNodes, 0);
+                
+                if (Symbol->type == HKHubArchAssemblyASTTypeSymbol)
+                {
+                    if (Include.label)
+                    {
+                        if (!Context->saved.labels)
+                        {
+                            Context->saved.labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+                                .getHash = CCStringHasherForDictionary,
+                                .compareKeys = CCStringComparatorForDictionary
+                            });
+                        }
+                        
+                        void *Value = CCDictionaryGetValue(Context->labels, &Symbol->string);
+                        if (Value) CCDictionarySetValue(Context->saved.labels, &Symbol->string, Value);
+                    }
+                    
+                    if (Include.define)
+                    {
+                        if (!Context->saved.defines)
+                        {
+                            Context->saved.defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+                                .getHash = CCStringHasherForDictionary,
+                                .compareKeys = CCStringComparatorForDictionary
+                            });
+                        }
+                        
+                        void *Value = CCDictionaryGetValue(Context->defines, &Symbol->string);
+                        if (Value) CCDictionarySetValue(Context->saved.defines, &Symbol->string, Value);
+                    }
+                    
+                    if (Include.macro)
+                    {
+                        if (!Context->saved.macros)
+                        {
+                            Context->saved.macros = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(HKHubArchAssemblyMacroName), sizeof(HKHubArchAssemblyMacro), &(CCDictionaryCallbacks){
+                                .getHash = (CCDictionaryKeyHasher)HKHubArchAssemblyMacroNameHasher,
+                                .compareKeys = (CCComparator)HKHubArchAssemblyMacroNameComparator,
+                                .valueDestructor = (CCDictionaryElementDestructor)HKHubArchAssemblyMacroDestructor
+                            });
+                        }
+                        
+                        CC_DICTIONARY_FOREACH_KEY_PTR(HKHubArchAssemblyMacroName, Key, Context->macros)
+                        {
+                            if (CCStringEqual(Key->name, Symbol->string))
+                            {
+                                HKHubArchAssemblyMacro *SrcMacro = CCDictionaryGetValue(Context->macros, Key);
+                                CCDictionarySetValue(Context->saved.macros, Key, &(HKHubArchAssemblyMacro){
+                                    .ast = CCRetain(SrcMacro->ast),
+                                    .args = CCRetain(SrcMacro->args)
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                else
+                {
+                    HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandSymbol, Command, Operand, Symbol);
+                    break;
+                }
+            }
+            
+            else
+            {
+                HKHubArchAssemblyErrorAddMessage(Context->errors, HKHubArchAssemblyErrorMessageOperandSymbol, Command, Operand, NULL);
+                break;
+            }
+        }
+    }
+    
+    else
+    {
+        if (Include.label)
+        {
+            if (!Context->saved.labels)
+            {
+                Context->saved.labels = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+                    .getHash = CCStringHasherForDictionary,
+                    .compareKeys = CCStringComparatorForDictionary
+                });
+            }
+            
+            CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Context->labels) CCDictionarySetValue(Context->saved.labels, Key, CCDictionaryGetValue(Context->labels, Key));
+        }
+        
+        if (Include.define)
+        {
+            if (!Context->saved.defines)
+            {
+                Context->saved.defines = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(CCString), sizeof(uint8_t), &(CCDictionaryCallbacks){
+                    .getHash = CCStringHasherForDictionary,
+                    .compareKeys = CCStringComparatorForDictionary
+                });
+            }
+            
+            CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Context->defines) CCDictionarySetValue(Context->saved.defines, Key, CCDictionaryGetValue(Context->defines, Key));
+        }
+        
+        if (Include.macro)
+        {
+            if (!Context->saved.macros)
+            {
+                Context->saved.macros = CCDictionaryCreate(CC_STD_ALLOCATOR, CCDictionaryHintSizeSmall, sizeof(HKHubArchAssemblyMacroName), sizeof(HKHubArchAssemblyMacro), &(CCDictionaryCallbacks){
+                    .getHash = (CCDictionaryKeyHasher)HKHubArchAssemblyMacroNameHasher,
+                    .compareKeys = (CCComparator)HKHubArchAssemblyMacroNameComparator,
+                    .valueDestructor = (CCDictionaryElementDestructor)HKHubArchAssemblyMacroDestructor
+                });
+            }
+            
+            CC_DICTIONARY_FOREACH_KEY_PTR(HKHubArchAssemblyMacroName, Key, Context->macros)
+            {
+                HKHubArchAssemblyMacro *SrcMacro = CCDictionaryGetValue(Context->macros, Key);
+                CCDictionarySetValue(Context->saved.macros, Key, &(HKHubArchAssemblyMacro){
+                    .ast = CCRetain(SrcMacro->ast),
+                    .args = CCRetain(SrcMacro->args)
+                });
+            }
+        }
+    }
+    
+    return Offset;
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveSaveDefine(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSaveSymbol(Offset, Binary, Command, Context, Depth, Enumerator, (HKHubArchAssemblySymbolSelection){ .macro = FALSE, .define = TRUE, .label = FALSE });
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveSaveLabel(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSaveSymbol(Offset, Binary, Command, Context, Depth, Enumerator, (HKHubArchAssemblySymbolSelection){ .macro = FALSE, .define = FALSE, .label = TRUE });
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveSaveMacro(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSaveSymbol(Offset, Binary, Command, Context, Depth, Enumerator, (HKHubArchAssemblySymbolSelection){ .macro = TRUE, .define = FALSE, .label = FALSE });
+}
+
+static size_t HKHubArchAssemblyCompileDirectiveSave(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
+{
+    return HKHubArchAssemblyCompileSaveSymbol(Offset, Binary, Command, Context, Depth, Enumerator, (HKHubArchAssemblySymbolSelection){ .macro = TRUE, .define = TRUE, .label = TRUE });
+}
+
 #pragma mark -
 
 static const struct {
@@ -1646,7 +1812,11 @@ static const struct {
     { CC_STRING(".expand"), HKHubArchAssemblyCompileDirectiveExpand },
     { CC_STRING(".bits"), HKHubArchAssemblyCompileDirectiveBits },
     { CC_STRING(".padbits"), HKHubArchAssemblyCompileDirectivePadBits },
-    { CC_STRING(".error"), HKHubArchAssemblyCompileDirectiveError }
+    { CC_STRING(".error"), HKHubArchAssemblyCompileDirectiveError },
+    { CC_STRING(".savedefine"), HKHubArchAssemblyCompileDirectiveSaveDefine },
+    { CC_STRING(".savelabel"), HKHubArchAssemblyCompileDirectiveSaveLabel },
+    { CC_STRING(".savemacro"), HKHubArchAssemblyCompileDirectiveSaveMacro },
+    { CC_STRING(".save"), HKHubArchAssemblyCompileDirectiveSave }
 };
 
 static uint8_t HKHubArchAssemblyResolveEquation(uint8_t Left, uint8_t Right, CCArray(HKHubArchAssemblyASTType) Modifiers, HKHubArchAssemblyASTType Operation)
@@ -1898,6 +2068,10 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                     {
                         HKHubArchAssemblyCompilationContext Local = *Context;
                         
+                        Local.saved.labels = NULL;
+                        Local.saved.defines = NULL;
+                        Local.saved.macros = NULL;
+                        
                         CCDictionaryEntry Entry = CCDictionaryEntryForKey(Local.scopedLabels, &(size_t){ *Context->counter });
                         if (!CCDictionaryEntryIsInitialized(Local.scopedLabels, Entry))
                         {
@@ -1965,6 +2139,34 @@ static size_t HKHubArchAssemblyCompile(size_t Offset, HKHubArchBinary Binary, CC
                         CCDictionaryDestroy(Local.defines);
                         CCDictionaryDestroy(Local.macros);
                         CCDictionaryDestroy(Local.expand.symbols);
+                        
+                        if (Local.saved.labels)
+                        {
+                            CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Local.saved.labels) CCDictionarySetValue(Context->labels, Key, CCDictionaryGetValue(Local.saved.labels, Key));
+                            
+                            CCDictionaryDestroy(Local.saved.labels);
+                        }
+                        
+                        if (Local.saved.defines)
+                        {
+                            CC_DICTIONARY_FOREACH_KEY_PTR(CCString, Key, Local.saved.defines) CCDictionarySetValue(Context->defines, Key, CCDictionaryGetValue(Local.saved.defines, Key));
+                            
+                            CCDictionaryDestroy(Local.saved.defines);
+                        }
+                        
+                        if (Local.saved.macros)
+                        {
+                            CC_DICTIONARY_FOREACH_KEY_PTR(HKHubArchAssemblyMacroName, Key, Local.saved.macros)
+                            {
+                                HKHubArchAssemblyMacro *SrcMacro = CCDictionaryGetValue(Local.saved.macros, Key);
+                                CCDictionarySetValue(Context->macros, Key, &(HKHubArchAssemblyMacro){
+                                    .ast = CCRetain(SrcMacro->ast),
+                                    .args = CCRetain(SrcMacro->args)
+                                });
+                            }
+                            
+                            CCDictionaryDestroy(Local.saved.macros);
+                        }
                         
                         Context->bits = Local.bits;
                     }
@@ -2040,6 +2242,7 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
         }),
         .errors = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTError), (CCCollectionElementDestructor)HKHubArchAssemblyASTErrorDestructor),
         .ifBlocks = CCArrayCreate(CC_STD_ALLOCATOR, sizeof(HKHubArchAssemblyIfBlock), 16),
+        .saved = { NULL, NULL, NULL },
         .stop = &(_Bool){ FALSE }
     };
     
@@ -2074,6 +2277,10 @@ HKHubArchBinary HKHubArchAssemblyCreateBinary(CCAllocatorType Allocator, CCOrder
         CCDictionaryDestroy(Global.macros);
         CCDictionaryDestroy(Global.expand.symbols);
     }
+    
+    if (Global.saved.labels) CCDictionaryDestroy(Global.saved.labels);
+    if (Global.saved.defines) CCDictionaryDestroy(Global.saved.defines);
+    if (Global.saved.macros) CCDictionaryDestroy(Global.saved.macros);
     
     CCDictionaryDestroy(Global.scopedLabels);
     CCDictionaryDestroy(Global.labels);
