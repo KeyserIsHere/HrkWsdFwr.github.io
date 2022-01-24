@@ -35,9 +35,21 @@ typedef struct {
 typedef struct {
     CCChar character;
     struct {
-        uint8_t x;
-        uint8_t y;
+        int8_t x;
+        int8_t y;
     } offset;
+    struct {
+        uint8_t baseX : 1;
+        uint8_t x : 7;
+        uint8_t baseY : 1;
+        uint8_t y : 7;
+    } align;
+    struct {
+        uint8_t repeat : 1;
+        uint8_t clear : 1;
+        uint8_t setX : 1;
+        uint8_t setY : 1;
+    };
 } HKHubModuleGraphicsAdapterCursorControl;
 
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT 16
@@ -68,6 +80,23 @@ typedef struct {
     HKHubModuleGraphicsAdapterViewport bounds;
     HKHubModuleGraphicsAdapterCursorControl control[HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT];
 } HKHubModuleGraphicsAdapterCursor;
+
+typedef struct {
+    HKHubModuleGraphicsAdapterCursor cursor;
+    struct {
+        uint8_t page;
+        uint8_t offset;
+    } palette;
+    struct {
+        _Bool bold : 1;
+        _Bool italic : 1;
+        uint8_t slope : 3;
+    } style;
+    struct {
+        uint8_t offset;
+        uint8_t filter;
+    } animation;
+} HKHubModuleGraphicsAdapterAttributes;
 
 typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCell, uint64_t) {
     HKHubModuleGraphicsAdapterCellModeMask = 0x80000000,
@@ -144,22 +173,7 @@ typedef struct {
 
 typedef struct {
     uint8_t frame;
-    struct {
-        HKHubModuleGraphicsAdapterCursor cursor;
-        struct {
-            uint8_t page;
-            uint8_t offset;
-        } palette;
-        struct {
-            _Bool bold : 1;
-            _Bool italic : 1;
-            uint8_t slope : 3;
-        } style;
-        struct {
-            uint8_t offset;
-            uint8_t filter;
-        } animation;
-    } attributes[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
+    HKHubModuleGraphicsAdapterAttributes attributes[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
     HKHubModuleGraphicsAdapterViewport viewports[256];
     HKHubModuleGraphicsAdapterMemory memory;
 } HKHubModuleGraphicsAdapterState;
@@ -369,6 +383,8 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
             State->attributes[Loop].cursor.bounds.height = 0xff;
             State->attributes[Loop].cursor.control[0].character = '\t';
             State->attributes[Loop].cursor.control[0].offset.x = 4;
+            State->attributes[Loop].cursor.control[0].align.x = 3;
+            State->attributes[Loop].cursor.control[0].repeat = TRUE;
             State->attributes[Loop].cursor.control[1].character = '\n';
             State->attributes[Loop].cursor.control[1].offset.y = 2;
             
@@ -574,6 +590,29 @@ static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapter
     return Cell;
 }
 
+static void HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(HKHubModuleGraphicsAdapterMemory *Memory, HKHubModuleGraphicsAdapterAttributes *Attributes, uint8_t Layer, HKHubModuleGraphicsAdapterCursor *Cursor, uint8_t Width, uint8_t Height, CCChar Character)
+{
+    const int RelX = CCMax((int)Cursor->bounds.x - Cursor->x, 0);
+    const int RelY = CCMax((int)Cursor->bounds.y - Cursor->y, 0);
+    const int RelW = CCMin(CCMax((int)Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + Width)), Width);
+    const int RelH = CCMin(CCMax((int)Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + Height)), Height);
+    
+    for (int Y = RelY, OriginY = (Cursor->render.mode.originY ? -1 : 1), CellBaseY = (Cursor->render.mode.originY ? (Height - 1) : 0); Y < RelH; Y++)
+    {
+        for (int X = RelX, OriginX = (Cursor->render.mode.originX ? -1 : 1), CellBaseX = (Cursor->render.mode.originX ? (Width - 1) : 0); X < RelW; X++)
+        {
+            const HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap((CellBaseY - Y) * OriginY * -1, (CellBaseX - X) * OriginX * -1, Attributes->palette.page, Attributes->style.bold, Attributes->style.italic, Attributes->animation.offset, Attributes->animation.filter, Character);
+            
+            const uint8_t LayerX = Cursor->x + (X * OriginX), LayerY = Cursor->y + (Y * OriginY);
+            Memory->layers[Layer][LayerY][LayerX][0] = (Cell >> 32) & 0xff;
+            Memory->layers[Layer][LayerY][LayerX][1] = (Cell >> 24) & 0xff;
+            Memory->layers[Layer][LayerY][LayerX][2] = (Cell >> 16) & 0xff;
+            Memory->layers[Layer][LayerY][LayerX][3] = (Cell >> 8) & 0xff;
+            Memory->layers[Layer][LayerY][LayerX][4] = Cell & 0xff;
+        }
+    }
+}
+
 void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer, CCChar Character)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
@@ -592,27 +631,60 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
         
         HKHubModuleGraphicsAdapterCursor *Cursor = &State->attributes[Layer].cursor;
         
-        const int RelX = CCMax((int)Cursor->bounds.x - Cursor->x, 0);
-        const int RelY = CCMax((int)Cursor->bounds.y - Cursor->y, 0);
-        const int RelW = CCMin(CCMax((int)Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + Width)), Width);
-        const int RelH = CCMin(CCMax((int)Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + Height)), Height);
+        HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, Width, Height, Character);
         
-        for (int Y = RelY, OriginY = (Cursor->render.mode.originY ? -1 : 1), CellBaseY = (Cursor->render.mode.originY ? (Height - 1) : 0); Y < RelH; Y++)
+        int X = Cursor->x, Y = Cursor->y;
+        for (size_t Loop = 0; Loop < HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT; Loop++)
         {
-            for (int X = RelX, OriginX = (Cursor->render.mode.originX ? -1 : 1), CellBaseX = (Cursor->render.mode.originX ? (Width - 1) : 0); X < RelW; X++)
+            if (Character == Cursor->control[Loop].character)
             {
-                const HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap((CellBaseY - Y) * OriginY * -1, (CellBaseX - X) * OriginX * -1, State->attributes[Layer].palette.page, State->attributes[Layer].style.bold, State->attributes[Layer].style.italic, State->attributes[Layer].animation.offset, State->attributes[Layer].animation.filter, Character);
+                //TODO: make alignment relative to cursor bounds (x if right, width if left)
                 
-                const uint8_t LayerX = Cursor->x + (X * OriginX), LayerY = Cursor->y + (Y * OriginY);
-                Memory->layers[Layer][LayerY][LayerX][0] = (Cell >> 32) & 0xff;
-                Memory->layers[Layer][LayerY][LayerX][1] = (Cell >> 24) & 0xff;
-                Memory->layers[Layer][LayerY][LayerX][2] = (Cell >> 16) & 0xff;
-                Memory->layers[Layer][LayerY][LayerX][3] = (Cell >> 8) & 0xff;
-                Memory->layers[Layer][LayerY][LayerX][4] = Cell & 0xff;
+                int OffsetX = (int)Cursor->control[Loop].offset.x - (X % ((int)Cursor->control[Loop].align.x + 1)), RepX = 1;
+                int OffsetY = (int)Cursor->control[Loop].offset.y - (Y % ((int)Cursor->control[Loop].align.y + 1)), RepY = 1;
+                
+                if (Cursor->control[Loop].offset.x < 0)
+                {
+                    OffsetX = (OffsetX + ((int)Cursor->control[Loop].offset.x * -1)) * -1;
+                    RepX = -1;
+                }
+                
+                if (Cursor->control[Loop].offset.y < 0)
+                {
+                    OffsetY = (OffsetY + ((int)Cursor->control[Loop].offset.y * -1)) * -1;
+                    RepY = -1;
+                }
+                
+                if ((Cursor->control[Loop].repeat) || (Cursor->control[Loop].clear))
+                {
+                    int RepW = 1, RepH = 1;
+                    CCChar RepC = 0;
+                    
+                    if (Cursor->control[Loop].repeat)
+                    {
+                        RepW = Width;
+                        RepH = Height;
+                        RepC = Character;
+                    }
+                    
+                    for (int RepeatY = Height; RepeatY < OffsetY; RepeatY += RepH)
+                    {
+                        Cursor->y += RepH * RepY;
+                        
+                        for (int RepeatX = Width; RepeatX < OffsetX; RepeatX += RepW)
+                        {
+                            Cursor->x += RepW * RepX;
+                            HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, RepW, RepH, RepC);
+                        }
+                    }
+                }
+                
+                X = Cursor->x;
+                Y = Cursor->y;
+                break;
             }
         }
         
-        int X = Cursor->x, Y = Cursor->y;
         if (Cursor->render.mode.advance)
         {
             X += ((int)Width * Cursor->render.advance.width) + Cursor->render.advance.x;
