@@ -174,7 +174,14 @@
 # Load/Stores
 .macro ldi, x
     nibble 12
-    nibble x
+    nibble x & 0xf
+    .if x > 0xf
+        ldi 4
+        ldi x >> 4
+        sal
+        or
+        .save
+    .endif
 .endm
 
 .macro ldr, x
