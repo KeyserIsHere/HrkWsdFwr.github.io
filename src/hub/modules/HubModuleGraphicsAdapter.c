@@ -28,28 +28,16 @@
 #define T size_t
 #include <CommonC/Extrema.h>
 
+#define Tbuffer PTYPE(uint8_t *)
+#include <CommonC/Memory.h>
+
 typedef struct {
     uint8_t x, y, width, height;
 } HKHubModuleGraphicsAdapterViewport;
 
 typedef struct {
     CCChar character;
-    struct {
-        int8_t x;
-        int8_t y;
-    } offset;
-    struct {
-        uint8_t baseX : 1;
-        uint8_t x : 7;
-        uint8_t baseY : 1;
-        uint8_t y : 7;
-    } align;
-    struct {
-        uint8_t repeat : 1;
-        uint8_t clear : 1;
-        uint8_t setX : 1;
-        uint8_t setY : 1;
-    };
+    uint8_t program;
 } HKHubModuleGraphicsAdapterCursorControl;
 
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT 16
@@ -169,7 +157,10 @@ typedef struct {
     uint8_t glyphs[HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER];
     uint8_t palettes[HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT][256];
     uint8_t layers[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_CELL_SIZE];
-} HKHubModuleGraphicsAdapterMemory;
+    uint8_t programs[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_COUNT][HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE];
+} CC_PACKED HKHubModuleGraphicsAdapterMemory;
+
+_Static_assert(sizeof(HKHubModuleGraphicsAdapterMemory) == (sizeof(((HKHubModuleGraphicsAdapterMemory*)NULL)->glyphs) + sizeof(((HKHubModuleGraphicsAdapterMemory*)NULL)->palettes) + sizeof(((HKHubModuleGraphicsAdapterMemory*)NULL)->layers) + sizeof(((HKHubModuleGraphicsAdapterMemory*)NULL)->programs)), "Expects adapter memory to be packed");
 
 typedef struct {
     uint8_t frame;
@@ -382,11 +373,8 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
             State->attributes[Loop].cursor.bounds.width = 0xff;
             State->attributes[Loop].cursor.bounds.height = 0xff;
             State->attributes[Loop].cursor.control[0].character = '\t';
-            State->attributes[Loop].cursor.control[0].offset.x = 4;
-            State->attributes[Loop].cursor.control[0].align.x = 3;
-            State->attributes[Loop].cursor.control[0].repeat = TRUE;
             State->attributes[Loop].cursor.control[1].character = '\n';
-            State->attributes[Loop].cursor.control[1].offset.y = 2;
+            //TODO: Set default control programs
             
             State->attributes[Loop].style.slope = 3;
         }
@@ -508,16 +496,16 @@ void HKHubModuleGraphicsAdapterSetCursorBounds(HKHubModule Adapter, uint8_t Laye
     State->attributes[Layer].cursor.bounds = (HKHubModuleGraphicsAdapterViewport){ .x = X, .y = Y, .width = Width, .height = Height };
 }
 
-void HKHubModuleGraphicsAdapterSetCursorControl(HKHubModule Adapter, uint8_t Layer, uint8_t Index, CCChar Character, uint8_t X, uint8_t Y)
+void HKHubModuleGraphicsAdapterSetCursorControl(HKHubModule Adapter, uint8_t Layer, uint8_t Index, CCChar Character, uint8_t ProgramID)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     CCAssertLog(Index < HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT, "Index must not exceed cursor control count");
+    CCAssertLog(ProgramID < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_COUNT, "ProgramID must not exceed cursor program count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     State->attributes[Layer].cursor.control[Index].character = Character;
-    State->attributes[Layer].cursor.control[Index].offset.x = X;
-    State->attributes[Layer].cursor.control[Index].offset.y = Y;
+    State->attributes[Layer].cursor.control[Index].program = ProgramID;
 }
 
 void HKHubModuleGraphicsAdapterSetPalettePage(HKHubModule Adapter, uint8_t Layer, uint8_t Page)
@@ -638,49 +626,7 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
         {
             if (Character == Cursor->control[Loop].character)
             {
-                //TODO: make alignment relative to cursor bounds (x if right, width if left)
-                
-                int OffsetX = (int)Cursor->control[Loop].offset.x - (X % ((int)Cursor->control[Loop].align.x + 1)), RepX = 1;
-                int OffsetY = (int)Cursor->control[Loop].offset.y - (Y % ((int)Cursor->control[Loop].align.y + 1)), RepY = 1;
-                
-                if (Cursor->control[Loop].offset.x < 0)
-                {
-                    OffsetX = (OffsetX + ((int)Cursor->control[Loop].offset.x * -1)) * -1;
-                    RepX = -1;
-                }
-                
-                if (Cursor->control[Loop].offset.y < 0)
-                {
-                    OffsetY = (OffsetY + ((int)Cursor->control[Loop].offset.y * -1)) * -1;
-                    RepY = -1;
-                }
-                
-                if ((Cursor->control[Loop].repeat) || (Cursor->control[Loop].clear))
-                {
-                    int RepW = 1, RepH = 1;
-                    CCChar RepC = 0;
-                    
-                    if (Cursor->control[Loop].repeat)
-                    {
-                        RepW = Width;
-                        RepH = Height;
-                        RepC = Character;
-                    }
-                    
-                    for (int RepeatY = Height; RepeatY < OffsetY; RepeatY += RepH)
-                    {
-                        Cursor->y += RepH * RepY;
-                        
-                        for (int RepeatX = Width; RepeatX < OffsetX; RepeatX += RepW)
-                        {
-                            Cursor->x += RepW * RepX;
-                            HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, RepW, RepH, RepC);
-                        }
-                    }
-                }
-                
-                X = Cursor->x;
-                Y = Cursor->y;
+                HKHubModuleGraphicsAdapterProgramRun(Adapter, Layer, Cursor->control[Loop].program);
                 break;
             }
         }
@@ -809,8 +755,8 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                     
                     const size_t PixelHeight = Height * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL;
                     const size_t Slope = HKHubModuleGraphicsAdapterCellIsItalic(Glyph) && State->attributes[Layer].style.slope ? State->attributes[Layer].style.slope : PixelHeight;
-                    const size_t HalfSlope = (PixelHeight / Slope) / 2; // 1
-                    const size_t CenterPad = (PixelHeight % Slope) + (Slope * (HalfSlope % 2)); // 6
+                    const size_t HalfSlope = (PixelHeight / Slope) / 2;
+                    const size_t CenterPad = (PixelHeight % Slope) + (Slope * (HalfSlope % 2));
                     
                     for (size_t FramebufferY = (Y - State->viewports[Port].y) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, RelY = T * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, MaxY = CCMin(ViewportHeight * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, FramebufferY + HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL), SampleIndex = 0; FramebufferY < MaxY; FramebufferY++, RelY++)
                     {
@@ -1084,4 +1030,503 @@ NotFound:
     CC_LOG_ERROR("Bitmap does not exist: no bitmap at index (%u) in bitmaps (%p:%zu, %p:%zu)", Index, Bitmaps[0], CCArrayGetCount(Bitmaps[0]), Bitmaps[1], CCArrayGetCount(Bitmaps[1]));
     
     return NULL;
+}
+
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE 16
+
+void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, uint8_t ProgramID)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    CCAssertLog(ProgramID < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_COUNT, "ProgramID must not exceed program count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
+    HKHubModuleGraphicsAdapterAttributes *Attributes = &State->attributes[Layer];
+    HKHubModuleGraphicsAdapterCursor *Cursor = &Attributes->cursor;
+    
+    const uint8_t *Program = Memory->programs[ProgramID];
+    
+    int32_t Stack[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = {0};
+    size_t StackPtr = 0;
+    
+    struct {
+        uint32_t repeating;
+        size_t start;
+        uint8_t ops;
+    } Blocks[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE + 1] = {
+        { .repeating = 0, .start = 0, .ops = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2 }
+    };
+    size_t BlockIndex = 0;
+    
+    _Bool Mode = 0;
+    for (size_t Index = 0; Index < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2; Index++)
+    {
+        Blocks[BlockIndex].ops--;
+        
+        switch ((Program[Index / 2] >> ((Index % 2) * 4)) & 0xf)
+        {
+            case 0:
+                Mode = !Mode;
+                break;
+                
+            case 1:
+            {
+                const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Mode ? (L & R) : (L + R);
+                break;
+            }
+                
+            case 2:
+            {
+                const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Mode ? (L | R) : (L - R);
+                break;
+            }
+                
+            case 3:
+            {
+                const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Mode ? (L ^ R) : (L * R);
+                break;
+            }
+                
+            case 4:
+            {
+                const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Mode ? ((uint32_t)L << (R & 31)) : (R ? (L % R) : 0);
+                break;
+            }
+                
+            case 5:
+            {
+                const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                int32_t Result;
+                if (Mode)
+                {
+                    uint32_t s = -((uint32_t)L >> 31);
+                    Result = ((s ^ L) >> (R & 31)) ^ s;
+                }
+                
+                else Result = R ? (L / R) : 0;
+                
+                Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Result;
+                break;
+            }
+                
+            case 6:
+            {
+                const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Mode ? ~R : -R;
+                break;
+            }
+                
+            case 7:
+                if (Mode)
+                {
+                    // TODO: ref
+                }
+                
+                else
+                {
+                    const uint8_t Width = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                    const uint8_t Height = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                    const CCChar Character = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                    
+                    HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(Memory, Attributes, Layer, Cursor, Width, Height, Character);
+                }
+                break;
+                
+            case 8:
+            {
+                const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = R;
+                break;
+            }
+                
+            case 9:
+            {
+                Index++;
+                const int8_t Value = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                
+                StackPtr += Value | (Value & 8) * 30;
+                break;
+            }
+                
+            case 10:
+            {
+                const int32_t R = Stack[(StackPtr - 1) % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = R;
+                break;
+            }
+                
+            case 11:
+            {
+                const int32_t L = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t R = Stack[(StackPtr - 1) % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = R;
+                Stack[(StackPtr - 1) % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = L;
+                break;
+            }
+                
+            case 12:
+            {
+                Index++;
+                const int32_t Value = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                
+                Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Value;
+                break;
+            }
+                
+            case 13:
+            {
+                Index++;
+                
+                const uint8_t Reg = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                int32_t Value = 0;
+                
+                if (Mode)
+                {
+                    switch (Reg)
+                    {
+                        case 0:
+                            Value = Cursor->render.mode.originX;
+                            break;
+                            
+                        case 1:
+                            Value = Cursor->render.mode.originY;
+                            break;
+                            
+                        case 2:
+                            Value = Cursor->render.mode.advance;
+                            break;
+                            
+                        case 3:
+                            Value = Cursor->render.mode.wrap;
+                            break;
+                            
+                        case 4:
+                            Value = Attributes->palette.page;
+                            break;
+                            
+                        case 5:
+                            Value = Attributes->palette.offset;
+                            break;
+                            
+                        case 6:
+                            Value = Attributes->style.bold;
+                            break;
+                            
+                        case 7:
+                            Value = Attributes->style.italic;
+                            break;
+                            
+                        case 8:
+                            Value = Attributes->style.slope;
+                            break;
+                            
+                        case 9:
+                            Value = Attributes->animation.offset;
+                            break;
+                            
+                        case 10:
+                            Value = Attributes->animation.filter;
+                            break;
+                            
+                        case 11:
+                            Value = State->viewports[Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] & 0xff].x;
+                            break;
+                            
+                        case 12:
+                            Value = State->viewports[Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] & 0xff].y;
+                            break;
+                            
+                        case 13:
+                            Value = State->viewports[Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] & 0xff].width;
+                            break;
+                            
+                        case 14:
+                            Value = State->viewports[Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] & 0xff].height;
+                            break;
+                            
+                        case 15:
+                        {
+                            uint8_t Byte;
+                            const uint32_t Offset = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                            CCMemoryReadBig(Memory, sizeof(HKHubModuleGraphicsAdapterMemory), Offset, sizeof(Byte), &Byte);
+                            Value = Byte;
+                            break;
+                        }
+                    }
+                }
+                
+                else
+                {
+                    switch (Reg)
+                    {
+                        case 0:
+                            Value = Cursor->x;
+                            break;
+                           
+                        case 1:
+                            Value = Cursor->y;
+                            break;
+                            
+                        case 2:
+                            Value = Cursor->visibility;
+                            break;
+                            
+                        case 3:
+                            Value = Cursor->bounds.x;
+                            break;
+                            
+                        case 4:
+                            Value = Cursor->bounds.y;
+                            break;
+                            
+                        case 5:
+                            Value = Cursor->bounds.width;
+                            break;
+                            
+                        case 6:
+                            Value = Cursor->bounds.height;
+                            break;
+                            
+                        case 7:
+                            Value = Cursor->render.advance.x;
+                            break;
+                            
+                        case 8:
+                            Value = Cursor->render.advance.y;
+                            break;
+                            
+                        case 9:
+                            Value = Cursor->render.advance.width;
+                            break;
+                            
+                        case 10:
+                            Value = Cursor->render.advance.height;
+                            break;
+                            
+                        case 11:
+                            Value = Cursor->render.wrap.x;
+                            break;
+                            
+                        case 12:
+                            Value = Cursor->render.wrap.y;
+                            break;
+                            
+                        case 13:
+                            Value = Cursor->render.wrap.width;
+                            break;
+                            
+                        case 14:
+                            Value = Cursor->render.wrap.height;
+                            break;
+                            
+                        case 15:
+                            Value = Layer;
+                            break;
+                    }
+                }
+                
+                Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Value;
+                break;
+            }
+                
+            case 14:
+            {
+                Index++;
+                
+                const uint8_t Reg = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                int32_t Value = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                if (Mode)
+                {
+                    switch (Reg)
+                    {
+                        case 0:
+                            Cursor->render.mode.originX = Value;
+                            break;
+                            
+                        case 1:
+                            Cursor->render.mode.originY = Value;
+                            break;
+                            
+                        case 2:
+                            Cursor->render.mode.advance = Value;
+                            break;
+                            
+                        case 3:
+                            Cursor->render.mode.wrap = Value;
+                            break;
+                            
+                        case 4:
+                            Attributes->palette.page = Value;
+                            break;
+                            
+                        case 5:
+                            Attributes->palette.offset = Value;
+                            break;
+                            
+                        case 6:
+                            Attributes->style.bold = Value;
+                            break;
+                            
+                        case 7:
+                            Attributes->style.italic = Value;
+                            break;
+                            
+                        case 8:
+                            Attributes->style.slope = Value;
+                            break;
+                            
+                        case 9:
+                            Attributes->animation.offset = Value;
+                            break;
+                            
+                        case 10:
+                            Attributes->animation.filter = Value;
+                            break;
+                            
+                        case 11:
+                            State->viewports[Value & 0xff].x = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                            break;
+                            
+                        case 12:
+                            State->viewports[Value & 0xff].y = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                            break;
+                            
+                        case 13:
+                            State->viewports[Value & 0xff].width = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                            break;
+                            
+                        case 14:
+                            State->viewports[Value & 0xff].height = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                            break;
+                            
+                        case 15:
+                        {
+                            uint8_t Byte = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                            const uint32_t Offset = Value;
+                            CCMemoryWriteBig(Memory, sizeof(HKHubModuleGraphicsAdapterMemory), Offset, sizeof(Byte), &Byte);
+                            break;
+                        }
+                    }
+                }
+                
+                else
+                {
+                    switch (Reg)
+                    {
+                        case 0:
+                            Cursor->x = Value;
+                            break;
+                            
+                        case 1:
+                            Cursor->y = Value;
+                            break;
+                            
+                        case 2:
+                            Cursor->visibility = Value;
+                            break;
+                            
+                        case 3:
+                            Cursor->bounds.x = Value;
+                            break;
+                            
+                        case 4:
+                            Cursor->bounds.y = Value;
+                            break;
+                            
+                        case 5:
+                            Cursor->bounds.width = Value;
+                            break;
+                            
+                        case 6:
+                            Cursor->bounds.height = Value;
+                            break;
+                            
+                        case 7:
+                            Cursor->render.advance.x = Value;
+                            break;
+                            
+                        case 8:
+                            Cursor->render.advance.y = Value;
+                            break;
+                            
+                        case 9:
+                            Cursor->render.advance.width = Value;
+                            break;
+                            
+                        case 10:
+                            Cursor->render.advance.height = Value;
+                            break;
+                            
+                        case 11:
+                            Cursor->render.wrap.x = Value;
+                            break;
+                            
+                        case 12:
+                            Cursor->render.wrap.y = Value;
+                            break;
+                            
+                        case 13:
+                            Cursor->render.wrap.width = Value;
+                            break;
+                            
+                        case 14:
+                            Cursor->render.wrap.height = Value;
+                            break;
+                            
+                        case 15:
+                            Layer = Value;
+                            Attributes = &State->attributes[Layer];
+                            Cursor = &Attributes->cursor;
+                            break;
+                    }
+                }
+                
+                break;
+            }
+                
+            case 15:
+            {
+                Index++;
+                
+                const uint8_t Ops = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                int32_t Times = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                
+                Mode = 0;
+                
+                Blocks[++BlockIndex] = (typeof(*Blocks)){ .repeating = CCMax(Times, 0), .start = Index + 1, .ops = Ops + 1 };
+                break;
+            }
+        }
+        
+        if (!Blocks[BlockIndex].ops)
+        {
+            if (Blocks[BlockIndex].repeating--)
+            {
+                Index = Blocks[BlockIndex].start;
+                Mode = 0;
+            }
+            
+            else BlockIndex--;
+        }
+    }
 }
