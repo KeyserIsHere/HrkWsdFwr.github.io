@@ -183,6 +183,7 @@
     .else
         mode_a
     .endif
+    .save
 
     nibble 13
     nibble x & 0xf
@@ -194,6 +195,7 @@
     .else
         mode_a
     .endif
+    .save
 
     nibble 14
     nibble x & 0xf
