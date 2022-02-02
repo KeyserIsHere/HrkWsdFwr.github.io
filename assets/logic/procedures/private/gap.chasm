@@ -1,0 +1,160 @@
+.include types
+
+.define mode, 0
+
+# Instruction Mode
+.macro flip_mode
+    nibble 0
+    .define mode, !mode
+    .savedefine mode
+.endm
+
+.macro mode_a
+    .if mode
+        flip_mode
+    .endif
+    .save
+.endm
+
+.macro mode_b
+    .if !mode
+        flip_mode
+    .endif
+    .save
+.endm
+
+# Arithmetic
+.macro add
+    mode_a
+    .save
+    nibble 1
+.endm
+
+.macro sub
+    mode_a
+    .save
+    nibble 2
+.endm
+
+.macro mul
+    mode_a
+    .save
+    nibble 3
+.endm
+
+.macro mod
+    mode_a
+    .save
+    nibble 4
+.endm
+
+.macro div
+    mode_a
+    .save
+    nibble 5
+.endm
+
+.macro neg
+    mode_a
+    .save
+    nibble 6
+.endm
+
+# Bitwise Operations
+.macro and
+    mode_b
+    .save
+    nibble 1
+.endm
+
+.macro or
+    mode_b
+    .save
+    nibble 2
+.endm
+
+.macro xor
+    mode_b
+    .save
+    nibble 3
+.endm
+
+.macro sal
+    mode_b
+    .save
+    nibble 4
+.endm
+
+.macro sar
+    mode_b
+    .save
+    nibble 5
+.endm
+
+.macro not
+    mode_b
+    .save
+    nibble 6
+.endm
+
+# Drawing
+.macro drw
+    mode_a
+    .save
+    nibble 7
+.endm
+
+.macro ref
+    mode_b
+    .save
+    nibble 7
+.endm
+
+# Stack Modifiers
+.macro dup
+    nibble 8
+.endm
+
+.macro bak, x
+    nibble 9
+    .assert (x >= 1) && (x <= 8), "Can only move the stack back 1 to 8 places"
+    nibble -x & 0xf
+.endm
+
+.macro fwd, x
+    nibble 9
+    .assert (x >= 1) && (x <= 8), "Can only move the stack forward 1 to 8 places"
+    nibble x - 1
+.endm
+
+.macro over
+    nibble 10
+.endm
+
+.macro swap
+    nibble 11
+.endm
+
+# Load/Stores
+.macro ldi, x
+    nibble 12
+    nibble x
+.endm
+
+.macro ldr, x
+    nibble 13
+    nibble x
+.endm
+
+.macro str, x
+    nibble 14
+    nibble x
+.endm
+
+# Control Flow
+.macro rep, count
+    nibble 15
+    nibble count - 1
+    .define mode, 0
+    .savedefine mode
+.endm
