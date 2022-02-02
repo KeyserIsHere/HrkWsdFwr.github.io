@@ -1,0 +1,11 @@
+.macro n_bits, x, n
+    .if n > 0
+        .bits (x >> (n - 1)) & 1
+        n_bits x, n - 1
+    .endif
+.endm
+
+.macro nibble, x
+    .assert (x >= 0) && (x <= 0xf), "Nibble must not exceed 4 bits"
+    n_bits x, 4
+.endm
