@@ -2,6 +2,42 @@
 
 .define mode, 0
 
+# Registers
+.define cursor_x, 0x0
+.define cursor_y, 0x1
+.define cursor_visibility, 0x2
+.define cursor_bounds_x, 0x3
+.define cursor_bounds_y, 0x4
+.define cursor_bounds_width, 0x5
+.define cursor_bounds_height, 0x6
+.define cursor_render_advance_x, 0x7
+.define cursor_render_advance_y, 0x8
+.define cursor_render_advance_width, 0x9
+.define cursor_render_height, 0xa
+.define cursor_render_wrap_x, 0xb
+.define cursor_render_wrap_y, 0xc
+.define cursor_render_wrap_width, 0xd
+.define cursor_render_wrap_height, 0xe
+.define layer, 0xf
+
+.define cursor_render_mode_origin_x, 0x0 | 0x80
+.define cursor_render_mode_origin_y, 0x1 | 0x80
+.define cursor_render_mode_advance, 0x2 | 0x80
+.define cursor_render_mode_wrap, 0x3 | 0x80
+.define attributes_palette_page, 0x4 | 0x80
+.define attributes_palette_offset, 0x5 | 0x80
+.define attributes_style_bold, 0x6 | 0x80
+.define attributes_style_italic, 0x7 | 0x80
+.define attributes_style_slope, 0x8 | 0x80
+.define attributes_animaton_offset, 0x9 | 0x80
+.define attributes_animaton_filter, 0xa | 0x80
+.define viewport_x, 0xb | 0x80
+.define viewport_y, 0xc | 0x80
+.define viewport_width, 0xd | 0x80
+.define viewport_height, 0xe | 0x80
+.define memory, 0xf | 0x80
+
+
 # Instruction Mode
 .macro flip_mode
     nibble 0
@@ -142,13 +178,25 @@
 .endm
 
 .macro ldr, x
+    .if x & 0x80
+        mode_b
+    .else
+        mode_a
+    .endif
+
     nibble 13
-    nibble x
+    nibble x & 0xf
 .endm
 
 .macro str, x
+    .if x & 0x80
+        mode_b
+    .else
+        mode_a
+    .endif
+
     nibble 14
-    nibble x
+    nibble x & 0xf
 .endm
 
 # Control Flow
