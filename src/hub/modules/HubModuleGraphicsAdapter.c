@@ -1032,6 +1032,17 @@ NotFound:
     return NULL;
 }
 
+void HKHubModuleGraphicsAdapterProgramSet(HKHubModule Adapter, uint8_t ProgramID, const uint8_t *Payload, size_t Size)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(ProgramID < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_COUNT, "ProgramID must not exceed cursor program count");
+    CCAssertLog(Size <= HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE, "Size must not exceed cursor program size");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    memcpy(State->memory.programs[ProgramID], Payload, Size);
+    if (Size < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE) memset(State->memory.programs[ProgramID] + Size, 0, HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE - Size);
+}
+
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE 16
 
 static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterProgramGetOp(const uint8_t *Program, size_t Index)
