@@ -184,6 +184,30 @@
     .endif
 .endm
 
+.macro ldi, x24, x16, x8, x0
+    ldi x0
+    .if x8 || x16 || x24
+        ldi 8
+        ldi x8
+        .if x16 || x24
+            ldi 8
+            ldi x16
+            .if x24
+                ldi 8
+                ldi x24
+
+                sal
+                or
+            .endif
+            sal
+            or
+        .endif
+        sal
+        or
+    .endif
+    .save
+.endm
+
 .macro ldr, x
     .if x & 0x80
         mode_b
