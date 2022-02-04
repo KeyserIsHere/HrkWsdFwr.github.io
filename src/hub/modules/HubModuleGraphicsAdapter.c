@@ -607,7 +607,6 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
-    HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
     
     uint8_t Width = UINT8_MAX, Height, PaletteSize;
     HKHubModuleGraphicsAdapterGetGlyphBitmap(Adapter, Character, 0, 0xff, &Width, &Height, &PaletteSize);
@@ -621,7 +620,6 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
         
         HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, Width, Height, Character);
         
-        int X = Cursor->x, Y = Cursor->y;
         for (size_t Loop = 0; Loop < HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT; Loop++)
         {
             if (Character == Cursor->control[Loop].character)
@@ -630,6 +628,8 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
                 break;
             }
         }
+        
+        int X = Cursor->x, Y = Cursor->y;
         
         if (Cursor->render.mode.advance)
         {
@@ -1051,11 +1051,11 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
     size_t StackPtr = 0;
     
     struct {
-        uint32_t repeating;
+        int32_t running;
         size_t start;
         uint8_t ops;
     } Blocks[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE + 1] = {
-        { .repeating = 0, .start = 0, .ops = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2 }
+        { .running = 1, .start = 0, .ops = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2 }
     };
     size_t BlockIndex = 0;
     
@@ -1067,11 +1067,13 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
         switch ((Program[Index / 2] >> ((Index % 2) * 4)) & 0xf)
         {
             case 0:
-                Mode = !Mode;
+                if (Blocks[BlockIndex].running > 0) Mode = !Mode;
                 break;
                 
             case 1:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
@@ -1081,6 +1083,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 2:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
@@ -1090,6 +1094,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 3:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
@@ -1099,6 +1105,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 4:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
@@ -1108,6 +1116,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 5:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t L = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
@@ -1126,6 +1136,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 6:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
                 Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Mode ? ~R : -R;
@@ -1133,6 +1145,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
             }
                 
             case 7:
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 if (Mode)
                 {
                     // TODO: ref
@@ -1150,6 +1164,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 8:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t R = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
                 Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = R;
@@ -1159,6 +1175,9 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
             case 9:
             {
                 Index++;
+                
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int8_t Value = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
                 
                 StackPtr += Value | (Value & 8) * 30;
@@ -1167,6 +1186,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 10:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t R = Stack[(StackPtr - 1) % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
                 Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = R;
@@ -1175,6 +1196,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
             case 11:
             {
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t L = Stack[StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 const int32_t R = Stack[(StackPtr - 1) % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
@@ -1186,6 +1209,9 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
             case 12:
             {
                 Index++;
+                
+                if (Blocks[BlockIndex].running <= 0) break;
+                
                 const int32_t Value = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
                 
                 Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Value;
@@ -1195,6 +1221,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
             case 13:
             {
                 Index++;
+                
+                if (Blocks[BlockIndex].running <= 0) break;
                 
                 const uint8_t Reg = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
                 int32_t Value = 0;
@@ -1351,6 +1379,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
             case 14:
             {
                 Index++;
+                
+                if (Blocks[BlockIndex].running <= 0) break;
                 
                 const uint8_t Reg = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
                 int32_t Value = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
@@ -1509,18 +1539,18 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 Index++;
                 
                 const uint8_t Ops = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
-                int32_t Times = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t Times = Blocks[BlockIndex].running > 0 ? Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] : 0;
                 
                 Mode = 0;
                 
-                Blocks[++BlockIndex] = (typeof(*Blocks)){ .repeating = CCMax(Times, 0), .start = Index + 1, .ops = Ops + 1 };
+                Blocks[++BlockIndex] = (typeof(*Blocks)){ .running = CCMax(Times, 0), .start = Index + 1, .ops = Ops + 1 };
                 break;
             }
         }
         
         if (!Blocks[BlockIndex].ops)
         {
-            if (Blocks[BlockIndex].repeating--)
+            if (--Blocks[BlockIndex].running > 0)
             {
                 Index = Blocks[BlockIndex].start;
                 Mode = 0;
