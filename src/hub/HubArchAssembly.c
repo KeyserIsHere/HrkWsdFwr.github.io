@@ -1152,7 +1152,12 @@ static const CCString HKHubArchAssemblyErrorMessageAbsoluteExpression = CC_STRIN
 
 static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary Binary, HKHubArchAssemblyASTNode *Command, HKHubArchAssemblyCompilationContext *Context, size_t Depth, CCEnumerator *Enumerator)
 {
-    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken) return Offset;
+    if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken)
+    {
+        CCArrayAppendElement(Context->ifBlocks, &(HKHubArchAssemblyIfBlock){ HKHubArchAssemblyIfBlockNotTaken });
+        
+        return Offset;
+    }
     
     if ((Command->childNodes) && (CCCollectionGetCount(Command->childNodes) == 1))
     {
