@@ -1034,6 +1034,11 @@ NotFound:
 
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE 16
 
+static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterProgramGetOp(const uint8_t *Program, size_t Index)
+{
+    return (Program[Index / 2] >> (((Index + 1) % 2) * 4)) & 0xf;
+}
+
 void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, uint8_t ProgramID)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
@@ -1054,8 +1059,9 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
         int32_t running;
         size_t start;
         uint8_t ops;
+        uint8_t totalOps;
     } Blocks[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE + 1] = {
-        { .running = 1, .start = 0, .ops = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2 }
+        { .running = 1, .start = 0, .ops = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2, .totalOps = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2 }
     };
     size_t BlockIndex = 0;
     
@@ -1064,7 +1070,7 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
     {
         Blocks[BlockIndex].ops--;
         
-        switch ((Program[Index / 2] >> ((Index % 2) * 4)) & 0xf)
+        switch (HKHubModuleGraphicsAdapterProgramGetOp(Program, Index))
         {
             case 0:
                 if (Blocks[BlockIndex].running > 0) Mode = !Mode;
@@ -1178,9 +1184,9 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
                 if (Blocks[BlockIndex].running <= 0) break;
                 
-                const int8_t Value = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                const int8_t Value = HKHubModuleGraphicsAdapterProgramGetOp(Program, Index);
                 
-                StackPtr += Value | (Value & 8) * 30;
+                StackPtr += (Value | (Value & 8) * 30) + !(Value & 8);
                 break;
             }
                 
@@ -1212,7 +1218,7 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
                 if (Blocks[BlockIndex].running <= 0) break;
                 
-                const int32_t Value = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                const int32_t Value = HKHubModuleGraphicsAdapterProgramGetOp(Program, Index);
                 
                 Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = Value;
                 break;
@@ -1224,7 +1230,7 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
                 if (Blocks[BlockIndex].running <= 0) break;
                 
-                const uint8_t Reg = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                const uint8_t Reg = HKHubModuleGraphicsAdapterProgramGetOp(Program, Index);
                 int32_t Value = 0;
                 
                 if (Mode)
@@ -1382,7 +1388,7 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
                 if (Blocks[BlockIndex].running <= 0) break;
                 
-                const uint8_t Reg = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                const uint8_t Reg = HKHubModuleGraphicsAdapterProgramGetOp(Program, Index);
                 int32_t Value = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
                 if (Mode)
@@ -1538,25 +1544,27 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
             {
                 Index++;
                 
-                const uint8_t Ops = (Program[Index / 2] >> ((Index % 2) * 4)) & 0xf;
+                const uint8_t Ops = HKHubModuleGraphicsAdapterProgramGetOp(Program, Index);
                 const int32_t Times = Blocks[BlockIndex].running > 0 ? Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] : 0;
                 
                 Mode = 0;
                 
-                Blocks[++BlockIndex] = (typeof(*Blocks)){ .running = CCMax(Times, 0), .start = Index + 1, .ops = Ops + 1 };
+                Blocks[++BlockIndex] = (typeof(*Blocks)){ .running = CCMax(Times, 0), .start = Index, .ops = Ops + 1, .totalOps = Ops + 1 };
                 break;
             }
         }
         
-        if (!Blocks[BlockIndex].ops)
+        while (!Blocks[BlockIndex].ops)
         {
             if (--Blocks[BlockIndex].running > 0)
             {
+                Blocks[BlockIndex].ops = Blocks[BlockIndex].totalOps;
                 Index = Blocks[BlockIndex].start;
                 Mode = 0;
+                break;
             }
             
-            else BlockIndex--;
+            else if (!BlockIndex--) return;
         }
     }
 }
