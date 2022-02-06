@@ -618,16 +618,16 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
         
         HKHubModuleGraphicsAdapterCursor *Cursor = &State->attributes[Layer].cursor;
         
-        HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, Width, Height, Character);
-        
         for (size_t Loop = 0; Loop < HK_HUB_MODULE_GRAPHICS_ADAPTER_CURSOR_CONTROL_COUNT; Loop++)
         {
             if (Character == Cursor->control[Loop].character)
             {
-                HKHubModuleGraphicsAdapterProgramRun(Adapter, Layer, Cursor->control[Loop].program);
-                break;
+                HKHubModuleGraphicsAdapterProgramRun(Adapter, Layer, Cursor->control[Loop].program, Width, Height, Character);
+                return;
             }
         }
+        
+        HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, Width, Height, Character);
         
         int X = Cursor->x, Y = Cursor->y;
         
@@ -954,7 +954,7 @@ void HKHubModuleGraphicsAdapterStaticGlyphSet(CCChar Character, uint8_t Width, u
     
     if (Bitmap)
     {
-        uint32_t Index = (Width << 7) | (Height << 3)| PaletteSize;
+        uint32_t Index = (Width << 7) | (Height << 3) | PaletteSize;
         
         if (!HKHubModuleGraphicsAdapterGlyphBitmaps[Index][0])
         {
@@ -1050,7 +1050,7 @@ static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterProgramGetOp(const uint
     return (Program[Index / 2] >> (((Index + 1) % 2) * 4)) & 0xf;
 }
 
-void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, uint8_t ProgramID)
+void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, uint8_t ProgramID, uint8_t Width, uint8_t Height, CCChar Character)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
@@ -1063,8 +1063,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
     
     const uint8_t *Program = Memory->programs[ProgramID];
     
-    int32_t Stack[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = {0};
-    size_t StackPtr = 0;
+    int32_t Stack[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = { Character, Height, Width};
+    size_t StackPtr = 2;
     
     struct {
         int32_t running;
