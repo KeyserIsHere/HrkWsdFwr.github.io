@@ -1,41 +1,43 @@
+.include "private/gap"
+
 .macro newline_program, line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance, char_width, char_height, char24, char16, char8, char0
-    .include "private/gap"
-
-    # TODO: allow for no repeat char
-
     .assert (line_cursor == cursor_x) || (line_cursor == cursor_y), "line_cursor must be a cursor register"
     .assert (line_bounds == cursor_bounds_x) || (line_bounds == cursor_bounds_y) || (line_bounds == cursor_bounds_width) || (line_bounds == cursor_bounds_height), "line_bounds must be a cursor bounds register"
     .assert (nextline_cursor == cursor_x) || (nextline_cursor == cursor_y), "nextline_cursor must be a cursor register"
-    .assert (char_width >= 1) && (char_width <= 16), "char_width must be a value from 1 to 16"
-    .assert (char_height >= 1) && (char_height <= 16), "char_height must be a value from 1 to 16"
 
     drw
-    ldi char24, char16, char8, char0
-    ldi char_height
-    ldi char_width
-    .if (line_bounds == cursor_bounds_x) || (line_bounds == cursor_bounds_y)
-        ldr line_bounds
-        ldr line_cursor
-    .else
-        ldr line_cursor
-        ldr line_bounds
-    .endif
-    sub
-    rep 6
-        .if line_cursor == cursor_x
-            ldi char_width
-        .else
-            ldi char_height
-        .endif
-        ldr line_cursor
+
+    .if char_width && char_height
+        .assert (char_width >= 1) && (char_width <= 16), "char_width must be a value from 1 to 16"
+        .assert (char_height >= 1) && (char_height <= 16), "char_height must be a value from 1 to 16"
+
+        ldi char24, char16, char8, char0
+        ldi char_height
+        ldi char_width
         .if (line_bounds == cursor_bounds_x) || (line_bounds == cursor_bounds_y)
-            sub
+            ldr line_bounds
+            ldr line_cursor
         .else
-            add
+            ldr line_cursor
+            ldr line_bounds
         .endif
-        str line_cursor
-        drw
-        fwd 3
+        sub
+        rep 6
+            .if line_cursor == cursor_x
+                ldi char_width
+            .else
+                ldi char_height
+            .endif
+            ldr line_cursor
+            .if (line_bounds == cursor_bounds_x) || (line_bounds == cursor_bounds_y)
+                sub
+            .else
+                add
+            .endif
+            str line_cursor
+            drw
+            fwd 3
+    .endif
 
     .if line_bounds == cursor_bounds_x
         ldr cursor_bounds_width
@@ -52,4 +54,8 @@
     ldr nextline_cursor
     add
     str nextline_cursor
+.endm
+
+.macro newline_program, line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance
+    newline_program, line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance, 0, 0, 0, 0, 0, 0
 .endm
