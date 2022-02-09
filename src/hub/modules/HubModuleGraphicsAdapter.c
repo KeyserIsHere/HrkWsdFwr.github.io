@@ -354,6 +354,13 @@ static const uint8_t HKHubModuleGraphicsAdapterDefaultPalette[256] = {
     0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff
 };
 
+uint8_t HKHubModuleGraphicsAdapterDefaultPrograms[][HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE] = {
+    { 0x00 },
+    { 0x7c, 0x0c, 0x2c, 0x1d, 0x0d, 0x52, 0xf5, 0xc1, 0xd0, 0x1e, 0x07, 0x92, 0xd3, 0xe0, 0xc2, 0xd1, 0x1e, 0x10 } //newline_program cursor_x, cursor_bounds_width, cursor_y, 2, 1, 2, 0
+};
+
+_Static_assert((sizeof(HKHubModuleGraphicsAdapterDefaultPrograms) / HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE) <= HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_COUNT, "Default programs exceeds program count");
+
 HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
 {
     HKHubModuleGraphicsAdapterState *State = CCMalloc(Allocator, sizeof(HKHubModuleGraphicsAdapterState), NULL, CC_DEFAULT_ERROR_CALLBACK);
@@ -374,7 +381,12 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
             State->attributes[Loop].cursor.bounds.height = 0xff;
             State->attributes[Loop].cursor.control[0].character = '\t';
             State->attributes[Loop].cursor.control[1].character = '\n';
-            //TODO: Set default control programs
+            State->attributes[Loop].cursor.control[1].program = 1;
+            
+            for (size_t Loop2 = 0; Loop2 < sizeof(HKHubModuleGraphicsAdapterDefaultPrograms) / HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE; Loop2++)
+            {
+                memcpy(State->memory.programs[Loop2], HKHubModuleGraphicsAdapterDefaultPrograms[Loop2], HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE);
+            }
             
             State->attributes[Loop].style.slope = 3;
         }
