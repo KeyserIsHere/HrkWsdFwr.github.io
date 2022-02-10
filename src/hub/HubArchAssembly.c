@@ -1154,7 +1154,7 @@ static size_t HKHubArchAssemblyCompileDirectiveIf(size_t Offset, HKHubArchBinary
 {
     if (HKHubArchAssemblyIfBlockCurrent(Context->ifBlocks) != HKHubArchAssemblyIfBlockTaken)
     {
-        CCArrayAppendElement(Context->ifBlocks, &(HKHubArchAssemblyIfBlock){ HKHubArchAssemblyIfBlockNotTaken });
+        CCArrayAppendElement(Context->ifBlocks, &(HKHubArchAssemblyIfBlock){ HKHubArchAssemblyIfBlockEnd });
         
         return Offset;
     }
