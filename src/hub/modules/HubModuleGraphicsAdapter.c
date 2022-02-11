@@ -590,12 +590,12 @@ static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapter
     return Cell;
 }
 
-static void HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(HKHubModuleGraphicsAdapterMemory *Memory, HKHubModuleGraphicsAdapterAttributes *Attributes, uint8_t Layer, HKHubModuleGraphicsAdapterCursor *Cursor, uint8_t Width, uint8_t Height, CCChar Character)
+static void HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(HKHubModuleGraphicsAdapterMemory *Memory, HKHubModuleGraphicsAdapterAttributes *Attributes, uint8_t Layer, HKHubModuleGraphicsAdapterCursor *Cursor, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, CCChar Character)
 {
     const int RelX = CCMax((int)Cursor->bounds.x - Cursor->x, 0);
     const int RelY = CCMax((int)Cursor->bounds.y - Cursor->y, 0);
-    const int RelW = CCMin(CCMax((int)Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + Width)), Width);
-    const int RelH = CCMin(CCMax((int)Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + Height)), Height);
+    const int RelW = CCMin(CCMax((int)Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + Width)), Width) - X;
+    const int RelH = CCMin(CCMax((int)Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + Height)), Height) - Y;
     
     for (int Y = RelY, OriginY = (Cursor->render.mode.originY ? -1 : 1), CellBaseY = (Cursor->render.mode.originY ? (Height - 1) : 0); Y < RelH; Y++)
     {
@@ -634,12 +634,12 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
         {
             if (Character == Cursor->control[Loop].character)
             {
-                HKHubModuleGraphicsAdapterProgramRun(Adapter, Layer, Cursor->control[Loop].program, Width, Height, Character);
+                HKHubModuleGraphicsAdapterProgramRun(Adapter, Layer, Cursor->control[Loop].program, 0, 0, Width, Height, Character);
                 return;
             }
         }
         
-        HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, Width, Height, Character);
+        HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(&State->memory, &State->attributes[Layer], Layer, Cursor, 0, 0, Width, Height, Character);
         
         int X = Cursor->x, Y = Cursor->y;
         
@@ -1062,7 +1062,7 @@ static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterProgramGetOp(const uint
     return (Program[Index / 2] >> (((Index + 1) % 2) * 4)) & 0xf;
 }
 
-void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, uint8_t ProgramID, uint8_t Width, uint8_t Height, CCChar Character)
+void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, uint8_t ProgramID, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, CCChar Character)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
@@ -1075,8 +1075,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
     
     const uint8_t *Program = Memory->programs[ProgramID];
     
-    int32_t Stack[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = { Character, Height, Width};
-    size_t StackPtr = 2;
+    int32_t Stack[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = { Character, Height, Width, Y, X };
+    size_t StackPtr = 4;
     
     struct {
         int32_t running;
@@ -1183,11 +1183,13 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
                 else
                 {
+                    const uint8_t X = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                    const uint8_t Y = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                     const uint8_t Width = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                     const uint8_t Height = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                     const CCChar Character = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                     
-                    HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(Memory, Attributes, Layer, Cursor, Width, Height, Character);
+                    HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(Memory, Attributes, Layer, Cursor, X, Y, Width, Height, Character);
                 }
                 break;
                 
