@@ -1,0 +1,189 @@
+.include "private/gap"
+
+.macro tab_program, cursor, anchor, alignment, char_width, char_height, char24, char16, char8, char0
+    .assert (cursor == cursor_x) || (cursor == cursor_y), "cursor must be a cursor register"
+    .assert (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y) || (anchor == cursor_bounds_width) || (anchor == cursor_bounds_height), "anchor must be a cursor bounds register"
+
+    drw
+
+    .if char_width && char_height
+        .assert (char_width >= 1) && (char_width <= 16), "char_width must be a value from 1 to 16"
+        .assert (char_height >= 1) && (char_height <= 16), "char_height must be a value from 1 to 16"
+
+        ldi char24, char16, char8, char0
+        ldi char_height
+        ldi char_width
+    .endif
+    ldi alignment
+    .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
+        ldr anchor
+        ldr cursor
+    .else
+        .if anchor == cursor_bounds_width
+            ldr cursor_bounds_x
+        .else
+            ldr cursor_bounds_y
+        .endif
+        ldr cursor
+        sub
+        ldr anchor
+    .endif
+    sub
+    mod
+    ldi alignment
+    sub
+
+    .if char_width && char_height
+        ldi 1 # TODO: replace with original width/height
+        dup
+        ldr cursor
+        .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
+            add
+        .else
+            sub
+        .endif
+        str cursor
+        swap
+        sub
+        .if cursor == cursor_x
+            ldi char_width
+        .else
+            ldi char_height
+        .endif
+        swap
+
+        over
+        over
+        over
+        over
+        bak 4
+        div
+
+        dup
+        dup
+        dup
+        fwd 1
+        mul
+        dup
+        fwd 1
+        sub
+        bak 4
+
+        rep 8
+            ldi 0
+            dup
+            drw
+            fwd 3
+            .if cursor == cursor_x
+                ldi char_width
+            .else
+                ldi char_height
+            .endif
+            ldr cursor
+            .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
+                add
+            .else
+                sub
+            .endif
+            str cursor
+
+        fwd 5
+
+        .if anchor == cursor_bounds_width
+            ldi char_width
+            sub
+        .elseif anchor == cursor_bounds_height
+            ldi char_height
+            sub
+        .endif
+
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 1
+
+        .if cursor == cursor_x
+            .if anchor == cursor_bounds_x
+                swap
+                bak 1
+                swap
+                bak 1
+                ldi 0
+                dup
+            .else
+                bak 2
+                ldi 0
+                fwd 1
+            .endif
+
+            drw
+
+            .if anchor == cursor_bounds_x
+                fwd 3
+            .else
+                fwd 5
+                swap
+                bak 1
+                swap
+                sub
+            .endif
+        .else
+            .if anchor == cursor_bounds_y
+                swap
+                bak 1
+                swap
+                bak 1
+                swap
+                fwd 1
+                swap
+                bak 1
+                ldi 0
+                dup
+            .else
+                swap
+                bak 1
+                ldi 0
+            .endif
+
+            drw
+
+            .if anchor == cursor_bounds_y
+                fwd 2
+            .else
+                fwd 4
+                swap
+                bak 1
+                swap
+                sub
+            .endif
+        .endif
+
+        ldr cursor
+        .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
+            add
+        .else
+            sub
+        .endif
+        str cursor
+    .else
+        ldr cursor
+        .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
+            add
+        .else
+            sub
+        .endif
+        str cursor
+    .endif
+
+    # TODO: handle wrap
+.endm
+
+.macro tab_program, cursor, anchor, alignment, char_width, char_height, char0
+    tab_program, cursor, anchor, alignment, char_width, char_height, 0, 0, 0, char0
+.endm
+
+.macro tab_program, cursor, anchor, alignment
+    tab_program cursor, anchor, alignment, 0, 0, 0
+.endm
