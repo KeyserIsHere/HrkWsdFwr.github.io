@@ -69,7 +69,11 @@
         sub
         bak 4
 
-        rep 8
+        .if ((cursor == cursor_x) && (char_width == 16)) || ((cursor == cursor_y) && (char_height == 16))
+            rep 14
+        .else
+            rep 8
+        .endif
             ldi 0
             dup
             drw
