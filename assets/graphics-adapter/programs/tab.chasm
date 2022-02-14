@@ -3,6 +3,7 @@
 .macro tab_program, cursor, anchor, alignment, char_width, char_height, char24, char16, char8, char0
     .assert (cursor == cursor_x) || (cursor == cursor_y), "cursor must be a cursor register"
     .assert (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y) || (anchor == cursor_bounds_width) || (anchor == cursor_bounds_height), "anchor must be a cursor bounds register"
+    .assert ((cursor == cursor_x) && ((anchor == cursor_bounds_x) || (anchor == cursor_bounds_width))) || ((cursor == cursor_y) && ((anchor == cursor_bounds_y) || (anchor == cursor_bounds_height))), "cursor and anchor must be the same axis"
 
     drw
 
