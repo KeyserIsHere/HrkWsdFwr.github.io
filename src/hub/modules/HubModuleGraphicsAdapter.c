@@ -592,10 +592,13 @@ static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapter
 
 static void HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(HKHubModuleGraphicsAdapterMemory *Memory, HKHubModuleGraphicsAdapterAttributes *Attributes, uint8_t Layer, HKHubModuleGraphicsAdapterCursor *Cursor, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, CCChar Character)
 {
+    const int OriginX = Cursor->render.mode.originX ? -1 : 1;
+    const int OriginY = Cursor->render.mode.originY ? -1 : 1;
+    
     const int RelX = CCMax((int)Cursor->bounds.x - Cursor->x, 0);
     const int RelY = CCMax((int)Cursor->bounds.y - Cursor->y, 0);
-    const int RelW = CCMin(CCMax((int)Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + Width)), Width) - X;
-    const int RelH = CCMin(CCMax((int)Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + Height)), Height) - Y;
+    const int RelW = CCMin(CCMax((int)Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + (OriginX * Width))), Width) - X;
+    const int RelH = CCMin(CCMax((int)Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + (OriginY * Height))), Height) - Y;
     
     for (int Y = RelY, OriginY = (Cursor->render.mode.originY ? -1 : 1), CellBaseY = (Cursor->render.mode.originY ? (Height - 1) : 0); Y < RelH; Y++)
     {
