@@ -11,6 +11,17 @@
         .assert (char_width >= 1) && (char_width <= 16), "char_width must be a value from 1 to 16"
         .assert (char_height >= 1) && (char_height <= 16), "char_height must be a value from 1 to 16"
 
+        fwd 3
+        over
+        over
+        over
+        over
+        over
+        over
+        over
+        bak 8
+        bak 3
+
         ldi char24, char16, char8, char0
         ldi char_height
         ldi char_width
@@ -35,7 +46,24 @@
     sub
 
     .if char_width && char_height
-        ldi 1 # TODO: replace with original width/height
+        .if cursor == cursor_x
+            fwd 6
+        .else
+            fwd 7
+            swap
+            bak 1
+        .endif
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 1
+
         dup
         ldr cursor
         .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
