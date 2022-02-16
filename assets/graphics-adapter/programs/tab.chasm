@@ -16,11 +16,19 @@
         over
         over
         over
-        over
-        over
-        over
-        bak 8
-        bak 3
+        .if char24
+            over
+            over
+            over
+            bak 8
+            bak 3
+        .elseif char16
+            over
+            bak 8
+            bak 1
+        .else
+            bak 8
+        .endif
 
         ldi char24, char16, char8, char0
         ldi char_height
@@ -47,22 +55,42 @@
 
     .if char_width && char_height
         .if cursor == cursor_x
-            fwd 6
+            .if char24
+                fwd 6
+            .elseif char16
+                fwd 4
+            .else
+                fwd 4
+                swap
+                bak 1
+            .endif
         .else
-            fwd 7
-            swap
-            bak 1
+            .if char24
+                fwd 7
+                swap
+                bak 1
+            .elseif char16
+                fwd 5
+                swap
+                bak 1
+            .else
+                fwd 3
+            .endif
         .endif
         swap
         bak 1
         swap
         bak 1
-        swap
-        bak 1
-        swap
-        bak 1
-        swap
-        bak 1
+        .if char16 || char24
+            swap
+            bak 1
+            .if char24
+                swap
+                bak 1
+                swap
+                bak 1
+            .endif
+        .endif
 
         dup
         ldr cursor
