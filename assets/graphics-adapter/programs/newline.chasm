@@ -57,9 +57,9 @@
 .endm
 
 .macro newline_program, line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance, char_width, char_height, char0
-    newline_program, line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance, char_width, char_height, 0, 0, 0, char0
+    newline_program line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance, char_width, char_height, 0, 0, 0, char0
 .endm
 
 .macro newline_program, line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance
-    newline_program, line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance, 0, 0, 0
+    newline_program line_cursor, line_bounds, nextline_cursor, nextline_cursor_advance, 0, 0, 0
 .endm

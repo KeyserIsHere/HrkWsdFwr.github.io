@@ -242,7 +242,7 @@
 .endm
 
 .macro tab_program, cursor, anchor, alignment, char_width, char_height, char0
-    tab_program, cursor, anchor, alignment, char_width, char_height, 0, 0, 0, char0
+    tab_program cursor, anchor, alignment, char_width, char_height, 0, 0, 0, char0
 .endm
 
 .macro tab_program, cursor, anchor, alignment
