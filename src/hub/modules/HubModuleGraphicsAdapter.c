@@ -1084,8 +1084,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
     struct {
         int32_t running;
         size_t start;
-        uint8_t ops;
-        uint8_t totalOps;
+        size_t ops;
+        size_t totalOps;
     } Blocks[HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE + 1] = {
         { .running = 1, .start = 0, .ops = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2, .totalOps = HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2 }
     };
@@ -1212,9 +1212,9 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                 
                 if (Blocks[BlockIndex].running <= 0) break;
                 
-                const int8_t Value = HKHubModuleGraphicsAdapterProgramGetOp(Program, Index);
+                const uint8_t Value = HKHubModuleGraphicsAdapterProgramGetOp(Program, Index);
                 
-                StackPtr += (Value | (Value & 8) * 30) + !(Value & 8);
+                StackPtr += (int8_t)((Value | (Value & 8) * 30) + !(Value & 8));
                 break;
             }
                 
