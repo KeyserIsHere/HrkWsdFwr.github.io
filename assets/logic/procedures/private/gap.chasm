@@ -239,3 +239,31 @@
     .define mode, 0
     .savedefine mode
 .endm
+
+# Extended Logic
+.macro advance
+    # height
+    # width
+    # y
+    # x
+    bak 2
+    ldr cursor_render_mode_advance
+    rep 16
+        fwd 2
+        ldr cursor_render_advance_height
+        mul
+        ldr cursor_render_advance_y
+        add
+        swap
+        ldr cursor_render_advance_width
+        mul
+        ldr cursor_render_advance_x
+        add
+        bak 1
+        add
+        over
+        fwd 1
+        add
+        swap
+    .save
+.endm
