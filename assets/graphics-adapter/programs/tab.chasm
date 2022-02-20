@@ -1,6 +1,6 @@
 .include "private/gap"
 
-.macro tab_program, cursor, anchor, alignment, char_width, char_height, char24, char16, char8, char0
+.macro tab_program, cursor, anchor, alignment, char_width, char_height, char24, char16, char8, char0, wrap_width, wrap_height
     .assert (cursor == cursor_x) || (cursor == cursor_y), "cursor must be a cursor register"
     .assert (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y) || (anchor == cursor_bounds_width) || (anchor == cursor_bounds_height), "anchor must be a cursor bounds register"
     .assert ((cursor == cursor_x) && ((anchor == cursor_bounds_x) || (anchor == cursor_bounds_width))) || ((cursor == cursor_y) && ((anchor == cursor_bounds_y) || (anchor == cursor_bounds_height))), "cursor and anchor must be the same axis"
@@ -235,12 +235,16 @@
         swap
     .endif
 
-    ldi 1
-    ldi 2
+    ldi wrap_width
+    ldi wrap_height
     wrap
 
     str cursor_y
     str cursor_x
+.endm
+
+.macro tab_program, cursor, anchor, alignment, char_width, char_height, char24, char16, char8, char0
+    tab_program cursor, anchor, alignment, char_width, char_height, char24, char16, char8, char0, 1, 2
 .endm
 
 .macro tab_program, cursor, anchor, alignment, char_width, char_height, char0
