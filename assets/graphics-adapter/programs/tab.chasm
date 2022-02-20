@@ -220,25 +220,27 @@
                 sub
             .endif
         .endif
-
-        ldr cursor
-        .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
-            add
-        .else
-            sub
-        .endif
-        str cursor
-    .else
-        ldr cursor
-        .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
-            add
-        .else
-            sub
-        .endif
-        str cursor
     .endif
 
-    # TODO: handle wrap
+    ldr cursor
+    .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
+        add
+    .else
+        sub
+    .endif
+    .if cursor == cursor_x
+        ldr cursor_y
+    .else
+        ldr cursor_x
+        swap
+    .endif
+
+    ldi 1
+    ldi 2
+    wrap
+
+    str cursor_y
+    str cursor_x
 .endm
 
 .macro tab_program, cursor, anchor, alignment, char_width, char_height, char0
