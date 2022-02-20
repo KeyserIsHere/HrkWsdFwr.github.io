@@ -4,6 +4,8 @@
     .assert (cursor == cursor_x) || (cursor == cursor_y), "cursor must be a cursor register"
     .assert (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y) || (anchor == cursor_bounds_width) || (anchor == cursor_bounds_height), "anchor must be a cursor bounds register"
     .assert ((cursor == cursor_x) && ((anchor == cursor_bounds_x) || (anchor == cursor_bounds_width))) || ((cursor == cursor_y) && ((anchor == cursor_bounds_y) || (anchor == cursor_bounds_height))), "cursor and anchor must be the same axis"
+    .assert (wrap_width >= 1) && (wrap_width <= 16), "wrap_width must be a value from 1 to 16"
+    .assert (wrap_height >= 1) && (wrap_height <= 16), "wrap_height must be a value from 1 to 16"
 
     drw
 
