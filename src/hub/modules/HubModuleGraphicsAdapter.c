@@ -47,10 +47,10 @@ typedef struct {
     uint8_t visibility;
     struct {
         struct {
-            int8_t originX : 1;
-            int8_t originY : 1;
-            int8_t advance : 1;
-            int8_t wrap : 1;
+            uint8_t originX : 1;
+            uint8_t originY : 1;
+            uint8_t advance : 1;
+            uint8_t wrap : 1;
         } mode;
         struct {
             int8_t x;
@@ -1361,11 +1361,11 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                             break;
                             
                         case 5:
-                            Value = Cursor->bounds.width;
+                            Value = (int)Cursor->bounds.width + 1;
                             break;
                             
                         case 6:
-                            Value = Cursor->bounds.height;
+                            Value = (int)Cursor->bounds.height + 1;
                             break;
                             
                         case 7:
@@ -1518,11 +1518,11 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                             break;
                             
                         case 5:
-                            Cursor->bounds.width = Value;
+                            Cursor->bounds.width = Value - 1;
                             break;
                             
                         case 6:
-                            Cursor->bounds.height = Value;
+                            Cursor->bounds.height = Value - 1;
                             break;
                             
                         case 7:
