@@ -267,3 +267,212 @@
         swap
     .save
 .endm
+
+.macro wrap
+    # height
+    # width
+    # y
+    # x
+
+    ldr cursor_render_wrap_height
+    mul
+    ldr cursor_render_wrap_y
+    add
+    swap
+    ldr cursor_render_wrap_width
+    mul
+    ldr cursor_render_wrap_x
+    add
+
+    # width (adjusted)
+    # height (adjusted)
+    # y
+    # x
+
+    bak 1
+    swap
+    bak 1
+    swap
+    fwd 2
+    swap
+    bak 1
+    swap
+    fwd 1
+
+    # y
+    # x
+    # width (adjusted)
+    # height (adjusted)
+
+    ldi 2
+    rep 14
+        ldi 1
+        rep 15
+            over
+            # if (X >= ((int)Cursor->bounds.x + Cursor->bounds.width + 1))
+            ldr cursor_bounds_x
+            ldr cursor_bounds_width
+            add
+            sub
+            ldi 31
+            swap
+            sar
+            ldi 1
+            and
+
+        ldi 1
+        rep 14
+            over
+            # else if (X < Cursor->bounds.x)
+            ldr cursor_bounds_x
+            swap
+            sub
+            ldi 31
+            swap
+            sar
+            ldi 1
+            and
+
+        ldr cursor_render_mode_wrap
+        rep 3
+            # bool
+            # bool
+            # y
+            # x
+            # width (adjusted)
+            # height (adjusted)
+            rep 13
+                bak 1
+                # X = ((int)Cursor->bounds.x + Cursor->bounds.width) + Cursor->render.wrap.x;
+                # Y += height(adjusted);
+                over
+                bak 3
+                over
+                fwd 1
+                add
+
+                ldr cursor_bounds_x
+                ldr cursor_render_wrap_x
+                ldr cursor_bounds_width
+                add
+                add
+                swap
+
+                ldi 0
+            rep 9
+                # X = (int)Cursor->bounds.x + Cursor->render.wrap.x;
+                # Y += height(adjusted);
+                over
+                bak 3
+                over
+                fwd 1
+                add
+
+                # x
+                # _
+                # y (adjusted)
+                # width (adjusted)
+                # height (adjusted)
+
+                ldr cursor_bounds_x
+                ldr cursor_render_wrap_x
+                add
+                swap
+
+                # y (adjusted)
+                # x (adjusted)
+                # width (adjusted)
+                # height (adjusted)
+            fwd 2
+
+        bak 2
+
+        ldi 1
+        rep 15
+            dup
+            # if (Y >= ((int)Cursor->bounds.y + Cursor->bounds.height + 1))
+            ldr cursor_bounds_y
+            ldr cursor_bounds_height
+            add
+            sub
+            ldi 31
+            swap
+            sar
+            ldi 1
+            and
+
+        ldi 1
+        rep 14
+            over
+            # else if (Y < Cursor->bounds.y)
+            ldr cursor_bounds_y
+            swap
+            sub
+            ldi 31
+            swap
+            sar
+            ldi 1
+            and
+
+        ldr cursor_render_mode_wrap
+        rep 3
+            # bool
+            # bool
+            # y
+            # x
+            # width (adjusted)
+            # height (adjusted)
+            rep 12
+                bak 1
+                # X += width(adjusted);
+                # Y = ((int)Cursor->bounds.y + Cursor->bounds.height) + Cursor->render.wrap.y;
+                bak 1
+                swap
+                add
+                fwd 1
+                swap
+
+                ldr cursor_bounds_y
+                ldr cursor_render_wrap_y
+                ldr cursor_bounds_height
+                add
+                add
+
+                ldi 0
+            rep 8
+                # X += width(adjusted);
+                # Y = (int)Cursor->bounds.y + Cursor->render.wrap.y;
+                bak 1
+                swap
+                add
+                fwd 1
+                swap
+
+                # y
+                # x (adjusted)
+                # width (adjusted)
+                # height (adjusted)
+
+                ldr cursor_bounds_y
+                ldr cursor_render_wrap_y
+                add
+            fwd 2
+
+        bak 2
+
+        # y (adjusted)
+        # x (adjusted)
+        # width (adjusted)
+        # height (adjusted)
+
+    bak 1
+    swap
+    fwd 1
+    swap
+    bak 2
+    swap
+    fwd 1
+    swap
+    bak 1
+    .save
+.endm
