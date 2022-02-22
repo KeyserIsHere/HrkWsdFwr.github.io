@@ -804,6 +804,7 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
 void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, uint8_t *Framebuffer, size_t Size)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Framebuffer, "Framebuffer must not be null");
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
