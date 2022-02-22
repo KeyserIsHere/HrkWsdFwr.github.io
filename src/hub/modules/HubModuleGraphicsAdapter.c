@@ -578,6 +578,15 @@ void HKHubModuleGraphicsAdapterSetItalic(HKHubModule Adapter, uint8_t Layer, _Bo
     State->attributes[Layer].style.italic = Enable;
 }
 
+void HKHubModuleGraphicsAdapterSetItalicSlope(HKHubModule Adapter, uint8_t Layer, uint8_t Slope)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].style.slope = Slope;
+}
+
 void HKHubModuleGraphicsAdapterSetAnimationOffset(HKHubModule Adapter, uint8_t Layer, uint8_t Offset)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
