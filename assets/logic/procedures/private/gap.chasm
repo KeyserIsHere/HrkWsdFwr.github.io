@@ -307,8 +307,9 @@
     ldi 2
     rep 14
         ldi 1
-        rep 15
+        rep 16
             over
+            dup
             # if (X >= ((int)Cursor->bounds.x + Cursor->bounds.width + 1))
             ldr cursor_bounds_x
             ldr cursor_bounds_width
@@ -322,7 +323,7 @@
 
         ldi 1
         rep 14
-            over
+            swap
             # else if (X < Cursor->bounds.x)
             ldr cursor_bounds_x
             swap
