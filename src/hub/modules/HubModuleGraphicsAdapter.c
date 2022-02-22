@@ -442,6 +442,16 @@ void HKHubModuleGraphicsAdapterSetCursorVisibility(HKHubModule Adapter, uint8_t 
     State->attributes[Layer].cursor.visibility = Visibility;
 }
 
+void HKHubModuleGraphicsAdapterGetCursorOrigin(HKHubModule Adapter, uint8_t Layer, uint8_t *OriginX, uint8_t *OriginY)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    if (OriginX) *OriginX = State->attributes[Layer].cursor.render.mode.originX;
+    if (OriginY) *OriginY = State->attributes[Layer].cursor.render.mode.originY;
+}
+
 void HKHubModuleGraphicsAdapterSetCursorOrigin(HKHubModule Adapter, uint8_t Layer, uint8_t OriginX, uint8_t OriginY)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
