@@ -686,8 +686,8 @@ void HKHubModuleGraphicsAdapterDrawCharacter(HKHubModule Adapter, uint8_t Layer,
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     
-    uint8_t Width = UINT8_MAX, Height, PaletteSize;
-    HKHubModuleGraphicsAdapterGetGlyphBitmap(Adapter, Character, 0, 0xff, &Width, &Height, &PaletteSize);
+    uint8_t Width = UINT8_MAX, Height;
+    HKHubModuleGraphicsAdapterGetGlyphBitmap(Adapter, Character, 0, 0xff, &Width, &Height, NULL);
     
     if (Width != UINT8_MAX)
     {
@@ -775,9 +775,9 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
         
         if (Index == Character)
         {
-            *Width = BitmapWidth;
-            *Height = BitmapHeight;
-            *PaletteSize = BitmapPalette;
+            if (Width) *Width = BitmapWidth;
+            if (Height) *Height = BitmapHeight;
+            if (PaletteSize) *PaletteSize = BitmapPalette;
             
             for (uint8_t Frames = 0, Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); Animation |= Frames)
             {
@@ -1081,9 +1081,9 @@ const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_
 {
     const uint32_t Index = Character < CCArrayGetCount(HKHubModuleGraphicsAdapterGlyphIndexes) ? *(uint32_t*)CCArrayGetElementAtIndex(HKHubModuleGraphicsAdapterGlyphIndexes, Character) : HK_HUB_MODULE_GRAPHICS_ADAPTER_NULL_GLYPH_INDEX;
     
-    *Width = Index >> 28;
-    *Height = (Index >> 24) & 0xf;
-    *PaletteSize = (Index >> 21) & 0x7;
+    if (Width) *Width = Index >> 28;
+    if (Height) *Height = (Index >> 24) & 0xf;
+    if (PaletteSize) *PaletteSize = (Index >> 21) & 0x7;
     
     CCArray *Bitmaps = HKHubModuleGraphicsAdapterGlyphBitmaps[Index >> 21];
     size_t BitmapIndex = Index & HKHubModuleGraphicsAdapterCellGlyphIndexMask;
