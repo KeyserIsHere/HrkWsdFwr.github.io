@@ -404,6 +404,17 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
     return NULL;
 }
 
+void HKHubModuleGraphicsAdapterGetViewport(HKHubModule Adapter, HKHubArchPortID Port, uint8_t *X, uint8_t *Y, uint8_t *Width, uint8_t *Height)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    if (X) *X = State->viewports[Port].x;
+    if (Y) *Y = State->viewports[Port].y;
+    if (Width) *Width = State->viewports[Port].width;
+    if (Height) *Height = State->viewports[Port].height;
+}
+
 void HKHubModuleGraphicsAdapterSetViewport(HKHubModule Adapter, HKHubArchPortID Port, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
