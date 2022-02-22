@@ -605,6 +605,39 @@ void HKHubModuleGraphicsAdapterSetAnimationFilter(HKHubModule Adapter, uint8_t L
     State->attributes[Layer].animation.filter = Filter;
 }
 
+static void HKHubModuleGraphicsAdapterClearCells(HKHubModuleGraphicsAdapterMemory *Memory, uint8_t Layer, HKHubModuleGraphicsAdapterCursor *Cursor, int X, int Y, int Width, int Height)
+{
+    const int OriginX = Cursor->render.mode.originX ? -1 : 1;
+    const int OriginY = Cursor->render.mode.originY ? -1 : 1;
+    
+    const int RelX = CCMax((int)Cursor->bounds.x - Cursor->x, 0);
+    const int RelY = CCMax((int)Cursor->bounds.y - Cursor->y, 0);
+    const int RelW = CCMin(CCMax(Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + (OriginX * Width))), Width) - X;
+    const int RelH = CCMin(CCMax(Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + (OriginY * Height))), Height) - Y;
+    
+    for (int Y = RelY; Y < RelH; Y++)
+    {
+        for (int X = RelX; X < RelW; X++)
+        {
+            const uint8_t LayerX = Cursor->x + (X * OriginX), LayerY = Cursor->y + (Y * OriginY);
+            Memory->layers[Layer][LayerY][LayerX][0] = 0;
+            Memory->layers[Layer][LayerY][LayerX][1] = 0;
+            Memory->layers[Layer][LayerY][LayerX][2] = 0;
+            Memory->layers[Layer][LayerY][LayerX][3] = 0;
+            Memory->layers[Layer][LayerY][LayerX][4] = 0;
+        }
+    }
+}
+
+void HKHubModuleGraphicsAdapterClear(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    HKHubModuleGraphicsAdapterClearCells(&State->memory, Layer, &State->attributes[Layer].cursor, X, Y, (int)Width + 1, (int)Height + 1);
+}
+
 static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCellBitmap(uint8_t T, uint8_t S, uint8_t PalettePage, _Bool Bold, _Bool Italic, uint8_t AnimationOffset, uint8_t AnimationFilter, CCChar Character)
 {
     HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellModeBitmap
