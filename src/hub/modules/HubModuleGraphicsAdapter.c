@@ -852,8 +852,9 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                                 
                                 if (Pixel < Size)
                                 {
-                                    const uint8_t Sample = Bitmap[(SampleBase + SampleIndex) / 8];
-                                    const uint8_t PaletteIndex = (Sample >> (((7 - ((SampleBase + SampleIndex) % 8)) / PaletteSize) * PaletteSize)) & PaletteMask;
+                                    const size_t MSBIndex = (SampleBase + SampleIndex) / 8;
+                                    const uint16_t Sample = ((uint16_t)Bitmap[MSBIndex] << 8) | Bitmap[MSBIndex + 1];
+                                    const uint8_t PaletteIndex = ((Sample << ((SampleBase + SampleIndex) % 8)) >> (8 + (8 - PaletteSize))) & PaletteMask;
                                     
                                     Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
                                 }
