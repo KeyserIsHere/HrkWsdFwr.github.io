@@ -14,22 +14,24 @@
         .assert (char_height >= 1) && (char_height <= 16), "char_height must be a value from 1 to 16"
 
         fwd 3
-        over
-        over
-        over
-        over
         .if char24
-            over
-            over
-            over
+            ldi 7
+            rep 1
+                over
             bak 8
             bak 3
-        .elseif char16
-            over
-            bak 8
-            bak 1
         .else
-            bak 8
+            over
+            over
+            over
+            over
+            .if char16
+                over
+                bak 8
+                bak 1
+            .else
+                bak 8
+            .endif
         .endif
 
         ldi char24, char16, char8, char0
