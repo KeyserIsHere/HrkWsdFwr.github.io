@@ -655,21 +655,21 @@ static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapter
 
 static void HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(HKHubModuleGraphicsAdapterMemory *Memory, HKHubModuleGraphicsAdapterAttributes *Attributes, uint8_t Layer, HKHubModuleGraphicsAdapterCursor *Cursor, int X, int Y, int Width, int Height, CCChar Character)
 {
-    const int OriginX = Cursor->render.mode.originX ? -1 : 1;
-    const int OriginY = Cursor->render.mode.originY ? -1 : 1;
+    const int CellBaseX = (int)Cursor->x - (Cursor->render.mode.originX ? (Width - 1) : X);
+    const int CellBaseY = (int)Cursor->y - (Cursor->render.mode.originY ? (Height - 1) : Y);
     
-    const int RelX = CCMax((int)Cursor->bounds.x - Cursor->x, 0);
-    const int RelY = CCMax((int)Cursor->bounds.y - Cursor->y, 0);
-    const int RelW = CCMin(CCMax(Width - RelX, 0) + (((int)Cursor->bounds.x + Cursor->bounds.width + 1) - ((int)Cursor->x + (OriginX * Width))), Width) - X;
-    const int RelH = CCMin(CCMax(Height - RelY, 0) + (((int)Cursor->bounds.y + Cursor->bounds.height + 1) - ((int)Cursor->y + (OriginY * Height))), Height) - Y;
+    const int RelX = CCMax((int)Cursor->bounds.x - CellBaseX, 0) + (Cursor->render.mode.originX ? X : 0);
+    const int RelY = CCMax((int)Cursor->bounds.y - CellBaseY, 0) + (Cursor->render.mode.originY ? Y : 0);
+    const int RelW = CCMin(((int)Cursor->bounds.x + Cursor->bounds.width + 1), (CellBaseX + Width)) - CellBaseX;
+    const int RelH = CCMin(((int)Cursor->bounds.y + Cursor->bounds.height + 1), (CellBaseY + Height)) - CellBaseY;
     
-    for (int Y = RelY, CellBaseY = (Cursor->render.mode.originY ? (Height - 1) : 0); Y < RelH; Y++)
+    for (int Y = RelY; Y < RelH; Y++)
     {
-        for (int X = RelX, CellBaseX = (Cursor->render.mode.originX ? (Width - 1) : 0); X < RelW; X++)
+        for (int X = RelX; X < RelW; X++)
         {
-            const HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap((CellBaseY - Y) * OriginY * -1, (CellBaseX - X) * OriginX * -1, Attributes->palette.page, Attributes->style.bold, Attributes->style.italic, Attributes->animation.offset, Attributes->animation.filter, Character);
+            const HKHubModuleGraphicsAdapterCell Cell = HKHubModuleGraphicsAdapterCellBitmap(Y, X, Attributes->palette.page, Attributes->style.bold, Attributes->style.italic, Attributes->animation.offset, Attributes->animation.filter, Character);
             
-            const uint8_t LayerX = Cursor->x + (X * OriginX), LayerY = Cursor->y + (Y * OriginY);
+            const uint8_t LayerX = CellBaseX + X, LayerY = CellBaseY + Y;
             Memory->layers[Layer][LayerY][LayerX][0] = (Cell >> 32) & 0xff;
             Memory->layers[Layer][LayerY][LayerX][1] = (Cell >> 24) & 0xff;
             Memory->layers[Layer][LayerY][LayerX][2] = (Cell >> 16) & 0xff;
@@ -1426,11 +1426,11 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                             break;
                             
                         case 5:
-                            Value = (int)Cursor->bounds.width + 1;
+                            Value = (int)Cursor->bounds.width;
                             break;
                             
                         case 6:
-                            Value = (int)Cursor->bounds.height + 1;
+                            Value = (int)Cursor->bounds.height;
                             break;
                             
                         case 7:
@@ -1583,11 +1583,11 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                             break;
                             
                         case 5:
-                            Cursor->bounds.width = Value - 1;
+                            Cursor->bounds.width = Value;
                             break;
                             
                         case 6:
-                            Cursor->bounds.height = Value - 1;
+                            Cursor->bounds.height = Value;
                             break;
                             
                         case 7:
