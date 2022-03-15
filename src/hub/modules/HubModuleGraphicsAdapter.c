@@ -846,7 +846,7 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                         {
                             const ptrdiff_t OffsetX = FramebufferX + Adjust;
                             
-                            if (OffsetX >= 0)
+                            if ((OffsetX >= 0) && (OffsetX < (ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL)))
                             {
                                 const size_t Pixel = (FramebufferY * ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL) + OffsetX;
                                 
