@@ -45,6 +45,7 @@
 		F37B5227263B21F300040C5D /* HubModuleGraphicsAdapter.c in Sources */ = {isa = PBXBuildFile; fileRef = F37B5226263B21F300040C5D /* HubModuleGraphicsAdapter.c */; };
 		F38515EA2549A553001C03C5 /* HubModuleDebugController.c in Sources */ = {isa = PBXBuildFile; fileRef = F38515E92549A553001C03C5 /* HubModuleDebugController.c */; };
 		F388286C1E9B9CA500E6D7A3 /* HubArchExpressions.c in Sources */ = {isa = PBXBuildFile; fileRef = F388286A1E9B9CA500E6D7A3 /* HubArchExpressions.c */; };
+		F391F3A727C406C000D7AE29 /* images in Resources */ = {isa = PBXBuildFile; fileRef = F391F3A527C406C000D7AE29 /* images */; };
 		F39B85F122D032800025C629 /* ProgramBufferTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F39B85F022D032800025C629 /* ProgramBufferTests.m */; };
 		F39D746A22BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F39D746922BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m */; };
 		F3A0EB8422A022D4003199CC /* HubPortConnectionComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F3A0EB8322A022D4003199CC /* HubPortConnectionComponent.c */; };
@@ -63,6 +64,7 @@
 		F3ECD0051E0B423B007343C2 /* CommonC.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F34877491DDC53150068844D /* CommonC.framework */; };
 		F3EEE60F20357031006A09DA /* ItemManualComponent.c in Sources */ = {isa = PBXBuildFile; fileRef = F3EEE60E20357031006A09DA /* ItemManualComponent.c */; };
 		F3F1F1B22782055200AEDDD5 /* ProcedureSubleqTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F1F1B12782055200AEDDD5 /* ProcedureSubleqTests.m */; };
+		F3F1F1B5279BFF5800AEDDD5 /* ProcedureGapTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F1F1B4279BFF5800AEDDD5 /* ProcedureGapTests.m */; };
 		F3F2267A2363847B0052AD3D /* ProcedureModPowTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F226792363847B0052AD3D /* ProcedureModPowTests.m */; };
 		F3F2267C2363858C0052AD3D /* ProcedureTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F2267B2363858C0052AD3D /* ProcedureTests.m */; };
 		F3F2267F23675F7C0052AD3D /* ProcedureModMulTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F3F2267E23675F7C0052AD3D /* ProcedureModMulTests.m */; };
@@ -186,6 +188,7 @@
 		F38515E92549A553001C03C5 /* HubModuleDebugController.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = HubModuleDebugController.c; sourceTree = "<group>"; };
 		F388286A1E9B9CA500E6D7A3 /* HubArchExpressions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = HubArchExpressions.c; sourceTree = "<group>"; };
 		F388286B1E9B9CA500E6D7A3 /* HubArchExpressions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HubArchExpressions.h; sourceTree = "<group>"; };
+		F391F3A527C406C000D7AE29 /* images */ = {isa = PBXFileReference; lastKnownFileType = folder; path = images; sourceTree = "<group>"; };
 		F392E521206FF0A500E359D3 /* SystemID.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SystemID.h; sourceTree = "<group>"; };
 		F39B85F022D032800025C629 /* ProgramBufferTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgramBufferTests.m; sourceTree = "<group>"; };
 		F39D746922BE4CD7000BDA62 /* ProgramHTP1DecoderTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgramHTP1DecoderTests.m; sourceTree = "<group>"; };
@@ -214,6 +217,7 @@
 		F3EEE60D20357031006A09DA /* ItemManualComponent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ItemManualComponent.h; sourceTree = "<group>"; };
 		F3EEE60E20357031006A09DA /* ItemManualComponent.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ItemManualComponent.c; sourceTree = "<group>"; };
 		F3F1F1B12782055200AEDDD5 /* ProcedureSubleqTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureSubleqTests.m; sourceTree = "<group>"; };
+		F3F1F1B4279BFF5800AEDDD5 /* ProcedureGapTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureGapTests.m; sourceTree = "<group>"; };
 		F3F226792363847B0052AD3D /* ProcedureModPowTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureModPowTests.m; sourceTree = "<group>"; };
 		F3F2267B2363858C0052AD3D /* ProcedureTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProcedureTests.m; sourceTree = "<group>"; };
 		F3F2267D236385990052AD3D /* ProcedureTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProcedureTests.h; sourceTree = "<group>"; };
@@ -296,6 +300,7 @@
 		F34877101DDC2E500068844D /* HackingGameTests */ = {
 			isa = PBXGroup;
 			children = (
+				F391F3A527C406C000D7AE29 /* images */,
 				F34877F71DDC73BA0068844D /* Hub */,
 				F34877F61DDC73B20068844D /* Supporting Files */,
 			);
@@ -525,6 +530,7 @@
 				F3F226792363847B0052AD3D /* ProcedureModPowTests.m */,
 				F3F2267E23675F7C0052AD3D /* ProcedureModMulTests.m */,
 				F3F1F1B12782055200AEDDD5 /* ProcedureSubleqTests.m */,
+				F3F1F1B4279BFF5800AEDDD5 /* ProcedureGapTests.m */,
 			);
 			name = Procedures;
 			sourceTree = "<group>";
@@ -666,6 +672,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F391F3A727C406C000D7AE29 /* images in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -728,6 +735,7 @@
 				F3F492321DE79C5F0046A391 /* HubArchInstructionTests.m in Sources */,
 				F3F2268A236B86870052AD3D /* HubArchCacheTests.m in Sources */,
 				F312921B22C720C80063D046 /* ProgramHTP4DecoderTests.m in Sources */,
+				F3F1F1B5279BFF5800AEDDD5 /* ProcedureGapTests.m in Sources */,
 				F37151FD22F73E5B00FDD59A /* ProgramBroadcastNodeReceiverTests.m in Sources */,
 				F330184A231BF75300653A0B /* ProgramPassthrough0Tests.m in Sources */,
 				F39B85F122D032800025C629 /* ProgramBufferTests.m in Sources */,

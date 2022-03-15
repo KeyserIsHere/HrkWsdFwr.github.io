@@ -1,0 +1,821 @@
+/*
+ *  Copyright (c) 2021, Stefan Johnson
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice, this list
+ *     of conditions and the following disclaimer.
+ *  2. Redistributions in binary form must reproduce the above copyright notice, this
+ *     list of conditions and the following disclaimer in the documentation and/or other
+ *     materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#import <XCTest/XCTest.h>
+#import "HubModuleGraphicsAdapter.h"
+#import "HubArchAssembly.h"
+
+@interface HubModuleGraphicsAdapterTests : XCTestCase
+
+@end
+
+@implementation HubModuleGraphicsAdapterTests
+
++(void) setUp
+{
+    [super setUp];
+    
+    if (HKHubArchAssemblyIncludeSearchPaths) CCCollectionDestroy(HKHubArchAssemblyIncludeSearchPaths);
+    
+    HKHubArchAssemblyIncludeSearchPaths = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(FSPath), FSPathComponentDestructorForCollection);
+    
+    CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &(FSPath){ FSPathCreate("assets/logic/programs/") });
+    CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &(FSPath){ FSPathCreate("assets/logic/procedures/") });
+    
+    HKHubModuleGraphicsAdapterStaticGlyphInit();
+}
+
+static const uint8_t Glyph1x1[] = {
+    0xff,
+    0xff,
+    0x00,
+    0x3c,
+    0x00,
+    0xf0,
+    0x03,
+    0xc0,
+    0x0f,
+    0x00,
+    0x3f,
+    0xff,
+    0xc0
+};
+
+-(void) setProgram: (const char*)source WithID: (uint8_t)programID ForAdapter: (HKHubModule)adapter
+{
+    CCOrderedCollection AST = HKHubArchAssemblyParse([[NSString stringWithFormat: @".include \"../../graphics-adapter/programs/tab\"\n.include \"../../graphics-adapter/programs/newline\"\n%s\n.entrypoint\n", source] UTF8String]);
+    
+    CCOrderedCollection Errors = NULL;
+    HKHubArchBinary Binary = HKHubArchAssemblyCreateBinary(CC_STD_ALLOCATOR, AST, &Errors); HKHubArchAssemblyPrintError(Errors);
+    CCCollectionDestroy(AST);
+    
+    HKHubModuleGraphicsAdapterProgramSet(adapter, programID, Binary->data, Binary->entrypoint);
+    
+    HKHubArchBinaryDestroy(Binary);
+}
+
+-(void) drawChars: (const char*)string AtLayer: (uint8_t)layer ForAdapter: (HKHubModule)adapter
+{
+    unsigned char c;
+    while ((c = *(string++))) HKHubModuleGraphicsAdapterDrawCharacter(adapter, layer, c);
+}
+
+-(void) clearViewport: (HKHubArchPortID)port AtLayer: (uint8_t)layer ForAdapter: (HKHubModule)adapter
+{
+    uint8_t OriginX, OriginY;
+    HKHubModuleGraphicsAdapterGetCursorOrigin(adapter, 0, &OriginX, &OriginY);
+    
+    uint8_t X, Y, W, H;
+    HKHubModuleGraphicsAdapterGetViewport(adapter, port, &X, &Y, &W, &H);
+    
+    HKHubModuleGraphicsAdapterSetCursor(adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterClear(adapter, 0, X, Y, W, H);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(adapter, 0, OriginX, OriginY);
+}
+
+-(NSImage*) previewViewport: (HKHubArchPortID)port ForAdapter: (HKHubModule)adapter
+{
+    uint8_t W, H;
+    HKHubModuleGraphicsAdapterGetViewport(adapter, port, NULL, NULL, &W, &H);
+    
+    const size_t Width = ((size_t)W + 1) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL, Height = ((size_t)H + 1) * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL;
+    const size_t Size = Width * Height;
+    uint8_t *Framebuffer;
+    CC_TEMP_Malloc(Framebuffer, Size);
+    memset(Framebuffer, 0, Size);
+    HKHubModuleGraphicsAdapterBlit(adapter, port, Framebuffer, Size);
+    
+    CGColorSpaceRef ColourSpace = CGColorSpaceCreateDeviceRGB();
+    CGContextRef Ctx = CGBitmapContextCreate(NULL, Width, Height, 8, Width * 4, ColourSpace, kCGImageAlphaPremultipliedLast);
+    CGColorSpaceRelease(ColourSpace);
+    
+    CGContextSetRGBFillColor(Ctx, 0.0f, 0.0f, 0.0f, 1.0f);
+    CGContextFillRect(Ctx, CGRectMake(0.0f, 0.0f, Width, Height));
+    
+    for (size_t Y = 0; Y < Height; Y++)
+    {
+        for (size_t X = 0; X < Width; X++)
+        {
+            if (Framebuffer[(Y * Width) + X])
+            {
+                switch (Framebuffer[(Y * Width) + X])
+                {
+                    case 1:
+                        CGContextSetRGBFillColor(Ctx, 1.0f, 1.0f, 1.0f, 1.0f);
+                        break;
+                        
+                    case 2:
+                        CGContextSetRGBFillColor(Ctx, 1.0f, 0.0f, 0.0f, 1.0f);
+                        break;
+                        
+                    case 3:
+                        CGContextSetRGBFillColor(Ctx, 0.0f, 1.0f, 0.0f, 1.0f);
+                        break;
+                        
+                    case 4:
+                        CGContextSetRGBFillColor(Ctx, 0.0f, 0.0f, 1.0f, 1.0f);
+                        break;
+                        
+                    default:
+                        CGContextSetRGBFillColor(Ctx, 1.0f, 0.0f, 1.0f, 1.0f);
+                        break;
+                }
+                CGContextFillRect(Ctx, CGRectMake(X, Height - Y - 1, 1.0f, 1.0f));
+            }
+        }
+    }
+    
+    CGImageRef Image = CGBitmapContextCreateImage(Ctx);
+    NSImage *Preview = [[NSImage alloc] initWithCGImage: Image size: NSMakeSize(Width, Height)];
+    CGImageRelease(Image);
+    
+    CGContextRelease(Ctx);
+    
+    CC_TEMP_Free(Framebuffer);
+    
+    return Preview;
+}
+
+-(void) assertImage: (NSString*)name  MatchesViewport: (HKHubArchPortID)port ForAdapter: (HKHubModule)adapter
+{
+    NSImage *Image = [[NSImage alloc] initWithContentsOfFile: [NSString stringWithFormat: @"%@/images/HubModuleGraphicsAdapterTests/%@.png", [[NSBundle bundleForClass: [self class]] resourcePath], name]], *Preview = [self previewViewport: port ForAdapter: adapter];
+    
+    XCTAssertEqual(Image.size.width, Preview.size.width, @"Should have the same width");
+    XCTAssertEqual(Image.size.height, Preview.size.height, @"Should have the same height");
+    
+    NSBitmapImageRep *ImageRep = [[NSBitmapImageRep alloc] initWithCGImage: [Image CGImageForProposedRect: NULL context: nil hints: nil]];
+    NSBitmapImageRep *PreviewRep = [[NSBitmapImageRep alloc] initWithCGImage: [Preview CGImageForProposedRect: NULL context: nil hints: nil]];
+    
+    for (size_t Y = 0, Height = Image.size.height; Y < Height; Y++)
+    {
+        for (size_t X = 0, Width = Image.size.width; X < Width; X++)
+        {
+            XCTAssertTrue([[ImageRep colorAtX: X y: Y] isEqual: [PreviewRep colorAtX: X y: Y]], @"Should match pixel (%zu, %zu)", X, Y);
+        }
+    }
+}
+
+-(void) testBlit
+{
+    HKHubModule Adapter = HKHubModuleGraphicsAdapterCreate(CC_STD_ALLOCATOR);
+    
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 0, 0, 0, 39, 39);
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 8, 35, 35, 7, 7);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    
+    HKHubModuleGraphicsAdapterSetPalettePage(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalicSlope(Adapter, 0, 3);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 0, 0);
+    
+    HKHubModuleGraphicsAdapterStaticGlyphSet(1, 1, 1, 0, (uint8_t[]){
+        0xff, 0x02, 0x04, 0x08, 0x10, 0x20, 0x7f, 0x02, 0x04, 0x08, 0x10, 0x20, 0x60, 0x40, 0x81, 0x02,
+        0x04, 0x0f, 0xe0, 0x40, 0x81, 0x02, 0x04, 0x0f, 0xf0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(2, 1, 1, 1, (uint8_t[]){
+        0x55, 0x55, 0x00, 0x04, 0x00, 0x10, 0x00, 0x40, 0x01, 0x00, 0x04, 0x00, 0x15, 0x55, 0xaa, 0xa6,
+        0xaa, 0x9a, 0xaa, 0x6a, 0xa9, 0xaa, 0xa6, 0xaa, 0x97, 0xff, 0xdf, 0xff, 0x7f, 0xfd, 0xff, 0xf7,
+        0xff, 0xdf, 0xff, 0x55, 0x54, 0x00, 0x10, 0x00, 0x40, 0x01, 0x00, 0x04, 0x00, 0x10, 0x00, 0x55,
+        0x55
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(3, 1, 1, 2, (uint8_t[]){
+        0x24, 0x92, 0x49, 0x00, 0x00, 0x08, 0x00, 0x00, 0x40, 0x00, 0x02, 0x00, 0x00, 0x10, 0x00, 0x00,
+        0x80, 0x00, 0x04, 0x92, 0x49, 0x49, 0x24, 0x8a, 0x49, 0x24, 0x52, 0x49, 0x22, 0x92, 0x49, 0x14,
+        0x92, 0x48, 0xa4, 0x92, 0x44, 0xb6, 0xdb, 0x65, 0xb6, 0xdb, 0x2d, 0xb6, 0xd9, 0x6d, 0xb6, 0xcb,
+        0x6d, 0xb6, 0x5b, 0x6d, 0xb2, 0x49, 0x24, 0xc9, 0x24, 0x86, 0x49, 0x24, 0x32, 0x49, 0x21, 0x92,
+        0x49, 0x0c, 0x92, 0x48, 0x64, 0x92, 0x42, 0x49, 0x24, 0x90
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(4, 1, 1, 3, (uint8_t[]){
+        0x11, 0x11, 0x11, 0x11, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00,
+        0x00, 0x01, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x01, 0x11, 0x11, 0x11, 0x22, 0x22, 0x22, 0x12,
+        0x22, 0x22, 0x21, 0x22, 0x22, 0x22, 0x12, 0x22, 0x22, 0x21, 0x22, 0x22, 0x22, 0x12, 0x22, 0x22,
+        0x21, 0x13, 0x33, 0x33, 0x31, 0x33, 0x33, 0x33, 0x13, 0x33, 0x33, 0x31, 0x33, 0x33, 0x33, 0x13,
+        0x33, 0x33, 0x31, 0x33, 0x33, 0x33, 0x11, 0x11, 0x11, 0x14, 0x44, 0x44, 0x41, 0x44, 0x44, 0x44,
+        0x14, 0x44, 0x44, 0x41, 0x44, 0x44, 0x44, 0x14, 0x44, 0x44, 0x41, 0x44, 0x44, 0x44, 0x11, 0x11,
+        0x11, 0x11
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(5, 1, 1, 4, (uint8_t[]){
+        0x08, 0x42, 0x10, 0x84, 0x21, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00,
+        0x00, 0x00, 0x80, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x42,
+        0x10, 0x84, 0x21, 0x10, 0x84, 0x21, 0x08, 0x22, 0x10, 0x84, 0x21, 0x04, 0x42, 0x10, 0x84, 0x20,
+        0x88, 0x42, 0x10, 0x84, 0x11, 0x08, 0x42, 0x10, 0x82, 0x21, 0x08, 0x42, 0x10, 0x42, 0x31, 0x8c,
+        0x63, 0x18, 0x46, 0x31, 0x8c, 0x63, 0x08, 0xc6, 0x31, 0x8c, 0x61, 0x18, 0xc6, 0x31, 0x8c, 0x23,
+        0x18, 0xc6, 0x31, 0x84, 0x63, 0x18, 0xc6, 0x30, 0x84, 0x21, 0x08, 0x42, 0x42, 0x10, 0x84, 0x20,
+        0x48, 0x42, 0x10, 0x84, 0x09, 0x08, 0x42, 0x10, 0x81, 0x21, 0x08, 0x42, 0x10, 0x24, 0x21, 0x08,
+        0x42, 0x04, 0x84, 0x21, 0x08, 0x40, 0x84, 0x21, 0x08, 0x42, 0x10
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(6, 1, 1, 5, (uint8_t[]){
+        0x04, 0x10, 0x41, 0x04, 0x10, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00,
+        0x10, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x40, 0x00, 0x00, 0x00, 0x00, 0x10, 0x41, 0x04, 0x10, 0x41, 0x08, 0x20, 0x82, 0x08, 0x20, 0x42,
+        0x08, 0x20, 0x82, 0x08, 0x10, 0x82, 0x08, 0x20, 0x82, 0x04, 0x20, 0x82, 0x08, 0x20, 0x81, 0x08,
+        0x20, 0x82, 0x08, 0x20, 0x42, 0x08, 0x20, 0x82, 0x08, 0x10, 0x43, 0x0c, 0x30, 0xc3, 0x0c, 0x10,
+        0xc3, 0x0c, 0x30, 0xc3, 0x04, 0x30, 0xc3, 0x0c, 0x30, 0xc1, 0x0c, 0x30, 0xc3, 0x0c, 0x30, 0x43,
+        0x0c, 0x30, 0xc3, 0x0c, 0x10, 0xc3, 0x0c, 0x30, 0xc3, 0x04, 0x10, 0x41, 0x04, 0x10, 0x44, 0x10,
+        0x41, 0x04, 0x10, 0x11, 0x04, 0x10, 0x41, 0x04, 0x04, 0x41, 0x04, 0x10, 0x41, 0x01, 0x10, 0x41,
+        0x04, 0x10, 0x40, 0x44, 0x10, 0x41, 0x04, 0x10, 0x11, 0x04, 0x10, 0x41, 0x04, 0x04, 0x10, 0x41,
+        0x04, 0x10, 0x41
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(7, 1, 1, 6, (uint8_t[]){
+        0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x81, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x08, 0x10, 0x20, 0x40,
+        0x81, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x82, 0x04, 0x08, 0x10, 0x20, 0x40, 0x41, 0x02, 0x04,
+        0x08, 0x10, 0x20, 0x20, 0x81, 0x02, 0x04, 0x08, 0x10, 0x10, 0x40, 0x81, 0x02, 0x04, 0x08, 0x08,
+        0x20, 0x40, 0x81, 0x02, 0x04, 0x04, 0x08, 0x30, 0x60, 0xc1, 0x83, 0x06, 0x04, 0x18, 0x30, 0x60,
+        0xc1, 0x83, 0x02, 0x0c, 0x18, 0x30, 0x60, 0xc1, 0x81, 0x06, 0x0c, 0x18, 0x30, 0x60, 0xc0, 0x83,
+        0x06, 0x0c, 0x18, 0x30, 0x60, 0x41, 0x83, 0x06, 0x0c, 0x18, 0x30, 0x20, 0x40, 0x81, 0x02, 0x04,
+        0x08, 0x40, 0x81, 0x02, 0x04, 0x08, 0x04, 0x20, 0x40, 0x81, 0x02, 0x04, 0x02, 0x10, 0x20, 0x40,
+        0x81, 0x02, 0x01, 0x08, 0x10, 0x20, 0x40, 0x81, 0x00, 0x84, 0x08, 0x10, 0x20, 0x40, 0x80, 0x42,
+        0x04, 0x08, 0x10, 0x20, 0x40, 0x20, 0x40, 0x81, 0x02, 0x04, 0x08, 0x10
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(8, 1, 1, 7, (uint8_t[]){
+        1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+    
+        1, 1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2, 1,
+        2, 2, 2, 2, 2, 2, 1,
+        2, 2, 2, 2, 2, 2, 1,
+        2, 2, 2, 2, 2, 2, 1,
+        2, 2, 2, 2, 2, 2, 1,
+        2, 2, 2, 2, 2, 2, 1,
+    
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 1, 1, 1, 1, 1, 1,
+    
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        1, 1, 1, 1, 1, 1, 1,
+    }, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 0, 19, 19);
+    
+    const char *Text = "\x01\x02\x03\x04\x05\x06\x07\x08";
+    
+#pragma mark top left
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, TRUE);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 2);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 4);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    [self drawChars: "\x02" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    [self drawChars: "\x02" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 9, 4);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 11, 5);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 1);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 12, 5);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 14, 4);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 14, 5);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 15, 4);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 6, 2, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 5);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 5, 6, 2, 0);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 5, 6);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 7, 2, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 6);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 9, 6, 2, 0);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 9, 6);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 8, 5, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 1, 8);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 6, 8, 5, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 7, 8);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 12, 8, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 13, 8);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 12, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 1, 12);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 6, 12, 5, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 7, 12);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 12, 12, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 13, 12);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 2, 1);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, -1, 0);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 12, 17, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 17, 17);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 5, 17, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 10, 17);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, -1, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, -1);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 17, 3, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 3, 19);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    
+#pragma mark bottom right
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 1);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, -1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, -1);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 20, 20, 19, 19);
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39, 39);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, TRUE);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39, 39 - 2);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39, 39 - 4);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    [self drawChars: "\x02" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    [self drawChars: "\x02" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 1);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 9, 39 - 4);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 11, 39 - 5);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 12, 39 - 5);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 14, 39 - 4);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 14, 39 - 5);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 15, 39 - 4);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 3, 39 - 7, 2, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 0, 39 - 5);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 7, 39 - 6, 2, 0);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 5, 39 - 6);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 3, 39 - 8, 2, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 0, 39 - 6);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 11, 39 - 6, 2, 0);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 9, 39 - 6);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 5, 39 - 9, 5, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 1, 39 - 8);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 11, 39 - 9, 5, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 7, 39 - 8);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 17, 39 - 11, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 13, 39 - 8);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 5, 39 - 15, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 1, 39 - 12);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 11, 39 - 14, 5, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 7, 39 - 12);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 17, 39 - 15, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 13, 39 - 12);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, -2, -1);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 17, 39 - 20, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 17, 39 - 17);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, -1);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 10, 39 - 20, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 10, 39 - 17);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 39 - 3, 39 - 20, 3, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 39 - 3, 39 - 19);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+#pragma mark top right
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 19, 0, 19, 19);
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, TRUE);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 21, 0);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 23, 0);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    [self drawChars: "\x02" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    [self drawChars: "\x02" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 23, 9);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 24, 11);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 1);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 24, 12);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 23, 14);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 24, 14);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 23, 15);
+    [self drawChars: "\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 25, 1, 1, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 24, 0);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 25, 5, 0, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 25, 5);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 26, 1, 1, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 25, 0);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 25, 9, 0, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 25, 9);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 27, 0, 1, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 27, 1);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 27, 6, 1, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 27, 7);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 27, 12, 3, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 27, 13);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 31, 0, 3, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 31, 1);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 31, 6, 2, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 31, 7);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 31, 12, 3, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 31, 13);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 1, 2);
+    [self drawChars: "\x03\x03\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 0, -1);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 36, 12, 3, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 36, 17);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 36, 5, 3, 5);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 36, 10);
+    [self drawChars: "\x03\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, -1);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, -1, 0);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 36, 0, 3, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 38, 3);
+    [self drawChars: "\x03\x03\x03" AtLayer: 0 ForAdapter: Adapter];
+    
+#pragma mark bottom left
+    HKHubModuleGraphicsAdapterStaticGlyphSet(255, 2, 2, 7, (uint8_t[]){
+        1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0,
+        
+        1, 1, 1, 1, 1, 1, 1,
+        2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2,
+        2, 2, 2, 2, 2, 2, 2,
+        
+        1, 1, 1, 1, 1, 1, 1,
+        3, 3, 3, 3, 3, 3, 1,
+        3, 3, 3, 3, 3, 3, 1,
+        3, 3, 3, 3, 3, 3, 1,
+        3, 3, 3, 3, 3, 3, 1,
+        3, 3, 3, 3, 3, 3, 1,
+        3, 3, 3, 3, 3, 3, 1,
+        
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        1, 3, 3, 3, 3, 3, 3,
+        
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1,
+        
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        4, 4, 4, 4, 4, 4, 1,
+        
+        1, 2, 2, 2, 2, 2, 2,
+        1, 2, 2, 2, 2, 2, 2,
+        1, 2, 2, 2, 2, 2, 2,
+        1, 2, 2, 2, 2, 2, 2,
+        1, 2, 2, 2, 2, 2, 2,
+        1, 2, 2, 2, 2, 2, 2,
+        1, 1, 1, 1, 1, 1, 1,
+        
+        4, 4, 4, 4, 4, 4, 4,
+        4, 4, 4, 4, 4, 4, 4,
+        4, 4, 4, 4, 4, 4, 4,
+        4, 4, 4, 4, 4, 4, 4,
+        4, 4, 4, 4, 4, 4, 4,
+        4, 4, 4, 4, 4, 4, 4,
+        1, 1, 1, 1, 1, 1, 1,
+        
+        0, 0, 0, 0, 0, 0, 1,
+        0, 0, 0, 0, 0, 0, 1,
+        0, 0, 0, 0, 0, 0, 1,
+        0, 0, 0, 0, 0, 0, 1,
+        0, 0, 0, 0, 0, 0, 1,
+        0, 0, 0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1, 1, 1,
+    }, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 22, 0, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 21);
+    [self drawChars: "\xff" AtLayer: 0 ForAdapter: Adapter];
+    
+    [self assertImage: @"blit-0" MatchesViewport: 0 ForAdapter: Adapter];
+    [self assertImage: @"blit-8" MatchesViewport: 8 ForAdapter: Adapter];
+    
+    HKHubModuleDestroy(Adapter);
+}
+
+-(void) testTabProgram
+{
+    HKHubModule Adapter = HKHubModuleGraphicsAdapterCreate(CC_STD_ALLOCATOR);
+    
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 0, 0, 0, 39, 39);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    
+    HKHubModuleGraphicsAdapterSetPalettePage(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalicSlope(Adapter, 0, 3);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 0, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursorControl(Adapter, 0, 0, '\t', 10);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('\t', 0, 0, 1, Glyph1x1, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 0, 19, 19);
+    
+    const char *Text = "\t1\t12\t123\t1234\t.\t\t.";
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
+    [self drawChars: "0123456789abcdefghijklmnopqrstuvwxyz" AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 2);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 4);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 6);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 4" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 8);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 4, 1, 2, 0x30" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 10);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 4, 2, 2, 0, 0, 0xff, 0x10" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 12);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\ntab_program cursor_x, cursor_bounds_x, 4, 1, 2, 0x20" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 14);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 16);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 20, 19, 39);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, -1, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 20);
+    [self drawChars: "0123456789abcdefghijklmnopqrstuvwxyz" AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_width, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 22);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_width, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 24);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_width, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 26);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_width, 4" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 28);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_width, 4, 1, 2, 0x30" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 30);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_x, cursor_bounds_width, 4, 2, 2, 0, 0, 0xff, 0x10" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 32);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\ntab_program cursor_x, cursor_bounds_width, 4, 1, 2, 0x20" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 34);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    [self setProgram: "tab_program cursor_x, cursor_bounds_width, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 36);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    [self assertImage: @"tab-0" MatchesViewport: 0 ForAdapter: Adapter];
+    
+    HKHubModuleDestroy(Adapter);
+}
+
+@end
