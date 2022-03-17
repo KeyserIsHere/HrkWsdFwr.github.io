@@ -857,6 +857,14 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                                     const uint8_t PaletteIndex = ((Sample << ((SampleBase + SampleIndex) % 8)) >> (8 + (8 - PaletteSize))) & PaletteMask;
                                     
                                     Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
+                                    
+                                    if ((PaletteIndex) && (HKHubModuleGraphicsAdapterCellIsBold(Glyph)))
+                                    {
+                                        if ((OffsetX - 1) >= 0)
+                                        {
+                                            Framebuffer[Pixel - 1] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -864,7 +872,6 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                         //TODO: adjust sampleindex when MaxX is ViewportWidth
                         //TODO: eliminate redundant iterations (cause of adjust) and adjust sampleindex to account for missing iterations
                         //but test this first
-                        //TODO: add bold/repeat
                     }
                     
                     continue;
