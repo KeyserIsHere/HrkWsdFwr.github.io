@@ -717,7 +717,7 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, TRUE);
     HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 1, 0);
     HKHubModuleGraphicsAdapterSetBold(Adapter, 0, TRUE);
-    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 24, 5, 3);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 24, 5, 7);
     
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 24);
     [self drawChars: "\x02" "ab\x03" AtLayer: 0 ForAdapter: Adapter];
@@ -727,6 +727,12 @@ static const uint8_t Glyph1x1[] = {
     [self drawChars: "c" AtLayer: 0 ForAdapter: Adapter];
     HKHubModuleGraphicsAdapterSetBold(Adapter, 0, TRUE);
     [self drawChars: "de\x03" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 28);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    [self drawChars: "abcdef" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 30);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
+    [self drawChars: "abcdef" AtLayer: 0 ForAdapter: Adapter];
     
     [self assertImage: @"blit-0" MatchesViewport: 0 ForAdapter: Adapter];
     [self assertImage: @"blit-8" MatchesViewport: 8 ForAdapter: Adapter];
