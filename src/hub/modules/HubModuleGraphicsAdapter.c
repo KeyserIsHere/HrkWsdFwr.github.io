@@ -779,7 +779,7 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
             if (Height) *Height = BitmapHeight;
             if (PaletteSize) *PaletteSize = BitmapPalette;
             
-            for (uint8_t Frames = 0, Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); Animation |= Frames)
+            for (uint8_t Frames = 0, Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize + 1) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); Animation |= Frames)
             {
                 Frames = Memory->glyphs[Offset++];
                 
@@ -791,7 +791,7 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
             return NULL;
         }
         
-        for (uint8_t Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); )
+        for (uint8_t Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize + 1) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); )
         {
             Animation |= Memory->glyphs[Offset++];
             Offset += BitmapSize;
@@ -799,6 +799,60 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
     }
     
     return HKHubModuleGraphicsAdapterStaticGlyphGet(Character, Width, Height, PaletteSize);
+}
+
+_Bool HKHubModuleGraphicsAdapterSetGlyphBitmap(HKHubModule Adapter, CCChar Character, uint8_t Width, uint8_t Height, uint8_t PaletteSize, const uint8_t *Bitmap, size_t Frames)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Width <= 0xf, "Width must not exceed maximum width");
+    CCAssertLog(Height <= 0xf, "Height must not exceed maximum height");
+    CCAssertLog(PaletteSize <= 0x7, "PaletteSize must not exceed maximum palette size");
+    CCAssertLog(Character <= HKHubModuleGraphicsAdapterCellGlyphIndexMask, "Character must not exceed maximum character count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
+    
+    const size_t BitmapSize = HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(Width + 1, Height + 1, PaletteSize + 1);
+    
+    uint8_t CompleteAnimation = 0;
+    for (size_t Frame = 0; Frame < Frames; Frame++) CompleteAnimation |= Bitmap[Frame * (BitmapSize + 1)];
+    
+    for (size_t Offset = 0, GlyphSize = (BitmapSize + 1) * (Frames + (CompleteAnimation != 0xff)); (Offset + 3 + GlyphSize) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER; )
+    {
+        uint32_t Index = ((Memory->glyphs[Offset + 1] << 16) | (Memory->glyphs[Offset + 2] << 8) | Memory->glyphs[Offset + 3]) & HKHubModuleGraphicsAdapterCellGlyphIndexMask;
+        
+        if (Index == 0)
+        {
+            Memory->glyphs[Offset] = (Width << 4) | Height;
+            Memory->glyphs[Offset + 1] = (PaletteSize << 5) | ((Character >> 16) & 0xff);
+            Memory->glyphs[Offset + 2] = (Character >> 8) & 0xff;
+            Memory->glyphs[Offset + 3] = Character & 0xff;
+            
+            memcpy(&Memory->glyphs[Offset + 4], Bitmap, (BitmapSize + 1) * Frames);
+            
+            if (CompleteAnimation != 0xff) Memory->glyphs[Offset + 4 + ((BitmapSize + 1) * Frames)] = ~CompleteAnimation;
+            
+            return TRUE;
+        }
+        
+        else
+        {
+            uint8_t BitmapWidth = (Memory->glyphs[Offset] >> 4);
+            uint8_t BitmapHeight = (Memory->glyphs[Offset] & 0xf);
+            uint8_t BitmapPalette = (Memory->glyphs[Offset + 1] >> 5);
+            const size_t BitmapSize = HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BITMAP_SIZE(BitmapWidth + 1, BitmapHeight + 1, BitmapPalette + 1);
+            
+            Offset += 4;
+            
+            for (uint8_t Animation = 0; (Animation != 0xff) && ((Offset + BitmapSize) < HK_HUB_MODULE_GRAPHICS_ADAPTER_GLYPH_BUFFER); )
+            {
+                Animation |= Memory->glyphs[Offset++];
+                Offset += BitmapSize;
+            }
+        }
+    }
+    
+    return FALSE;
 }
 
 void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, uint8_t *Framebuffer, size_t Size)
@@ -868,10 +922,6 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                                 }
                             }
                         }
-                        
-                        //TODO: adjust sampleindex when MaxX is ViewportWidth
-                        //TODO: eliminate redundant iterations (cause of adjust) and adjust sampleindex to account for missing iterations
-                        //but test this first
                     }
                     
                     continue;
@@ -1037,7 +1087,7 @@ void HKHubModuleGraphicsAdapterStaticGlyphSet(CCChar Character, uint8_t Width, u
     CCAssertLog(Width <= 0xf, "Width must not exceed maximum width");
     CCAssertLog(Height <= 0xf, "Height must not exceed maximum height");
     CCAssertLog(PaletteSize <= 0x7, "PaletteSize must not exceed maximum palette size");
-    CCAssertLog(Count <= HKHubModuleGraphicsAdapterCellGlyphIndexMask, "Count must not exceed maximum character count");
+    CCAssertLog((Character + Count) <= HKHubModuleGraphicsAdapterCellGlyphIndexMask, "Count must not exceed maximum character count");
     
     if (Bitmap)
     {
