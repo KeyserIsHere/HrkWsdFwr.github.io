@@ -184,6 +184,7 @@ static const uint8_t Glyph1x1[] = {
     
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 0, 0, 0, 39, 39);
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 8, 35, 35, 7, 7);
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 16, 37, 0, 0, 39);
     
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
     HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff);
@@ -736,6 +737,7 @@ static const uint8_t Glyph1x1[] = {
     
     [self assertImage: @"blit-0" MatchesViewport: 0 ForAdapter: Adapter];
     [self assertImage: @"blit-8" MatchesViewport: 8 ForAdapter: Adapter];
+    [self assertImage: @"blit-16" MatchesViewport: 16 ForAdapter: Adapter];
     
     HKHubModuleDestroy(Adapter);
 }
