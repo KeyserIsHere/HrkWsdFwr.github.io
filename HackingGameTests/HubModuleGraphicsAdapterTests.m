@@ -185,6 +185,7 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 0, 0, 0, 39, 39);
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 8, 35, 35, 7, 7);
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 16, 37, 0, 0, 39);
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 24, 0, 32, 7, 3);
     
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
     HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff);
@@ -735,9 +736,197 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
     [self drawChars: "abcdef" AtLayer: 0 ForAdapter: Adapter];
     
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 32, 17, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 32);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 1);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 2);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 3);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 4);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 5);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 6);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 7);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 8);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 1);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 2);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 3);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 4);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 5);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 6);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 7);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 8);
+    [self drawChars: "y" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 33);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 0, 1);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 1);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 2);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 3);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 4);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 5);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 6);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 7);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 34);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 0, 2);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 1);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 2);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 3);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 4);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 5);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 6);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 7);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 35);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 0, 3);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 1);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 2);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 3);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 4);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 5);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 6);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 7);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 36);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 0, 4);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 1);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 2);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 3);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 4);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 5);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 6);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 7);
+    [self drawChars: "x" AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetGlyphBitmap(Adapter, 'y', 0, 0, 7, (uint8_t[]){
+        0x81,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 4, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        
+        0x42,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 4, 4, 4, 0, 0,
+        0, 0, 4, 4, 4, 0, 0,
+        0, 0, 4, 4, 4, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0
+    }, 2);
+    
+    HKHubModuleGraphicsAdapterSetGlyphBitmap(Adapter, 'x', 0, 0, 7, (uint8_t[]){
+        0x81,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        
+        0x42,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 1, 2, 1, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        
+        0x24,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 0,
+        0, 1, 2, 2, 2, 1, 0,
+        0, 1, 2, 3, 2, 1, 0,
+        0, 1, 2, 2, 2, 1, 0,
+        0, 1, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        
+        0x18,
+        1, 1, 1, 1, 1, 1, 1,
+        1, 2, 2, 2, 2, 2, 1,
+        1, 2, 3, 3, 3, 2, 1,
+        1, 2, 3, 4, 3, 2, 1,
+        1, 2, 3, 3, 3, 2, 1,
+        1, 2, 2, 2, 2, 2, 1,
+        1, 1, 1, 1, 1, 1, 1
+    }, 4);
+    
     [self assertImage: @"blit-0" MatchesViewport: 0 ForAdapter: Adapter];
     [self assertImage: @"blit-8" MatchesViewport: 8 ForAdapter: Adapter];
     [self assertImage: @"blit-16" MatchesViewport: 16 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-1" MatchesViewport: 24 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-2" MatchesViewport: 24 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-3" MatchesViewport: 24 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-4" MatchesViewport: 24 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-5" MatchesViewport: 24 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-6" MatchesViewport: 24 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-7" MatchesViewport: 24 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterNextFrame(Adapter);
+    [self assertImage: @"blit-24-frame-8" MatchesViewport: 24 ForAdapter: Adapter];
     
     HKHubModuleDestroy(Adapter);
 }
