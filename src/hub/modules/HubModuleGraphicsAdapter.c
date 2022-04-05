@@ -404,6 +404,14 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
     return NULL;
 }
 
+void HKHubModuleGraphicsAdapterNextFrame(HKHubModule Adapter)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->frame = State->frame == 1 ? 0x80 : (State->frame >> 1);
+}
+
 void HKHubModuleGraphicsAdapterGetViewport(HKHubModule Adapter, HKHubArchPortID Port, uint8_t *X, uint8_t *Y, uint8_t *Width, uint8_t *Height)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
