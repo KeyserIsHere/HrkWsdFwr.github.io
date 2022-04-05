@@ -72,7 +72,7 @@ typedef struct {
 typedef struct {
     HKHubModuleGraphicsAdapterCursor cursor;
     struct {
-        uint8_t page;
+        uint8_t page : 3;
         uint8_t offset;
     } palette;
     struct {
@@ -81,8 +81,8 @@ typedef struct {
         uint8_t slope : 3;
     } style;
     struct {
-        uint8_t offset;
-        uint8_t filter;
+        uint8_t offset : 3;
+        uint8_t filter : 2;
     } animation;
 } HKHubModuleGraphicsAdapterAttributes;
 
