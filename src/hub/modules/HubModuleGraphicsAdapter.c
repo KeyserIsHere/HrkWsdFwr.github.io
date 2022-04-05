@@ -766,7 +766,7 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
     
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
-    const uint8_t Frame = (State->frame << AnimationOffset) | (State->frame >> (8 - AnimationOffset));
+    const uint8_t Frame = (State->frame >> AnimationOffset) | (State->frame << (8 - AnimationOffset));
     
     if (!(Frame & AnimationFilter)) return NULL;
     
