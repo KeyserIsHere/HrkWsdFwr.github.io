@@ -1370,24 +1370,19 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
             }
                 
             case 7:
+            {
                 if (Blocks[BlockIndex].running <= 0) break;
                 
-                if (Mode)
-                {
-                    // TODO: ref
-                }
+                const int32_t X = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t Y = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t Width = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const int32_t Height = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
+                const uint32_t Data = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                 
-                else
-                {
-                    const int32_t X = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
-                    const int32_t Y = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
-                    const int32_t Width = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
-                    const int32_t Height = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
-                    const CCChar Character = Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
-                    
-                    HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(Memory, Attributes, Layer, Cursor, X, Y, Width, Height, Character);
-                }
+                if (Mode) HKHubModuleGraphicsAdapterStoreReferenceCells(Memory, Attributes, Layer, Cursor, X, Y, Width, Height, Data & 7);
+                else HKHubModuleGraphicsAdapterStoreCharacterBitmapCells(Memory, Attributes, Layer, Cursor, X, Y, Width, Height, Data & HKHubModuleGraphicsAdapterCellGlyphIndexMask);
                 break;
+            }
                 
             case 8:
             {
