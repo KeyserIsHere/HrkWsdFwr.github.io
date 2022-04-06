@@ -614,6 +614,15 @@ void HKHubModuleGraphicsAdapterSetAnimationFilter(HKHubModule Adapter, uint8_t L
     State->attributes[Layer].animation.filter = Filter;
 }
 
+void HKHubModuleGraphicsAdapterSetAttributeModifier(HKHubModule Adapter, uint8_t Layer, uint8_t Modifier)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->attributes[Layer].modifier = Modifier;
+}
+
 static void HKHubModuleGraphicsAdapterClearCells(HKHubModuleGraphicsAdapterMemory *Memory, uint8_t Layer, HKHubModuleGraphicsAdapterCursor *Cursor, int X, int Y, int Width, int Height)
 {
     const int OriginX = Cursor->render.mode.originX ? -1 : 1;
