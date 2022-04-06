@@ -907,6 +907,44 @@ static const uint8_t Glyph1x1[] = {
         1, 1, 1, 1, 1, 1, 1
     }, 4);
     
+    HKHubModuleGraphicsAdapterSetAttributeModifier(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetAttributeModifier(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 7, 22, 12, 10);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 7, 22);
+    
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 2, 1, 1);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 2, 1, 2);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 7, 24);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
+    
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 0, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 14, 22);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
+    
+    HKHubModuleGraphicsAdapterSetAttributeModifier(Adapter, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 14, 24);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
+    
+    HKHubModuleGraphicsAdapterSetAttributeModifier(Adapter, 0, 2);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 14, 26);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
+    
+    HKHubModuleGraphicsAdapterSetAttributeModifier(Adapter, 0, 3);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 14, 28);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
+    
+    [self drawChars: "abc" AtLayer: 1 ForAdapter: Adapter];
+    [self drawChars: "def" AtLayer: 2 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 1, 2, 0, 0, 1, 2);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 1, TRUE);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 1, 1, 0, 0, 1, 2);
+    HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 1, 1);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 1, 0, 0, 0, 1, 2);
+    
     [self assertImage: @"blit-0" MatchesViewport: 0 ForAdapter: Adapter];
     [self assertImage: @"blit-8" MatchesViewport: 8 ForAdapter: Adapter];
     [self assertImage: @"blit-16" MatchesViewport: 16 ForAdapter: Adapter];
