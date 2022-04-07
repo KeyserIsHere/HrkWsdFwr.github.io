@@ -918,6 +918,14 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 7, 24);
     HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
     
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 12, 26);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 9, 28);
+    HKHubModuleGraphicsAdapterDrawRef(Adapter, 0, 0, 0, 5, 1, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
     HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, TRUE);
     HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
     HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 0, 2);
