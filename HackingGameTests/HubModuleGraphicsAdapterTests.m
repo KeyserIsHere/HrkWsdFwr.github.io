@@ -1037,7 +1037,7 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 16);
     [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
     
-    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 20, 19, 39);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 20, 19, 19);
     HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
     HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, -1, 0);
     
@@ -1068,6 +1068,265 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
     [self setProgram: "tab_program cursor_x, cursor_bounds_width, 3" WithID: 10 ForAdapter: Adapter];
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 19, 36);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    Text = "\t!\t!@\t!@#\t!@#$\t>\t\t>";
+    
+    HKHubModuleGraphicsAdapterStaticGlyphSet('!', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('@', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('#', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('$', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 0, 0,
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 0, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('%', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('^', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('&', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('*', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('(', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(')', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 1, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 1, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('>', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('A', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        1, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 1
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('B', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 0, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('C', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('D', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 0, 1,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('E', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('F', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('G', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 1, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('H', 0, 0, 7, (uint8_t[]){
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('I', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('J', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 1, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0
+    }, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 20, 0, 19, 19);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 0, -1);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 1, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 20, 19);
+    [self drawChars: ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZ" AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_height, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 22, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_height, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 24, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_height, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 26, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_height, 4" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 28, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_height, 4, 1, 1, 0x29" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 30, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_height, 4, 1, 2, 0x4f" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 32, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\ntab_program cursor_y, cursor_bounds_height, 4, 1, 2, 0x20" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 34, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    [self setProgram: "tab_program cursor_y, cursor_bounds_height, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 36, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 20, 20, 19, 19);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 0, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 20, 20);
+    [self drawChars: ")!@#$%^&*(ABCDEFGHIJKLMNOPQRSTUVWXYZ" AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_y, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 22, 20);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_y, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 24, 20);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_y, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 26, 20);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_y, 4" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 28, 20);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_y, 4, 1, 1, 0x29" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 30, 20);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "tab_program cursor_y, cursor_bounds_y, 4, 1, 2, 0x4f" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 32, 20);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\ntab_program cursor_y, cursor_bounds_y, 4, 1, 2, 0x20" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 34, 20);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    [self setProgram: "tab_program cursor_y, cursor_bounds_y, 3" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 36, 20);
     [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
     
     [self assertImage: @"tab-0" MatchesViewport: 0 ForAdapter: Adapter];
