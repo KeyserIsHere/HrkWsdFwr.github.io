@@ -168,7 +168,7 @@ typedef struct {
     HKHubModuleGraphicsAdapterAttributes attributes[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
     HKHubModuleGraphicsAdapterViewport viewports[256];
     HKHubModuleGraphicsAdapterMemory memory;
-    uint8_t mask[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH]; // TODO: convert to 1-bit mask
+    uint8_t mask[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH]; // TODO: convert to 2-bit mask
 } HKHubModuleGraphicsAdapterState;
 
 static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCellMode(HKHubModuleGraphicsAdapterCell Cell)
@@ -995,14 +995,14 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                                     const uint8_t PaletteIndex = ((Sample << ((SampleBase + SampleIndex) % 8)) >> (8 + (8 - PaletteSize))) & PaletteMask;
                                     
                                     Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
-                                    Mask[Pixel] = PaletteIndex;
+                                    Mask[Pixel] = 0x80 | (_Bool)PaletteIndex;
                                     
                                     if ((PaletteIndex) && (HKHubModuleGraphicsAdapterCellIsBold(Glyph)))
                                     {
                                         if ((OffsetX - 1) >= 0)
                                         {
                                             Framebuffer[Pixel - 1] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
-                                            Mask[Pixel - 1] = PaletteIndex;
+                                            Mask[Pixel - 1] = 0x80 | (_Bool)PaletteIndex;
                                         }
                                     }
                                 }
@@ -1020,7 +1020,7 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                 {
                     const size_t Pixel = (FramebufferY * ViewportWidth * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL) + FramebufferX;
                     
-                    if (Pixel < Size)
+                    if ((Pixel < Size) && (!(Mask[Pixel] & 0x80)))
                     {
                         Framebuffer[Pixel] = 0;
                         Mask[Pixel] = 0;
@@ -1080,13 +1080,13 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
                                 const uint16_t Sample = ((uint16_t)Bitmap[MSBIndex] << 8) | Bitmap[MSBIndex + 1];
                                 const uint8_t PaletteIndex = ((Sample << ((SampleBase + SampleIndex) % 8)) >> (8 + (8 - PaletteSize))) & PaletteMask;
                                 
-                                if (!Mask[Pixel]) Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
+                                if (!(Mask[Pixel] & 1)) Framebuffer[Pixel] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
                                 
                                 if ((PaletteIndex) && (HKHubModuleGraphicsAdapterCellIsBold(Glyph)))
                                 {
                                     if ((OffsetX - 1) >= 0)
                                     {
-                                        if (!Mask[Pixel - 1]) Framebuffer[Pixel - 1] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
+                                        if (!(Mask[Pixel - 1] & 1)) Framebuffer[Pixel - 1] = Memory->palettes[HKHubModuleGraphicsAdapterCellGetPalettePage(Glyph)][PaletteIndex + HKHubModuleGraphicsAdapterCellGetPaletteOffset(Glyph)];
                                     }
                                 }
                             }
