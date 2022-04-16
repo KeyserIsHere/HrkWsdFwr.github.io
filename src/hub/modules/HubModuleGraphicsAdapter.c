@@ -374,7 +374,6 @@ HKHubModule HKHubModuleGraphicsAdapterCreate(CCAllocatorType Allocator)
         
         for (size_t Loop = 0; Loop < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT; Loop++)
         {
-            State->attributes[Loop].cursor.visibility = 0xff;
             State->attributes[Loop].cursor.render.mode.advance = TRUE;
             State->attributes[Loop].cursor.render.advance.width = 1;
             State->attributes[Loop].cursor.render.mode.wrap = TRUE;
