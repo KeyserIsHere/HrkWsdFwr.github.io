@@ -168,7 +168,7 @@ typedef struct {
     HKHubModuleGraphicsAdapterAttributes attributes[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT];
     HKHubModuleGraphicsAdapterViewport viewports[256];
     HKHubModuleGraphicsAdapterMemory memory;
-    uint8_t mask[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH]; // TODO: convert to 2-bit mask
+    uint8_t mask[HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL][HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH * HK_HUB_MODULE_GRAPHICS_ADAPTER_CELL]; // TODO: convert to 2-bit mask
 } HKHubModuleGraphicsAdapterState;
 
 static CC_FORCE_INLINE HKHubModuleGraphicsAdapterCell HKHubModuleGraphicsAdapterCellMode(HKHubModuleGraphicsAdapterCell Cell)
@@ -944,6 +944,8 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
     HKHubModuleGraphicsAdapterState *State = Adapter->internal;
     HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
     uint8_t *Mask = (uint8_t*)State->mask;
+    
+    Size = CCMin(Size, sizeof(State->mask));
     
     const uint8_t Layer = Port % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT;
     const size_t ViewportWidth = (size_t)State->viewports[Port].width + 1, ViewportHeight = (size_t)State->viewports[Port].height + 1;
