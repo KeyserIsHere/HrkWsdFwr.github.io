@@ -44,7 +44,7 @@ typedef struct {
 
 typedef struct {
     uint8_t x, y;
-    uint32_t visibility;
+    HKHubModuleGraphicsAdapterCursorGlyph visibility : 40;
     struct {
         struct {
             uint8_t originX : 1;
@@ -442,7 +442,7 @@ void HKHubModuleGraphicsAdapterSetCursor(HKHubModule Adapter, uint8_t Layer, uin
     State->attributes[Layer].cursor.y = Y;
 }
 
-void HKHubModuleGraphicsAdapterSetCursorVisibility(HKHubModule Adapter, uint8_t Layer, uint32_t Visibility)
+void HKHubModuleGraphicsAdapterSetCursorVisibility(HKHubModule Adapter, uint8_t Layer, HKHubModuleGraphicsAdapterCursorGlyph Visibility)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
     CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
@@ -945,6 +945,7 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
     uint8_t *Mask = (uint8_t*)State->mask;
     
     Size = CCMin(Size, sizeof(State->mask));
+    memset(Mask, 0, Size);
     
     const uint8_t Layer = Port % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT;
     const size_t ViewportWidth = (size_t)State->viewports[Port].width + 1, ViewportHeight = (size_t)State->viewports[Port].height + 1;
