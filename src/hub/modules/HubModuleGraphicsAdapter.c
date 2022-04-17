@@ -1625,7 +1625,8 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                             break;
                             
                         case 2:
-                            Value = Cursor->visibility;
+                            Value = (Cursor->visibility >> HKHubModuleGraphicsAdapterCursorGlyphPaletteOffsetIndex);
+                            Stack[++StackPtr % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE] = (uint32_t)(Cursor->visibility & UINT32_MAX);
                             break;
                             
                         case 3:
@@ -1782,7 +1783,7 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
                             break;
                             
                         case 2:
-                            Cursor->visibility = Value;
+                            Cursor->visibility = ((uint64_t)Value << HKHubModuleGraphicsAdapterCursorGlyphPaletteOffsetIndex) |  (uint64_t)Stack[StackPtr-- % HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE];
                             break;
                             
                         case 3:
