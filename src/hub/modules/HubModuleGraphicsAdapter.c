@@ -1340,6 +1340,7 @@ void HKHubModuleGraphicsAdapterProgramSet(HKHubModule Adapter, uint8_t ProgramID
 }
 
 #define HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_STACK_SIZE 16
+#define HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_MAX_CYCLES 999
 
 static CC_FORCE_INLINE uint8_t HKHubModuleGraphicsAdapterProgramGetOp(const uint8_t *Program, size_t Index)
 {
@@ -1373,7 +1374,7 @@ void HKHubModuleGraphicsAdapterProgramRun(HKHubModule Adapter, uint8_t Layer, ui
     size_t BlockIndex = 0;
     
     _Bool Mode = 0;
-    for (size_t Index = 0; Index < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2; Index++)
+    for (size_t Index = 0, Cycles = 0; (Index < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_SIZE * 2) && (Cycles < HK_HUB_MODULE_GRAPHICS_ADAPTER_PROGRAM_MAX_CYCLES); Index++, Cycles++)
     {
         Blocks[BlockIndex].ops--;
         
