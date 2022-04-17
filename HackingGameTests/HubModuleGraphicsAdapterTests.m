@@ -186,9 +186,10 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 8, 35, 35, 7, 7);
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 16, 37, 0, 0, 39);
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 24, 0, 32, 7, 3);
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 32, 6, 21, 14, 9);
     
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
-    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff);
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0);
     HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
     HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, FALSE);
     HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 1, 0);
@@ -974,6 +975,16 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterNextFrame(Adapter);
     [self assertImage: @"blit-24-frame-8" MatchesViewport: 24 ForAdapter: Adapter];
     
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 7, 22);
+    [self assertImage: @"blit-32-cursor-7-22" MatchesViewport: 32 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 14, 22);
+    [self assertImage: @"blit-32-cursor-14-22" MatchesViewport: 32 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff | HKHubModuleGraphicsAdapterCursorGlyphItalicFlag);
+    [self assertImage: @"blit-32-cursor-14-22-italic" MatchesViewport: 32 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff | (1ULL << HKHubModuleGraphicsAdapterCursorGlyphPaletteOffsetIndex));
+    [self assertImage: @"blit-32-cursor-14-22-colour-offset" MatchesViewport: 32 ForAdapter: Adapter];
+    
     HKHubModuleDestroy(Adapter);
 }
 
@@ -984,7 +995,7 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetViewport(Adapter, 0, 0, 0, 39, 39);
     
     HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
-    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff);
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0);
     HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
     HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, TRUE);
     HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 1, 0);
