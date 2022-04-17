@@ -1345,4 +1345,111 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleDestroy(Adapter);
 }
 
+-(void) testProgramCycleLimit
+{
+    HKHubModule Adapter = HKHubModuleGraphicsAdapterCreate(CC_STD_ALLOCATOR);
+    
+    [self setProgram: "ldi 0\n"
+                      "ldi 0xf, 0xff, 0xff, 0xff\n"
+                      "rep 2\n"
+                      "ldi 0xf, 0xff, 0xff, 0xff\n"
+                      "rep 2\n"
+                      "ldi 0xf, 0xff, 0xff, 0xff\n"
+                      "rep 2\n"
+                      "ldi 1\n"
+                      "add\n"
+                      "dup\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_height\n"
+                      "dup\n"
+                      "ldi 8\n"
+                      "swap\n"
+                      "sar\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_width\n"
+                      "dup\n"
+                      "ldi 16\n"
+                      "swap\n"
+                      "sar\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_y\n"
+                      "dup\n"
+                      "ldi 24\n"
+                      "swap\n"
+                      "sar\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_x\n"
+              WithID: 0
+          ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterProgramRun(Adapter, 0, 0, 0, 0, 0, 0, 0);
+    
+    uint8_t x0, x8, x16, x24;
+    HKHubModuleGraphicsAdapterGetViewport(Adapter, 0, &x24, &x16, &x8, &x0);
+    
+    uint32_t x = ((uint32_t)x24 << 24) | ((uint32_t)x16 << 16) | ((uint32_t)x8 << 8) | x0;
+    
+    XCTAssertEqual(x, 0, @"Should have exceeded cycles before setting");
+    
+    
+    [self setProgram: "ldi 0\n"
+                      "ldi 0, 0, 0, 10\n"
+                      "rep 2\n"
+                      "ldi 0, 0, 0, 10\n"
+                      "rep 2\n"
+                      "ldi 0, 0, 0, 3\n"
+                      "rep 2\n"
+                      "ldi 1\n"
+                      "add\n"
+                      "dup\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_height\n"
+                      "dup\n"
+                      "ldi 8\n"
+                      "swap\n"
+                      "sar\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_width\n"
+                      "dup\n"
+                      "ldi 16\n"
+                      "swap\n"
+                      "sar\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_y\n"
+                      "dup\n"
+                      "ldi 24\n"
+                      "swap\n"
+                      "sar\n"
+                      "ldi 0xff\n"
+                      "and\n"
+                      "ldi 0\n"
+                      "str viewport_x\n"
+              WithID: 0
+          ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterProgramRun(Adapter, 0, 0, 0, 0, 0, 0, 0);
+    
+    HKHubModuleGraphicsAdapterGetViewport(Adapter, 0, &x24, &x16, &x8, &x0);
+    
+    x = ((uint32_t)x24 << 24) | ((uint32_t)x16 << 16) | ((uint32_t)x8 << 8) | x0;
+    
+    XCTAssertEqual(x, 300, @"Should have completed the program within the cycle limit");
+    
+    HKHubModuleDestroy(Adapter);
+}
+
 @end
