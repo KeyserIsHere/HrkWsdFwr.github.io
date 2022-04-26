@@ -45,6 +45,241 @@
     CCOrderedCollectionAppendElement(HKHubArchAssemblyIncludeSearchPaths, &(FSPath){ FSPathCreate("assets/logic/procedures/") });
     
     HKHubModuleGraphicsAdapterStaticGlyphInit();
+    
+    HKHubModuleGraphicsAdapterStaticGlyphSet('!', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('@', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('#', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('$', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 0, 0,
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 0, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('%', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('^', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('&', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('*', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 0, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('(', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet(')', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 1, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 1, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('>', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('A', 0, 0, 7, (uint8_t[]){
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        1, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 1
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('B', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 0, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('C', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 1, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('D', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 0, 1,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('E', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('F', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 1, 1, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('G', 0, 0, 7, (uint8_t[]){
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 1, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('H', 0, 0, 7, (uint8_t[]){
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('I', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('J', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0,
+        0, 1, 0, 1, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('K', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 0, 0, 0, 1,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 0, 1, 1, 0, 0, 0,
+        0, 0, 1, 0, 1, 0, 0,
+        0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 0, 0, 0, 1
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('L', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 0, 0, 0,
+        0, 0, 1, 1, 1, 1, 1
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('M', 0, 0, 7, (uint8_t[]){
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 1, 0, 1, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('N', 0, 0, 7, (uint8_t[]){
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 1, 0, 0, 1, 0,
+        0, 1, 1, 0, 0, 1, 0,
+        0, 1, 0, 1, 0, 1, 0,
+        0, 1, 0, 0, 1, 1, 0,
+        0, 1, 0, 0, 1, 1, 0,
+        0, 1, 0, 0, 0, 1, 0
+    }, 1);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('+', 0, 0, 7, (uint8_t[]){
+        0, 0, 1, 1, 1, 0, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 1, 0, 0, 0, 1, 0,
+        0, 0, 1, 1, 1, 0, 0
+    }, 1);
 }
 
 static const uint8_t Glyph1x1[] = {
@@ -1083,196 +1318,6 @@ static const uint8_t Glyph1x1[] = {
     
     Text = "\t!\t!@\t!@#\t!@#$\t>\t\t>";
     
-    HKHubModuleGraphicsAdapterStaticGlyphSet('!', 0, 0, 7, (uint8_t[]){
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 1, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 1, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('@', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 0, 0,
-        0, 1, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 1, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 1, 0, 0, 0, 0,
-        0, 1, 1, 1, 1, 1, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('#', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 0, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 1, 1, 0, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 1, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('$', 0, 0, 7, (uint8_t[]){
-        0, 0, 0, 0, 1, 0, 0,
-        0, 0, 0, 1, 1, 0, 0,
-        0, 0, 1, 0, 1, 0, 0,
-        0, 1, 1, 1, 1, 0, 0,
-        0, 0, 0, 0, 1, 0, 0,
-        0, 0, 0, 0, 1, 0, 0,
-        0, 0, 0, 0, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('%', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 1, 0,
-        0, 0, 1, 0, 0, 0, 0,
-        0, 0, 1, 0, 0, 0, 0,
-        0, 0, 1, 1, 1, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 1, 1, 1, 1, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('^', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 1, 0,
-        0, 0, 1, 0, 0, 0, 0,
-        0, 0, 1, 0, 0, 0, 0,
-        0, 0, 1, 1, 1, 1, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 1, 1, 1, 1, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('&', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('*', 0, 0, 7, (uint8_t[]){
-        0, 0, 0, 1, 1, 0, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 0, 1, 1, 0, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 0, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('(', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 1, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 1, 0, 0, 1, 0,
-        0, 0, 1, 1, 1, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 0, 0, 0, 1, 0,
-        0, 0, 1, 1, 1, 1, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet(')', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 0, 0,
-        0, 1, 0, 0, 1, 1, 0,
-        0, 1, 0, 1, 0, 1, 0,
-        0, 1, 0, 1, 0, 1, 0,
-        0, 1, 0, 1, 0, 1, 0,
-        0, 1, 1, 0, 0, 1, 0,
-        0, 0, 1, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('>', 0, 0, 7, (uint8_t[]){
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 1, 1, 1, 0, 0,
-        0, 0, 1, 1, 1, 0, 0,
-        0, 0, 1, 1, 1, 0, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('A', 0, 0, 7, (uint8_t[]){
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 1, 0, 1, 0, 0,
-        0, 0, 1, 0, 1, 0, 0,
-        0, 1, 1, 1, 1, 1, 0,
-        0, 1, 0, 0, 0, 1, 0,
-        1, 0, 0, 0, 0, 0, 1,
-        1, 0, 0, 0, 0, 0, 1
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('B', 0, 0, 7, (uint8_t[]){
-        0, 1, 1, 1, 0, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 1, 1, 0, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 1, 1, 0, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('C', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 1, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 0, 1, 1, 1, 1, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('D', 0, 0, 7, (uint8_t[]){
-        0, 1, 1, 1, 1, 0, 0,
-        0, 1, 0, 0, 0, 1, 0,
-        0, 1, 0, 0, 0, 1, 0,
-        0, 1, 0, 0, 0, 0, 1,
-        0, 1, 0, 0, 0, 1, 0,
-        0, 1, 0, 0, 0, 1, 0,
-        0, 1, 1, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('E', 0, 0, 7, (uint8_t[]){
-        0, 1, 1, 1, 1, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 1, 1, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 1, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('F', 0, 0, 7, (uint8_t[]){
-        0, 1, 1, 1, 1, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 1, 1, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('G', 0, 0, 7, (uint8_t[]){
-        0, 1, 1, 1, 1, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 0, 0, 0, 0,
-        0, 1, 0, 1, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 1, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('H', 0, 0, 7, (uint8_t[]){
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 1, 1, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0,
-        0, 1, 0, 0, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('I', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 1, 1, 1, 0, 0
-    }, 1);
-    HKHubModuleGraphicsAdapterStaticGlyphSet('J', 0, 0, 7, (uint8_t[]){
-        0, 0, 1, 1, 1, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 0, 0, 1, 0, 0, 0,
-        0, 1, 0, 1, 0, 0, 0,
-        0, 0, 1, 0, 0, 0, 0
-    }, 1);
-    
     HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 20, 0, 19, 19);
     HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
     HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 0, -1);
@@ -1341,6 +1386,149 @@ static const uint8_t Glyph1x1[] = {
     [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
     
     [self assertImage: @"tab-0" MatchesViewport: 0 ForAdapter: Adapter];
+    
+    HKHubModuleDestroy(Adapter);
+}
+
+-(void) testNewlineProgram
+{
+    HKHubModule Adapter = HKHubModuleGraphicsAdapterCreate(CC_STD_ALLOCATOR);
+    
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 0, 0, 0, 40, 42);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, FALSE);
+    
+    HKHubModuleGraphicsAdapterSetPalettePage(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 0, FALSE);
+    HKHubModuleGraphicsAdapterSetItalicSlope(Adapter, 0, 3);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 0, 0);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 0, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursorControl(Adapter, 0, 0, '\n', 10);
+    HKHubModuleGraphicsAdapterStaticGlyphSet('\n', 0, 0, 1, Glyph1x1, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 0, 24, 24);
+    
+    const char *Text = "\n1\n12\n123\n1234\n.\n\n.";
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 0);
+    [self drawChars: "0123456789abcdefghijklmnopqrstuvwxyz" AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_x, cursor_bounds_width, cursor_y, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 2, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 2);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_x, cursor_bounds_width, cursor_y, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 5, 2, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 5, 2);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_x, cursor_bounds_width, cursor_y, 2, 1, 2, 0x30" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 10, 2, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 10, 2);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_x, cursor_bounds_width, cursor_y, 2, 2, 2, 0, 0, 0xff, 0x10" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 15, 2, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 15, 2);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\nnewline_program cursor_x, cursor_bounds_width, cursor_y, 2, 1, 2, 0x39" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 20, 2, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 20, 2);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 16, 25, 24, 24);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, -1, 0);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 40, 25);
+    [self drawChars: "0123456789abcdefghijklmnopqrstuvwxyz" AtLayer: 0 ForAdapter: Adapter];
+    
+    [self setProgram: "newline_program cursor_x, cursor_bounds_x, cursor_y, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 36, 27, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 40, 27);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_x, cursor_bounds_x, cursor_y, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 31, 27, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 35, 27);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_x, cursor_bounds_x, cursor_y, 2, 1, 2, 0x30" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 26, 27, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 30, 27);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_x, cursor_bounds_x, cursor_y, 2, 2, 2, 0, 0, 0xff, 0x10" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 21, 27, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 25, 27);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\nnewline_program cursor_x, cursor_bounds_x, cursor_y, 2, 1, 2, 0x39" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 16, 27, 4, 24);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 20, 27);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    Text = "\n!\n!@\n!@#\n!@#$\n>\n\n>";
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 25, 0, 24, 24);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 0, -1);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 25, 24);
+    [self drawChars: ")!@#$%^&*(ABCDEFGHIJKLMN+PQRSTUVWXYZ" AtLayer: 0 ForAdapter: Adapter];
+    
+    [self setProgram: "newline_program cursor_y, cursor_bounds_y, cursor_x, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 26, 20, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 26, 24);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_y, cursor_bounds_y, cursor_x, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 26, 15, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 26, 19);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_y, cursor_bounds_y, cursor_x, 2, 1, 1, 0x29" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 26, 10, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 26, 14);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_y, cursor_bounds_y, cursor_x, 2, 1, 2, 0x4f" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 26, 5, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 26, 9);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\nnewline_program cursor_y, cursor_bounds_y, cursor_x, 2, 1, 2, 0x39" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 26, 0, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 26, 4);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 0, 18, 24, 24);
+    HKHubModuleGraphicsAdapterSetCursorOrigin(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 0, 0, 1);
+    
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 0, 18);
+    [self drawChars: ")!@#$%^&*(ABCDEFGHIJKLMN+PQRSTUVWXYZ" AtLayer: 0 ForAdapter: Adapter];
+    
+    [self setProgram: "newline_program cursor_y, cursor_bounds_height, cursor_x, 1" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 18, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 1, 18);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_y, cursor_bounds_height, cursor_x, 2" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 23, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 1, 23);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_y, cursor_bounds_height, cursor_x, 2, 1, 1, 0x29" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 28, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 1, 28);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "newline_program cursor_y, cursor_bounds_height, cursor_x, 2, 1, 2, 0x4f" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 33, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 1, 33);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    [self setProgram: "ldi 0x20\nldi 2\nldi 1\nldi 0\nldi 0\nnewline_program cursor_y, cursor_bounds_height, cursor_x, 2, 1, 2, 0x39" WithID: 10 ForAdapter: Adapter];
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 0, 1, 38, 24, 4);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 0, 1, 38);
+    [self drawChars: Text AtLayer: 0 ForAdapter: Adapter];
+    
+    [self assertImage: @"newline-0" MatchesViewport: 0 ForAdapter: Adapter];
     
     HKHubModuleDestroy(Adapter);
 }
