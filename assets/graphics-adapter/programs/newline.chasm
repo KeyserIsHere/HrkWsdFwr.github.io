@@ -11,20 +11,50 @@
         .assert (char_width >= 1) && (char_width <= 16), "char_width must be a value from 1 to 16"
         .assert (char_height >= 1) && (char_height <= 16), "char_height must be a value from 1 to 16"
 
+        .if line_bounds == cursor_bounds_x
+            fwd 3
+            ldr line_cursor
+            sub
+        .elseif line_bounds == cursor_bounds_width
+            fwd 3
+            ldr line_cursor
+            add
+        .elseif line_bounds == cursor_bounds_y
+            fwd 2
+            ldr line_cursor
+            sub
+        .else
+            fwd 2
+            ldr line_cursor
+            add
+        .endif
+        str line_cursor
+        bak 4
+
         ldi char24, char16, char8, char0
         ldi char_height
         ldi char_width
         ldi 0
         dup
+        fwd 1
         .if (line_bounds == cursor_bounds_x) || (line_bounds == cursor_bounds_y)
             ldr line_bounds
-            ldr line_cursor
+            swap
         .else
-            ldr line_cursor
             ldr line_bounds
+            .if line_bounds == cursor_bounds_width
+                ldr cursor_bounds_x
+            .else
+                ldr cursor_bounds_y
+            .endif
+            add
         .endif
         sub
+        ldi 1
+        add
         rep 6
+            drw
+            fwd 5
             .if line_cursor == cursor_x
                 ldi char_width
             .else
@@ -37,16 +67,18 @@
                 add
             .endif
             str line_cursor
-            drw
-            fwd 5
     .endif
 
     .if line_bounds == cursor_bounds_x
         ldr cursor_bounds_width
+        ldr cursor_bounds_x
+        add
     .elseif line_bounds == cursor_bounds_width
         ldr cursor_bounds_x
     .elseif line_bounds == cursor_bounds_y
         ldr cursor_bounds_height
+        ldr cursor_bounds_y
+        add
     .else
         ldr cursor_bounds_y
     .endif
