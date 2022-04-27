@@ -1530,6 +1530,27 @@ static const uint8_t Glyph1x1[] = {
     
     [self assertImage: @"newline-0" MatchesViewport: 0 ForAdapter: Adapter];
     
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 1, 250, 240, 5, 14);
+    
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 1, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 1, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(Adapter, 1, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 1, FALSE);
+    HKHubModuleGraphicsAdapterSetPalettePage(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 1, FALSE);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 1, FALSE);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorControl(Adapter, 1, 0, '\n', 10);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 1, 250, 240, 5, 14);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 1, 250, 240);
+    [self setProgram: "newline_program cursor_x, cursor_bounds_width, cursor_y, 2, 1, 2, 0x30" WithID: 10 ForAdapter: Adapter];
+    [self drawChars: "\n1\n12\n123\n1234\n12345\n1" AtLayer: 1 ForAdapter: Adapter];
+    
+    [self assertImage: @"newline-1" MatchesViewport: 1 ForAdapter: Adapter];
+    
     HKHubModuleDestroy(Adapter);
 }
 
