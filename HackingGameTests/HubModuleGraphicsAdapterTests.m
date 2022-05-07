@@ -1387,6 +1387,29 @@ static const uint8_t Glyph1x1[] = {
     
     [self assertImage: @"tab-0" MatchesViewport: 0 ForAdapter: Adapter];
     
+    HKHubModuleGraphicsAdapterSetViewport(Adapter, 1, 250, 240, 5, 9);
+    
+    HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvance(Adapter, 1, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceSource(Adapter, 1, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorAdvanceOffset(Adapter, 1, 0, 0);
+    HKHubModuleGraphicsAdapterSetCursorWrap(Adapter, 0, TRUE);
+    HKHubModuleGraphicsAdapterSetCursorWrapSource(Adapter, 0, 0, 1);
+    HKHubModuleGraphicsAdapterSetCursorWrapOffset(Adapter, 0, 0, 0);
+    HKHubModuleGraphicsAdapterSetPalettePage(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetPaletteOffset(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetBold(Adapter, 1, FALSE);
+    HKHubModuleGraphicsAdapterSetItalic(Adapter, 1, FALSE);
+    HKHubModuleGraphicsAdapterSetAnimationOffset(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetAnimationFilter(Adapter, 1, 0);
+    HKHubModuleGraphicsAdapterSetCursorControl(Adapter, 1, 0, '\t', 10);
+    HKHubModuleGraphicsAdapterSetCursorBounds(Adapter, 1, 250, 240, 5, 14);
+    HKHubModuleGraphicsAdapterSetCursor(Adapter, 1, 250, 240);
+    [self setProgram: "tab_program cursor_x, cursor_bounds_x, 2, 1, 2, 0x30" WithID: 10 ForAdapter: Adapter];
+    [self drawChars: "\t1\t12\t123\t1234\t123456\t1" AtLayer: 1 ForAdapter: Adapter];
+    
+    [self assertImage: @"tab-1" MatchesViewport: 1 ForAdapter: Adapter];
+    
     HKHubModuleDestroy(Adapter);
 }
 
