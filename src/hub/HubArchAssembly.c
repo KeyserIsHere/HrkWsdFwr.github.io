@@ -434,14 +434,23 @@ static void HKHubArchAssemblyParseCommand(const char **Source, size_t *Line, HKH
                 {
                     Node.childNodes = CCCollectionCreate(CC_STD_ALLOCATOR, CCCollectionHintOrdered, sizeof(HKHubArchAssemblyASTNode), (CCCollectionElementDestructor)HKHubArchAssemblyASTNodeDestructor);
                     HKHubArchAssemblyParseCommand(Source, Line, Type, Node.childNodes);
+                    
+                    if (!CCCollectionGetCount(Node.childNodes))
+                    {
+                        CCCollectionDestroy(Node.childNodes);
+                        Node.childNodes = NULL;
+                    }
                 }
                 
                 else if (Type == HKHubArchAssemblyASTTypeOperand)
                 {
                     HKHubArchAssemblyParseOperand(&Node);
+                    
+                    if (!Node.childNodes) goto SkipNode;
                 }
                 
                 CCOrderedCollectionAppendElement(AST, &Node);
+            SkipNode:
                 
                 if (c == ']') return;
             }
