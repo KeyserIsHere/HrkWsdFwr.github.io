@@ -103,6 +103,17 @@
         .else
             sub
         .endif
+        dup
+        dup
+        dup
+        dup
+        .if cursor == cursor_x
+            bak 4
+        .else
+            dup
+            dup
+            bak 6
+        .endif
         str cursor
         swap
         sub
@@ -130,6 +141,31 @@
         sub
         bak 4
 
+        dup
+        fwd 1
+        swap
+        fwd 1
+        swap
+        fwd 1
+        swap
+        fwd 1
+        swap
+        fwd 1
+        swap
+        fwd 1
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 1
+        swap
+        bak 2
+
         .if ((cursor == cursor_x) && (char_width == 16)) || ((cursor == cursor_y) && (char_height == 16))
             rep 14
         .else
@@ -151,6 +187,39 @@
                 sub
             .endif
             str cursor
+
+        fwd 8
+        neg
+        ldi 31
+        swap
+        sar
+        ldi 1
+        and
+        rep 12
+            bak 5
+            swap
+            fwd 1
+            swap
+            fwd 1
+            swap
+            fwd 1
+            swap
+            fwd 1
+            swap
+            fwd 1
+            swap
+        fwd 1
+        rep 9
+            bak 1
+            swap
+            bak 1
+            swap
+            bak 1
+            swap
+            bak 1
+            swap
+            fwd 4
+        bak 7
 
         fwd 5
 
@@ -226,7 +295,20 @@
         .endif
     .endif
 
-    ldr cursor
+    .if char_width && char_height
+        dup
+        dup
+        dup
+        dup
+        dup
+        dup
+        .if cursor == cursor_y
+            dup
+        .endif
+        fwd 1
+    .else
+        ldr cursor
+    .endif
     .if (anchor == cursor_bounds_x) || (anchor == cursor_bounds_y)
         add
     .else
