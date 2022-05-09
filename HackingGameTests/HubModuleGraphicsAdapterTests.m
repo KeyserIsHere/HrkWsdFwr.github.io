@@ -1220,6 +1220,68 @@ static const uint8_t Glyph1x1[] = {
     HKHubModuleGraphicsAdapterSetCursorVisibility(Adapter, 0, 0xff | (1ULL << HKHubModuleGraphicsAdapterCursorGlyphPaletteOffsetIndex));
     [self assertImage: @"blit-32-cursor-14-22-colour-offset" MatchesViewport: 32 ForAdapter: Adapter];
     
+    HKHubModuleGraphicsAdapterCharacter Characters[3][12];
+    HKHubModuleGraphicsAdapterRead(Adapter, 0, 3, 24, 11, 2, (HKHubModuleGraphicsAdapterCharacter*)Characters);
+    
+    XCTAssertEqual(Characters[0][0], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'b'));
+    XCTAssertEqual(Characters[1][0], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'b'));
+    
+    XCTAssertEqual(Characters[0][1], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 3));
+    XCTAssertEqual(Characters[1][1], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 3));
+    XCTAssertEqual(Characters[0][2], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (1 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 3));
+    XCTAssertEqual(Characters[1][2], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (1 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 3));
+    
+    XCTAssertEqual(Characters[0][3], 0);
+    XCTAssertEqual(Characters[1][3], 0);
+    
+    XCTAssertEqual(Characters[0][4], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'a'));
+    XCTAssertEqual(Characters[1][4], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'a'));
+    
+    XCTAssertEqual(Characters[0][5], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'b'));
+    XCTAssertEqual(Characters[1][5], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'b'));
+    
+    XCTAssertEqual(Characters[0][6], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'c'));
+    XCTAssertEqual(Characters[1][6], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'c'));
+    
+    XCTAssertEqual(Characters[0][7], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'f'));
+    XCTAssertEqual(Characters[1][7], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'f'));
+    
+    XCTAssertEqual(Characters[0][8], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'e'));
+    XCTAssertEqual(Characters[1][8], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'e'));
+    
+    XCTAssertEqual(Characters[0][9], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'd'));
+    XCTAssertEqual(Characters[1][9], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'd'));
+    
+    XCTAssertEqual(Characters[0][10], 0);
+    XCTAssertEqual(Characters[1][10], 0);
+    
+    XCTAssertEqual(Characters[0][11], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'a'));
+    XCTAssertEqual(Characters[1][11], ((1 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'a'));
+    
+    XCTAssertEqual(Characters[2][0], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'd'));
+    
+    XCTAssertEqual(Characters[2][1], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'e'));
+    
+    XCTAssertEqual(Characters[2][2], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 3));
+    
+    XCTAssertEqual(Characters[2][3], 0);
+    
+    XCTAssertEqual(Characters[2][4], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'a'));
+    
+    XCTAssertEqual(Characters[2][5], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'b'));
+    
+    XCTAssertEqual(Characters[2][6], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'c'));
+    
+    XCTAssertEqual(Characters[2][7], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'f'));
+    
+    XCTAssertEqual(Characters[2][8], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'e'));
+    
+    XCTAssertEqual(Characters[2][9], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'd'));
+    
+    XCTAssertEqual(Characters[2][10], 0);
+    
+    XCTAssertEqual(Characters[2][11], ((0 << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (0 << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | 'a'));
+    
     HKHubModuleDestroy(Adapter);
 }
 

@@ -72,9 +72,26 @@ typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCursorGlyph, uint64_t) {
     HKHubModuleGraphicsAdapterCursorGlyphAnimationOffsetMask = (7 << HKHubModuleGraphicsAdapterCursorGlyphAnimationOffsetIndex),
     
     //g = glyph index
-    HKHubModuleGraphicsAdapterCursorGlyphGlyphIndexMask = 0x1fffff,
+    HKHubModuleGraphicsAdapterCursorGlyphIndexMask = 0x1fffff,
     
     CC_RESERVED_BITS(HKHubModuleGraphicsAdapterCursorGlyph, 0, 40)
+};
+
+typedef CC_FLAG_ENUM(HKHubModuleGraphicsAdapterCharacter, uint32_t) {
+    //ttttssss 000ggggg gggggggg gggggggg
+    
+    //t = y-relative position of glyph
+    HKHubModuleGraphicsAdapterCharacterPositionTIndex = 28,
+    HKHubModuleGraphicsAdapterCharacterPositionTMask = (0xf << HKHubModuleGraphicsAdapterCharacterPositionTIndex),
+    
+    //s = x-relative position of glyph
+    HKHubModuleGraphicsAdapterCharacterPositionSIndex = 24,
+    HKHubModuleGraphicsAdapterCharacterPositionSMask = (0xf << HKHubModuleGraphicsAdapterCharacterPositionSIndex),
+    
+    //g = glyph index
+    HKHubModuleGraphicsAdapterCharacterhGlyphIndexMask = 0x1fffff,
+    
+    CC_RESERVED_BITS(HKHubModuleGraphicsAdapterCharacter, 0, 32)
 };
 
 /*!
@@ -93,6 +110,7 @@ void HKHubModuleGraphicsAdapterNextFrame(HKHubModule Adapter);
 /*!
  * @brief Get a glyph.
  * @description First looks up if there's a dynamic glyph for the character otherwise it looks up whether there is a static glyph.
+ * @param Adapter The graphics adapter to get the glyph from.
  * @param Character The character to lookup the glyph data for.
  * @param AnimationOffset The amount to offset the animation by.
  * @param AnimationFilter How the animation should be filtered.
@@ -106,6 +124,7 @@ const uint8_t *HKHubModuleGraphicsAdapterGetGlyphBitmap(HKHubModule Adapter, CCC
 /*!
  * @brief Modify a dynamic glyph.
  * @description Dynamic glyphs are stored in the memory of the graphics adapter.
+ * @param Adapter The graphics adapter to set the glyph for.
  * @param Character The character to modify.
  * @param Width The number of cells wide of the new glyph. In range 0 to 15 (where there's an implicit +1 width).
  * @param Height The number of cells high of the new glyph. In range 0 to 15 (where there's an implicit +1 height).
@@ -124,6 +143,18 @@ _Bool HKHubModuleGraphicsAdapterSetGlyphBitmap(HKHubModule Adapter, CCChar Chara
  * @param Size The size of the framebuffer.
  */
 void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, uint8_t *Framebuffer, size_t Size);
+
+/*!
+ * @brief Get the characters for the cells in the specified region.
+ * @param Adapter The graphics adapter to read from.
+ * @param Layer The layer to read.
+ * @param X The x position of the region.
+ * @param Y The y position of the region.
+ * @param Width The width of the region.
+ * @param Height The height of the region.
+ * @param Characters The characters in the region. Must be of size @b Width @b * @b Height @b * @b HKHubModuleGraphicsAdapterCharacter.
+ */
+void HKHubModuleGraphicsAdapterRead(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, HKHubModuleGraphicsAdapterCharacter *Characters);
 
 /*!
  * @brief Get the viewport.
