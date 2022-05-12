@@ -1100,6 +1100,32 @@ void HKHubModuleGraphicsAdapterBlit(HKHubModule Adapter, HKHubArchPortID Port, u
     }
 }
 
+void HKHubModuleGraphicsAdapterRead(HKHubModule Adapter, uint8_t Layer, uint8_t X, uint8_t Y, uint8_t Width, uint8_t Height, HKHubModuleGraphicsAdapterCharacter *Characters)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Layer < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_COUNT, "Layer must not exceed layer count");
+    CCAssertLog(Characters, "Characters must not be null");
+    CCAssertLog(((size_t)X + Width + 1) < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH, "Region must not exceed layer width");
+    CCAssertLog(((size_t)Y + Height + 1) < HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT, "Region must not exceed layer height");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    HKHubModuleGraphicsAdapterMemory *Memory = &State->memory;
+    
+    const size_t ViewportWidth = (size_t)Width + 1, ViewportHeight = (size_t)Height + 1;
+    
+    for (size_t LayerY = Y, MaxViewportY = ViewportHeight + Y; LayerY < MaxViewportY; LayerY++)
+    {
+        for (size_t LayerX = X, MaxViewportX = ViewportWidth + X; LayerX < MaxViewportX; LayerX++)
+        {
+            HKHubModuleGraphicsAdapterCell Glyph;
+            uint8_t S, T;
+            const int32_t Index = HKHubModuleGraphicsAdapterCellIndex(Memory, Layer, LayerX % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_WIDTH, LayerY % HK_HUB_MODULE_GRAPHICS_ADAPTER_LAYER_HEIGHT, &Glyph, &S, &T);
+            
+            Characters[((LayerY - Y) * ViewportWidth) + (LayerX - X)] = Index != -1 ? ((T << HKHubModuleGraphicsAdapterCharacterPositionTIndex) | (S << HKHubModuleGraphicsAdapterCharacterPositionSIndex) | Index) : 0;
+        }
+    }
+}
+
 CC_ARRAY_DECLARE(uint32_t);
 
 static CCArray(uint32_t) HKHubModuleGraphicsAdapterGlyphIndexes = CC_STATIC_ARRAY(sizeof(uint32_t), HKHubModuleGraphicsAdapterCellGlyphIndexMask + 1, 0, CC_STATIC_ALLOC_BSS(uint32_t[HKHubModuleGraphicsAdapterCellGlyphIndexMask + 1]));
