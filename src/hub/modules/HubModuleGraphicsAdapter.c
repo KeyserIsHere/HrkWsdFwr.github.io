@@ -1339,7 +1339,7 @@ const uint8_t *HKHubModuleGraphicsAdapterStaticGlyphGet(CCChar Character, uint8_
         return CCArrayGetElementAtIndex(Bitmaps[0], BitmapIndex);
     }
     
-    BitmapIndex -= CCArrayGetChunkSize(Bitmaps[0]);
+    BitmapIndex -= CCArrayGetCount(Bitmaps[0]);
     
     if (!Bitmaps[1]) goto NotFound;
     
