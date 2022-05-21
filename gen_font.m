@@ -177,7 +177,7 @@ static NSArray *ParseFonts(FILE *Input, _Bool Verbose)
     char FontName[256] = {0};
     for (float FontSize = 12.0f, BaselineOffset = 0.0f; fscanf(Input, "\"%255[^\"\n]\":%f,%f", FontName, &FontSize, &BaselineOffset); FontSize = 12.0f, BaselineOffset = 0.0f, fscanf(Input, "%*[ \t]"))
     {
-        CGFontRef Font = CGFontCreateWithFontName([NSString stringWithUTF8String: FontName]);
+        CGFontRef Font = CGFontCreateWithFontName((CFStringRef)[NSString stringWithUTF8String: FontName]);
         if (Font)
         {
             [Fonts addObject: @[(id)CTFontCreateWithGraphicsFont(Font, FontSize, NULL, NULL), @(BaselineOffset)]];
@@ -431,7 +431,6 @@ static void ParseMap(CGContextRef Ctx, CGRect Rect, FILE *Input, Resource *Index
                                         const size_t BitPixel = (((LoopY / Cell) * Cell * Cell * MaxWidth) + ((LoopY % Cell) * Cell)) + ((LoopX / Cell) * Cell * Cell) + (LoopX % Cell);
                                         BitmapData[BitPixel / 8] |= 0x80 >> (BitPixel % 8);
                                     }
-                                    
                                 }
                             }
                             
