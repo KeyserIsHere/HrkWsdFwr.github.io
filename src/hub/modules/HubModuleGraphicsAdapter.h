@@ -311,6 +311,15 @@ void HKHubModuleGraphicsAdapterSetPalettePage(HKHubModule Adapter, uint8_t Layer
 void HKHubModuleGraphicsAdapterSetPaletteOffset(HKHubModule Adapter, uint8_t Layer, uint8_t Offset);
 
 /*!
+ * @brief Set the palette colour.
+ * @param Adapter The graphics adapter to set.
+ * @param Page The palette page to be set.
+ * @param Index The index of the palette to set the colour of.
+ * @param Colour The new colour.
+ */
+void HKHubModuleGraphicsAdapterSetPaletteColour(HKHubModule Adapter, uint8_t Page, uint8_t Index, uint8_t Colour);
+
+/*!
  * @brief Enable/disable bold.
  * @param Adapter The graphics adapter to set.
  * @param Layer The layer context to be set.

@@ -569,6 +569,15 @@ void HKHubModuleGraphicsAdapterSetPaletteOffset(HKHubModule Adapter, uint8_t Lay
     State->attributes[Layer].palette.offset = Offset;
 }
 
+void HKHubModuleGraphicsAdapterSetPaletteColour(HKHubModule Adapter, uint8_t Page, uint8_t Index, uint8_t Colour)
+{
+    CCAssertLog(Adapter, "Adapter must not be null");
+    CCAssertLog(Page < HK_HUB_MODULE_GRAPHICS_ADAPTER_PALETTE_PAGE_COUNT, "Page must not exceed palette page count");
+    
+    HKHubModuleGraphicsAdapterState *State = Adapter->internal;
+    State->memory.palettes[Page][Index] = Colour;
+}
+
 void HKHubModuleGraphicsAdapterSetBold(HKHubModule Adapter, uint8_t Layer, _Bool Enable)
 {
     CCAssertLog(Adapter, "Adapter must not be null");
