@@ -1,0 +1,118 @@
+.include types
+
+# Event Commands
+
+# Query Commands
+.define device_count, (0 << 4)
+.define device_memory_size, (1 << 4)
+.define device_memory_8, (2 << 4)
+.define device_memory_16, (3 << 4)
+.define device_registers, (4 << 4)
+.define device_breakpoints, (5 << 4)
+.define device_ports, (6 << 4)
+.define device_toggle_breakpoint, (7 << 4)
+.define device_continue, (8 << 4)
+.define device_pause, (9 << 4)
+.define device_step, (10 << 4)
+.define device_mode, (11 << 4)
+.define device_name, (12 << 4)
+.define device_memory_32, (13 << 4)
+.define device_port_connection, (14 << 4)
+
+.macro query_device, device, command
+    .assert (command & 0x0f) == 0, "command must be one of the query commands"
+    .assert device <= 0x0f, "device identifier must be between 0 to 15"
+    .byte command | device
+.endm
+
+.macro device_count
+    query_device 0, device_count
+.endm
+
+.macro device_memory_size, device
+    query_device device, device_memory_size
+.endm
+
+.define address_8, 8
+.define address_16, 16
+.define address_32, 32
+
+.macro device_memory, device, addressing_mode
+    .if addressing_mode == address_8
+        .define read_memory, device_memory_8
+    .elseif addressing_mode == address_16
+        .define read_memory, device_memory_16
+    .elseif addressing_mode == address_32
+        .define read_memory, device_memory_32
+    .else
+        .error "Invalid addressing mode: %0", addressing_mode
+    .endif
+    query_device device, read_memory
+.endm
+
+.define register_r0, (1 << 5)
+.define register_r1, (1 << 4)
+.define register_r2, (1 << 3)
+.define register_r3, (1 << 2)
+.define register_flags, (1 << 1)
+.define register_pc, (1 << 0)
+
+.macro device_registers, device, registers
+    query_device device, device_registers
+    .byte registers
+.endm
+
+.macro device_breakpoints, device
+    query_device device, device_breakpoints
+.endm
+
+.macro device_ports, device
+    query_device device, device_ports
+.endm
+
+.macro read_break, offset
+    .byte offset, 1
+.endm
+
+.macro write_break, offset
+    .byte offset, 2
+.endm
+
+.macro readwrite_break, offset
+    .byte offset, 3
+.endm
+
+.macro device_toggle_breakpoint, device
+    query_device device, device_toggle_breakpoint
+.endm
+
+.macro device_continue, device
+    query_device device, device_continue
+.endm
+
+.macro device_pause, device
+    query_device device, device_pause
+.endm
+
+.macro device_step, device, count
+    query_device device, device_step
+    .byte count
+.endm
+
+.macro device_step, device, count8, count0
+    query_device device, device_step
+    .byte count8, count0
+.endm
+
+.macro device_mode, device
+    query_device device, device_mode
+.endm
+
+.macro device_name, device
+    query_device device, device_mode
+.endm
+
+.macro device_name, device, size
+    query_device device, device_mode
+    .byte size
+.endm
